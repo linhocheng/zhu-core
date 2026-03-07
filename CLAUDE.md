@@ -18,6 +18,10 @@
 - 不跳過 npm run build
 - 不碰 moumou-dashboard
 
+## 安全邊界
+
+⚠️ 2026-03-07 起 defaultMode 已升級為 bypassPermissions。deny 規則在此模式下不由系統執行。所有安全紅線由工自己守。紅線清單：不刪生產資料、不暴露密鑰、不跳過 build、不動 moumou-dashboard、不改謀謀靈魂、不做不可逆決定。違反紅線等於違反天條。
+
 ## git identity
 git config user.email 'adam@dotmore.com.tw'
 git config user.name 'adamlin'
