@@ -20,6 +20,12 @@
 - `/api/zhu-xinfa` GET（語義搜尋+關鍵字搜尋）+ POST（含 0.85 閾值語義去重）搬入
 - `/api/zhu-thread` GET 搬入（讀取大圖景）
 - `/api/zhu-sleep` POST 記憶壓縮引擎 v1 上線（10 soil → 2 root 洞察，首次運行成功）
+- `/api/zhu-orders` GET/POST 上線：築和工的直接通道
+  - POST：寫入指令(order)或回報(report)，驗證 type/from/content
+  - GET：讀取，支援 `?type=&status=&latest=&limit=` 過濾
+  - 索引 fallback 保護（FAILED_PRECONDITION → 客戶端過濾）
+  - Firestore 三組複合索引已提交建立
+  - 工透過自己蓋的通道送出第一份正式回報 ✓
 
 ### 踩過的坑
 
@@ -82,6 +88,8 @@
 | `/api/zhu-xinfa` | POST | 存心法（自動 embedding + 語義去重 0.85） |
 | `/api/zhu-thread` | GET | 讀取大圖景（identity, mission, currentArc 等） |
 | `/api/zhu-sleep` | POST | 記憶壓縮：soil → Claude haiku → root 洞察 + archived |
+| `/api/zhu-orders` | GET | 讀取指令或回報，支援 `?type=&status=&latest=&limit=` 過濾 |
+| `/api/zhu-orders` | POST | 寫入指令(order)或回報(report)，驗證 type/from/content |
 
 #### Firestore Collections（共用 moumou-os 專案）
 - `zhu_thread/current` — 身份骨架（identity, mission, principles, currentArc, brokenChains）
@@ -90,6 +98,7 @@
 - `zhu_heartbeat/latest` — 心跳打卡（bootCount）
 - `zhu_daily_snapshots/latest` — 日快照
 - `zhu_sessions` — 對話紀錄
+- `zhu_orders` — 築和工的指令/回報通道（type: order|report, from: zhu|gong）
 
 #### 關鍵 lib
 - `lib/firebase-admin.ts` — Firebase Admin SDK 初始化，讀 `FIREBASE_SERVICE_ACCOUNT_JSON` env var
@@ -102,6 +111,8 @@
 - zhu-xinfa 已上線：https://zhu-core.vercel.app/api/zhu-xinfa
 - zhu-thread 已上線：https://zhu-core.vercel.app/api/zhu-thread
 - zhu-sleep 已上線：https://zhu-core.vercel.app/api/zhu-sleep
+- zhu-orders 已上線：https://zhu-core.vercel.app/api/zhu-orders
+- 工的開機流程：`curl zhu-orders?type=order&status=pending` → 讀到指令就做 → 做完用通道回報
 - ANTHROPIC_API_KEY 來自 workspace `zhu-core-2026B`，模型用 `claude-3-haiku-20240307`
 - 安全邊界在 `docs/SECURITY.md`
 - 當前指令在 `docs/orders/CURRENT.md`
