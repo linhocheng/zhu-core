@@ -37,7 +37,27 @@ export async function GET(req: NextRequest) {
       query = query.limit(limit);
     }
 
-    const snap = await query.get();
+    // 索引可能尚未建完，fallback 到無過濾查詢 + 客戶端過濾
+    let snap;
+    try {
+      snap = await query.get();
+    } catch (indexErr: unknown) {
+      const indexMsg = indexErr instanceof Error ? indexErr.message : '';
+      if (indexMsg.includes('FAILED_PRECONDITION')) {
+        // 索引尚未建好，fallback: 全取 + 客戶端過濾
+        const fallbackSnap = await db.collection('zhu_orders')
+          .orderBy('createdAt', 'desc')
+          .limit(50)
+          .get();
+        let results = fallbackSnap.docs.map(d => ({ id: d.id, ...d.data() })) as Record<string, unknown>[];
+        if (type) results = results.filter(r => r.type === type);
+        if (status) results = results.filter(r => r.status === status);
+        const finalLimit = latest === 'true' ? 1 : limit;
+        return NextResponse.json({ orders: results.slice(0, finalLimit), _fallback: true });
+      }
+      throw indexErr;
+    }
+
     const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     return NextResponse.json({ orders });
