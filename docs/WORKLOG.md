@@ -19,6 +19,7 @@
 - 64 條 zhu_memory 批量分類（bone:5, root:9, eye:10, seed:2, 其餘 soil）
 - `/api/zhu-xinfa` GET（語義搜尋+關鍵字搜尋）+ POST（含 0.85 閾值語義去重）搬入
 - `/api/zhu-thread` GET 搬入（讀取大圖景）
+- `/api/zhu-sleep` POST 記憶壓縮引擎 v1 上線（10 soil → 2 root 洞察，首次運行成功）
 
 ### 踩過的坑
 
@@ -51,6 +52,18 @@
 - **現象**：`vercel deploy --prod` 可以看到完整 build log，但 git push 觸發的部署只能在 Dashboard 看
 - **教訓**：debug 部署問題時，`vercel deploy --prod --yes` 是最快看到錯誤的方法
 
+#### 8. Anthropic API model 名稱
+- **現象**：`claude-haiku-4-20250514` 和 `claude-3-5-haiku-20241022` 都回 404
+- **原因**：workspace 未開啟較新模型，或模型名稱不存在
+- **解法**：改用 `claude-3-haiku-20240307`（最穩定、最廣泛可用）
+- **教訓**：用最穩定的模型名稱。如需升級，先用 curl 測試模型可用性
+
+#### 7. Vercel env var 搬遷尾巴帶 \n
+- **現象**：ANTHROPIC_API_KEY 從 `.env.local` grep 後 pipe 到 `vercel env add`，key 尾巴多了 `\n`
+- **原因**：`grep + cut` 輸出自帶換行，`vercel env add` 連同 `\n` 一起存入
+- **解法**：用 `process.stdout.write(val)` 而非 `console.log()`，或用 `tr -d '\n'` 去尾
+- **教訓**：所有 env var 搬遷都要驗尾巴。`vercel env pull` 後檢查 key 結尾字元
+
 #### 6. Firestore 複合索引建立需要時間
 - **現象**：新的 where + orderBy 查詢（如 `module == 'root'` + `orderBy createdAt`）部署後立即報 FAILED_PRECONDITION
 - **解法**：gcloud CLI 建索引 + code 裡加 `.catch(() => null)` fallback
@@ -68,6 +81,7 @@
 | `/api/zhu-xinfa` | GET | 讀心法 + 語義搜尋 + 關鍵字搜尋 |
 | `/api/zhu-xinfa` | POST | 存心法（自動 embedding + 語義去重 0.85） |
 | `/api/zhu-thread` | GET | 讀取大圖景（identity, mission, currentArc 等） |
+| `/api/zhu-sleep` | POST | 記憶壓縮：soil → Claude haiku → root 洞察 + archived |
 
 #### Firestore Collections（共用 moumou-os 專案）
 - `zhu_thread/current` — 身份骨架（identity, mission, principles, currentArc, brokenChains）
@@ -87,6 +101,8 @@
 - zhu-memory 已上線：https://zhu-core.vercel.app/api/zhu-memory
 - zhu-xinfa 已上線：https://zhu-core.vercel.app/api/zhu-xinfa
 - zhu-thread 已上線：https://zhu-core.vercel.app/api/zhu-thread
+- zhu-sleep 已上線：https://zhu-core.vercel.app/api/zhu-sleep
+- ANTHROPIC_API_KEY 來自 workspace `zhu-core-2026B`，模型用 `claude-3-haiku-20240307`
 - 安全邊界在 `docs/SECURITY.md`
 - 當前指令在 `docs/orders/CURRENT.md`
 - 權限白名單在 `~/.claude/settings.local.json`
