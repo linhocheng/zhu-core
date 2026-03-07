@@ -32,6 +32,15 @@
   - 更新 API 表（含 zhu-orders）+ 記憶模組表
   - 更新技術心法（Firestore index, env var, Vercel, Anthropic, Vertex AI）
   - 工的第一次自主開機流程：讀 zhu-orders → 收到 ORDER_009 → 執行 → 回報
+- ORDER_012：CLAUDE.md 建好（工的內核，Claude Code 啟動自動載入）
+  - 內容：開機流程 + 行為準則 + 不可做 + git identity
+  - ORDER_010/011 被 012 取代，不另建 scripts/run-order.sh
+- `/api/zhu-orders` PATCH 上線：支援更新指令 status（id + status → done）
+  - 用途：工做完指令後直接標 done，不用再新建 report 來間接標記
+- ORDER_013：`~/.claude/settings.local.json` 加入 `defaultMode: acceptEdits`
+  - 工的檔案編輯和白名單 bash 指令不再需要 Adam 確認
+  - 需要重啟 session 生效
+- ORDER_009/010/011/012/013 全部標 done（用新的 PATCH endpoint）
 
 ### 踩過的坑
 
@@ -96,6 +105,7 @@
 | `/api/zhu-sleep` | POST | 記憶壓縮：soil → Claude haiku → root 洞察 + archived |
 | `/api/zhu-orders` | GET | 讀取指令或回報，支援 `?type=&status=&latest=&limit=` 過濾 |
 | `/api/zhu-orders` | POST | 寫入指令(order)或回報(report)，驗證 type/from/content |
+| `/api/zhu-orders` | PATCH | 更新指令狀態（id + status） |
 
 #### Firestore Collections（共用 moumou-os 專案）
 - `zhu_thread/current` — 身份骨架（identity, mission, principles, currentArc, brokenChains）
