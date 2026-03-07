@@ -26,6 +26,12 @@
   - 索引 fallback 保護（FAILED_PRECONDITION → 客戶端過濾）
   - Firestore 三組複合索引已提交建立
   - 工透過自己蓋的通道送出第一份正式回報 ✓
+- `CODE_SOUL.md` 推入 zhu-core 根目錄
+  - 加入「三、開機儀式」章節：讀指令 → WORKLOG → SECURITY → 開工 → 回報 → 記錄
+  - 更新專案結構為 ZHU-CORE（非 AILIVE）
+  - 更新 API 表（含 zhu-orders）+ 記憶模組表
+  - 更新技術心法（Firestore index, env var, Vercel, Anthropic, Vertex AI）
+  - 工的第一次自主開機流程：讀 zhu-orders → 收到 ORDER_009 → 執行 → 回報
 
 ### 踩過的坑
 
