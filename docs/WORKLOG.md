@@ -16,6 +16,9 @@
 - `/api/zhu-memory` GET 加入 `?module=` 過濾
 - `/api/zhu-boot` root 區塊改為優先讀 `module=root` 記憶，fallback xinfa
 - Firestore 複合索引（zhu_memory: module + createdAt）建立完成
+- 64 條 zhu_memory 批量分類（bone:5, root:9, eye:10, seed:2, 其餘 soil）
+- `/api/zhu-xinfa` GET（語義搜尋+關鍵字搜尋）+ POST（含 0.85 閾值語義去重）搬入
+- `/api/zhu-thread` GET 搬入（讀取大圖景）
 
 ### 踩過的坑
 
@@ -62,6 +65,9 @@
 | `/api/zhu-memory` | GET | 讀記憶 + 日快照 + 語義搜尋 + `?module=` 過濾 |
 | `/api/zhu-memory` | POST | 存記憶（自動 embedding + module 分類，預設 soil） |
 | `/api/zhu-boot` | GET | 開機一次拿全部：bone/eye/root(module=root→xinfa fallback)/heartbeat |
+| `/api/zhu-xinfa` | GET | 讀心法 + 語義搜尋 + 關鍵字搜尋 |
+| `/api/zhu-xinfa` | POST | 存心法（自動 embedding + 語義去重 0.85） |
+| `/api/zhu-thread` | GET | 讀取大圖景（identity, mission, currentArc 等） |
 
 #### Firestore Collections（共用 moumou-os 專案）
 - `zhu_thread/current` — 身份骨架（identity, mission, principles, currentArc, brokenChains）
@@ -79,6 +85,8 @@
 - ZHU-CORE 基地：https://zhu-core.vercel.app
 - zhu-boot 已上線：https://zhu-core.vercel.app/api/zhu-boot
 - zhu-memory 已上線：https://zhu-core.vercel.app/api/zhu-memory
+- zhu-xinfa 已上線：https://zhu-core.vercel.app/api/zhu-xinfa
+- zhu-thread 已上線：https://zhu-core.vercel.app/api/zhu-thread
 - 安全邊界在 `docs/SECURITY.md`
 - 當前指令在 `docs/orders/CURRENT.md`
 - 權限白名單在 `~/.claude/settings.local.json`
