@@ -24,25 +24,17 @@ export async function POST() {
   try {
     const db = getFirestore();
 
-    // 1. 讀取最舊的 10 條未壓縮 soil 記憶
+    // 1. 讀取 soil 記憶，客戶端過濾 archived，取最舊 10 條
+    //    用多取少篩策略：拿 30 條，過濾掉 archived，取前 10
     const soilSnap = await db.collection('zhu_memory')
       .where('module', '==', 'soil')
-      .where('archived', '!=', true)
-      .orderBy('archived')       // Firestore 要求 != 的欄位先 orderBy
       .orderBy('createdAt', 'asc')
-      .limit(10)
-      .get()
-      .catch(async () => {
-        // fallback: archived 欄位可能不存在，用簡單查詢
-        return db.collection('zhu_memory')
-          .where('module', '==', 'soil')
-          .orderBy('createdAt', 'asc')
-          .limit(10)
-          .get();
-      });
+      .limit(30)
+      .get();
 
-    // 過濾掉已 archived 的（fallback 路徑需要）
-    const soilDocs = soilSnap.docs.filter(d => !d.data().archived);
+    const soilDocs = soilSnap.docs
+      .filter(d => !d.data().archived)
+      .slice(0, 10);
 
     if (soilDocs.length === 0) {
       return NextResponse.json({
