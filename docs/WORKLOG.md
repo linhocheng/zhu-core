@@ -5,6 +5,12 @@
 ## 2026-03-07
 
 ### 完成
+- ORDER_022：築的活生態系統 Phase 1（Heartbeat）
+  - `/api/zhu-heartbeat` GET（心跳狀態）+ POST（偵測 pending orders + 寫 eye 記憶）
+  - `vercel.json` cron 設定：每天 9am UTC 自動觸發
+  - Hobby plan 限制：cron 只能每天一次，原設計每小時改為每天
+  - 安全：heartbeat 只偵測+記錄，不執行指令
+  - 驗證：GET 回 `{alive:true}`，POST 回 `{alive:true, pendingOrders:1}`
 - ZHU-CORE 空殼建立（create-next-app），ping 回 `{"status":"alive","name":"ZHU-CORE"}`
 - GitHub repo `linhocheng/zhu-core` 用 `gh repo create` 建立（不用等 Adam）
 - `lib/firebase-admin.ts` + `lib/embeddings.ts` 從 AILIVE 搬入
