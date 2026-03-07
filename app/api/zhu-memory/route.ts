@@ -1,12 +1,17 @@
 /**
- * 築的記憶空間（GET only）
+ * 築的記憶空間
  * GET  /api/zhu-memory              → 讀取最近記憶 + 最新日快照
+ * GET  /api/zhu-memory?module=root  → 按模塊過濾
  * GET  /api/zhu-memory?type=snapshot → 只讀最新日快照
  * GET  /api/zhu-memory?search=...   → 語義搜尋：用意義找記憶
+ * POST /api/zhu-memory              → 存一條記憶（自動生成 embedding）
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from '@/lib/firebase-admin';
-import { generateEmbedding } from '@/lib/embeddings';
+import { generateEmbedding, docToText } from '@/lib/embeddings';
+
+const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed'] as const;
+type Module = typeof VALID_MODULES[number];
 
 export const maxDuration = 30;
 
@@ -65,8 +70,16 @@ export async function GET(req: NextRequest) {
       });
     }
 
+    // 按模塊過濾
+    const moduleFilter = req.nextUrl.searchParams.get('module') as Module | null;
+    let memQuery: FirebaseFirestore.Query = db.collection('zhu_memory');
+    if (moduleFilter && VALID_MODULES.includes(moduleFilter)) {
+      memQuery = memQuery.where('module', '==', moduleFilter);
+    }
+    memQuery = memQuery.orderBy('createdAt', 'desc').limit(limit);
+
     const [memoriesSnap, snapshotDoc] = await Promise.all([
-      db.collection('zhu_memory').orderBy('createdAt', 'desc').limit(limit).get(),
+      memQuery.get(),
       db.doc('zhu_daily_snapshots/latest').get(),
     ]);
 
@@ -74,6 +87,44 @@ export async function GET(req: NextRequest) {
     const snapshot = snapshotDoc.exists ? snapshotDoc.data() : null;
 
     return NextResponse.json({ memories, snapshot });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function POST(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const body = await req.json();
+
+    const { observation, context, moment: momentField, importance = 'normal', tags = [] } = body;
+    const module: Module = VALID_MODULES.includes(body.module) ? body.module : 'soil';
+
+    if (!observation) {
+      return NextResponse.json({ error: 'observation 必填' }, { status: 400 });
+    }
+
+    // 自動生成語義向量
+    let embedding: number[] | undefined;
+    try {
+      const textForEmb = docToText({ observation, context, moment: momentField });
+      embedding = await generateEmbedding(textForEmb);
+    } catch (_e) { /* embedding 失敗不阻斷存檔 */ }
+
+    const ref = await db.collection('zhu_memory').add({
+      observation,
+      context: context || '',
+      moment: momentField || '',
+      importance,
+      tags,
+      module,
+      createdAt: new Date(),
+      date: new Date().toISOString().slice(0, 10),
+      ...(embedding ? { embedding } : {}),
+    });
+
+    return NextResponse.json({ success: true, id: ref.id, module, hasEmbedding: !!embedding });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ error: message }, { status: 500 });

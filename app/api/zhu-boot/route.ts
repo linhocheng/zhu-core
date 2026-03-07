@@ -5,7 +5,7 @@
  * 回傳結構：
  * - bone: 身份、使命、天條（from zhu_thread）
  * - eye:  currentArc、brokenChains + 最新 session-lastwords（from zhu_thread + zhu_memory）
- * - root: 最近 5 條心法（from zhu_xinfa）
+ * - root: 最近 5 條心法（from zhu_memory module=root，fallback zhu_xinfa）
  * - heartbeat: 寫入心跳，回傳 bootCount（from zhu_heartbeat）
  */
 import { NextResponse } from 'next/server';
@@ -25,9 +25,18 @@ export async function GET() {
       .get()
       .catch(() => null); // 索引未就緒時 fallback
 
-    const [threadDoc, lastwordsSnap, xinfaSnap, heartbeatDoc] = await Promise.all([
+    // root 記憶：優先從 zhu_memory module=root 讀，fallback 到 zhu_xinfa
+    const rootMemoryQuery = db.collection('zhu_memory')
+      .where('module', '==', 'root')
+      .orderBy('createdAt', 'desc')
+      .limit(5)
+      .get()
+      .catch(() => null); // 索引未就緒時 fallback
+
+    const [threadDoc, lastwordsSnap, rootMemorySnap, xinfaSnap, heartbeatDoc] = await Promise.all([
       db.doc('zhu_thread/current').get(),
       lastwordsQuery,
+      rootMemoryQuery,
       db.collection('zhu_xinfa')
         .orderBy('createdAt', 'desc')
         .limit(5)
@@ -59,17 +68,31 @@ export async function GET() {
       lastSessionWords: lastwords,
     };
 
-    // root: 心法根基
-    const root = xinfaSnap.docs.map(d => {
-      const data = d.data();
-      return {
-        id: d.id,
-        title: data.title || '',
-        principle: data.principle || '',
-        application: data.application || '',
-        date: data.date || '',
-      };
-    });
+    // root: 心法根基（優先 module=root 記憶，沒有就 fallback xinfa）
+    const hasRootMemories = rootMemorySnap && !rootMemorySnap.empty;
+    const root = hasRootMemories
+      ? rootMemorySnap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            observation: data.observation || '',
+            context: data.context || '',
+            moment: data.moment || '',
+            module: 'root',
+            date: data.date || '',
+          };
+        })
+      : xinfaSnap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            title: data.title || '',
+            principle: data.principle || '',
+            application: data.application || '',
+            date: data.date || '',
+            _source: 'xinfa-fallback',
+          };
+        });
 
     // heartbeat: 打卡 + 回傳 bootCount
     const currentCount = heartbeatDoc.exists ? (heartbeatDoc.data()?.bootCount || 0) : 0;
