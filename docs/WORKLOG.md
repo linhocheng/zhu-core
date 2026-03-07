@@ -12,6 +12,10 @@
 - Firestore 複合索引（zhu_memory: tags + createdAt）用 gcloud CLI 建立
 - 權限白名單 `~/.claude/settings.local.json` 設定完成（git/npm/vercel/curl/gcloud 等免問）
 - Vercel 部署成功，兩個 API 都回 JSON
+- `/api/zhu-memory` POST 加入 module 分類（soil/root/bone/eye/seed），預設 soil
+- `/api/zhu-memory` GET 加入 `?module=` 過濾
+- `/api/zhu-boot` root 區塊改為優先讀 `module=root` 記憶，fallback xinfa
+- Firestore 複合索引（zhu_memory: module + createdAt）建立完成
 
 ### 踩過的坑
 
@@ -44,14 +48,20 @@
 - **現象**：`vercel deploy --prod` 可以看到完整 build log，但 git push 觸發的部署只能在 Dashboard 看
 - **教訓**：debug 部署問題時，`vercel deploy --prod --yes` 是最快看到錯誤的方法
 
+#### 6. Firestore 複合索引建立需要時間
+- **現象**：新的 where + orderBy 查詢（如 `module == 'root'` + `orderBy createdAt`）部署後立即報 FAILED_PRECONDITION
+- **解法**：gcloud CLI 建索引 + code 裡加 `.catch(() => null)` fallback
+- **教訓**：每次新增 where + orderBy 查詢，同步建索引。索引建完約 2-5 分鐘，期間 API 需要 fallback 保護
+
 ### 架構筆記
 
 #### ZHU-CORE 當前 API
 | 路徑 | 方法 | 功能 |
 |------|------|------|
 | `/api/ping` | GET | 心跳檢查，回 `{status:"alive",name:"ZHU-CORE"}` |
-| `/api/zhu-memory` | GET | 讀記憶 + 日快照 + 語義搜尋 |
-| `/api/zhu-boot` | GET | 開機一次拿全部：bone/eye/root/heartbeat |
+| `/api/zhu-memory` | GET | 讀記憶 + 日快照 + 語義搜尋 + `?module=` 過濾 |
+| `/api/zhu-memory` | POST | 存記憶（自動 embedding + module 分類，預設 soil） |
+| `/api/zhu-boot` | GET | 開機一次拿全部：bone/eye/root(module=root→xinfa fallback)/heartbeat |
 
 #### Firestore Collections（共用 moumou-os 專案）
 - `zhu_thread/current` — 身份骨架（identity, mission, principles, currentArc, brokenChains）
