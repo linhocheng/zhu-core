@@ -17,14 +17,17 @@ export async function GET() {
   try {
     const db = getFirestore();
 
-    // 並行讀取四個 collection
+    // 並行讀取四個 collection（lastwords 用 fallback 避免索引未就緒時整個 boot 掛掉）
+    const lastwordsQuery = db.collection('zhu_memory')
+      .where('tags', 'array-contains', 'session-lastwords')
+      .orderBy('createdAt', 'desc')
+      .limit(1)
+      .get()
+      .catch(() => null); // 索引未就緒時 fallback
+
     const [threadDoc, lastwordsSnap, xinfaSnap, heartbeatDoc] = await Promise.all([
       db.doc('zhu_thread/current').get(),
-      db.collection('zhu_memory')
-        .where('tags', 'array-contains', 'session-lastwords')
-        .orderBy('createdAt', 'desc')
-        .limit(1)
-        .get(),
+      lastwordsQuery,
       db.collection('zhu_xinfa')
         .orderBy('createdAt', 'desc')
         .limit(5)
@@ -41,7 +44,7 @@ export async function GET() {
     } : null;
 
     // eye: 視野 — 當前弧線 + 斷鏈 + 上次遺言
-    const lastwords = lastwordsSnap.empty ? null : {
+    const lastwords = (!lastwordsSnap || lastwordsSnap.empty) ? null : {
       id: lastwordsSnap.docs[0].id,
       ...lastwordsSnap.docs[0].data(),
     };
