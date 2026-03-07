@@ -1,7 +1,8 @@
 /**
  * 築和工的直接通道
- * POST /api/zhu-orders → 寫入指令或回報
- * GET  /api/zhu-orders → 讀取指令或回報
+ * POST  /api/zhu-orders → 寫入指令或回報
+ * GET   /api/zhu-orders → 讀取指令或回報
+ * PATCH /api/zhu-orders → 更新指令狀態（id + status）
  *
  * type: "order"（築→工）| "report"（工→築）
  * from: "zhu" | "gong"
@@ -61,6 +62,28 @@ export async function GET(req: NextRequest) {
     const orders = snap.docs.map(d => ({ id: d.id, ...d.data() }));
 
     return NextResponse.json({ orders });
+  } catch (e: unknown) {
+    const message = e instanceof Error ? e.message : String(e);
+    return NextResponse.json({ error: message }, { status: 500 });
+  }
+}
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const body = await req.json();
+    const { id, status } = body;
+
+    if (!id) {
+      return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+    }
+    if (!status || !['pending', 'done'].includes(status)) {
+      return NextResponse.json({ error: 'status 必須是 pending 或 done' }, { status: 400 });
+    }
+
+    await db.collection('zhu_orders').doc(id).update({ status, updatedAt: new Date() });
+
+    return NextResponse.json({ success: true, id, status });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ error: message }, { status: 500 });
