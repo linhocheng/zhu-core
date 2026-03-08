@@ -2,6 +2,18 @@
 
 ## 自主迴圈驗證 - 工自己讀到、自己做、自己回報，全程不問 Adam。
 
+## 2026-03-08
+
+### 完成
+- ORDER_023：Telegram 多通道接入（Phase 3）
+  - `/api/telegram` webhook route 上線
+  - 指令：`/order` 寫 zhu-orders、`/status` 查狀態、`/heartbeat` 觸發心跳、其他寫 zhu-memory
+  - 安全：TELEGRAM_CHAT_ID 驗證，只有 Adam 的訊息才處理
+  - TELEGRAM_BOT_TOKEN + TELEGRAM_CHAT_ID 環境變數設定完成
+  - Telegram webhook 設定完成（指向 zhu-core.vercel.app/api/telegram）
+  - `docs/TELEGRAM_SETUP.md` 文件建好
+  - 驗證：webhook 200 回傳、/start 訊息成功寫入 zhu-memory、chat_id 成功擷取
+
 ## 2026-03-07
 
 ### 完成
