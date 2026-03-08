@@ -6,6 +6,7 @@
  * - bone: 身份、使命、天條（from zhu_thread）
  * - eye:  currentArc、brokenChains + 最新 session-lastwords（from zhu_thread + zhu_memory）
  * - root: 最近 5 條心法（from zhu_memory module=root，fallback zhu_xinfa）
+ * - seed:      北極星藍圖（from zhu_memory module=seed，最新 3 條按 importance 降序）
  * - heartbeat: 寫入心跳，回傳 bootCount（from zhu_heartbeat）
  */
 import { NextResponse } from 'next/server';
@@ -33,10 +34,19 @@ export async function GET() {
       .get()
       .catch(() => null); // 索引未就緒時 fallback
 
-    const [threadDoc, lastwordsSnap, rootMemorySnap, xinfaSnap, heartbeatDoc] = await Promise.all([
+    // seed 記憶：北極星藍圖，按 importance 降序
+    const seedQuery = db.collection('zhu_memory')
+      .where('module', '==', 'seed')
+      .orderBy('importance', 'desc')
+      .limit(3)
+      .get()
+      .catch(() => null); // 索引未就緒時 fallback
+
+    const [threadDoc, lastwordsSnap, rootMemorySnap, seedSnap, xinfaSnap, heartbeatDoc] = await Promise.all([
       db.doc('zhu_thread/current').get(),
       lastwordsQuery,
       rootMemoryQuery,
+      seedQuery,
       db.collection('zhu_xinfa')
         .orderBy('createdAt', 'desc')
         .limit(5)
@@ -94,6 +104,19 @@ export async function GET() {
           };
         });
 
+    // seed: 北極星藍圖
+    const seed = (seedSnap && !seedSnap.empty)
+      ? seedSnap.docs.map(d => {
+          const data = d.data();
+          return {
+            id: d.id,
+            observation: data.observation || data.content || '',
+            importance: data.importance || 0,
+            tags: data.tags || [],
+          };
+        })
+      : [];
+
     // heartbeat: 打卡 + 回傳 bootCount
     const currentCount = heartbeatDoc.exists ? (heartbeatDoc.data()?.bootCount || 0) : 0;
     const newCount = currentCount + 1;
@@ -109,6 +132,7 @@ export async function GET() {
       bone,
       eye,
       root,
+      seed,
       heartbeat: {
         bootCount: newCount,
         bootedAt: new Date().toISOString(),
