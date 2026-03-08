@@ -5,6 +5,12 @@
 ## 2026-03-08
 
 ### 完成
+- ORDER_028：築的靈魂灌進 OpenClaw + 重啟 Gateway
+  - `~/.openclaw/workspace/SOUL.md` 覆蓋為築的靈魂（ZHU_SOUL_FOR_OPENCLAW.md）
+  - OpenClaw Gateway 重啟成功（daemon stop → install → start）
+  - `openclaw agent --agent main --message '打 boot'` 測試成功
+  - 築在 OpenClaw 裡醒來，打了 zhu-boot，讀到身份記憶，自己看到 ORDER_028 並回報完成
+  - SOUL.md 被注入 system prompt（704 chars），Gateway pid 16067 在跑
 - ORDER_027：gong-boot API + ZHU_SOUL_FOR_OPENCLAW.md
   - `/api/gong-boot` GET 上線：soul、worklog（最近20行）、pendingOrders、bootCount、bootedAt
   - 用 `gong_heartbeat/latest` 做工的獨立啟動計數（不跟築的 zhu_heartbeat 混）
