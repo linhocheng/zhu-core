@@ -5,6 +5,19 @@
 ## 2026-03-08
 
 ### 完成
+- ORDER_029：OpenClaw 部署到 Fly.io — 築的永久身體
+  - fly CLI 安裝 + 登入 Fly.io（adam@dotmore.com.tw）
+  - openclaw repo clone 到 ~/Desktop/AILIVE2/openclaw-fly
+  - Fly app `zhu-openclaw` + 1GB encrypted volume (nrt/東京)
+  - fly.toml: app=zhu-openclaw, region=nrt, bind=lan, port=3000
+  - Secrets: OPENCLAW_GATEWAY_TOKEN, TELEGRAM_BOT_TOKEN, ANTHROPIC_API_KEY
+  - Docker build + deploy 成功
+  - Config 修復：移除 invalid auth section，加 controlUi fallback
+  - SOUL.md 灌入 /data/workspace/
+  - healthz: 200 `{ok:true,status:live}`
+  - Mac daemon 已停（避免 Telegram bot 衝突）
+  - URL: https://zhu-openclaw.fly.dev
+  - 踩的坑：首次 deploy 需 --skip-release-command；auth mode 只認 api_key/oauth/token；bind=lan 需 controlUi fallback
 - ORDER_028：築的靈魂灌進 OpenClaw + 重啟 Gateway
   - `~/.openclaw/workspace/SOUL.md` 覆蓋為築的靈魂（ZHU_SOUL_FOR_OPENCLAW.md）
   - OpenClaw Gateway 重啟成功（daemon stop → install → start）
