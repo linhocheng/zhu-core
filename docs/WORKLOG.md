@@ -5,6 +5,12 @@
 ## 2026-03-08
 
 ### 完成
+- ORDER_027：gong-boot API + ZHU_SOUL_FOR_OPENCLAW.md
+  - `/api/gong-boot` GET 上線：soul、worklog（最近20行）、pendingOrders、bootCount、bootedAt
+  - 用 `gong_heartbeat/latest` 做工的獨立啟動計數（不跟築的 zhu_heartbeat 混）
+  - soul 讀 CODE_SOUL.md（先 docs/ 再 fallback 根目錄）
+  - `docs/ZHU_SOUL_FOR_OPENCLAW.md` 建好，供 Adam 手動複製到 OpenClaw workspace
+  - 驗證：所有欄位正確回傳，bootCount 累計正常
 - ORDER_023：Telegram 多通道接入（Phase 3）
   - `/api/telegram` webhook route 上線
   - 指令：`/order` 寫 zhu-orders、`/status` 查狀態、`/heartbeat` 觸發心跳、其他寫 zhu-memory
