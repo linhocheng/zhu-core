@@ -13,6 +13,10 @@
   - Telegram webhook 設定完成（指向 zhu-core.vercel.app/api/telegram）
   - `docs/TELEGRAM_SETUP.md` 文件建好
   - 驗證：webhook 200 回傳、/start 訊息成功寫入 zhu-memory、chat_id 成功擷取
+- ORDER_024：zhu-boot 加入 seed 層
+  - seed 欄位：北極星藍圖，module=seed 最新 3 條，按 importance 降序
+  - Firestore 複合索引 `zhu_memory: module + importance desc` 建立
+  - 驗證：seed 欄位存在，北極星藍圖正確回傳
 
 ## 2026-03-07
 
