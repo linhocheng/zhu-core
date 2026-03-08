@@ -154,9 +154,9 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ ok: true });
     }
 
-    // 其他訊息 → 寫進 zhu-memory
+    // 其他訊息 → 寫進 zhu-memory（含 chat_id 方便初次識別）
     await db.collection('zhu_memory').add({
-      content: text,
+      content: `[chat_id:${chatId}] ${text}`,
       tags: ['telegram', 'adam-message'],
       module: 'soil',
       importance: 3,
