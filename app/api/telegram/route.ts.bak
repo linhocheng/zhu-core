@@ -19,47 +19,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from '@/lib/firebase-admin';
 import Anthropic from '@anthropic-ai/sdk';
 
-
-// ===== 智慧模型路由（偷自 ClawRouter 概念）=====
-type ModelTier = 'haiku' | 'sonnet';
-
-function routeModel(text: string): { model: string; tier: ModelTier; maxTokens: number } {
-  const t = text.trim();
-  const len = t.length;
-
-  // 簡單訊息 → Haiku（便宜 10x）
-  const simplePatterns = /^(hi|hey|ok|好|嗯|收到|謝|thx|thanks|早|晚安|午安|是|對|不是|boot|ping|test|測試|哈|笑|\.{1,3})$/i;
-  if (simplePatterns.test(t) || len < 10) {
-    return { model: 'claude-haiku-4-5-20251001', tier: 'haiku', maxTokens: 512 };
-  }
-
-  // 其他 → Sonnet
-  return { model: 'claude-sonnet-4-20250514', tier: 'sonnet', maxTokens: 1024 };
-}
-
-// ===== 成本追蹤（偷自 ClawWork 概念）=====
-const TOKEN_COSTS: Record<ModelTier, { input: number; output: number }> = {
-  haiku:  { input: 0.80 / 1_000_000, output: 4.00 / 1_000_000 },
-  sonnet: { input: 3.00 / 1_000_000, output: 15.00 / 1_000_000 },
-};
-
-async function logCost(
-  db: FirebaseFirestore.Firestore,
-  tier: ModelTier,
-  model: string,
-  inputTokens: number,
-  outputTokens: number,
-) {
-  const costs = TOKEN_COSTS[tier];
-  const cost = inputTokens * costs.input + outputTokens * costs.output;
-  await db.collection('zhu_cost_log').add({
-    model, tier, inputTokens, outputTokens,
-    cost: Math.round(cost * 1_000_000) / 1_000_000,
-    createdAt: new Date(),
-    date: new Date().toISOString().slice(0, 10),
-  });
-}
-
 export const maxDuration = 60;
 
 const BOT_TOKEN = () => process.env.TELEGRAM_BOT_TOKEN || '';
@@ -249,14 +208,11 @@ ${seedText || '（無）'}
       { role: 'user' as const, content: text },
     ];
 
-    // 5. 智慧路由選模型
-    const route = routeModel(text);
-
-    // 6. 打 Anthropic API
+    // 5. 打 Anthropic API
     const anthropic = new Anthropic({ apiKey: process.env.ANTHROPIC_API_KEY });
     const response = await anthropic.messages.create({
-      model: route.model,
-      max_tokens: route.maxTokens,
+      model: 'claude-sonnet-4-20250514',
+      max_tokens: 1024,
       system: systemPrompt,
       messages,
     });
@@ -266,11 +222,7 @@ ${seedText || '（無）'}
       .map(b => (b as Anthropic.TextBlock).text)
       .join('') || '在。';
 
-    // 7. 成本追蹤
-    const usage = response.usage;
-    logCost(db, route.tier, route.model, usage.input_tokens, usage.output_tokens).catch(() => {});
-
-    // 8. 存對話
+    // 6. 存對話
     await saveMessage(db, chatId, 'user', text);
     await saveMessage(db, chatId, 'assistant', reply);
 
