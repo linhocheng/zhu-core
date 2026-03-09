@@ -7,7 +7,7 @@
  * POST /api/zhu-memory              → 存一條記憶（自動生成 embedding）
  */
 import { NextRequest, NextResponse } from 'next/server';
-import { getFirestore } from '@/lib/firebase-admin';
+import { getFirestore, getFirebaseAdmin } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
 
 const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed'] as const;
@@ -62,6 +62,20 @@ export async function GET(req: NextRequest) {
 
       scored.sort((a, b) => b.similarity - a.similarity);
       const results = scored.slice(0, limit).filter(s => s.similarity > 0.3);
+
+      // 動態模塊記憶：命中的記憶 hitCount +1, 記錄 lastHitAt
+      if (results.length > 0) {
+        const batch = db.batch();
+        const now = new Date();
+        for (const r of results) {
+          const ref = db.collection('zhu_memory').doc(r.id as string);
+          batch.update(ref, {
+            hitCount: getFirebaseAdmin().firestore.FieldValue.increment(1),
+            lastHitAt: now,
+          });
+        }
+        batch.commit().catch(() => { /* hitCount 更新失敗不阻斷回應 */ });
+      }
 
       return NextResponse.json({
         memories: results.map(r => stripEmb(r as Record<string, unknown>)),
