@@ -15,6 +15,8 @@
 - Telegram 重複訊息修復：舊 bot (8223...) webhook 刪除，只留 Fly.io OpenClaw polling
 - auto memory 建立（MEMORY.md + pitfalls.md + memory-architecture.md）
 - WORKLOG 壓縮：3/7 和 3/8 精華存入 zhu-memory module=root
+- ORDER_032：記憶整理 + sync-to-gong 機制（開機第 0 步）
+- ORDER_033：MCP bash server 建立（tools/zhu-bash-mcp.mjs），Claude Desktop config 已更新
 
 ### 架構筆記
 
