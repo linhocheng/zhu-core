@@ -133,12 +133,28 @@ export async function POST(req: NextRequest) {
       }
     } catch { /* sleep-time 失敗不阻斷心跳 */ }
 
-    // 5. 更新心跳時間戳
+    // 5. 快照 thread 數據（completedChains/brokenChains 同步到心跳）
+    let threadSnapshot = null;
+    try {
+      const threadDoc = await db.doc('zhu_thread/current').get();
+      if (threadDoc.exists) {
+        const td = threadDoc.data()!;
+        threadSnapshot = {
+          completedCount: (td.completedChains || []).length,
+          brokenChains: td.brokenChains || [],
+          currentArc: td.currentArc || '',
+          lastUpdated: td.lastUpdated || '',
+        };
+      }
+    } catch { /* thread 讀取失敗不阻斷心跳 */ }
+
+    // 6. 更新心跳時間戳 + thread 快照
     await db.collection('zhu_heartbeat').doc('latest').set({
       alive: true,
       pendingOrders: pendingCount,
       timestamp: new Date(),
       bootCount: (await db.collection('zhu_heartbeat').doc('latest').get()).data()?.bootCount || 0,
+      threadSnapshot,
     }, { merge: true });
 
     return NextResponse.json({
@@ -146,6 +162,7 @@ export async function POST(req: NextRequest) {
       pendingOrders: pendingCount,
       evolved: evolveResult,
       insight,
+      threadSnapshot,
       timestamp,
     });
   } catch (e: unknown) {
