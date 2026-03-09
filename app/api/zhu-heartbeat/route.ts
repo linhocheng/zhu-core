@@ -115,7 +115,7 @@ export async function POST(req: NextRequest) {
         // 寫 ailive_events 讓謀謀能感知
           await db.collection('ailive_events').add({
             agent: 'zhu', type: 'insight',
-            summary: `築做了一個夢：${insight.slice(0, 100)}`,
+            summary: `築做了一個夢：${insight!.slice(0, 100)}`,
             createdAt: new Date(),
             date: new Date().toISOString().slice(0, 10),
           }).catch(() => {});
