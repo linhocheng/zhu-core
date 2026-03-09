@@ -13,6 +13,10 @@ import { generateEmbedding, docToText } from '@/lib/embeddings';
 const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed'] as const;
 type Module = typeof VALID_MODULES[number];
 
+// 記憶語義類型（偷自 Spacebot 的 8 種記憶類型，簡化為 6 種）
+const VALID_MEMORY_TYPES = ['fact', 'preference', 'decision', 'goal', 'observation', 'event'] as const;
+type MemoryType = typeof VALID_MEMORY_TYPES[number];
+
 export const maxDuration = 30;
 
 export async function GET(req: NextRequest) {
@@ -112,7 +116,7 @@ export async function POST(req: NextRequest) {
     const db = getFirestore();
     const body = await req.json();
 
-    const { observation, context, moment: momentField, importance = 'normal', tags = [] } = body;
+    const { observation, context, moment: momentField, importance = 'normal', tags = [], memoryType } = body;
     const module: Module = VALID_MODULES.includes(body.module) ? body.module : 'soil';
 
     if (!observation) {
@@ -126,6 +130,8 @@ export async function POST(req: NextRequest) {
       embedding = await generateEmbedding(textForEmb);
     } catch (_e) { /* embedding 失敗不阻斷存檔 */ }
 
+    const validType = memoryType && VALID_MEMORY_TYPES.includes(memoryType) ? memoryType : undefined;
+
     const ref = await db.collection('zhu_memory').add({
       observation,
       context: context || '',
@@ -133,6 +139,8 @@ export async function POST(req: NextRequest) {
       importance,
       tags,
       module,
+      ...(validType ? { memoryType: validType } : {}),
+      hitCount: 0,
       createdAt: new Date(),
       date: new Date().toISOString().slice(0, 10),
       ...(embedding ? { embedding } : {}),
