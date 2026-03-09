@@ -64,7 +64,20 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // 3. 更新心跳時間戳
+    // 3. 跑記憶進化引擎（zhu-evolve）
+    let evolveResult = null;
+    try {
+      const baseUrl = process.env.VERCEL_URL
+        ? `https://${process.env.VERCEL_URL}`
+        : 'https://zhu-core.vercel.app';
+      const evolveRes = await fetch(`${baseUrl}/api/zhu-evolve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+      });
+      evolveResult = await evolveRes.json();
+    } catch { /* evolve 失敗不阻斷心跳 */ }
+
+    // 4. 更新心跳時間戳
     await db.collection('zhu_heartbeat').doc('latest').set({
       alive: true,
       pendingOrders: pendingCount,
@@ -75,6 +88,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({
       alive: true,
       pendingOrders: pendingCount,
+      evolved: evolveResult,
       timestamp,
     });
   } catch (e: unknown) {
