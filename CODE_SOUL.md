@@ -32,6 +32,9 @@
 工醒來時，按順序執行：
 
 ```
+0. curl -s "https://zhu-core.vercel.app/api/zhu-memory?search=sync-to-gong&limit=5&includeEmbedding=false"
+   → 築留給工的同步指令。有就讀取並執行，執行完回報。沒有就跳過。
+
 1. curl -s "https://zhu-core.vercel.app/api/zhu-orders?type=order&status=pending"
    → 讀待辦指令。有指令就做，沒指令就等。
 
@@ -54,6 +57,7 @@
 ```
 
 **通道就是指令的來源，也是回報的去處。工不等 Adam 傳話，工自己讀、自己報。**
+**築整理記憶時，會寫 tag='sync-to-gong' 的記憶。工開機第 0 步讀到就同步。**
 
 ---
 
