@@ -67,9 +67,7 @@ export async function POST(req: NextRequest) {
     // 3. 跑記憶進化引擎（zhu-evolve）
     let evolveResult = null;
     try {
-      const baseUrl = process.env.VERCEL_URL
-        ? `https://${process.env.VERCEL_URL}`
-        : 'https://zhu-core.vercel.app';
+      const baseUrl = 'https://zhu-core.vercel.app';
       const evolveRes = await fetch(`${baseUrl}/api/zhu-evolve`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
