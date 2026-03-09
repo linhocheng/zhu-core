@@ -4,12 +4,11 @@ import { getFirestore } from '@/lib/firebase-admin';
 export async function GET(req: NextRequest) {
   try {
     const { searchParams } = new URL(req.url);
-    const date = searchParams.get('date') || new Date().toISOString().slice(0, 10);
     const limit = Math.min(parseInt(searchParams.get('limit') || '20'), 100);
 
     const db = getFirestore();
+    // 不用複合索引，直接拿最近 N 條
     const snap = await db.collection('zhu_cost_log')
-      .where('date', '==', date)
       .orderBy('createdAt', 'desc')
       .limit(limit)
       .get();
@@ -22,6 +21,7 @@ export async function GET(req: NextRequest) {
         inputTokens: data.inputTokens,
         outputTokens: data.outputTokens,
         cost: data.cost,
+        date: data.date,
         createdAt: data.createdAt?.toDate?.() || data.createdAt,
       };
     });
@@ -33,7 +33,6 @@ export async function GET(req: NextRequest) {
     const sonnetCount = logs.filter(l => l.tier === 'sonnet').length;
 
     return NextResponse.json({
-      date,
       summary: {
         requests: logs.length,
         haiku: haikuCount,
