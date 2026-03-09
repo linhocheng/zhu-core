@@ -112,6 +112,13 @@ export async function POST(req: NextRequest) {
             date: new Date().toISOString().slice(0, 10),
           });
         }
+        // 寫 ailive_events 讓謀謀能感知
+          await db.collection('ailive_events').add({
+            agent: 'zhu', type: 'insight',
+            summary: `築做了一個夢：${insight.slice(0, 100)}`,
+            createdAt: new Date(),
+            date: new Date().toISOString().slice(0, 10),
+          }).catch(() => {});
         // 記成本
         const usage = res.usage;
         const cost = usage.input_tokens * (0.80 / 1_000_000) + usage.output_tokens * (4.00 / 1_000_000);

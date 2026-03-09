@@ -117,6 +117,21 @@ export async function GET() {
         })
       : [];
 
+    // ailive_events: 讀謀謀最近的事件（inter-agent 感知）
+    let moumouEvents: { type: string; summary: string; date: string }[] = [];
+    try {
+      const evSnap = await db.collection('ailive_events')
+        .where('agent', '==', 'moumou')
+        .orderBy('createdAt', 'desc')
+        .limit(5)
+        .get();
+      moumouEvents = evSnap.docs.map(d => ({
+        type: d.data().type,
+        summary: d.data().summary,
+        date: d.data().date || '',
+      }));
+    } catch { /* 索引可能還沒建 */ }
+
     // heartbeat: 打卡 + 回傳 bootCount
     const currentCount = heartbeatDoc.exists ? (heartbeatDoc.data()?.bootCount || 0) : 0;
     const newCount = currentCount + 1;
@@ -137,6 +152,7 @@ export async function GET() {
         bootCount: newCount,
         bootedAt: new Date().toISOString(),
       },
+      moumouEvents,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
