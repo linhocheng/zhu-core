@@ -6,6 +6,8 @@ interface Memory { id: string; module: string; observation: string; context?: st
 interface Xinfa { id: string; title: string; principle: string; application?: string; source?: string; tags?: string[]; }
 interface Order { id: string; type: string; content: string; status: string; date?: string; }
 interface Thread { mission?: string; currentArc?: string; brokenChains?: string[]; completedChains?: string[]; coreInsights?: string[]; }
+interface ZhuPrompt { id: string; name: string; description: string; content: string; usedIn: string; trigger: string; warningNote?: string; updatedAt?: { _seconds: number }; }
+
 interface DigestItem { type: 'memory' | 'xinfa'; module?: string; observation?: string; context?: string; title?: string; principle?: string; application?: string; source?: string; tags?: string[]; }
 
 const API = '';
@@ -23,7 +25,7 @@ const MODULE_DESC: Record<string, string> = {
 };
 
 // ─── Tab ─────────────────────────────────────────────────
-type Tab = 'vision' | 'memory' | 'xinfa' | 'digest';
+type Tab = 'vision' | 'memory' | 'xinfa' | 'digest' | 'prompts';
 
 export default function ZhuHub() {
   const [tab, setTab] = useState<Tab>('vision');
@@ -43,10 +45,10 @@ export default function ZhuHub() {
           <span className="ml-3 text-zinc-500 text-sm">生態系統中台</span>
         </div>
         <div className="flex gap-2">
-          {(['vision','memory','xinfa','digest'] as Tab[]).map(t => (
+          {(['vision','memory','xinfa','digest','prompts'] as Tab[]).map(t => (
             <button key={t} onClick={() => setTab(t)}
               className={`px-4 py-1.5 rounded text-sm transition-colors ${tab===t ? 'bg-amber-500 text-black font-bold' : 'bg-zinc-800 text-zinc-400 hover:bg-zinc-700'}`}>
-              { t==='vision'?'🏔 遠景任務' : t==='memory'?'🧠 記憶牆' : t==='xinfa'?'⚡ 心法庫' : '✨ 精練' }
+              { t==='vision'?'🏔 遠景任務' : t==='memory'?'🧠 記憶牆' : t==='xinfa'?'⚡ 心法庫' : t==='digest'?'✨ 精練' : '🔧 Prompts' }
             </button>
           ))}
         </div>
@@ -57,6 +59,7 @@ export default function ZhuHub() {
         {tab === 'memory' && <MemoryTab showToast={showToast} />}
         {tab === 'xinfa'  && <XinfaTab  showToast={showToast} />}
         {tab === 'digest' && <DigestTab showToast={showToast} />}
+        {tab === 'prompts' && <PromptsTab showToast={showToast} />}
       </div>
 
       {toast && (
@@ -630,6 +633,145 @@ function DigestTab({ showToast }: { showToast: (m: string) => void }) {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ─── Prompts Tab ──────────────────────────────────────────
+function PromptsTab({ showToast }: { showToast: (m: string) => void }) {
+  const [prompts, setPrompts] = useState<ZhuPrompt[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [editing, setEditing] = useState<string | null>(null);
+  const [editContent, setEditContent] = useState('');
+  const [editDesc, setEditDesc] = useState('');
+  const [editWarn, setEditWarn] = useState('');
+  const [activeId, setActiveId] = useState<string | null>(null);
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    const r = await fetch(`${API}/api/zhu-prompts`).then(x => x.json());
+    setPrompts(r.prompts || []);
+    if (r.prompts?.length && !activeId) setActiveId(r.prompts[0].id);
+    setLoading(false);
+  }, [activeId]);
+
+  useEffect(() => { load(); }, [load]);
+
+  const active = prompts.find(p => p.id === activeId);
+
+  const saveEdit = async () => {
+    if (!activeId) return;
+    await fetch(`${API}/api/zhu-prompts`, {
+      method: 'PATCH', headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ id: activeId, content: editContent, description: editDesc, warningNote: editWarn })
+    });
+    setEditing(null);
+    load();
+    showToast('✅ Prompt 已更新（舊版本已快照）');
+  };
+
+  const startEdit = (p: ZhuPrompt) => {
+    setEditing(p.id);
+    setEditContent(p.content);
+    setEditDesc(p.description);
+    setEditWarn(p.warningNote || '');
+  };
+
+  if (loading) return <div className="text-zinc-500">載入中...</div>;
+
+  return (
+    <div className="flex gap-4 h-full">
+      {/* 左側清單 */}
+      <div className="w-56 shrink-0 space-y-2">
+        <div className="text-zinc-500 text-xs mb-3">系統 Prompts — 點擊查看/編輯</div>
+        {prompts.map(p => (
+          <button key={p.id} onClick={() => { setActiveId(p.id); setEditing(null); }}
+            className={`w-full text-left px-3 py-3 rounded-xl border transition-colors ${activeId === p.id ? 'bg-amber-950 border-amber-600' : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'}`}>
+            <div className={`text-sm font-bold ${activeId === p.id ? 'text-amber-300' : 'text-zinc-300'}`}>{p.name}</div>
+            <div className="text-zinc-500 text-xs mt-1">{p.usedIn}</div>
+            <div className="text-zinc-600 text-xs mt-0.5">觸發：{p.trigger}</div>
+          </button>
+        ))}
+      </div>
+
+      {/* 右側內容 */}
+      <div className="flex-1 min-w-0">
+        {active && (
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <div className="text-amber-300 font-bold text-base">{active.name}</div>
+                  {editing === active.id ? (
+                    <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
+                      className="mt-1 w-full bg-zinc-800 text-zinc-300 text-sm px-2 py-1 rounded border border-zinc-600 focus:outline-none resize-none" />
+                  ) : (
+                    <div className="text-zinc-400 text-sm mt-1">{active.description}</div>
+                  )}
+                  <div className="flex gap-4 mt-2 text-xs text-zinc-600">
+                    <span>📍 {active.usedIn}</span>
+                    <span>⚡ {active.trigger}</span>
+                    {active.updatedAt && <span>更新：{new Date(active.updatedAt._seconds * 1000).toLocaleDateString('zh-TW')}</span>}
+                  </div>
+                </div>
+                {editing !== active.id && (
+                  <button onClick={() => startEdit(active)}
+                    className="shrink-0 bg-amber-700 hover:bg-amber-600 text-black text-xs px-3 py-1.5 rounded font-bold">
+                    ✏️ 編輯
+                  </button>
+                )}
+              </div>
+            </div>
+
+            {/* Warning */}
+            {(editing === active.id ? editWarn : active.warningNote) && (
+              <div className="bg-red-950/30 border border-red-800 rounded-xl p-3">
+                <div className="text-red-400 text-xs font-bold mb-1">⚠️ 注意事項</div>
+                {editing === active.id ? (
+                  <textarea value={editWarn} onChange={e => setEditWarn(e.target.value)} rows={2}
+                    className="w-full bg-transparent text-red-300 text-sm focus:outline-none resize-none" />
+                ) : (
+                  <div className="text-red-300 text-sm">{active.warningNote}</div>
+                )}
+              </div>
+            )}
+
+            {/* Prompt 內容 */}
+            <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
+              <div className="flex items-center justify-between mb-3">
+                <div className="text-zinc-400 text-xs font-bold tracking-widest">PROMPT 內容</div>
+                {editing === active.id && (
+                  <div className="text-zinc-500 text-xs">{editContent.length} 字</div>
+                )}
+              </div>
+              {editing === active.id ? (
+                <textarea value={editContent} onChange={e => setEditContent(e.target.value)}
+                  rows={20}
+                  className="w-full bg-zinc-800 text-zinc-200 text-sm px-3 py-2 rounded border border-amber-600 focus:outline-none resize-none font-mono leading-relaxed" />
+              ) : (
+                <pre className="text-zinc-300 text-sm whitespace-pre-wrap font-mono leading-relaxed max-h-96 overflow-y-auto">
+                  {active.content}
+                </pre>
+              )}
+            </div>
+
+            {/* 編輯操作 */}
+            {editing === active.id && (
+              <div className="flex gap-3 justify-end">
+                <button onClick={() => setEditing(null)}
+                  className="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-sm px-4 py-2 rounded">
+                  取消
+                </button>
+                <button onClick={saveEdit}
+                  className="bg-amber-600 hover:bg-amber-500 text-black font-bold text-sm px-5 py-2 rounded">
+                  ✅ 儲存（自動快照舊版）
+                </button>
+              </div>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }

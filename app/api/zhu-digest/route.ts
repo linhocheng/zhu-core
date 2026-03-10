@@ -135,15 +135,23 @@ export async function POST(req: NextRequest) {
     }
 
     // Phase 1：精練預覽
+    const db = getFirestore();
     if (!conversation || typeof conversation !== 'string') {
       return NextResponse.json({ error: 'conversation 必填' }, { status: 400 });
     }
+
+    // 從 DB 讀 prompt，fallback 到 hardcode
+    let digestPrompt = DIGEST_SYSTEM;
+    try {
+      const pDoc = await db.collection('zhu_prompts').doc('digest').get();
+      if (pDoc.exists && pDoc.data()?.content) digestPrompt = pDoc.data()!.content as string;
+    } catch (_e) { /* fallback */ }
 
     const client = new Anthropic();
     const response = await client.messages.create({
       model: 'claude-opus-4-5',
       max_tokens: 2000,
-      system: DIGEST_SYSTEM,
+      system: digestPrompt,
       messages: [{ role: 'user', content: `請從以下對話中精練出記憶和心法：\n\n${conversation}` }],
     });
 
