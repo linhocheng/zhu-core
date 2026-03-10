@@ -150,3 +150,50 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const { id, ...updates } = await req.json();
+    if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+
+    const existing = await db.collection('zhu_xinfa').doc(id).get();
+    if (existing.exists) {
+      await db.collection('zhu_snapshots').add({
+        type: 'xinfa', action: 'patch', docId: id,
+        before: existing.data(), timestamp: new Date(),
+      });
+    }
+
+    const allowed = ['title', 'principle', 'application', 'source', 'tags'];
+    const safe: Record<string, unknown> = {};
+    for (const k of allowed) { if (k in updates) safe[k] = updates[k]; }
+    safe.updatedAt = new Date();
+
+    await db.collection('zhu_xinfa').doc(id).update(safe);
+    return NextResponse.json({ ok: true, id, updated: Object.keys(safe) });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const { id } = await req.json();
+    if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+
+    const existing = await db.collection('zhu_xinfa').doc(id).get();
+    if (existing.exists) {
+      await db.collection('zhu_snapshots').add({
+        type: 'xinfa', action: 'delete', docId: id,
+        before: existing.data(), timestamp: new Date(),
+      });
+    }
+
+    await db.collection('zhu_xinfa').doc(id).delete();
+    return NextResponse.json({ ok: true, id, deleted: true });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+}

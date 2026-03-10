@@ -152,3 +152,52 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }
+
+export async function PATCH(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const { id, ...updates } = await req.json();
+    if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+
+    // 快照版控：改之前先存
+    const existing = await db.collection('zhu_memory').doc(id).get();
+    if (existing.exists) {
+      await db.collection('zhu_snapshots').add({
+        type: 'memory', action: 'patch', docId: id,
+        before: existing.data(), timestamp: new Date(),
+      });
+    }
+
+    const allowed = ['observation', 'context', 'moment', 'module', 'importance', 'tags'];
+    const safe: Record<string, unknown> = {};
+    for (const k of allowed) { if (k in updates) safe[k] = updates[k]; }
+    safe.updatedAt = new Date();
+
+    await db.collection('zhu_memory').doc(id).update(safe);
+    return NextResponse.json({ ok: true, id, updated: Object.keys(safe) });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+}
+
+export async function DELETE(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const { id } = await req.json();
+    if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+
+    // 快照版控：刪之前先存
+    const existing = await db.collection('zhu_memory').doc(id).get();
+    if (existing.exists) {
+      await db.collection('zhu_snapshots').add({
+        type: 'memory', action: 'delete', docId: id,
+        before: existing.data(), timestamp: new Date(),
+      });
+    }
+
+    await db.collection('zhu_memory').doc(id).delete();
+    return NextResponse.json({ ok: true, id, deleted: true });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+}
