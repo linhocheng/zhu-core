@@ -493,16 +493,34 @@ function XinfaTab({ showToast }: { showToast: (m: string) => void }) {
 }
 
 // ─── Digest Tab ───────────────────────────────────────────
+const ROUND_THRESHOLD = 10;
+
 function DigestTab({ showToast }: { showToast: (m: string) => void }) {
   const [convo, setConvo] = useState('');
   const [preview, setPreview] = useState<DigestItem[] | null>(null);
   const [loading, setLoading] = useState(false);
   const [saving, setSaving] = useState(false);
   const [selected, setSelected] = useState<Set<number>>(new Set());
+  const [rounds, setRounds] = useState(0);
+  const [dismissed, setDismissed] = useState(false);
+
+  const shouldAlert = rounds >= ROUND_THRESHOLD && !dismissed && !preview;
+
+  const estimateRounds = (text: string) => {
+    const markers = (text.match(/^(Human:|Adam:|你:|我:|築:|ZHU:|Assistant:)/gm) || []).length;
+    if (markers > 0) return Math.ceil(markers / 2);
+    const paras = text.split(/\n{2,}/).filter((p: string) => p.trim().length > 20);
+    return Math.ceil(paras.length / 2);
+  };
+
+  const handleConvoChange = (val: string) => {
+    setConvo(val);
+    setRounds(estimateRounds(val));
+  };
 
   const digest = async () => {
     if (!convo.trim()) return;
-    setLoading(true); setPreview(null);
+    setLoading(true); setPreview(null); setDismissed(false);
     const r = await fetch(`${API}/api/zhu-digest`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ conversation: convo }) }).then(x=>x.json());
     if (r.preview) {
       setPreview(r.preview);
@@ -517,7 +535,7 @@ function DigestTab({ showToast }: { showToast: (m: string) => void }) {
     const items = preview.filter((_, i) => selected.has(i));
     const r = await fetch(`${API}/api/zhu-digest`, { method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify({ confirm: true, items }) }).then(x=>x.json());
     showToast(`✨ 存入 ${r.saved} 條，已觸發記憶進化`);
-    setPreview(null); setConvo(''); setSaving(false);
+    setPreview(null); setConvo(''); setSaving(false); setRounds(0); setDismissed(false);
   };
 
   const toggleSelect = (i: number) => {
@@ -528,17 +546,42 @@ function DigestTab({ showToast }: { showToast: (m: string) => void }) {
 
   return (
     <div className="space-y-4">
+      {shouldAlert && (
+        <div className="bg-amber-950 border border-amber-500 rounded-xl p-4 flex items-center justify-between">
+          <div>
+            <div className="text-amber-400 font-bold text-sm">⚡ 對話已達 {rounds} 輪 — 該精練了</div>
+            <div className="text-amber-600 text-xs mt-1">貼入對話後按「精練」，把這段對話的洞察存進築的記憶</div>
+          </div>
+          <button onClick={() => setDismissed(true)} className="text-amber-700 hover:text-amber-500 text-xs ml-4">忽略</button>
+        </div>
+      )}
+
+      <div className="flex items-center gap-3">
+        <div className="text-zinc-600 text-xs">觸發 B 輪數</div>
+        <button onClick={() => setRounds(r => Math.max(0, r-1))} className="w-6 h-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded text-xs">−</button>
+        <span className={`text-sm font-bold w-8 text-center ${rounds >= ROUND_THRESHOLD ? 'text-amber-400' : 'text-zinc-400'}`}>{rounds}</span>
+        <button onClick={() => { setRounds(r => r+1); setDismissed(false); }} className="w-6 h-6 bg-zinc-800 hover:bg-zinc-700 text-zinc-400 rounded text-xs">+</button>
+        <div className="text-zinc-600 text-xs">/ {ROUND_THRESHOLD} 輪提醒</div>
+        {rounds > 0 && <button onClick={() => { setRounds(0); setDismissed(false); }} className="text-zinc-600 hover:text-zinc-400 text-xs">重置</button>}
+      </div>
+
       <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
-        <div className="text-amber-400 font-bold text-sm mb-3">✨ ConvoDigest — 對話精練</div>
-        <div className="text-zinc-500 text-xs mb-3">貼入對話 → 築精練出有靈魂的記憶和心法 → 你確認 → 存入生態</div>
-        <textarea value={convo} onChange={e=>setConvo(e.target.value)} rows={10}
-          placeholder="貼入對話內容..." className="w-full bg-zinc-800 text-zinc-200 text-sm px-3 py-2 rounded border border-zinc-700 focus:outline-none focus:border-amber-500 resize-none" />
+        <div className="text-amber-400 font-bold text-sm mb-1">✨ ConvoDigest — 對話精練</div>
+        <div className="text-zinc-500 text-xs mb-3">貼入對話 → 築精練（有 WHY + HOW 才存）→ 你確認 → 存入生態 + 觸發記憶進化</div>
+        <textarea value={convo} onChange={e=>handleConvoChange(e.target.value)} rows={10}
+          placeholder="貼入對話內容（貼入後自動估算輪數）..." className="w-full bg-zinc-800 text-zinc-200 text-sm px-3 py-2 rounded border border-zinc-700 focus:outline-none focus:border-amber-500 resize-none" />
         <div className="flex justify-between items-center mt-3">
-          <div className="text-zinc-600 text-xs">{convo.length} 字</div>
-          <button onClick={digest} disabled={loading || !convo.trim()}
-            className="bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-bold text-sm px-5 py-2 rounded transition-colors">
-            {loading ? '精練中...' : '✨ 精練'}
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="text-zinc-600 text-xs">{convo.length} 字</div>
+            {rounds > 0 && <div className={`text-xs ${rounds >= ROUND_THRESHOLD ? 'text-amber-400 font-bold' : 'text-zinc-500'}`}>偵測約 {rounds} 輪</div>}
+          </div>
+          <div className="flex gap-2">
+            {convo.trim() && <button onClick={() => { setConvo(''); setRounds(0); }} className="bg-zinc-700 hover:bg-zinc-600 text-zinc-300 text-sm px-3 py-2 rounded">清空</button>}
+            <button onClick={digest} disabled={loading || !convo.trim()}
+              className="bg-amber-600 hover:bg-amber-500 disabled:bg-zinc-700 disabled:text-zinc-500 text-black font-bold text-sm px-5 py-2 rounded transition-colors">
+              {loading ? '精練中...' : '✨ 精練'}
+            </button>
+          </div>
         </div>
       </div>
 
