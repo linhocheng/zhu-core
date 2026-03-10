@@ -34,7 +34,7 @@ function routeModel(text: string): { model: string; tier: ModelTier; maxTokens: 
   }
 
   // 其他 → Sonnet
-  return { model: 'claude-sonnet-4-20250514', tier: 'sonnet', maxTokens: 1024 };
+  return { model: 'claude-sonnet-4-6', tier: 'sonnet', maxTokens: 1024 };
 }
 
 // ===== 成本追蹤（偷自 ClawWork 概念）=====
