@@ -159,7 +159,7 @@ export async function POST(req: NextRequest) {
 
     const client = new Anthropic();
     const response = await client.messages.create({
-      model: 'claude-opus-4-5',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 2000,
       system: digestPrompt,
       messages: [{ role: 'user', content: `請從以下對話中精練出記憶和心法：\n\n${conversation}` }],
