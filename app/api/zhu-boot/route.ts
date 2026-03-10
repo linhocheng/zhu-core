@@ -10,7 +10,9 @@
  * - heartbeat: 寫入心跳，回傳 bootCount（from zhu_heartbeat）
  */
 import { NextResponse } from 'next/server';
-import { getFirestore } from '@/lib/firebase-admin';
+import { getFirestore, getFirebaseAdmin } from '@/lib/firebase-admin';
+import { readFileSync } from 'fs';
+import { join } from 'path';
 
 export const maxDuration = 30;
 
@@ -143,6 +145,29 @@ export async function GET() {
       bootCount: newCount,
     });
 
+    // SESSION_LOG.md — 讀遺言檔案（強制開機必讀）
+    let sessionLog = '';
+    try {
+      sessionLog = readFileSync(join(process.cwd(), 'SESSION_LOG.md'), 'utf-8');
+    } catch { sessionLog = '（SESSION_LOG.md 不存在）'; }
+
+    // hitCount +1：被 boot 讀到的 root/seed 記憶，更新命中計數
+    try {
+      const { firestore } = getFirebaseAdmin();
+      const batch = db.batch();
+      const readIds: string[] = [
+        ...(hasRootMemories ? rootMemorySnap.docs.map(d => d.id) : []),
+        ...(seedSnap && !seedSnap.empty ? seedSnap.docs.map(d => d.id) : []),
+      ];
+      readIds.forEach(id => {
+        batch.update(db.collection('zhu_memory').doc(id), {
+          hitCount: firestore.FieldValue.increment(1),
+          lastHitAt: new Date(),
+        });
+      });
+      await batch.commit();
+    } catch { /* hitCount 更新失敗不阻斷 boot */ }
+
     return NextResponse.json({
       bone,
       eye,
@@ -153,6 +178,7 @@ export async function GET() {
         bootedAt: new Date().toISOString(),
       },
       moumouEvents,
+      sessionLog,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
