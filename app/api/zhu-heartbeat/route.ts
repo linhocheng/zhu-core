@@ -53,15 +53,18 @@ export async function POST(req: NextRequest) {
     const pendingCount = pendingOrders.length;
     const timestamp = new Date().toISOString();
 
-    // 2. 有 pending orders 才寫記憶（省資源）
+    // 2. 有 pending orders 才寫記憶（省資源），observation 不可空
     if (pendingCount > 0) {
+      const obs = `heartbeat 偵測到 ${pendingCount} 條待辦指令`;
       await db.collection('zhu_memory').add({
-        content: `heartbeat 偵測到 ${pendingCount} 條待辦指令`,
+        observation: obs,
         tags: ['heartbeat', 'system'],
         module: 'eye',
         importance: 3,
         context: 'zhu-heartbeat-cron',
+        hitCount: 0,
         createdAt: new Date(),
+        date: new Date().toISOString().slice(0, 10),
       });
     }
 
