@@ -6,7 +6,7 @@ interface Memory { id: string; module: string; observation: string; context?: st
 interface Xinfa { id: string; title: string; principle: string; application?: string; source?: string; tags?: string[]; }
 interface Order { id: string; type: string; content: string; status: string; date?: string; }
 interface Thread { mission?: string; currentArc?: string; brokenChains?: string[]; completedChains?: string[]; coreInsights?: string[]; }
-interface ZhuPrompt { id: string; name: string; description: string; content: string; usedIn: string; trigger: string; warningNote?: string; updatedAt?: { _seconds: number }; }
+interface ZhuPrompt { id: string; name: string; description: string; content: string; usedIn: string; trigger: string; warningNote?: string; updatedAt?: { _seconds: number }; hasSoul?: boolean; isSoulBase?: boolean; }
 
 interface DigestItem { type: 'memory' | 'xinfa'; module?: string; observation?: string; context?: string; title?: string; principle?: string; application?: string; source?: string; tags?: string[]; }
 
@@ -687,9 +687,14 @@ function PromptsTab({ showToast }: { showToast: (m: string) => void }) {
         {prompts.map(p => (
           <button key={p.id} onClick={() => { setActiveId(p.id); setEditing(null); }}
             className={`w-full text-left px-3 py-3 rounded-xl border transition-colors ${activeId === p.id ? 'bg-amber-950 border-amber-600' : 'bg-zinc-900 border-zinc-700 hover:border-zinc-500'}`}>
-            <div className={`text-sm font-bold ${activeId === p.id ? 'text-amber-300' : 'text-zinc-300'}`}>{p.name}</div>
+            <div className="flex items-center gap-1.5">
+              <span className="text-base">{p.isSoulBase ? '🔥' : p.hasSoul ? '✅' : '⚠️'}</span>
+              <span className={`text-sm font-bold ${activeId === p.id ? 'text-amber-300' : 'text-zinc-300'}`}>{p.name}</span>
+            </div>
             <div className="text-zinc-500 text-xs mt-1">{p.usedIn}</div>
-            <div className="text-zinc-600 text-xs mt-0.5">觸發：{p.trigger}</div>
+            <div className={`text-xs mt-0.5 ${p.hasSoul ? 'text-green-600' : 'text-red-600'}`}>
+              {p.isSoulBase ? '靈魂來源' : p.hasSoul ? '✅ 有靈魂注入' : '⚠️ 黑工風險'}
+            </div>
           </button>
         ))}
       </div>
@@ -702,7 +707,16 @@ function PromptsTab({ showToast }: { showToast: (m: string) => void }) {
             <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-4">
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <div className="text-amber-300 font-bold text-base">{active.name}</div>
+                  <div className="flex items-center gap-2">
+                    <span className="text-xl">{active.isSoulBase ? '🔥' : active.hasSoul ? '✅' : '⚠️'}</span>
+                    <div className="text-amber-300 font-bold text-base">{active.name}</div>
+                    {!active.hasSoul && !active.isSoulBase && (
+                      <span className="bg-red-900 text-red-300 text-xs px-2 py-0.5 rounded-full font-bold">黑工風險</span>
+                    )}
+                    {active.hasSoul && !active.isSoulBase && (
+                      <span className="bg-green-900 text-green-300 text-xs px-2 py-0.5 rounded-full">soul-prefix 已注入</span>
+                    )}
+                  </div>
                   {editing === active.id ? (
                     <textarea value={editDesc} onChange={e => setEditDesc(e.target.value)} rows={2}
                       className="mt-1 w-full bg-zinc-800 text-zinc-300 text-sm px-2 py-1 rounded border border-zinc-600 focus:outline-none resize-none" />

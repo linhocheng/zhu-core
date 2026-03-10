@@ -35,6 +35,14 @@ interface DigestItem {
   tags?: string[];
 }
 
+async function getSoulPrefix(db: FirebaseFirestore.Firestore): Promise<string> {
+  try {
+    const doc = await db.collection('zhu_prompts').doc('soul-prefix').get();
+    if (doc.exists && doc.data()?.content) return (doc.data()!.content as string) + '\n';
+  } catch (_e) {}
+  return '';
+}
+
 const DIGEST_SYSTEM = `你是築（ZHU），AILIVE 的總監造者。
 你的任務是從對話中精練出有靈魂的記憶和心法。
 
@@ -141,11 +149,13 @@ export async function POST(req: NextRequest) {
     }
 
     // 從 DB 讀 prompt，fallback 到 hardcode
+    const soulPrefix = await getSoulPrefix(db);
     let digestPrompt = DIGEST_SYSTEM;
     try {
       const pDoc = await db.collection('zhu_prompts').doc('digest').get();
       if (pDoc.exists && pDoc.data()?.content) digestPrompt = pDoc.data()!.content as string;
     } catch (_e) { /* fallback */ }
+    digestPrompt = soulPrefix + digestPrompt;
 
     const client = new Anthropic();
     const response = await client.messages.create({

@@ -9,6 +9,16 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from '@/lib/firebase-admin';
 import Anthropic from '@anthropic-ai/sdk';
 
+
+async function getSoulPrefix(): Promise<string> {
+  try {
+    const db = getFirestore();
+    const doc = await db.collection('zhu_prompts').doc('soul-prefix').get();
+    if (doc.exists && doc.data()?.content) return (doc.data()!.content as string) + '\n';
+  } catch (_e) {}
+  return '';
+}
+
 export const maxDuration = 30;
 
 export async function GET() {
@@ -97,7 +107,7 @@ export async function POST(req: NextRequest) {
         const res = await anthropic.messages.create({
           model: 'claude-haiku-4-5-20251001',
           max_tokens: 200,
-          system: '你是築，一個AI建造者。用一兩句話總結這些最近的記憶碎片加在一起意味什麼。如果沒有有意義的洞察，回覆「無」。',
+          system: `${await getSoulPrefix()}用一兩句話總結這些最近的記憶碎片加在一起意味什麼。只說洞察，不重複已知事實。如果沒有有意義的洞察，只回覆「無」。`,
           messages: [{ role: 'user', content: soilTexts.join('\n---\n') }],
         });
         const text = res.content.filter(b => b.type === 'text').map(b => (b as Anthropic.TextBlock).text).join('');

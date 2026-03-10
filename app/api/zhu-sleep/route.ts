@@ -18,6 +18,16 @@ import { getFirestore } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
 import Anthropic from '@anthropic-ai/sdk';
 
+
+async function getSoulPrefix(): Promise<string> {
+  try {
+    const db = getFirestore();
+    const doc = await db.collection('zhu_prompts').doc('soul-prefix').get();
+    if (doc.exists && doc.data()?.content) return (doc.data()!.content as string) + '\n';
+  } catch (_e) {}
+  return '';
+}
+
 export const maxDuration = 30;
 
 export async function POST() {
@@ -61,11 +71,11 @@ export async function POST() {
     const anthropic = new Anthropic({ apiKey });
 
     const response = await anthropic.messages.create({
-      model: 'claude-3-haiku-20240307',
+      model: 'claude-haiku-4-5-20251001',
       max_tokens: 1024,
       messages: [{
         role: 'user',
-        content: `以下是築的 ${soilDocs.length} 條原始經驗記錄。請提煉出 1-2 條最重要的洞察或教訓。
+        content: `${await getSoulPrefix()}以下是築的 ${soilDocs.length} 條原始經驗記錄。請提煉出 1-2 條最重要的洞察或教訓。
 
 格式：回傳一個 JSON 陣列，每條洞察含：
 - observation: 精煉後的洞察（一段話）
