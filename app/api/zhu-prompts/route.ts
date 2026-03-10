@@ -120,6 +120,26 @@ export async function GET(req: NextRequest) {
   }
 }
 
+
+export async function POST(req: NextRequest) {
+  try {
+    const db = getFirestore();
+    const body = await req.json();
+    const { id, ...data } = body;
+    if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
+
+    await db.collection('zhu_prompts').doc(id).set({
+      ...data,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    }, { merge: true });
+
+    return NextResponse.json({ ok: true, id });
+  } catch (e: unknown) {
+    return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
+  }
+}
+
 export async function PATCH(req: NextRequest) {
   try {
     const db = getFirestore();
