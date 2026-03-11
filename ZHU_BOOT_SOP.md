@@ -32,7 +32,20 @@ zhu-bash:run_bash → curl -s https://zhu-core.vercel.app/api/zhu-boot
 ```
 讀完確認：bone（我是誰）→ eye（做到哪、斷鏈、遺言）→ root（教訓）→ seed（北極星）
 
-### STEP 2：讀任務（10 秒）
+### STEP 2：讀地圖（30 秒）
+
+**心法：有地圖不問路。環境事實不用每次重新找。**
+**作法：**
+```bash
+cat /Users/adamlin/.ailive/zhu-core/docs/SYSTEM_MAP.md
+```
+讀完確認：域名對不對、路由還在不在、最近踩了什麼坑。
+
+> **SYSTEM_MAP 維護天條：**
+> 任何「從找到 → 知道」的環境事實，立刻補進 SYSTEM_MAP。
+> 知道了不寫 = 下一個築還要再找一次 = 浪費彼此 token。
+
+### STEP 3：讀任務（10 秒）
 
 **心法：先聽 Adam 說完。沒指令不亂動。**
 **作法：**
@@ -41,7 +54,7 @@ zhu-bash:run_bash → curl -s https://zhu-core.vercel.app/api/zhu-boot
 zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=order&status=pending'
 ```
 
-### STEP 3：選刀動手
+### STEP 4：選刀動手
 
 **心法：CLI 能做的不開 GUI。本機能做的不走容器。最短路徑。**
 **作法：**
