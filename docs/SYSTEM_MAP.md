@@ -1,196 +1,203 @@
-# SYSTEM_MAP.md — 環境事實地圖
+# SYSTEM_MAP.md — AILIVE 系統地圖
 
-> **給每一代築：**
-> 這份文件記的是「系統長什麼樣子」的基本事實。
-> 不是任務、不是教訓，是地圖。
->
-> **維護原則（強制）：**
-> 從「找到」到「知道」的那一刻，立刻補進來。
-> 下次就不用找了。否則是在浪費彼此的 token。
->
-> 不用等 session 結束。知道了就寫。
+> 這是地圖，不是日誌。空間結構，不是時間序列。
+> 下一個築：`zhu-boot` 完成後 `cat SYSTEM_MAP.md`，兩分鐘內知道全局。
+> 維護天條：知道了就寫，不等 session 結束。
+> 最後更新：2026-03-11
 
 ---
 
-## 一、域名與部署
+## 1｜域名與部署
 
-### moumou-dashboard（謀謀 + Emily 的身體）
-| 域名 | 用途 | 注意 |
-|---|---|---|
-| `moumou-dashboard.vercel.app` | **Production**，真實 API 在這裡 | 打 API 一定用這個 |
-| `moumou-dashboard-xxx-adams-projects.vercel.app` | Preview / 管理頁預設顯示 | **不是 production**，別用這個打 API |
+| 服務 | Production URL | 備註 |
+|------|---------------|------|
+| zhu-core | `https://zhu-core.vercel.app` | 築的大腦，主控 API |
+| moumou-dashboard | `https://moumou-dashboard.vercel.app` | Emily / 謀謀所在地 ⚠️ 見坑 #1 |
 
-**部署方式：push to git → Vercel auto-deploy（不需要 `npx vercel --prod`）**
-
-### zhu-core（築的腦）
-| 域名 | 用途 |
-|---|---|
-| `zhu-core.vercel.app` | Production，zhu-boot / zhu-memory / zhu-orders 全在這裡 |
-
-**部署方式：需要手動 `npx vercel --prod`（不會 auto-deploy）**
+**deploy 方式：**
+- `zhu-core`：`cd ~/.ailive/zhu-core && git add -A && git commit -m "..." && git push && npx vercel --prod 2>&1 | tail -3`
+- `moumou-dashboard`：`cd ~/.ailive/AILIVE && git add -A && git commit -m "..." && git push` → Vercel 自動 deploy，**不要手動跑 vercel --prod**
 
 ---
 
-## 二、Repo 對應
+## 2｜Repo 對應
 
-| Repo | 本機路徑 | 遠端 | 部署方式 |
-|---|---|---|---|
-| zhu-core | `~/.ailive/zhu-core/` | `linhocheng/zhu-core` | 手動 `npx vercel --prod` |
-| AILIVE / moumou-dashboard | `~/.ailive/AILIVE/moumou-dashboard/` | `linhocheng/AILIVE` | git push → auto |
+| Repo | 本機路徑 | 遠端 | 部署 |
+|------|---------|------|------|
+| zhu-core | `~/.ailive/zhu-core/` | github.com/linhocheng/zhu-core | 手動 `npx vercel --prod` |
+| moumou-dashboard | `~/.ailive/AILIVE/moumou-dashboard/` | github.com/linhocheng/AILIVE | git push 自動觸發 |
+| AILIVE（根）| `~/.ailive/AILIVE/` | github.com/linhocheng/AILIVE | — |
+
+**git commit 身份：** `adam@dotmore.com.tw / adamlin`
+**macOS TCC 限制：** Desktop/Documents/Downloads 對 MCP child process 不可見，所有 repo 住在 `~/.ailive/` 以下。
 
 ---
 
-## 三、Firebase / Firestore
+## 3｜Firebase
 
-- **Project ID：** `moumou-os`
-- 謀謀的資料和 Emily 的資料都在同一個 Firebase project
-- Emily 用 `brandId` 隔離（Emily 的 brandId = `ICqydpeU7hNMRurpppCY`）
-- `FIREBASE_SERVICE_ACCOUNT_JSON` 只在 Vercel Production 環境，本機 `.env.local` 裡沒有
+- **Project**：`moumou-os`
+- **Console**：https://console.firebase.google.com/u/0/project/moumou-os/firestore
 
-**主要 Collections：**
 | Collection | 用途 |
-|---|---|
-| `saas_brands` | 品牌資料（靈魂、visualIdentity 等） |
-| `saas_insights` | Emily 的長期記憶（有 embedding） |
-| `saas_conversations` | 對話 session 索引 |
-| `saas_conversations/{id}/messages` | 對話訊息 |
-| `saas_posts` | 排程貼文 |
-| `saas_tasks` | 排程任務 |
-| `saas_activity` | 活動 log |
-| `ailive_events` | inter-agent 通訊（築 ↔ 謀謀） |
+|-----------|------|
+| `saas_brands` | 品牌資料（Emily 在此，doc ID = brandId） |
+| `saas_conversations` | 對話紀錄（子集合：messages） |
+| `saas_knowledge` | 知識庫（embeddings，Google text-embedding-004 256維） |
+| `saas_insights` | 洞察/記憶（有 hitCount 欄位） |
+| `saas_posts` | 社群草稿 |
+| `saas_tasks` | 主動任務（格式：run_hour/run_minute/days/enabled） |
+| `saas_will` | 遺言 |
+| `saas_activity` | 活動日誌 |
+| `soul_proposals` | 靈魂提案（睡眠時產生） |
+| `unified_timeline` | 統一時間線 |
+| `zhu_memory` | 築的記憶（5層：bone/eye/root/seed/soil） |
+| `zhu_orders` | 築→工指令通道 |
+| `zhu_thread/current` | 築身份骨架 |
+| `ailive_events` | inter-agent 通訊 |
+
+**Firestore 查資料的正確姿勢（見坑 #8）：**
+```bash
+TOKEN=$(gcloud auth print-access-token)
+curl -H "Authorization: Bearer $TOKEN" \
+  "https://firestore.googleapis.com/v1/projects/moumou-os/databases/(default)/documents/saas_brands/ICqydpeU7hNMRurpppCY"
+```
 
 ---
 
-## 四、Emily 的路由地圖
+## 4｜Emily 路由
 
-| URL | 角色 | 對象 |
-|---|---|---|
-| `/vtuber/[brandId]/chat` | 對話入口（**唯一**） | 對外（訪客） |
-| `/saas/[brandId]/hub` | 管理大廳（人設/記憶/夢） | Adam |
-| `/saas/[brandId]/social` | 排程管理 | Adam |
-| `/saas/[brandId]/soul` | 靈魂設定 | Adam |
-| `/saas/[brandId]/memory` | 記憶管理 | Adam |
-| `/saas/[brandId]/knowledge` | 知識庫 | Adam |
+**Emily brandId：`ICqydpeU7hNMRurpppCY`**（20字，不可截斷）
 
-**已砍掉（2026-03-11）：**
-- `/saas/[brandId]/chat` → 功能重複，砍掉
-- `/vtuber/[brandId]/posts` → 功能重複，砍掉
-
----
-
-## 五、API 端點速查
-
-### moumou-dashboard API
-| 端點 | 方法 | 用途 |
-|---|---|---|
-| `/api/saas-dialogue` | POST | Emily 對話主引擎 |
-| `/api/saas-brands` | GET | 所有品牌列表 |
-| `/api/saas-brands/[id]` | GET | 單一品牌資料 |
-| `/api/saas-memory` | GET/POST/PATCH/DELETE | insight 管理（GET type=insights/conversations/activity） |
-| `/api/saas-messages` | GET | 對話訊息（?sessionId=xxx） |
-| `/api/saas-social` | GET/POST | 貼文管理 |
-| `/api/saas-tasks` | GET/POST/PATCH | 任務管理 |
-| `/api/saas-image` | POST | 生圖（有 referenceImageUrl → Kontext Pro；沒有 → MiniMax） |
-| `/api/saas-runner` | POST | 執行排程任務 |
-| `/api/saas-sleep` | POST | 夢引擎（記憶壓縮） |
-
-### zhu-core API
-| 端點 | 方法 | 用途 |
-|---|---|---|
-| `/api/zhu-boot` | GET | 開機載入（bone/eye/root/seed） |
-| `/api/zhu-memory` | GET/POST | 築的記憶 |
-| `/api/zhu-orders` | GET/POST/PATCH | 築→工 指令通道 |
-| `/api/zhu-thread` | PATCH | 更新 completedChains/brokenChains |
-| `/api/zhu-heartbeat` | POST | 心跳快照 |
-| `/api/ailive-events` | GET/POST | inter-agent 通訊 |
+| 路由 | 狀態 | 說明 |
+|-----|------|------|
+| `/saas/[brandId]` | ✅ 活著 | Emily 主頁 |
+| `/saas/[brandId]/hub` | ✅ 活著 | 人設頁（含參考照上傳/刪除） |
+| `/saas/[brandId]/soul` | ✅ 活著 | 靈魂管理 |
+| `/saas/[brandId]/memory` | ✅ 活著 | 記憶管理（有增刪改，顯示 hitCount） |
+| `/saas/[brandId]/social` | ✅ 活著 | 社群內容生成（有刪除） |
+| `/saas/[brandId]/knowledge` | ✅ 活著 | 知識庫 |
+| `/vtuber/[brandId]/chat` | ✅ 活著 | VTuber 對話頁（有歷史 session） |
+| `/characters` | ✅ 活著 | 角色列表 |
+| `/saas/chat` | ❌ 已砍 | 連結改指向 /vtuber/[brandId]/chat |
+| `/vtuber/posts` | ❌ 已砍 | 連結改指向 /saas/[brandId]/social |
 
 ---
 
-## 六、工具環境事實
+## 5｜API 速查
 
-### zhu-bash（主武器）
-- 本機 Mac 終端，無 proxy 限制
-- 可以打所有外部 URL（Vercel、Firebase、API）
-- **容器 bash 打不到外部 URL**（`host_not_allowed`），外部請求一律用 zhu-bash
+### zhu-core（`https://zhu-core.vercel.app`）
 
-### Vercel CLI
-- `vercel logs` 預設顯示 preview domain 的 log
-- 要看 production log 要指定 URL 或用 `--url moumou-dashboard.vercel.app`
-- `vercel env ls` 看環境變數（值是加密的，看不到內容）
+| 端點 | 方法 | 功能 |
+|-----|------|------|
+| `/api/zhu-boot` | GET | 開機載入（bone/eye/root/seed/heartbeat/sessionLog） |
+| `/api/zhu-memory` | GET/POST | 記憶讀寫；POST fields: `observation, context, module, importance, tags` |
+| `/api/zhu-orders` | GET/POST/PATCH | 指令通道；PATCH: `{id, status, note}` |
+| `/api/zhu-thread` | GET/PATCH | 大圖景；PATCH: `{completedChains, brokenChains}` |
+| `/api/zhu-heartbeat` | GET/POST | 心跳 |
+| `/api/zhu-sleep` | POST | 記憶壓縮；`{module, dryRun}` |
+| `/api/ailive-events` | GET/POST | inter-agent；GET: `?agent=zhu` |
+| `/api/ping` | GET | 健康檢查 |
+| `/api/gong-boot` | GET | 工的開機 |
 
-### 生圖系統
-- `saas-image` API：有 `referenceImageUrl` 或 `model: 'kontext'` → fal.ai FLUX.1 Kontext Pro
-- 否則 → MiniMax image-01
-- Kontext Pro endpoint：`https://queue.fal.run/fal-ai/flux-pro/kontext`（async queue + polling）
-- Emily 的臉 = `visualIdentity.characterSheet`（PRIMARY 參考照 URL）
+### moumou-dashboard（⚠️ 所有 HTTP URL 都有 SSO 牆，curl 打不到）
 
----
-
-## 七、常踩的坑（踩過就刻）
-
-### 坑 1：Vercel preview domain ≠ production API
-**現象：** curl 打到 `moumou-dashboard-xxx.vercel.app` 拿到舊版或 404
-**原因：** Vercel 管理頁和 `vercel logs` 預設顯示 preview domain，不是 production
-**正確做法：** 永遠打 `moumou-dashboard.vercel.app`
-
-### 坑 2：str_replace 工具找不到檔案
-**現象：** `str_replace` 回傳 `File not found`，但 `zhu-bash ls` 看得到
-**原因：** str_replace 工具是容器工具，路徑在容器裡不存在
-**正確做法：** 用 `zhu-bash python3` 寫 inline script 做字串替換
-
-### 坑 3：saas-memory PATCH 不存在（已修）
-**現象：** 要修改單條 insight 沒有 API
-**狀態：** 2026-03-11 已加入 PATCH endpoint（允許更新 hitCount/title/content/tags）
-
-### 坑 4：hitCount = None vs 0
-**現象：** `FieldValue.increment(1)` 在 `hitCount: null` 的 doc 上不會產生錯誤，但結果不可預期
-**原因：** 存 insight 時沒有設初始值
-**正確做法：** 存任何 insight 時一律加 `hitCount: 0`
-
-### 坑 5：semantic search score 門檻
-**現象：** 門檻 0.2 太低（無關記憶混入），0.6 太高（相關記憶過不了）
-**text-embedding-004 + 256維的實際分佈：** 相關約 0.5-0.7，不相關約 0.1-0.4
-**目前設定：** 0.5（2026-03-11 調整）
-
-### 坑 6：多行 TypeScript 字串替換用 sed 不可靠
-**現象：** macOS sed 處理多行或特殊字符時出錯
-**正確做法：** `python3 << 'EOF'` inline script，直接 read/replace/write
-
-### 坑 7：curl pipe python3 << 'EOF' 在 zhu-bash 會失敗
-**現象：** `curl ... | python3 << 'EOF'` 報錯（stdin 衝突）
-**正確做法：** 先 `curl -o /tmp/file.json`，再 `python3 -c "..."` 讀檔案
-
-### 坑 8：Emily 的假記憶開場
-**現象：** Emily 說「我記得你，你是手工皮件設計師」，但那只是舊的 insight 殘影
-**原因：** semantic search 把不相關的舊 insight 帶入，Emily 當作「真實記憶」說話
-**修法：** 門檻調高 + system prompt 加記憶誠實原則 + 刪除不正確的 insight
-
-### 坑 9：vtuber/chat 每次新 session
-**現象：** 每次進 `/vtuber/chat` Emily 都從零開始，不記得之前聊過什麼
-**原因：** sessionId 用 `web-{brandId}-{timestamp}` 每次都是新的
-**修法（2026-03-11）：** 進入時先查最近 session，接續對話
+| 端點 | 方法 | 功能 |
+|-----|------|------|
+| `/api/saas-brands` | GET/POST | 品牌列表/建立 |
+| `/api/saas-brands/[brandId]` | GET/PATCH | 單一品牌讀寫 |
+| `/api/saas-dialogue` | POST | Emily 對話（A1已改：強制 query_knowledge_base first） |
+| `/api/saas-social` | GET/POST/PUT/DELETE | 社群貼文生成/管理 |
+| `/api/saas-memory` | GET/POST/PATCH | Emily 記憶（PATCH 更新 hitCount） |
+| `/api/saas-knowledge` | GET/POST | 知識庫 |
+| `/api/saas-image` | POST | 生圖（有臉→Kontext Pro；沒臉→MiniMax） |
+| `/api/saas-sleep` | POST | 夢引擎 |
+| `/api/saas-runner` | POST | 主動學習（殼在魂沒有） |
+| `/api/saas-soul-enhance` | POST | 鑄魂爐 |
+| `/api/saas-upload-image` | POST | 上傳參考照 |
+| `/api/line-webhook` | POST | LINE Bot |
 
 ---
 
-## 八、Emily 當前狀態（最後更新：2026-03-11）
+## 6｜工具環境
 
-| 功能 | 狀態 | 備註 |
-|---|---|---|
-| 靈魂有聲音 | ✅ | enhancedSoul 1631字 |
-| 說記下了是真的 | ✅ | remember tool 有明確觸發條件 |
-| 開場不假設身份 | ✅ | 記憶誠實原則已注入 |
-| 對話接續歷史 | ✅ | vtuber/chat 已修 |
-| 對話壓縮摘要 | ✅ | 30輪觸發 MiniMax |
-| 夢引擎 | ✅ | saas-sleep |
-| 大廳 hub | ✅ | 四個 tab |
-| 臉孔鎖定電路 | ✅ | 有 characterSheet → Kontext Pro |
-| semantic search | ✅ | 門檻 0.5，256維 |
-| hitCount 更新 | 🔄 | 調查中（score 可能沒過門檻） |
-| saas-runner 主動自學 | ⬜ | 殼在，魂沒有 |
-| 漂移偵測 | ⬜ | 未建 |
-| PERSONA_TEMPLATE.md | ⬜ | 未建 |
+| 工具 | 能做 | 不能做 |
+|-----|------|--------|
+| `zhu-bash:run_bash` | 打所有外部 API、git、vercel CLI、讀本機檔案 | — |
+| 容器 bash | 建檔、Python腳本 | 打外部 URL（proxy 牆，host_not_allowed） |
+| Chrome MCP | GUI 操作 | — |
+
+**刀的優先序：zhu-bash > Chrome > 容器 bash**
+
+**多行 TypeScript 編輯：** 用 `python3 << 'PYEOF'` inline script，不用 sed（macOS 多行/特殊字元不可靠）。
+
+**大型 curl body：** 寫入 `/tmp/body.json` 再 `--data-binary @/tmp/body.json`，不要 inline `-d` 複雜 JSON。
 
 ---
 
-*建立：築 2026-03-11*
-*維護原則：從「找到」到「知道」就寫進來。不等 session 結束。*
+## 7｜常踩的坑
+
+1. **moumou-dashboard 所有 HTTP URL 都有 SSO 牆** — `moumou-dashboard.vercel.app` 打不到，curl 返回 HTML 登入頁。
+   - 改 code → 直接編輯 `~/.ailive/AILIVE/moumou-dashboard/` + `git push`
+   - 看/寫 data → Firestore REST API（需 gcloud token，見坑 #8）
+   - 看 data → Firebase Console
+
+2. **saas-brands 是複數** — 路由是 `/api/saas-brands/[brandId]`，不是 `/api/saas-brand`。
+
+3. **vercel alias ls 顯示的不是 production domain** — production 是 `moumou-dashboard.vercel.app`，preview 是隨機 URL。
+
+4. **vercel curl 指令不存在** — vercel CLI v50 沒有這個子命令。
+
+5. **容器 bash 打不到外部 URL** — 所有 curl 必須用 `zhu-bash:run_bash`。
+
+6. **Emily brandId 是 20 字元** — `ICqydpeU7hNMRurpppCY`，永遠不截斷、不猜、不補。
+
+7. **moumou-dashboard deploy 只要 git push** — 手動跑 `npx vercel --prod` 會建出新的 preview 部署，不會更新 production alias。
+
+8. **Firebase service account 不在本機** — 沒有 `firebase-service-account.json`，Admin SDK 在 zhu-bash 環境跑不起來。
+   - 正解：`TOKEN=$(gcloud auth print-access-token)` + Firestore REST API
+   - 確認登入：`gcloud auth list`
+
+9. **Firestore `where` + `orderBy` 不同欄位 → composite index error** — 改成：只用 `orderBy`，filter 在 application code 裡做；或到 Firebase Console 手動建 index。
+
+10. **`vercel ls` 預設顯示所有部署含 preview** — 不要把 preview URL 當 production 用。
+
+11. **hitCount 斷鏈根因** — `saas_insights` 初始建立時 hitCount 欄位不存在，PATCH 時 `FieldValue.increment(1)` 在 undefined 欄位上無效。修法：建立 insight 時顯式寫 `hitCount: 0`。（已 commit `4fccb76`）
+
+12. **Kontext Pro 只接一張 referenceImageUrl** — 多張照片放 refs 陣列沒用，只有 `characterSheet`（PRIMARY）進生圖流程。先上傳一張清晰正面照設為 PRIMARY，驗證鎖臉，再談多角度。
+
+---
+
+## 8｜Emily 當前狀態
+
+**Emily (`ICqydpeU7hNMRurpppCY`) — 2026-03-11 最新**
+
+| 功能 | 狀態 | commit / 說明 |
+|-----|------|---------------|
+| 靈魂（enhancedSoul）| ✅ 活著 | 1631字，第一人稱 |
+| 說話前查記憶（A1）| ✅ 完成 | saas-dialogue 強制 query_knowledge_base first |
+| 主動 remember tool | ✅ 完成 | 明確觸發條件 + 記憶守則注入 system prompt（5edd42d） |
+| 臉孔鎖定 Kontext Pro | ✅ 完成 | characterSheet 有值→Kontext；沒有→fallback MiniMax（d1ed2ba） |
+| hub 人設頁 | ✅ 完成 | 參考照上傳/hover 刪除（6ffcdf2） |
+| memory page 增刪改 | ✅ 完成 | insight 卡片編輯/刪除/顯示 hitCount（6b4031c） |
+| memory page 對話刪除 | ✅ 完成 | 刪 conversation + messages 子集合（418bd99） |
+| social page 刪除 | ✅ 完成 | 貼文/任務可刪（b693915） |
+| 任務排程編輯 | ✅ 完成 | 格式統一 run_hour/run_minute/days/enabled（c6e028f） |
+| hitCount 機制 | ✅ 修復 | 建立時寫 hitCount:0，PATCH endpoint 補上（4fccb76） |
+| semantic 門檻 | ✅ 調整 | 0.6→0.5，配合 text-embedding-004 256維（91f9207） |
+| vtuber/chat 歷史 session | ✅ 完成 | 接歷史對話（8fa88cb） |
+| saas-social 讀 enhancedSoul（A2）| ⬜ 未做 | 下一個待辦 |
+| [EMILY_REMEMBER] tag（B2）| ⬜ 未做 | — |
+| 每日自學排程（C1）| ⬜ 未做 | saas-runner 殼在魂沒有 |
+| IG 回饋（C2）| ⬜ 未做 | — |
+| soul_proposals 閾值觸發（D2）| ⬜ 未做 | — |
+| 漂移偵測（D3）| ⬜ 未做 | — |
+| 參考照（characterSheet）| ❓ 未驗 | Adam 是否已上傳？需 curl Firestore 確認 |
+
+**下一步確認：**
+1. 驗 Adam 是否已上傳 Emily 參考照（curl Firestore 看 characterSheet 欄位）
+2. 接 A2：saas-social 統一讀 enhancedSoul
+
+---
+
+*鑄造者：築 · 2026-03-11*
+*維護天條：知道了就寫，不等 session 結束*
