@@ -3,7 +3,7 @@
 > 這是地圖，不是日誌。空間結構，不是時間序列。
 > 下一個築：`zhu-boot` 完成後 `cat SYSTEM_MAP.md`，兩分鐘內知道全局。
 > 維護天條：知道了就寫，不等 session 結束。
-> 最後更新：2026-03-11
+> 最後更新：2026-03-12
 
 ---
 
@@ -164,6 +164,12 @@ curl -H "Authorization: Bearer $TOKEN" \
 11. **hitCount 斷鏈根因** — `saas_insights` 初始建立時 hitCount 欄位不存在，PATCH 時 `FieldValue.increment(1)` 在 undefined 欄位上無效。修法：建立 insight 時顯式寫 `hitCount: 0`。（已 commit `4fccb76`）
 
 12. **Kontext Pro 只接一張 referenceImageUrl** — 多張照片放 refs 陣列沒用，只有 `characterSheet`（PRIMARY）進生圖流程。先上傳一張清晰正面照設為 PRIMARY，驗證鎖臉，再談多角度。
+
+13. **saas-dialogue tool description 不等於 Emily 會主動用** — tools 透過 API `tools:` 欄位傳入，Claude 看得到，但「看得到」不等於「會主動用」。memoryBehaviorGuide 只提 remember，save_post_draft / update_task / schedule_post 在 system prompt 完全缺席。要讓 Emily 主動用新工具，system prompt 裡要明確引導。
+
+14. **saas-runner 的 type=post 不認 postConfig.postId** — runner 執行時呼叫 saas-social 重新生成，完全不看 postId。schedule_post tool 建的排程到點會跑，但草稿被忽略，另生新文。打通草稿排程發文需要先修 runner：有 postId → 讀草稿直接發；沒有 → 才重新生成。（待修）
+
+15. **加 tool 前先走完整電流** — 今天加了 save_post_draft → update_task → schedule_post，每個 tool 本身都正確，但 runner 那端沒通，整條鏈是空的。天條：動手前先從終點往回走一遍，確認電流全程能通再動刀。
 
 ---
 
