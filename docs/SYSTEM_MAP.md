@@ -176,6 +176,8 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 18. **Next.js fetch body 不接受 `Buffer`** — `gemini-imagen.ts` 上傳 Firebase Storage 時，`body: buffer` 會導致 TypeScript build error。改成 `body: new Uint8Array(buffer)`。
 
+20. **Vercel 不能用 `google-auth-library` 的 GoogleAuth** — Vercel production 沒有 service account JSON，`new GoogleAuth()` 拿不到 token 直接炸。所有需要存取 GCP 的操作（Firebase Storage 上傳等）一律改用 `getFirebaseAdmin()` 的 Admin SDK，它走 `FIREBASE_SERVICE_ACCOUNT` env var，Vercel 有設定。
+
 19. **Kontext vs Gemini 生圖定位差異** — Kontext 是 image editing（在一張圖上做改動），大幅改動必跑臉。Gemini multimodal 是「看懂這個人重新生一張」，換衣服/換場景/換動作穩定性遠高於 Kontext。Emily 生圖引擎已切換到 Gemini 2.5 Flash Image（commit b5e4ea0）。
 
 ---
