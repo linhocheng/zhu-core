@@ -172,6 +172,12 @@ curl -H "Authorization: Bearer $TOKEN" \
 15. **加 tool 前先走完整電流** — 今天加了 save_post_draft → update_task → schedule_post，每個 tool 本身都正確，但 runner 那端沒通，整條鏈是空的。天條：動手前先從終點往回走一遍，確認電流全程能通再動刀。
 16. **Kontext Pro 跑臉三根因** — (1) imagePromptPrefix 是中文，Kontext 吃不準；(2) prompt 沒有保護語，模型不知道臉不能動；(3) guidance_scale 預設 3.5 太低。修法：固定加英文 face lock 句（"Keep the subject's face, hair, skin tone identical"）+ imagePromptPrefix 改英文 style hint + guidance_scale 調到 6.0。（2026-03-12 驗證，commit 363b432）
 
+17. **Gemini 2.5 Flash Image 接 reference 的正確姿勢** — 不用 Imagen 4 的 `referenceImages` 結構（需要 `subjectImageConfig`，文件不清楚容易踩坑）。直接用 `gemini-2.5-flash-image` multimodal：把 reference 圖當 `inlineData` 丟進 `parts`，加上 prompt，`responseModalities: [IMAGE, TEXT]`。臉部一致性遠優於 Kontext Pro。
+
+18. **Next.js fetch body 不接受 `Buffer`** — `gemini-imagen.ts` 上傳 Firebase Storage 時，`body: buffer` 會導致 TypeScript build error。改成 `body: new Uint8Array(buffer)`。
+
+19. **Kontext vs Gemini 生圖定位差異** — Kontext 是 image editing（在一張圖上做改動），大幅改動必跑臉。Gemini multimodal 是「看懂這個人重新生一張」，換衣服/換場景/換動作穩定性遠高於 Kontext。Emily 生圖引擎已切換到 Gemini 2.5 Flash Image（commit b5e4ea0）。
+
 ---
 
 ## 8｜Emily 當前狀態
