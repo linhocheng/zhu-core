@@ -170,6 +170,7 @@ curl -H "Authorization: Bearer $TOKEN" \
 14. **saas-runner 的 type=post 不認 postConfig.postId** — runner 執行時呼叫 saas-social 重新生成，完全不看 postId。schedule_post tool 建的排程到點會跑，但草稿被忽略，另生新文。打通草稿排程發文需要先修 runner：有 postId → 讀草稿直接發；沒有 → 才重新生成。（待修）
 
 15. **加 tool 前先走完整電流** — 今天加了 save_post_draft → update_task → schedule_post，每個 tool 本身都正確，但 runner 那端沒通，整條鏈是空的。天條：動手前先從終點往回走一遍，確認電流全程能通再動刀。
+16. **Kontext Pro 跑臉三根因** — (1) imagePromptPrefix 是中文，Kontext 吃不準；(2) prompt 沒有保護語，模型不知道臉不能動；(3) guidance_scale 預設 3.5 太低。修法：固定加英文 face lock 句（"Keep the subject's face, hair, skin tone identical"）+ imagePromptPrefix 改英文 style hint + guidance_scale 調到 6.0。（2026-03-12 驗證，commit 363b432）
 
 ---
 
