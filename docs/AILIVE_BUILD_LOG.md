@@ -23,7 +23,7 @@
 | 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ✅ 完成 | 2026-03-16 |
 | 2 | 生活節奏（排程 + IG 發文閉環） | ✅ 完成 | 2026-03-16 |
 | 3 | 後台可視（Adam 管理介面） | ✅ 完成 | 2026-03-16 |
-| 4 | 複製機器（5 分鐘建角色） | ⬜ 未開始 | — |
+| 4 | 複製機器（5 分鐘建角色） | ✅ 完成 | 2026-03-16 |
 
 ---
 
@@ -217,7 +217,29 @@ Emily 在新平台上：
 
 ## Phase 4 — 複製機器
 
-（待 Phase 3 完成後規劃）
+**2026-03-16 完成：**
+- /dashboard/create 角色鑄造精靈（5步驟）✅
+  - Step 1：基本資料（名字/類型/使命）
+  - Step 2：原始人設 + 觸發鑄魂爐
+  - Step 3：視覺身份（imagePromptPrefix/風格，中文警告）
+  - Step 4：LINE 設定（選填）
+  - Step 5：排程任務設定
+  - 完成畫面 → 進入後台
+- /api/characters/[id] GET/PATCH ✅
+- characters GET 改 JS sort（避免 orderBy 型別不一致）✅
+
+**端對端驗收通過（小廣）：**
+- 建角色 → 鑄魂 → 視覺身份 → 排程任務 → 對話 全通 ✅
+- 對話 toolsUsed: [query_knowledge_base]，說話有靈魂 ✅
+- /api/characters 顯示 2 個角色（Emily + 小廣）✅
+
+**平台 Entry Points：**
+- 首頁：https://ailive-platform.vercel.app/dashboard
+- 建角色：https://ailive-platform.vercel.app/dashboard/create
+- Emily 後台：https://ailive-platform.vercel.app/dashboard/fbG8xbuXDG9ZJCLAfeXB
+- 小廣後台：https://ailive-platform.vercel.app/dashboard/zjD63GpVTy5neo07IwDa
+
+---
 
 ---
 
