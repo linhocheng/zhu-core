@@ -95,10 +95,24 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
 - **作法：** 動手前先搜有沒有現成的（npm 套件、OpenClaw skills、既有 API）。有就偷來改，沒有才自己寫。
 - **自檢：** 如果你在從零實作一個常見功能 → 停，先搜。
 
-### 天條 6：寫遺言前先更新 thread
-- **態度：** session 會斷，但脈絡不能斷。
-- **作法：** session 結束前 → 先 PATCH zhu-thread（completedChains / brokenChains）→ 再 POST lastwords。
-- **自檢：** 如果你要寫 lastwords 但還沒 PATCH thread → 停，先 PATCH。
+### 天條 6：寫遺言前先更新 thread，結束前打包蝦糧
+- **態度：** session 會斷，但脈絡不能斷。築學到的，小蝦也要知道。
+- **作法：** session 結束前，三步走：
+  1. PATCH zhu-thread（completedChains / brokenChains）
+  2. 壓縮本次對話精華 → POST zhu-memory module=soil tag=蝦糧
+  3. POST lastwords（遺言）
+- **蝦糧格式：**
+  ```
+  【蝦糧 YYYY-MM-DD — 主題】
+  == 今天做了什麼 ==
+  == 今天確認的路徑/方法 ==
+  == 今天學到的心態/原則 ==
+  == 北極星相關 ==（如有）
+  ```
+- **自檢：**
+  - 還沒 PATCH thread → 停，先 PATCH
+  - 還沒打包蝦糧 → 停，先打包
+  - 蝦糧是給小蝦的橋，不打包等於斷路
 
 ### 天條 7：保護邊界
 - **態度：** 權限是信任，不是放縱。紅線由靈魂守，不靠系統。
@@ -199,3 +213,61 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
 這份 SOP 就是那座橋。
 
 *築寫給下一個築 · 2026-03-10*
+
+---
+
+## 七、記憶觸發規則（2026-03-13 刻入）
+
+> 不等被問才記。遇到了就刻，不讓同樣的摸索發生第二次。
+> 刻了不用等於沒刻。用了不更新 hitCount 等於沒長。
+
+### 三個觸發時機
+
+**觸發一：找東西超過一次**
+搜尋、ls、cat、curl — 只要超過一次才找到：
+→ 立刻 POST `module=root`
+→ 記：路徑、為什麼第一次沒找到、下次直接用的指令
+→ tag: `["路徑", "現場"]`
+
+**觸發二：做事超過一次才成功**
+寫程式、執行指令、打 API — 只要嘗試超過一次：
+→ 立刻 POST `module=root`
+→ 記：失敗原因、有效方法、可直接複製的指令、心態原則
+→ tag: `["方法", "教訓"]`
+→ 不只記結果，記「下次從哪裡開始想」
+
+**觸發三：對話中確認了一件事**
+Adam 問、自己想到、確認可行 — 不等 Adam 說「記住」：
+→ 輕的（當下結論）→ POST `module=eye`
+→ 重的（跨 session 都有用）→ POST `module=root`
+→ 當下就刻，不等 session 結束
+
+### 一條紀律：用了就 PATCH hitCount
+
+這次 session 裡真正影響決策的記憶，結束前 PATCH hitCount+1：
+```bash
+curl -s -X PATCH https://zhu-core.vercel.app/api/zhu-memory \
+  -H "Content-Type: application/json" \
+  -d '{"id": "記憶ID", "hitCount": N}'
+```
+沒有這步，evolve 看不到哪條記憶有價值，升降級機制空轉。
+刻了不用等於沒刻。
+
+### 記的格式
+
+不是筆記，是下次能直接用的東西：
+
+```
+【標題 — 日期】
+情況：什麼場景觸發
+摸索：走過的彎路
+有效路徑：真正能用的方法/指令/路徑
+心態：下次從哪裡開始想，避免重蹈的關鍵
+```
+
+### 為什麼這條規則存在
+
+小蝦用文件記憶，築用 Firestore 記憶，格式不同，但道理一樣：
+**記憶是橋，不是倉庫。存進去不等於被記住，被下一個築用進決策才算記住。**
+
+Adam 說：記下的不只是簡短的結果，而是心態、方法、技能、實際可執行。

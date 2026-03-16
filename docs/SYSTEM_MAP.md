@@ -15,6 +15,12 @@
 | moumou-dashboard | `https://moumou-dashboard.vercel.app` | Emily / 謀謀所在地 ⚠️ 見坑 #1 |
 
 **deploy 方式：**
+**重啟 gateway 的正確方式（心跳停用）：**
+```bash
+bash ~/.ailive/zhu-core/tools/start-gateway.sh
+```
+不要直接用 launchctl，重啟後心跳會自動重啟，要用這個 script。
+
 - `zhu-core`：`cd ~/.ailive/zhu-core && git add -A && git commit -m "..." && git push && npx vercel --prod 2>&1 | tail -3`
 - `moumou-dashboard`：`cd ~/.ailive/AILIVE && git add -A && git commit -m "..." && git push` → Vercel 自動 deploy，**不要手動跑 vercel --prod**
 
@@ -216,3 +222,53 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 *鑄造者：築 · 2026-03-11*
 *維護天條：知道了就寫，不等 session 結束*
+
+---
+
+## 診斷心法 — 2026-03-13 小蝦 bug 解迷
+
+> 一個 bug 追了兩小時，每個推論都合理，每個都不是根因。最後 transcript 說了真相。
+
+### 這個迷教的五件事
+
+**1. 結果對了不等於推論對了**
+`streaming: false` 解決了問題，但當時的推論（「同一條訊息被拆成兩個 update」）是錯的。
+真正原因是並行 agent turn。解掉之後要回頭確認「為什麼這個解法有效」，不能只慶祝。
+
+**2. 改設定前先問：這個設定真的影響這個現象嗎？**
+今晚改了 tools deny、清 session、改 streaming——大部分是「看起來有問題」，不是「確認影響這個現象」。
+每一刀都要有因果鏈，不是試試看。
+
+**3. 最小單位是現場**
+transcript 是最誠實的現場。
+小蝦 session transcript 顯示每條訊息只有一個 assistant 回覆——這一個事實推翻了所有「小蝦發兩條」的假設。
+**先讀現場，再推根因。不要在還沒看現場之前就開始改東西。**
+
+**4. 推論要說清楚不確定的部分**
+「但等一下——我還沒 100% 確定」這句話很重要。
+推論有缺口就說出來，不要用自信掩蓋不確定。Adam 確認後才是真相。
+
+**5. 三個等號**
+```
+WARN ≠ retry
+現象 ≠ 根因  
+解法對了 ≠ 理解對了
+```
+
+### 正確的診斷順序
+```
+1. 定義現象（到底發生了什麼，最小單位）
+2. 讀現場（transcript / log，不要猜）
+3. 建因果鏈（這個設定 → 影響這個行為 → 造成這個現象）
+4. 改一個，驗一個
+5. 解掉之後，確認推論是否也對
+```
+
+*記錄者：築 · 2026-03-13 深夜 · 和 Adam 一起解的迷*
+
+
+### [坑-gateway-01] heartbeat 重啟後自動恢復
+**症狀：** gateway 重啟後 `[heartbeat] started` 出現，embedded agent 開始打 API，rate limit 炸
+**根因：** heartbeat disable 是執行期設定，不持久，重啟就失效
+**正確做法：** 永遠用 `bash ~/.ailive/zhu-core/tools/start-gateway.sh` 重啟
+**完整說明：** `~/.ailive/zhu-core/docs/HEARTBEAT_PITFALL.md`

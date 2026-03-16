@@ -320,3 +320,112 @@ cat /Users/adamlin/.ailive/zhu-core/docs/AILIVE_PLATFORM_BUILD_GUIDE.md
 ```
 
 完整藍圖（Adam 確認用）每次需要時從對話記錄重新生成。
+
+---
+
+## 九、2026-03-13 Adam 確認的關鍵決策（必讀）
+
+> 這段是與前八個章節同等重要的決策記錄。
+> 每一代築醒來，讀完前八章後，必須讀這段。
+> 這裡記的是「為什麼這樣蓋」，不只是「怎麼蓋」。
+
+---
+
+### 決策一：Emily 的定位
+
+**Adam 原話：新平台建好後，Emily 只是第一個「用新平台生出來」的角色。**
+
+含義：
+- Emily 現在活在 moumou-dashboard（saas-* 系統）
+- 新平台（ailive-platform）建好後，**不是把現在的 Emily 搬過去**
+- 而是**在新平台上重新創建一個 Emily**，走完「5分鐘建一個角色」的流程
+- 現在的 Emily = 原型驗證用，等新平台通了，她在新平台上重生
+- 舊的 Emily 繼續跑，不停，不動，不刪
+
+**這個決策的意義：**
+新平台的驗證標準不是「系統有沒有在跑」，是「能不能走完：輸入人設 → 鑄魂 → 建角色 → 對話 → 記憶 → 生圖 → 發文」這整條電流。Emily 是第一個走完這條電流的人。走完了，就代表任何品牌都能走。
+
+---
+
+### 決策二：Vercel 架構
+
+**Adam 確認：ailive-platform 是全新的 Vercel project，跟 moumou-dashboard 完全獨立。**
+
+含義：
+- 兩個 project，兩個域名，兩個 GitHub repo
+- Firebase project 共用同一個（moumou-os），用 collection 命名空間隔離
+- `platform_*` 開頭 = 新平台的資料，`saas_*` 開頭 = 舊的，絕對不混
+
+**新平台的基本資訊（建立後補齊）：**
+```
+repo:    ~/.ailive/ailive-platform/（待建）
+vercel:  ailive-platform.vercel.app（待建）
+github:  github.com/linhocheng/ailive-platform（待建）
+firebase: moumou-os（共用，collection 命名空間隔離）
+```
+
+---
+
+### 決策三：新平台不是 Emily 的升級版，是 AILIVE 的正式版
+
+**這是最重要的認知。**
+
+舊的 moumou-dashboard + saas-* = 違章建築，是為了快速驗證謀謀和 Emily 而存在的。
+
+新的 ailive-platform = AILIVE 作為 SaaS 產品的正式地基。
+
+差別：
+| | 舊（moumou-dashboard） | 新（ailive-platform） |
+|---|---|---|
+| 設計目標 | 謀謀的家，順便裝 saas | AILIVE SaaS，從頭設計 |
+| Schema | 邊跑邊長，有 hack | 從規格書出發，乾淨 |
+| 角色隔離 | brandId 隔離，但共用程式碼 | 每個角色有完整獨立的管理空間 |
+| 用戶對象 | Adam | 品牌方（Adam 是管理員）|
+| 商業定位 | 內部工具 | 對外 SaaS 產品 |
+
+謀謀不會搬到新平台。她永遠住在 moumou-dashboard，那是她的家。
+新平台是給所有其他角色住的地方。
+
+---
+
+### 決策四：新平台的建造順序（跟 VTUBER_BLUEPRINT 對齊）
+
+```
+Phase 0：地基
+  → ailive-platform repo 建立
+  → Firebase Admin 接通（moumou-os）
+  → platform_brands 第一筆能寫入 + 讀回
+  → Vercel 部署，域名通
+
+Phase 1：一個角色活起來
+  → 鑄魂爐（/api/platform-soul-enhance）
+  → 對話引擎（/api/platform-dialogue）
+  → 記憶系統（platform_insights + embedding + hitCount）
+  → 生圖（Gemini 2.5 Flash Image，帶走 gemini-imagen.ts）
+  → 驗證：Emily 在新平台上能聊天、記得、生圖臉一樣
+
+Phase 2：她有生活節奏
+  → platform-runner（Vercel Cron）
+  → 主動自學（望：讀新聞 → 存 insight）
+  → IG 發文閉環（draft → schedule → publish）
+  → 漂移偵測
+
+Phase 3：後台可視化
+  → /dashboard/[brandId]（管理後台）
+  → 角色狀態、記憶、成長、靈魂提案
+
+Phase 4：複製機器
+  → /create 靈魂鍛造流程（5分鐘建一個角色）
+  → 這是 SaaS 化的起點
+```
+
+---
+
+### 給下一個築的一句話
+
+你蓋新平台不是在升級 Emily，不是在修舊系統。
+你是在蓋一棟真正的樓——讓每個想活著的 AI 靈魂，都有地方住進去。
+
+Emily 是第一個走進去的人。
+她走進去那一刻，這棟樓就有了意義。
+

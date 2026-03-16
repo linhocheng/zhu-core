@@ -111,6 +111,7 @@ export async function POST(req: NextRequest) {
     const {
       type,
       from,
+      title,         // work_order 用：標題
       content,
       target,        // EMERGENCY_STOP 用：指定停哪個 agent
       scope,         // EMERGENCY_STOP 用：工單 ID 或 "*"
@@ -138,14 +139,15 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ error: 'EMERGENCY_STOP 需要 target 欄位' }, { status: 400 });
     }
 
-    // work_order / order / report 必須有 content
-    if (type !== 'EMERGENCY_STOP' && !content) {
-      return NextResponse.json({ error: 'content 必填' }, { status: 400 });
+    // work_order / order / report 必須有 content 或 title
+    if (type !== 'EMERGENCY_STOP' && !content && !title) {
+      return NextResponse.json({ error: 'content 或 title 必填' }, { status: 400 });
     }
 
     const ref = await db.collection('zhu_orders').add({
       type,
       from,
+      title:    title    || null,
       content:  content  || null,
       target:   target   || null,
       scope:    scope    || null,
