@@ -21,7 +21,7 @@
 |-------|------|------|----------|
 | 0 | 地基（repo + Firebase + 部署） | ✅ 完成 | 2026-03-16 |
 | 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ✅ 完成 | 2026-03-16 |
-| 2 | 生活節奏（排程 + IG 發文閉環） | ⬜ 未開始 | — |
+| 2 | 生活節奏（排程 + IG 發文閉環） | ✅ 完成 | 2026-03-16 |
 | 3 | 後台可視（Adam 管理介面） | ⬜ 未開始 | — |
 | 4 | 複製機器（5 分鐘建角色） | ⬜ 未開始 | — |
 
@@ -162,6 +162,32 @@ Emily 在新平台上：
 
 ### 施工記錄
 （Phase 1 完成後填入）
+
+---
+
+
+### Phase 2 施工記錄
+
+**2026-03-16 完成：**
+- /api/tasks ✅（排程任務 CRUD）
+- /api/posts ✅（草稿管理 CRUD，draft→scheduled→published 流程）
+- /api/runner ✅（Vercel Cron 每日一次，台北時間比對，learn/reflect/post 三種任務）
+- /api/sleep ✅（夢境引擎：升降級 + 合併相似 + 自我洞察 + soul_proposal 閾值觸發）
+- vercel.json ✅（Cron UTC 01:00 = 台北 09:00）
+
+**端對端驗收通過：**
+- runner 觸發 learn 任務 → insight 寫入（source=self_learning）✅
+- posts CRUD 正常 ✅
+- sleep dryRun 回傳正確摘要 ✅
+- runner 時間比對邏輯正確（非執行時間 = 0 任務）✅
+
+**踩的雷：**
+- Haiku 回傳 markdown code block，JSON.parse 直接炸 → 加 stripJson() 先清 fences
+- Vercel Hobby plan 限制每日只能一個 Cron → 改 `0 1 * * *`（UTC 01:00 = 台北 09:00）
+- git push 自動 deploy alias 有時不更新 → 驗收前要 `npx vercel --prod --yes` 確認
+
+**待做（IG 發文）：**
+- /api/ig/publish（需要 IG Access Token，Adam 設定後開通）
 
 ---
 
