@@ -22,7 +22,7 @@
 | 0 | 地基（repo + Firebase + 部署） | ✅ 完成 | 2026-03-16 |
 | 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ✅ 完成 | 2026-03-16 |
 | 2 | 生活節奏（排程 + IG 發文閉環） | ✅ 完成 | 2026-03-16 |
-| 3 | 後台可視（Adam 管理介面） | ⬜ 未開始 | — |
+| 3 | 後台可視（Adam 管理介面） | ✅ 完成 | 2026-03-16 |
 | 4 | 複製機器（5 分鐘建角色） | ⬜ 未開始 | — |
 
 ---
@@ -192,8 +192,26 @@ Emily 在新平台上：
 ---
 
 ## Phase 3 — 後台可視
+### Phase 3 施工記錄
 
-（待 Phase 2 完成後規劃）
+**2026-03-16 完成：**
+- /dashboard 全局概覽（所有角色卡片 + 指標）✅
+- /dashboard/[id] 角色後台（指標 + 快速操作入口）✅
+- /dashboard/[id]/soul 靈魂管理（rawSoul 編輯 + 鑄魂爐觸發）✅
+- /dashboard/[id]/identity 身份設定（使命/characterSheet/imagePromptPrefix/風格）✅
+- /dashboard/[id]/knowledge 知識庫（新增/刪除/列表）✅
+- /dashboard/[id]/memory 記憶管理（insights 列表/升核心/刪除/篩選）✅
+- /dashboard/[id]/posts 發文管理（草稿 approve/reject + 狀態篩選）✅
+- /dashboard/[id]/tasks 排程設定（新增/啟停/編輯時間與執行日）✅
+- /dashboard/[id]/proposals 靈魂提案審核（pending 提示 + approve/reject）✅
+- /dashboard/[id]/growth 成長追蹤（指標 + 來源分布 + 層級分布 + 最常查詢記憶）✅
+- /api/characters/[id] GET/PATCH ✅
+- /api/soul-proposals GET/PATCH ✅
+
+**驗收通過：** 所有 10 個 dashboard 路由全部 200 ✅
+
+**Entry point：** https://ailive-platform.vercel.app/dashboard
+
 
 ---
 
