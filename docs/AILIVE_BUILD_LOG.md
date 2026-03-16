@@ -19,7 +19,7 @@
 
 | Phase | 名稱 | 狀態 | 完成日期 |
 |-------|------|------|----------|
-| 0 | 地基（repo + Firebase + 部署） | ⬜ 未開始 | — |
+| 0 | 地基（repo + Firebase + 部署） | ✅ 完成 | 2026-03-16 |
 | 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ⬜ 未開始 | — |
 | 2 | 生活節奏（排程 + IG 發文閉環） | ⬜ 未開始 | — |
 | 3 | 後台可視（Adam 管理介面） | ⬜ 未開始 | — |
@@ -67,7 +67,20 @@ curl https://ailive-platform.vercel.app/api/characters
 - [ ] 驗收：curl 測試通過
 
 ### 施工記錄
-（開始施工後填入）
+
+**2026-03-16 完成：**
+- repo 建立：~/.ailive/ailive-platform/（github.com/linhocheng/ailive-platform）
+- Next.js + TypeScript 初始化
+- lib 帶入：firebase-admin.ts / embeddings.ts / gemini-imagen.ts / image-storage.ts / instagram-api.ts
+- /api/ping ✅
+- /api/characters GET + POST ✅（platform_characters collection）
+- Firebase env 設定：FIREBASE_SERVICE_ACCOUNT_JSON + FIREBASE_STORAGE_BUCKET
+- Vercel 部署：https://ailive-platform.vercel.app ✅
+- 驗收：寫入角色 id=fbG8xbuXDG9ZJCLAfeXB，讀回 count=1 ✅
+
+**踩的雷：**
+- Vercel env pull 的 JSON 格式是特殊格式（外層引號，literal \n），要用 `json.loads(strict=False)` 解
+- tr -d '"' 會把 JSON 內部引號也刪掉，不能用
 
 ---
 

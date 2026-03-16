@@ -1,30 +1,32 @@
 # 築的當前指令
 
-**當前任務：** AILIVE Platform — Phase 0 地基
-**開始日期：** 2026-03-16
-**狀態：** 🔨 施工中
+**當前任務：** AILIVE Platform — Phase 1 一個角色活起來
+**開始日期：** 下次 session
+**狀態：** ⬜ 待開始（Phase 0 已完成）
 
-## 本次任務
-建立 ailive-platform 新平台的地基：
-1. GitHub repo 建立
-2. Next.js 初始化
-3. Firebase Admin 接通
-4. /api/characters GET + POST
-5. Vercel 部署，域名通
-6. 驗收：curl 測試通過
+## Phase 0 已完成
+- ailive-platform.vercel.app ✅
+- /api/ping ✅
+- /api/characters GET + POST ✅
+- Firebase 接通 ✅
+
+## Phase 1 任務清單
+1. /api/soul-enhance（七咒律鑄魂爐）
+2. /api/line-webhook/[id]（LINE Webhook，多角色入口）
+3. /api/dialogue（對話引擎：靈魂 + 台北時間 + 記憶）
+4. /api/insights（platform_insights，hitCount 初始值必須是 0）
+5. /api/knowledge（知識庫 + 語義搜尋）
+6. /api/image/generate（Gemini 2.5 Flash Image）
+7. 時間注入：每次對話 system prompt 加台北時間
+8. 強制查記憶：對話前語義搜尋 insights + knowledge
 
 ## 驗收標準
-```bash
-curl https://ailive-platform.vercel.app/api/characters  # 回傳 { characters: [] }
-curl -X POST https://ailive-platform.vercel.app/api/characters \
-  -d '{"name":"測試","type":"vtuber"}'  # 回傳 { id: "xxx" }
+```
+1. LINE 傳訊息給角色 → 有回覆
+2. 對話後 platform_insights 有新 insight（hitCount=0）
+3. 再問相同話題 → hitCount 變成 1
+4. 生圖：角色臉部一致
 ```
 
-## 施工日誌
-詳見：~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
-藍圖文件：AILIVE_Platform_Blueprint_v1.docx（對話記錄中）
-
-## 紅線
-- 謀謀不動
-- moumou-dashboard 不動
-- collection 前綴必須是 platform_*
+## 開工前必讀
+cat ~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
