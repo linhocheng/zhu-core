@@ -128,7 +128,9 @@ def orders_list(status, from_):
         return
     for o in items:
         label = o.get('title') or o.get('content','')[:50]
-        click.echo(f"[{o.get('id','')[:8]}] {label}")
+        full_id = o.get('id','')
+        click.echo(f"[{full_id[:8]}] {label}")
+        click.echo(f"  id={full_id}")
         click.echo(f"  from={o.get('from')} risk={o.get('risk')} status={o.get('status')}")
         if o.get('action'):
             click.echo(f"  action: {o.get('action','')[:80]}")

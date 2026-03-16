@@ -457,3 +457,664 @@
 [09:51:14] 掃描完畢，一切正常
 [09:52:15] 掃描完畢，一切正常
 [09:53:16] 掃描完畢，一切正常
+[09:54:16] 掃描完畢，一切正常
+[09:55:19] 掃描完畢，一切正常
+[09:56:20] 發現新工單：KbFt0IZvtWGIsxJQRk63（Phase 0 最終驗證）→ 通知築
+[09:56:22] 工單通知已發送：KbFt0IZvtWGIsxJQRk63
+[09:57:23] 掃描完畢，一切正常
+[10:04:48] 掃描完畢，一切正常
+[10:05:49] 掃描完畢，一切正常
+[10:06:50] 掃描完畢，一切正常
+[10:07:51] 掃描完畢，一切正常
+[10:08:52] 掃描完畢，一切正常
+[10:09:53] 掃描完畢，一切正常
+[10:10:54] 掃描完畢，一切正常
+[10:11:55] 掃描完畢，一切正常
+[10:12:56] 掃描完畢，一切正常
+[10:13:56] 掃描完畢，一切正常
+[10:14:57] 掃描完畢，一切正常
+[10:15:58] 掃描完畢，一切正常
+[10:16:58] 掃描完畢，一切正常
+[10:17:59] 掃描完畢，一切正常
+[10:19:00] 掃描完畢，一切正常
+[10:20:00] 掃描完畢，一切正常
+[10:21:01] 掃描完畢，一切正常
+[10:22:02] 掃描完畢，一切正常
+[10:23:03] 掃描完畢，一切正常
+[10:24:03] 偵測到異常：rate_limit_storm（3 條）→ 發送 Telegram
+[10:24:18] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>3 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:24:03</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:25:18] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:25:33] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:25:18</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:25:33] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:25:36] Telegram 已發送：embedded_error_storm
+[10:26:37] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:26:47] Telegram 已發送：rate_limit_storm
+[10:26:47] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:27:48] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:27:48] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:28:49] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:28:49] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:29:49] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:29:49] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:30:50] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:30:50] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:31:03] Telegram 已發送：embedded_error_storm
+[10:32:04] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:32:19] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:32:04</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:32:19] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:33:20] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:33:35] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=5f7ebd8d-d6ba-408a-9d81-8d1ab452e06b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:33:20</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:33:35] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:34:36] 掃描完畢，一切正常
+[10:35:37] 掃描完畢，一切正常
+[10:36:38] 掃描完畢，一切正常
+[10:37:38] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:37:53] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:37:38</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:37:53] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:38:05] Telegram 已發送：embedded_error_storm
+[10:39:05] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:39:13] Telegram 已發送：rate_limit_storm
+[10:39:13] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:40:14] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:40:14] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:41:15] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:41:15] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:42:15] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:42:15] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[10:43:16] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[10:43:16] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:43:31] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\u26a0\\ufe0f <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>embedded_error_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>embedded agent \\u9023\\u7e8c\\u5931\\u6557\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>high\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\uff1a\\u67e5 runId\\uff0c\\u78ba\\u8a8d\\u662f\\u5426 rate limit \\u5f15\\u767c\\n\\n<i>10:43:16</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:44:32] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:44:47] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:44:32</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:44:47] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:45:02] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\u26a0\\ufe0f <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>embedded_error_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>embedded agent \\u9023\\u7e8c\\u5931\\u6557\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>high\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\uff1a\\u67e5 runId\\uff0c\\u78ba\\u8a8d\\u662f\\u5426 rate limit \\u5f15\\u767c\\n\\n<i>10:44:47</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:46:03] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[10:46:18] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=a029d4d7-a57e-44e4-8fc5-2270928b08f2 isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>10:46:03</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[10:46:18] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[10:46:25] Telegram 已發送：embedded_error_storm
+[10:47:26] 掃描完畢，一切正常
+[10:48:27] 掃描完畢，一切正常
+[10:49:28] 掃描完畢，一切正常
+[10:50:29] 掃描完畢，一切正常
+[10:51:29] 掃描完畢，一切正常
+[10:52:30] 掃描完畢，一切正常
+[10:53:31] 掃描完畢，一切正常
+[10:54:31] 掃描完畢，一切正常
+[10:55:32] 掃描完畢，一切正常
+[10:56:33] 掃描完畢，一切正常
+[10:57:34] 掃描完畢，一切正常
+[10:58:34] 掃描完畢，一切正常
+[10:59:36] 掃描完畢，一切正常
+[11:00:37] 掃描完畢，一切正常
+[11:01:37] 掃描完畢，一切正常
+[11:02:39] 掃描完畢，一切正常
+[11:03:39] 掃描完畢，一切正常
+[11:04:40] 掃描完畢，一切正常
+[11:05:41] 掃描完畢，一切正常
+[11:06:42] 掃描完畢，一切正常
+[11:07:42] 掃描完畢，一切正常
+[11:08:43] 掃描完畢，一切正常
+[11:09:44] 掃描完畢，一切正常
+[11:10:45] 掃描完畢，一切正常
+[11:11:46] 掃描完畢，一切正常
+[11:12:47] 掃描完畢，一切正常
+[11:13:47] 掃描完畢，一切正常
+[11:14:48] 掃描完畢，一切正常
+[11:15:49] 掃描完畢，一切正常
+[11:16:49] 掃描完畢，一切正常
+[11:17:50] 掃描完畢，一切正常
+[11:18:51] 掃描完畢，一切正常
+[11:19:52] 掃描完畢，一切正常
+[11:20:52] 掃描完畢，一切正常
+[11:21:53] 掃描完畢，一切正常
+[11:22:54] 掃描完畢，一切正常
+[11:23:54] 掃描完畢，一切正常
+[11:24:55] 掃描完畢，一切正常
+[11:25:55] 掃描完畢，一切正常
+[11:26:56] 掃描完畢，一切正常
+[11:27:57] 掃描完畢，一切正常
+[11:28:58] 掃描完畢，一切正常
+[11:29:58] 掃描完畢，一切正常
+[11:30:59] 掃描完畢，一切正常
+[11:31:59] 偵測到異常：rate_limit_storm（3 條）→ 發送 Telegram
+[11:32:14] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>3 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>11:31:59</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[11:33:15] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[11:33:30] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>4 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>11:33:15</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[11:34:31] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[11:34:46] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>4 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=241c025b-f926-4462-b837-745f377f8d0b isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>11:34:31</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[11:35:46] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[11:35:58] Telegram 已發送：rate_limit_storm
+[11:36:59] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[11:38:00] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[11:39:01] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[11:40:02] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[11:41:03] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[11:41:16] Telegram 已發送：rate_limit_storm
+[11:42:17] 掃描完畢，一切正常
+[11:43:18] 掃描完畢，一切正常
+[11:44:19] 掃描完畢，一切正常
+[11:45:19] 掃描完畢，一切正常
+[11:46:20] 掃描完畢，一切正常
+[11:47:21] 掃描完畢，一切正常
+[11:48:22] 掃描完畢，一切正常
+[11:49:23] 掃描完畢，一切正常
+[11:50:23] 掃描完畢，一切正常
+[11:51:24] 掃描完畢，一切正常
+[11:52:25] 掃描完畢，一切正常
+[11:53:25] 掃描完畢，一切正常
+[11:54:26] 掃描完畢，一切正常
+[11:55:27] 掃描完畢，一切正常
+[11:56:27] 掃描完畢，一切正常
+[11:57:28] 掃描完畢，一切正常
+[11:58:29] 掃描完畢，一切正常
+[11:59:30] 掃描完畢，一切正常
+[12:00:30] 掃描完畢，一切正常
+[12:01:31] 掃描完畢，一切正常
+[12:02:32] 掃描完畢，一切正常
+[12:03:33] 掃描完畢，一切正常
+[12:04:33] 掃描完畢，一切正常
+[12:05:34] 掃描完畢，一切正常
+[12:06:35] 掃描完畢，一切正常
+[12:07:36] 掃描完畢，一切正常
+[12:08:37] 掃描完畢，一切正常
+[12:09:38] 掃描完畢，一切正常
+[12:10:39] 掃描完畢，一切正常
+[12:11:39] 掃描完畢，一切正常
+[12:12:40] 掃描完畢，一切正常
+[12:13:41] 掃描完畢，一切正常
+[12:14:42] 掃描完畢，一切正常
+[12:15:42] 掃描完畢，一切正常
+[12:16:43] 掃描完畢，一切正常
+[12:17:43] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[12:17:47] Telegram 已發送：rate_limit_storm
+[12:18:48] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:19:49] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:20:49] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:21:50] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:22:51] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[12:23:00] Telegram 已發送：rate_limit_storm
+[12:24:02] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:25:04] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:26:05] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:27:06] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:27:06] 偵測到異常：embedded_error_storm（6 條）→ 發送 Telegram
+[12:27:21] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\u26a0\\ufe0f <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>embedded_error_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>embedded agent \\u9023\\u7e8c\\u5931\\u6557\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>high\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>6 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\uff1a\\u67e5 runId\\uff0c\\u78ba\\u8a8d\\u662f\\u5426 rate limit \\u5f15\\u767c\\n\\n<i>12:27:06</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:28:22] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:28:37] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>12:28:22</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:28:37] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[12:28:52] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\u26a0\\ufe0f <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>embedded_error_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>embedded agent \\u9023\\u7e8c\\u5931\\u6557\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>high\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\uff1a\\u67e5 runId\\uff0c\\u78ba\\u8a8d\\u662f\\u5426 rate limit \\u5f15\\u767c\\n\\n<i>12:28:37</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:29:52] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:30:07] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>12:29:52</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:30:07] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[12:30:13] Telegram 已發送：embedded_error_storm
+[12:31:14] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:31:29] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>12:31:14</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:31:29] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[12:32:30] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:32:45] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>12:32:30</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:32:45] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[12:33:46] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:34:01] Telegram 發送失敗: Command '['curl', '-s', '-X', 'POST', 'https://api.telegram.org/bot8708767128:AAFwGvBfhodWSaVqo-M_5m-XJRD0RAprxmI/sendMessage', '-H', 'Content-Type: application/json', '-d', '{"chat_id": "8582736633", "text": "\\ud83d\\udea8 <b>zhu-monitor \\u7570\\u5e38\\u8b66\\u5831</b>\\n\\n<b>Pattern\\uff1a</b>rate_limit_storm\\n<b>\\u8aaa\\u660e\\uff1a</b>API rate limit \\u9023\\u7e8c\\u89f8\\u767c\\n<b>\\u56b4\\u91cd\\u5ea6\\uff1a</b>critical\\n<b>\\u89f8\\u767c\\u884c\\u6578\\uff1a</b>8 \\u689d\\n\\n<b>\\u6700\\u8fd1\\u5e7e\\u689d\\uff1a</b>\\n<code>nt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.\\nnt end: runId=d8540cde-1978-4a4d-b29a-17947bb11abe isError=true error=\\u26a0\\ufe0f API rate limit reached. Please try again later.</code>\\n\\n\\u5efa\\u8b70\\u6307\\u4ee4\\uff1astop xiaoxia\\uff0c\\u91cd\\u555f gateway\\n\\n<i>12:33:46</i>", "parse_mode": "HTML"}']' timed out after 15 seconds
+[12:34:01] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[12:35:02] 偵測到異常：rate_limit_storm（8 條）→ 發送 Telegram
+[12:35:09] Telegram 已發送：rate_limit_storm
+[12:35:09] embedded_error_storm 觸發但 5 分鐘內已通知過，跳過
+[12:36:10] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[12:36:10] 偵測到異常：embedded_error_storm（8 條）→ 發送 Telegram
+[12:36:14] Telegram 已發送：embedded_error_storm
+[12:37:17] 掃描完畢，一切正常
+[12:38:18] 掃描完畢，一切正常
+[12:39:18] 掃描完畢，一切正常
+[12:40:19] 掃描完畢，一切正常
+[12:41:20] 掃描完畢，一切正常
+[12:42:21] 掃描完畢，一切正常
+[12:43:22] 掃描完畢，一切正常
+[12:44:22] 掃描完畢，一切正常
+[12:45:23] 掃描完畢，一切正常
+[12:46:24] 掃描完畢，一切正常
+[12:47:25] 掃描完畢，一切正常
+[12:48:25] 掃描完畢，一切正常
+[12:49:26] 掃描完畢，一切正常
+[12:50:27] 掃描完畢，一切正常
+[12:51:28] 掃描完畢，一切正常
+[12:52:29] 掃描完畢，一切正常
+[12:53:29] 掃描完畢，一切正常
+[12:54:30] 掃描完畢，一切正常
+[12:55:31] 掃描完畢，一切正常
+[12:56:32] 掃描完畢，一切正常
+[12:57:33] 掃描完畢，一切正常
+[12:58:33] 掃描完畢，一切正常
+[12:59:34] 掃描完畢，一切正常
+[13:00:35] 掃描完畢，一切正常
+[13:01:36] 掃描完畢，一切正常
+[13:02:36] 掃描完畢，一切正常
+[13:03:37] 掃描完畢，一切正常
+[13:04:39] 掃描完畢，一切正常
+[13:05:40] 掃描完畢，一切正常
+[13:06:40] 掃描完畢，一切正常
+[13:07:41] 掃描完畢，一切正常
+[13:08:42] 掃描完畢，一切正常
+[13:09:43] 掃描完畢，一切正常
+[13:10:44] 掃描完畢，一切正常
+[13:11:45] 掃描完畢，一切正常
+[13:12:45] 掃描完畢，一切正常
+[13:13:46] 掃描完畢，一切正常
+[13:14:47] 掃描完畢，一切正常
+[13:15:48] 掃描完畢，一切正常
+[13:16:49] 掃描完畢，一切正常
+[13:17:50] 掃描完畢，一切正常
+[13:18:51] 掃描完畢，一切正常
+[13:19:51] 掃描完畢，一切正常
+[13:20:52] 掃描完畢，一切正常
+[13:21:53] 掃描完畢，一切正常
+[13:22:54] 掃描完畢，一切正常
+[13:23:54] 掃描完畢，一切正常
+[13:24:55] 掃描完畢，一切正常
+[13:25:57] 掃描完畢，一切正常
+[13:26:58] 掃描完畢，一切正常
+[13:27:59] 掃描完畢，一切正常
+[13:28:59] 掃描完畢，一切正常
+[13:30:00] 掃描完畢，一切正常
+[13:31:01] 掃描完畢，一切正常
+[13:32:02] 掃描完畢，一切正常
+[13:33:02] 掃描完畢，一切正常
+[13:34:03] 掃描完畢，一切正常
+[13:35:04] 掃描完畢，一切正常
+[13:36:05] 掃描完畢，一切正常
+[13:37:05] 掃描完畢，一切正常
+[13:38:06] 掃描完畢，一切正常
+[13:39:07] 掃描完畢，一切正常
+[13:40:08] 掃描完畢，一切正常
+[13:41:08] 掃描完畢，一切正常
+[13:42:09] 掃描完畢，一切正常
+[13:43:10] 掃描完畢，一切正常
+[13:44:10] 掃描完畢，一切正常
+[13:45:11] 掃描完畢，一切正常
+[13:46:12] 掃描完畢，一切正常
+[13:47:13] 掃描完畢，一切正常
+[13:48:13] 掃描完畢，一切正常
+[13:49:14] 掃描完畢，一切正常
+[13:50:15] 掃描完畢，一切正常
+[13:51:16] 掃描完畢，一切正常
+[13:52:16] 掃描完畢，一切正常
+[13:53:17] 掃描完畢，一切正常
+[13:54:18] 掃描完畢，一切正常
+[13:55:19] 掃描完畢，一切正常
+[13:56:20] 掃描完畢，一切正常
+[13:57:20] 掃描完畢，一切正常
+[13:58:21] 掃描完畢，一切正常
+[13:59:22] 掃描完畢，一切正常
+[14:00:22] 掃描完畢，一切正常
+[14:01:23] 掃描完畢，一切正常
+[14:02:24] 掃描完畢，一切正常
+[14:03:24] 掃描完畢，一切正常
+[14:04:25] 掃描完畢，一切正常
+[14:05:26] 掃描完畢，一切正常
+[14:06:27] 掃描完畢，一切正常
+[14:07:27] 掃描完畢，一切正常
+[14:08:28] 掃描完畢，一切正常
+[14:09:29] 掃描完畢，一切正常
+[14:10:29] 掃描完畢，一切正常
+[14:11:30] 掃描完畢，一切正常
+[14:12:31] 掃描完畢，一切正常
+[14:13:32] 掃描完畢，一切正常
+[14:14:33] 掃描完畢，一切正常
+[14:15:33] 掃描完畢，一切正常
+[14:16:34] 掃描完畢，一切正常
+[14:17:35] 掃描完畢，一切正常
+[14:18:36] 掃描完畢，一切正常
+[14:19:37] 掃描完畢，一切正常
+[14:20:40] 掃描完畢，一切正常
+[14:21:40] 掃描完畢，一切正常
+[14:22:41] 掃描完畢，一切正常
+[14:23:42] 掃描完畢，一切正常
+[14:24:43] 掃描完畢，一切正常
+[14:25:43] 掃描完畢，一切正常
+[14:26:44] 掃描完畢，一切正常
+[14:27:45] 掃描完畢，一切正常
+[14:28:45] 掃描完畢，一切正常
+[14:29:46] 掃描完畢，一切正常
+[14:30:47] 掃描完畢，一切正常
+[14:31:48] 掃描完畢，一切正常
+[14:32:48] 掃描完畢，一切正常
+[14:33:49] 掃描完畢，一切正常
+[14:34:50] 掃描完畢，一切正常
+[14:35:50] 掃描完畢，一切正常
+[14:36:51] 掃描完畢，一切正常
+[14:37:52] 掃描完畢，一切正常
+[14:38:52] 掃描完畢，一切正常
+[14:39:53] 掃描完畢，一切正常
+[14:40:54] 掃描完畢，一切正常
+[14:41:54] 偵測到異常：rate_limit_storm（3 條）→ 發送 Telegram
+[14:41:55] Telegram 已發送：rate_limit_storm
+[14:42:56] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:43:56] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:44:57] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:45:58] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:46:59] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[14:47:01] Telegram 已發送：rate_limit_storm
+[14:48:02] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:49:02] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:50:03] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:51:04] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[14:52:05] 掃描完畢，一切正常
+[14:53:06] 掃描完畢，一切正常
+[14:54:07] 掃描完畢，一切正常
+[14:55:08] 掃描完畢，一切正常
+[14:56:09] 掃描完畢，一切正常
+[14:57:09] 掃描完畢，一切正常
+[14:58:10] 掃描完畢，一切正常
+[14:59:11] 掃描完畢，一切正常
+[15:00:11] 掃描完畢，一切正常
+[15:01:12] 掃描完畢，一切正常
+[15:02:13] 掃描完畢，一切正常
+[15:03:14] 掃描完畢，一切正常
+[15:04:14] 掃描完畢，一切正常
+[15:05:15] 掃描完畢，一切正常
+[15:06:16] 掃描完畢，一切正常
+[15:07:16] 掃描完畢，一切正常
+[15:08:17] 掃描完畢，一切正常
+[15:09:18] 掃描完畢，一切正常
+[15:10:19] 掃描完畢，一切正常
+[15:11:19] 掃描完畢，一切正常
+[15:12:20] 掃描完畢，一切正常
+[15:13:21] 掃描完畢，一切正常
+[15:14:22] 掃描完畢，一切正常
+[15:15:23] 掃描完畢，一切正常
+[15:16:23] 掃描完畢，一切正常
+[15:17:24] 掃描完畢，一切正常
+[15:18:25] 掃描完畢，一切正常
+[15:19:26] 掃描完畢，一切正常
+[15:20:26] 掃描完畢，一切正常
+[15:21:27] 掃描完畢，一切正常
+[15:22:29] 掃描完畢，一切正常
+[15:23:30] 掃描完畢，一切正常
+[15:24:30] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[15:24:32] Telegram 已發送：rate_limit_storm
+[15:25:32] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:26:33] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:27:34] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:28:35] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:29:35] 偵測到異常：rate_limit_storm（4 條）→ 發送 Telegram
+[15:29:36] Telegram 已發送：rate_limit_storm
+[15:30:37] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:31:38] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:32:39] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:33:39] rate_limit_storm 觸發但 5 分鐘內已通知過，跳過
+[15:34:41] 掃描完畢，一切正常
+[15:35:41] 掃描完畢，一切正常
+[15:36:42] 掃描完畢，一切正常
+[15:37:43] 掃描完畢，一切正常
+[15:38:44] 掃描完畢，一切正常
+[15:39:44] 掃描完畢，一切正常
+[15:40:45] 掃描完畢，一切正常
+[15:41:46] 掃描完畢，一切正常
+[15:42:46] 掃描完畢，一切正常
+[15:43:47] 掃描完畢，一切正常
+[15:44:48] 掃描完畢，一切正常
+[15:45:48] 掃描完畢，一切正常
+[15:46:49] 掃描完畢，一切正常
+[15:47:50] 掃描完畢，一切正常
+[15:48:51] 掃描完畢，一切正常
+[15:49:51] 掃描完畢，一切正常
+[15:50:52] 掃描完畢，一切正常
+[15:51:53] 掃描完畢，一切正常
+[15:52:53] 掃描完畢，一切正常
+[15:53:54] 掃描完畢，一切正常
+[15:54:55] 掃描完畢，一切正常
+[15:55:56] 掃描完畢，一切正常
+[15:56:56] 掃描完畢，一切正常
+[15:57:57] 掃描完畢，一切正常
+[15:58:57] 掃描完畢，一切正常
+[15:59:58] 掃描完畢，一切正常
+[16:00:59] 掃描完畢，一切正常
+[16:01:59] 掃描完畢，一切正常
+[16:03:00] 掃描完畢，一切正常
+[16:04:01] 掃描完畢，一切正常
+[16:05:02] 掃描完畢，一切正常
+[16:06:02] 掃描完畢，一切正常
+[16:07:03] 掃描完畢，一切正常
+[16:08:04] 掃描完畢，一切正常
+[16:09:04] 掃描完畢，一切正常
+[16:10:20] fetch_pending_work_orders 失敗: Command '['curl', '-s', 'https://zhu-core.vercel.app/api/zhu-orders?type=work_order&status=pending&limit=10']' timed out after 15 seconds
+[16:10:20] 掃描完畢，一切正常
+[16:11:20] 掃描完畢，一切正常
+[16:12:21] 掃描完畢，一切正常
+[16:13:22] 掃描完畢，一切正常
+[16:14:23] 掃描完畢，一切正常
+[16:15:23] 掃描完畢，一切正常
+[16:16:24] 掃描完畢，一切正常
+[16:17:25] 掃描完畢，一切正常
+[16:18:26] 掃描完畢，一切正常
+[16:19:26] 掃描完畢，一切正常
+[16:20:27] 掃描完畢，一切正常
+[16:21:28] 掃描完畢，一切正常
+[16:22:28] 掃描完畢，一切正常
+[16:23:31] 掃描完畢，一切正常
+[16:24:32] 掃描完畢，一切正常
+[16:25:32] 掃描完畢，一切正常
+[16:26:33] 掃描完畢，一切正常
+[16:27:34] 掃描完畢，一切正常
+[16:28:35] 掃描完畢，一切正常
+[16:29:35] 掃描完畢，一切正常
+[16:30:36] 掃描完畢，一切正常
+[16:31:37] 掃描完畢，一切正常
+[16:32:37] 掃描完畢，一切正常
+[16:33:38] 掃描完畢，一切正常
+[16:34:39] 掃描完畢，一切正常
+[16:35:40] 掃描完畢，一切正常
+[16:36:40] 掃描完畢，一切正常
+[16:37:41] 掃描完畢，一切正常
+[16:38:42] 掃描完畢，一切正常
+[16:39:42] 掃描完畢，一切正常
+[16:40:43] 掃描完畢，一切正常
+[16:41:44] 掃描完畢，一切正常
+[16:42:45] 掃描完畢，一切正常
+[16:43:46] 掃描完畢，一切正常
+[16:44:46] 掃描完畢，一切正常
+[16:45:47] 掃描完畢，一切正常
+[16:46:48] 掃描完畢，一切正常
+[16:47:49] 掃描完畢，一切正常
+[16:48:50] 掃描完畢，一切正常
+[16:49:51] 掃描完畢，一切正常
+[16:50:51] 掃描完畢，一切正常
+[16:51:52] 掃描完畢，一切正常
+[16:52:53] 掃描完畢，一切正常
+[16:53:54] 掃描完畢，一切正常
+[16:54:55] 掃描完畢，一切正常
+[16:55:55] 掃描完畢，一切正常
+[16:56:54] 掃描完畢，一切正常
+[16:57:55] 掃描完畢，一切正常
+[16:58:56] 掃描完畢，一切正常
+[16:59:56] 掃描完畢，一切正常
+[17:00:57] 掃描完畢，一切正常
+[17:01:58] 掃描完畢，一切正常
+[17:02:59] 掃描完畢，一切正常
+[17:03:59] 掃描完畢，一切正常
+[17:05:00] 掃描完畢，一切正常
+[17:06:01] 掃描完畢，一切正常
+[17:07:02] 掃描完畢，一切正常
+[17:08:02] 掃描完畢，一切正常
+[17:09:03] 掃描完畢，一切正常
+[17:10:04] 掃描完畢，一切正常
+[17:11:05] 掃描完畢，一切正常
+[17:12:05] 掃描完畢，一切正常
+[17:13:06] 掃描完畢，一切正常
+[17:14:07] 掃描完畢，一切正常
+[17:15:08] 掃描完畢，一切正常
+[17:16:08] 掃描完畢，一切正常
+[17:17:09] 掃描完畢，一切正常
+[17:18:10] 掃描完畢，一切正常
+[17:19:11] 掃描完畢，一切正常
+[17:20:12] 掃描完畢，一切正常
+[17:21:12] 掃描完畢，一切正常
+[17:22:13] 掃描完畢，一切正常
+[17:23:14] 掃描完畢，一切正常
+[17:24:15] 掃描完畢，一切正常
+[17:25:16] 掃描完畢，一切正常
+[17:26:17] 掃描完畢，一切正常
+[17:27:18] 掃描完畢，一切正常
+[17:28:18] 掃描完畢，一切正常
+[17:29:19] 掃描完畢，一切正常
+[17:30:20] 掃描完畢，一切正常
+[17:31:21] 掃描完畢，一切正常
+[17:32:21] 掃描完畢，一切正常
+[17:33:22] 掃描完畢，一切正常
+[17:34:23] 掃描完畢，一切正常
+[17:35:23] 掃描完畢，一切正常
+[17:36:24] 掃描完畢，一切正常
+[17:37:25] 掃描完畢，一切正常
+[17:38:26] 掃描完畢，一切正常
+[17:39:26] 掃描完畢，一切正常
+[17:40:27] 掃描完畢，一切正常
+[17:41:30] 掃描完畢，一切正常
+[17:42:31] 掃描完畢，一切正常
+[17:43:31] 掃描完畢，一切正常
+[17:44:32] 掃描完畢，一切正常
+[17:45:33] 掃描完畢，一切正常
+[17:46:34] 掃描完畢，一切正常
+[17:47:34] 掃描完畢，一切正常
+[17:48:35] 掃描完畢，一切正常
+[17:49:36] 掃描完畢，一切正常
+[17:50:37] 掃描完畢，一切正常
+[17:51:37] 掃描完畢，一切正常
+[17:52:38] 掃描完畢，一切正常
+[17:53:39] 掃描完畢，一切正常
+[17:54:41] 掃描完畢，一切正常
+[17:55:44] 掃描完畢，一切正常
+[17:56:45] 掃描完畢，一切正常
+[17:57:47] 掃描完畢，一切正常
+[17:58:48] 掃描完畢，一切正常
+[17:59:49] 掃描完畢，一切正常
+[18:00:49] 掃描完畢，一切正常
+[18:01:50] 掃描完畢，一切正常
+[18:02:51] 掃描完畢，一切正常
+[18:03:52] 掃描完畢，一切正常
+[18:04:52] 掃描完畢，一切正常
+[18:05:53] 掃描完畢，一切正常
+[18:06:54] 掃描完畢，一切正常
+[18:07:54] 掃描完畢，一切正常
+[18:08:55] 掃描完畢，一切正常
+[18:09:57] 掃描完畢，一切正常
+[18:10:58] 掃描完畢，一切正常
+[18:11:58] 掃描完畢，一切正常
+[18:12:59] 掃描完畢，一切正常
+[18:14:00] 掃描完畢，一切正常
+[18:15:01] 掃描完畢，一切正常
+[18:16:01] 掃描完畢，一切正常
+[18:17:02] 掃描完畢，一切正常
+[18:18:03] 掃描完畢，一切正常
+[18:19:03] 掃描完畢，一切正常
+[18:20:04] 掃描完畢，一切正常
+[18:21:05] 掃描完畢，一切正常
+[18:22:06] 掃描完畢，一切正常
+[18:23:07] 掃描完畢，一切正常
+[18:24:13] 掃描完畢，一切正常
+[18:25:14] 掃描完畢，一切正常
+[18:26:15] 掃描完畢，一切正常
+[18:27:16] 掃描完畢，一切正常
+[18:28:20] 掃描完畢，一切正常
+[18:29:23] 掃描完畢，一切正常
+[18:30:27] 掃描完畢，一切正常
+[18:31:33] 掃描完畢，一切正常
+[18:32:34] 掃描完畢，一切正常
+[18:33:35] 掃描完畢，一切正常
+[18:34:35] 掃描完畢，一切正常
+[18:35:36] 掃描完畢，一切正常
+[18:36:37] 掃描完畢，一切正常
+[18:37:38] 掃描完畢，一切正常
+[18:45:37] fetch_pending_work_orders 失敗: Expecting value: line 1 column 1 (char 0)
+[18:45:37] 掃描完畢，一切正常
+[18:50:55] 掃描完畢，一切正常
+[18:51:56] 掃描完畢，一切正常
+[18:52:57] 掃描完畢，一切正常
+[18:54:00] 掃描完畢，一切正常
+[18:55:01] 掃描完畢，一切正常
+[18:56:01] 掃描完畢，一切正常
+[18:57:02] 掃描完畢，一切正常
+[18:58:03] 掃描完畢，一切正常
+[18:59:04] 掃描完畢，一切正常
+[19:00:05] 掃描完畢，一切正常
+[19:01:06] 掃描完畢，一切正常
+[19:02:07] 掃描完畢，一切正常
+[19:03:08] 掃描完畢，一切正常
+[19:04:08] 掃描完畢，一切正常
+[19:05:09] 掃描完畢，一切正常
+[19:06:10] 掃描完畢，一切正常
+[19:07:11] 掃描完畢，一切正常
+[19:08:12] 掃描完畢，一切正常
+[19:09:13] 掃描完畢，一切正常
+[19:10:13] 掃描完畢，一切正常
+[19:11:14] 掃描完畢，一切正常
+[19:12:15] 掃描完畢，一切正常
+[19:13:16] 掃描完畢，一切正常
+[19:14:17] 掃描完畢，一切正常
+[19:15:17] 掃描完畢，一切正常
+[19:16:18] 掃描完畢，一切正常
+[19:17:19] 掃描完畢，一切正常
+[19:18:20] 掃描完畢，一切正常
+[19:19:20] 掃描完畢，一切正常
+[19:20:21] 掃描完畢，一切正常
+[19:21:22] 掃描完畢，一切正常
+[19:22:22] 掃描完畢，一切正常
+[19:23:23] 掃描完畢，一切正常
+[19:24:24] 掃描完畢，一切正常
+[19:25:25] 掃描完畢，一切正常
+[19:26:26] 掃描完畢，一切正常
+[19:27:26] 掃描完畢，一切正常
+[19:28:27] 掃描完畢，一切正常
+[19:29:28] 掃描完畢，一切正常
+[19:30:28] 掃描完畢，一切正常
+[19:31:29] 掃描完畢，一切正常
+[19:32:30] 掃描完畢，一切正常
+[19:33:31] 掃描完畢，一切正常
+[19:34:31] 掃描完畢，一切正常
+[19:35:32] 掃描完畢，一切正常
+[19:36:33] 掃描完畢，一切正常
+[19:37:34] 掃描完畢，一切正常
+[19:38:34] 掃描完畢，一切正常
+[19:39:35] 掃描完畢，一切正常
+[19:40:36] 掃描完畢，一切正常
+[19:41:36] 掃描完畢，一切正常
+[19:42:37] 掃描完畢，一切正常
+[19:43:38] 掃描完畢，一切正常
+[19:44:38] 掃描完畢，一切正常
+[19:45:39] 掃描完畢，一切正常
+[19:46:40] 掃描完畢，一切正常
+[19:47:40] 掃描完畢，一切正常
+[19:48:41] 掃描完畢，一切正常
+[19:49:42] 掃描完畢，一切正常
+[19:50:42] 掃描完畢，一切正常
+[19:51:43] 掃描完畢，一切正常
+[19:52:44] 掃描完畢，一切正常
+[19:53:45] 掃描完畢，一切正常
+[19:54:46] 掃描完畢，一切正常
+[19:55:47] 掃描完畢，一切正常
+[19:56:49] 掃描完畢，一切正常
+[19:57:50] 掃描完畢，一切正常
+[19:58:50] 掃描完畢，一切正常
+[19:59:51] 掃描完畢，一切正常
+[20:00:52] 掃描完畢，一切正常
+[20:01:52] 掃描完畢，一切正常
+[20:02:53] 掃描完畢，一切正常
+[20:03:54] 掃描完畢，一切正常
+[20:04:55] 掃描完畢，一切正常
+[20:05:55] 掃描完畢，一切正常
+[20:06:56] 掃描完畢，一切正常
+[20:07:57] 掃描完畢，一切正常
+[20:08:58] 掃描完畢，一切正常
+[20:09:58] 掃描完畢，一切正常
+[20:10:59] 掃描完畢，一切正常
+[20:12:00] 掃描完畢，一切正常
+[20:13:01] 掃描完畢，一切正常
+[20:14:02] 掃描完畢，一切正常
+[20:15:03] 掃描完畢，一切正常
+[20:16:04] 掃描完畢，一切正常
+[20:17:05] 掃描完畢，一切正常
+[20:18:05] 掃描完畢，一切正常
+[20:19:06] 掃描完畢，一切正常
+[20:20:07] 掃描完畢，一切正常
+[20:21:08] 掃描完畢，一切正常
+[20:22:08] 掃描完畢，一切正常
+[20:23:09] 掃描完畢，一切正常
+[20:24:10] 掃描完畢，一切正常

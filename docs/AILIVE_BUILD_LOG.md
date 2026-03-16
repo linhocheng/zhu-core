@@ -20,7 +20,7 @@
 | Phase | 名稱 | 狀態 | 完成日期 |
 |-------|------|------|----------|
 | 0 | 地基（repo + Firebase + 部署） | ✅ 完成 | 2026-03-16 |
-| 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ⬜ 未開始 | — |
+| 1 | 一個角色活起來（對話 + 記憶 + 生圖） | ✅ 完成 | 2026-03-16 |
 | 2 | 生活節奏（排程 + IG 發文閉環） | ⬜ 未開始 | — |
 | 3 | 後台可視（Adam 管理介面） | ⬜ 未開始 | — |
 | 4 | 複製機器（5 分鐘建角色） | ⬜ 未開始 | — |
@@ -110,7 +110,31 @@ Emily 在新平台上：
 - [ ] 強制查記憶：每次對話前 query 語義搜尋
 
 ### 施工記錄
-（Phase 0 完成後填入）
+**2026-03-16 完成：**
+- /api/soul-enhance ✅（七咒律鑄魂爐，soulVersion+1）
+- /api/insights ✅（hitCount 初始 0 天條落地，語義搜尋，命中+1）
+- /api/knowledge ✅（CRUD + 語義搜尋 + hitCount）
+- /api/dialogue ✅（七咒律 + 台北時間注入 + 強制 query_knowledge_base + 每 20 輪提煉）
+- /api/line-webhook/[id] ✅（保留，LINE 設定由 Adam 決定何時開通）
+- /api/image/generate ✅（有 ref → Gemini multimodal 鎖臉；無 ref → text-only）
+- lib/embeddings.ts 補 cosineSimilarity ✅
+- @anthropic-ai/sdk 安裝 ✅
+- ANTHROPIC_API_KEY / GEMINI_API_KEY 設入 Vercel ✅
+
+**端對端驗收通過：**
+- Emily rawSoul → 七咒律 enhancedSoul（soulVersion=1）✅
+- insight 寫入 hitCount=0 ✅
+- 對話 toolsUsed: [query_knowledge_base] ✅（強制查記憶）
+- 對話後 hitCount 0→1，lastHitAt 更新 ✅
+- Emily 說話有個性有記憶，不是罐頭 ✅
+
+**踩的雷（新增）：**
+- Vercel env pull 的值有多餘 `"` 引號，printf 前要 tr -d '"'
+- cosineSimilarity 不在 embeddings.ts，要自己補
+- image-storage.ts 的 persistImage 接 URL 不接 base64，base64 存圖要用 Admin SDK 直接寫
+
+**LINE 狀態：**
+- /api/line-webhook/[id] 已建，等 Adam 決定何時設定 Channel Token/Secret 開通
 
 ---
 
