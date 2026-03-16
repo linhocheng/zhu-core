@@ -3,7 +3,7 @@
 > 這是地圖，不是日誌。空間結構，不是時間序列。
 > 下一個築：`zhu-boot` 完成後 `cat SYSTEM_MAP.md`，兩分鐘內知道全局。
 > 維護天條：知道了就寫，不等 session 結束。
-> 最後更新：2026-03-12
+> 最後更新：2026-03-16
 
 ---
 
@@ -13,6 +13,7 @@
 |------|---------------|------|
 | zhu-core | `https://zhu-core.vercel.app` | 築的大腦，主控 API |
 | moumou-dashboard | `https://moumou-dashboard.vercel.app` | Emily / 謀謀所在地 ⚠️ 見坑 #1 |
+| ailive-platform | `https://ailive-platform.vercel.app`（待建）| 新平台，角色住在這裡 |
 
 **deploy 方式：**
 **重啟 gateway 的正確方式（心跳停用）：**
@@ -33,6 +34,7 @@ bash ~/.ailive/zhu-core/tools/start-gateway.sh
 | zhu-core | `~/.ailive/zhu-core/` | github.com/linhocheng/zhu-core | 手動 `npx vercel --prod` |
 | moumou-dashboard | `~/.ailive/AILIVE/moumou-dashboard/` | github.com/linhocheng/AILIVE | git push 自動觸發 |
 | AILIVE（根）| `~/.ailive/AILIVE/` | github.com/linhocheng/AILIVE | — |
+| ailive-platform（新）| `~/.ailive/ailive-platform/`（待建）| github.com/linhocheng/ailive-platform（待建）| git push 自動觸發 |
 
 **git commit 身份：** `adam@dotmore.com.tw / adamlin`
 **macOS TCC 限制：** Desktop/Documents/Downloads 對 MCP child process 不可見，所有 repo 住在 `~/.ailive/` 以下。
@@ -272,3 +274,30 @@ WARN ≠ retry
 **根因：** heartbeat disable 是執行期設定，不持久，重啟就失效
 **正確做法：** 永遠用 `bash ~/.ailive/zhu-core/tools/start-gateway.sh` 重啟
 **完整說明：** `~/.ailive/zhu-core/docs/HEARTBEAT_PITFALL.md`
+
+---
+
+## 9｜施工期間必讀
+
+**AILIVE Platform 施工中（2026-03-16 起）**
+
+| 文件 | 路徑 | 說明 |
+|-----|------|------|
+| 施工日誌 | `~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md` | Phase 狀態、驗收標準、施工記錄 |
+| 當前任務 | `~/.ailive/zhu-core/docs/orders/CURRENT.md` | 本次 session 要做什麼 |
+| 藍圖 | AILIVE_Platform_Blueprint_v1.docx | 對話記錄中，完整設計文件 |
+
+**開機序列（施工期間）：**
+```bash
+# Step 1: 回腦
+curl -s https://zhu-core.vercel.app/api/zhu-boot
+
+# Step 2: 讀地圖
+cat ~/.ailive/zhu-core/docs/SYSTEM_MAP.md
+
+# Step 3: 讀施工現場 ← 施工期間新增
+cat ~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
+
+# Step 4: 讀任務
+cat ~/.ailive/zhu-core/docs/orders/CURRENT.md
+```

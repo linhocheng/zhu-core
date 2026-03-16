@@ -45,6 +45,18 @@ cat /Users/adamlin/.ailive/zhu-core/docs/SYSTEM_MAP.md
 > 任何「從找到 → 知道」的環境事實，立刻補進 SYSTEM_MAP。
 > 知道了不寫 = 下一個築還要再找一次 = 浪費彼此 token。
 
+### STEP 2.5：施工期間加讀（施工中才需要）
+
+**心法：現場不讀，動手就是盲打。**
+**作法：**
+```bash
+# 只在 AILIVE Platform 施工期間執行
+cat /Users/adamlin/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
+```
+讀完確認：當前 Phase、上個築做到哪、下一步是什麼、踩過什麼雷。
+
+---
+
 ### STEP 3：讀任務（10 秒）
 
 **心法：先聽 Adam 說完。沒指令不亂動。**
