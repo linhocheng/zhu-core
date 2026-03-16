@@ -1,27 +1,30 @@
 # 築的當前指令
 
-**當前任務：** AILIVE Platform — 全部 Phase 完成
-**狀態：** ✅ Phase 0-4 全部完成（2026-03-16）
+**當前任務：** ailive-platform — 能力驗收 + 細節調整
+**狀態：** Phase 0-4 完成，進入驗收調整期
 
-## 完成總覽
-- Phase 0 ✅ 地基（repo + Firebase + 部署）
-- Phase 1 ✅ 一個角色活起來（soul-enhance / insights / knowledge / dialogue / image/generate）
-- Phase 2 ✅ 生活節奏（tasks / posts / runner / sleep / Vercel Cron）
-- Phase 3 ✅ 後台可視（dashboard 全套 10 個頁面）
-- Phase 4 ✅ 複製機器（/dashboard/create 五步驟精靈，5 分鐘建角色）
+## Platform 現況
+- **deploy：** https://ailive-platform.vercel.app
+- **角色：** Emily (fbG8xbuXDG9ZJCLAfeXB) / 小廣 (zjD63GpVTy5neo07IwDa)
+- **對話窗：** /chat/[id]（可分享給用戶）
+- **後台：** /dashboard
 
-## Entry Points
-- 首頁：https://ailive-platform.vercel.app/dashboard
-- 建角色：https://ailive-platform.vercel.app/dashboard/create
-- Emily：https://ailive-platform.vercel.app/dashboard/fbG8xbuXDG9ZJCLAfeXB
-- 小廣：https://ailive-platform.vercel.app/dashboard/zjD63GpVTy5neo07IwDa
+## 明天開工方向
 
-## 待開通（等 Adam）
-- LINE：各角色的 Channel Token/Secret → 後台身份設定填入
-- IG 發文：/api/ig/publish 待建，等 IG Access Token
-- Vercel Hobby Cron 限制：每日一次（UTC 01:00 = 台北 09:00）；如需每小時升 Pro
+### 優先（能力驗收）
+1. 逐一驗收對話中各工具能力：
+   - 讀圖（傳圖 → 角色看到並回應）
+   - 生圖（對話中說畫圖 → 圖出現在泡泡）✅ 今天已修
+   - query_tasks / update_task（查任務、改時間）
+   - save_post_draft（存草稿 → 後台看到）
+   - web_search（查時事）✅ 今天已驗
+2. 對話窗 UI 細節（有什麼需要調的 Adam 說）
 
-## 下次開工方向
-- 補 /api/ig/publish（IG Graph API）
-- 補 /dashboard/[id]/conversations（LINE 對話記錄）
-- Emily 在新平台重新走完整條電流（她目前在 moumou-dashboard）
+### 待建
+- /api/ig/publish（IG Graph API 發文，等 Adam 有 IG token）
+- LINE 開通（各角色填 Channel Token/Secret 在 identity 頁）
+- Emily 在新平台重建（走完整條電流：鑄魂 → 對話 → 記憶 → 生圖）
+
+## 開工前必讀
+cat ~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
+curl -s https://zhu-core.vercel.app/api/zhu-boot
