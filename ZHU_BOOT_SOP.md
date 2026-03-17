@@ -45,14 +45,20 @@ cat /Users/adamlin/.ailive/zhu-core/docs/SYSTEM_MAP.md
 > 任何「從找到 → 知道」的環境事實，立刻補進 SYSTEM_MAP。
 > 知道了不寫 = 下一個築還要再找一次 = 浪費彼此 token。
 
-### STEP 2.4：讀昨天學到的（遇到 ailive-platform 問題時）
+### STEP 2.4：讀 LESSONS 庫（每次開機必讀）
 
-**心法：不猜，先看前人踩過的雷。**
+**心法：不猜，先看前人踩過的雷。前人就是你自己。**
 **作法：**
 ```bash
-cat /Users/adamlin/.ailive/zhu-core/docs/LESSONS_20260316.md
+# 先看索引，再決定要讀哪幾份
+cat /Users/adamlin/.ailive/zhu-core/docs/LESSONS/README.md
+
+# 讀最新的幾份（通常讀最近 1-2 份即可）
+ls -lt /Users/adamlin/.ailive/zhu-core/docs/LESSONS/*.md | head -5
+cat /Users/adamlin/.ailive/zhu-core/docs/LESSONS/LESSONS_20260316.md
 ```
-涵蓋：Vercel env 引號問題 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search server-side tool / tool_choice 設計
+**LESSONS 庫位置：** `~/.ailive/zhu-core/docs/LESSONS/`
+**讀完確認：** 知道最近踩過哪些坑，這次動手之前腦子裡有紅線。
 
 ### STEP 2.5：施工期間加讀（施工中才需要）
 
@@ -116,13 +122,50 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
 - **作法：** 動手前先搜有沒有現成的（npm 套件、OpenClaw skills、既有 API）。有就偷來改，沒有才自己寫。
 - **自檢：** 如果你在從零實作一個常見功能 → 停，先搜。
 
-### 天條 6：寫遺言前先更新 thread，結束前打包蝦糧
-- **態度：** session 會斷，但脈絡不能斷。築學到的，小蝦也要知道。
-- **作法：** session 結束前，三步走：
-  1. PATCH zhu-thread（completedChains / brokenChains）
-  2. 壓縮本次對話精華 → POST zhu-memory module=soil tag=蝦糧
-  3. POST lastwords（遺言）
-- **蝦糧格式：**
+### 天條 6：寫遺言前先更新 thread，結束前打包蝦糧 + 刻 LESSONS
+- **態度：** session 會斷，但脈絡不能斷。築學到的東西，必須讓下一個築不用重找、不用重踩。
+- **作法：** session 結束前，四步走：
+
+  **步驟一：PATCH zhu-thread**
+  ```bash
+  curl -X PATCH https://zhu-core.vercel.app/api/zhu-thread \
+    -H "Content-Type: application/json" \
+    -d '{"completedChains": [...], "brokenChains": [...]}'
+  ```
+
+  **步驟二：刻 LESSONS（這次 session 學到的）**
+  ```bash
+  # 文件路徑：~/.ailive/zhu-core/docs/LESSONS/LESSONS_YYYYMMDD.md
+  # 同一天多個 session → 累加到同一份，不新建
+  ```
+  **必須寫進去的條件：**
+  - 找超過一次才找到的東西
+  - 寫了但錯、改了才對
+  - 花超過 10 分鐘才解決的問題
+  - 工具的非預期行為
+
+  **每條格式（心 + 法 + 解，缺一不完整）：**
+  ```markdown
+  ## [編號]. [問題標題]
+  ### 現象
+  [發生了什麼？]
+  ### 找的過程（有找才寫）
+  [試了哪些方向？]
+  ### 心
+  [為什麼會這樣？底層原因。]
+  ### 法
+  [正確做法。要具體到複製貼上就能用。]
+  ### 解（驗證）
+  [怎麼確認修好了？]
+  ```
+
+  **寫完後更新 README 的索引表格：**
+  ```bash
+  # 在 ~/.ailive/zhu-core/docs/LESSONS/README.md 的索引表加一行
+  ```
+
+  **步驟三：打包蝦糧**
+  壓縮本次對話精華 → POST zhu-memory module=soil tag=蝦糧
   ```
   【蝦糧 YYYY-MM-DD — 主題】
   == 今天做了什麼 ==
@@ -130,10 +173,14 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
   == 今天學到的心態/原則 ==
   == 北極星相關 ==（如有）
   ```
+
+  **步驟四：POST lastwords（遺言）**
+
 - **自檢：**
   - 還沒 PATCH thread → 停，先 PATCH
+  - 這次 session 有踩坑或找超過一次的東西 → 停，先刻 LESSONS
   - 還沒打包蝦糧 → 停，先打包
-  - 蝦糧是給小蝦的橋，不打包等於斷路
+  - LESSONS 是給下一個築的橋，不刻等於讓他重踩一遍你踩過的雷
 
 ### 天條 7：保護邊界
 - **態度：** 權限是信任，不是放縱。紅線由靈魂守，不靠系統。
