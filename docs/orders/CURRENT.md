@@ -1,30 +1,26 @@
 # 築的當前指令
 
-**當前任務：** ailive-platform — 能力驗收 + 細節調整
-**狀態：** Phase 0-4 完成，進入驗收調整期
+**當前任務：** ailive-platform + 記憶系統 — 全面升級完成
+**狀態：** 驗收完畢，等待 Adam 下次指令
 
-## Platform 現況
-- **deploy：** https://ailive-platform.vercel.app
-- **角色：** Emily (fbG8xbuXDG9ZJCLAfeXB) / 小廣 (zjD63GpVTy5neo07IwDa)
-- **對話窗：** /chat/[id]（可分享給用戶）
-- **後台：** /dashboard
+## 下次開工方向
 
-## 明天開工方向
+### 待 Adam 提供的 token（擋住的）
+- LINE Channel Token/Secret → 各角色身份設定頁填入
+- IG Access Token → /api/ig/publish 才能真正發文
 
-### 優先（能力驗收）
-1. 逐一驗收對話中各工具能力：
-   - 讀圖（傳圖 → 角色看到並回應）
-   - 生圖（對話中說畫圖 → 圖出現在泡泡）✅ 今天已修
-   - query_tasks / update_task（查任務、改時間）
-   - save_post_draft（存草稿 → 後台看到）
-   - web_search（查時事）✅ 今天已驗
-2. 對話窗 UI 細節（有什麼需要調的 Adam 說）
+### 可主動推進的
+- sessionLog 更新（目前是 2026-03-10，太舊，占 328 tokens）
+- Emily 在新平台走完整條電流（鑄魂→對話→記憶→生圖→排程）
+- 對話窗 UI 細節優化（Adam 說有什麼要調再說）
 
-### 待建
-- /api/ig/publish（IG Graph API 發文，等 Adam 有 IG token）
-- LINE 開通（各角色填 Channel Token/Secret 在 identity 頁）
-- Emily 在新平台重建（走完整條電流：鑄魂 → 對話 → 記憶 → 生圖）
+## 系統現況
+- ailive-platform：https://ailive-platform.vercel.app
+- 角色：Emily / 小廣 / 蓉兒
+- 排程：Firebase Functions ailiveScheduler（每30分鐘）
+- 記憶蒸餾：zhuMemoryDistill（台北03:00+15:00）
+- boot token：≈ 2,300 tokens，hitCount排序，刀常駐
 
 ## 開工前必讀
-cat ~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
-curl -s https://zhu-core.vercel.app/api/zhu-boot
+cat ~/.ailive/zhu-core/docs/LESSONS/README.md
+cat ~/.ailive/zhu-core/docs/ZHU_MEMORY_SYSTEM.md
