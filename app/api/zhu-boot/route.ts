@@ -178,6 +178,43 @@ export async function GET() {
       bootCount: newCount,
     });
 
+    // arc: 時間軸 — 最近 14 天的遺言摘要，讓築感知自己走過的弧線
+    let arc: { date: string; summary: string; feeling?: string }[] = [];
+    try {
+      const fourteenDaysAgo = new Date();
+      fourteenDaysAgo.setDate(fourteenDaysAgo.getDate() - 14);
+      const arcSnap = await db.collection('zhu_memory')
+        .where('module', '==', 'root')
+        .where('tags', 'array-contains', 'session-lastwords')
+        .get()
+        .catch(() => null);
+
+      if (arcSnap && !arcSnap.empty) {
+        const arcDocs = arcSnap.docs
+          .map(d => {
+            const data = d.data();
+            const obs: string = data.observation || '';
+            const dateMatch = obs.match(/\d{4}-\d{2}-\d{2}/);
+            const date = dateMatch ? dateMatch[0] : (data.date || '');
+            const summaryMatch = obs.match(/(?:今日完成|完成)[^\n]*\n([^\n]{5,80})/);
+            const summary = summaryMatch
+              ? summaryMatch[1].replace(/^[\d\.\s✅⬜\-]+/, '').trim()
+              : obs.slice(0, 80).replace(/\n/g, ' ').trim();
+            const feelingMatch = obs.match(/(?:這個 session 的感覺|感覺)[：:]\s*([^\n]{3,50})/);
+            const feeling = feelingMatch ? feelingMatch[1].trim() : undefined;
+            return { date, summary, feeling, createdAt: data.createdAt };
+          })
+          .filter(d => {
+            if (!d.date) return false;
+            return new Date(d.date) >= fourteenDaysAgo;
+          })
+          .sort((a, b) => a.date.localeCompare(b.date))
+          .map(({ date, summary, feeling }) => ({ date, summary, ...(feeling ? { feeling } : {}) }));
+
+        arc = arcDocs;
+      }
+    } catch { /* arc 讀取失敗不阻斷 boot */ }
+
     // SESSION_LOG.md — 讀遺言檔案（強制開機必讀）
     let sessionLog = '';
     try {
@@ -212,6 +249,7 @@ export async function GET() {
       },
       moumouEvents,
       sessionLog,
+      arc,
     });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
