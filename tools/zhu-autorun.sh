@@ -17,6 +17,12 @@ send_telegram() {
 }
 
 NOW_HOUR=$(date '+%-H')
+
+# 時間防護：只在 22:00-06:00 執行（非尖峰時段）
+if [ "$NOW_HOUR" -gt 6 ] && [ "$NOW_HOUR" -lt 22 ]; then
+  echo "=== 非執行時段（${NOW_HOUR}:xx），退出 ===" >> "$LOG"
+  exit 0
+fi
 NOW_MIN=$(date '+%-M')
 TODAY=$(date '+%Y-%m-%d')
 START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
@@ -37,7 +43,7 @@ for t in tasks:
     tm=t.get('triggerMinute',0)
     if th is None: continue
     if th != now_h: continue
-    if abs(tm-now_m) > 10: continue
+    if abs(tm-now_m) > 15: continue  # 30分鐘週期，容差15分鐘
     hit.append(t)
 print(json.dumps(hit, ensure_ascii=False))
 " 2>/dev/null || echo "[]")
