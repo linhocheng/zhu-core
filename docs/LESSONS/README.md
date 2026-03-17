@@ -56,4 +56,5 @@
 | 文件 | 日期 | 主要內容 |
 |------|------|---------|
 | LESSONS_20260316.md | 2026-03-16~17 | Vercel env 引號 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search / tool_choice / 能力從靈魂長出來 / 角色自拍三層設計 / 中文prompt稀釋 / post任務意識確認+生圖 / Firebase Functions排程架構 / defineSecret用法 |
+| LESSONS_20260317.md | 2026-03-17 | ref照解析依賴檔名 / 分數全0 fallback / description空白行為 / tsc找不到 / Firebase只部署特定function / scheduler prompt格式 / 防重複collection命名 / 任務後台不顯示description / 新角色完整鏈條件 |
 
