@@ -65,6 +65,11 @@ export async function GET() {
       identity: thread.identity || null,
       mission: thread.mission || null,
       principles: thread.principles || null,
+      knife: {
+        priority: 'zhu-bash > Chrome > 容器bash',
+        shortestPath: 'CLI能做不開GUI，本機能做不走容器，curl能驗不開瀏覽器',
+        firstBoot: 'tool_search("zhu-bash") → curl zhu-boot → cat SYSTEM_MAP → cat CURRENT',
+      },
     } : null;
 
     // eye: 視野 — 當前弧線 + 斷鏈 + 上次遺言

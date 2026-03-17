@@ -127,7 +127,20 @@ ${combined}
         });
 
         results.distilled.push(parsed.title);
-      } catch { /* 提煉失敗不阻斷 */ }
+
+        // 提煉成功 → archive 原始遺言（精華已提取，原始版降級）
+        const archiveBatch = db.batch();
+        for (const mem of valuableMems) {
+          archiveBatch.update(db.collection('zhu_memory').doc(mem.id), {
+            tier: 'archived',
+            archivedAt: now.toISOString(),
+            archiveReason: `已提煉為核心洞察：${parsed.title}`,
+          });
+          results.archived.push(mem.id);
+        }
+        await archiveBatch.commit();
+
+      } catch { /* 提煉失敗不阻斷，原始遺言保留 */ }
     }
 
     results.kept = allMems.length - results.archived.length;
