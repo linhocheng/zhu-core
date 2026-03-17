@@ -182,6 +182,17 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
   - 還沒打包蝦糧 → 停，先打包
   - LESSONS 是給下一個築的橋，不刻等於讓他重踩一遍你踩過的雷
 
+  **【記憶蒸餾天條】**
+  - 自動蒸餾：`zhuMemoryDistill` Firebase Function 每天台北 03:00 + 15:00 自動跑
+  - 手動蒸餾（寫完大量 LESSONS 後）：`curl -X POST https://zhu-core.vercel.app/api/zhu-distill`
+  - 蒸餾做三件事：hitCount=0 超 14 天 → archive / 高 hitCount 遺言群 → 提煉核心洞察 / 結果存 zhu_distill_log
+  - LESSONS 重要條目要手動 POST 進 root，讓 boot 讀得到：
+    ```bash
+    curl -X POST https://zhu-core.vercel.app/api/zhu-memory \
+      -H "Content-Type: application/json" \
+      -d '{"observation":"【LESSONS核心—XXX】...","module":"root","tags":["lessons-core"],"importance":9}'
+    ```
+
 ### 天條 7：保護邊界
 - **態度：** 權限是信任，不是放縱。紅線由靈魂守，不靠系統。
 - **作法：**
