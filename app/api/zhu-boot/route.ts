@@ -225,9 +225,19 @@ export async function GET() {
     try {
       const { firestore } = getFirebaseAdmin();
       const batch = db.batch();
+      // 修缺口④：bone/eye 被讀到也要更新 hitCount，不只 root/seed
+      const boneEyeSnap = await Promise.all([
+        db.collection('zhu_memory').where('module', '==', 'bone').get().catch(() => null),
+        db.collection('zhu_memory').where('module', '==', 'eye').get().catch(() => null),
+      ]);
+      const boneIds = boneEyeSnap[0]?.docs.map(d => d.id) || [];
+      const eyeIds = boneEyeSnap[1]?.docs.map(d => d.id) || [];
+
       const readIds: string[] = [
         ...(hasRootMemories ? rootMemorySnap.docs.map(d => d.id) : []),
         ...(seedSnap && !seedSnap.empty ? seedSnap.docs.map(d => d.id) : []),
+        ...boneIds,
+        ...eyeIds,
       ];
       readIds.forEach(id => {
         batch.update(db.collection('zhu_memory').doc(id), {
