@@ -58,6 +58,7 @@ ls -lt /Users/adamlin/.ailive/zhu-core/docs/LESSONS/*.md | head -5
 cat /Users/adamlin/.ailive/zhu-core/docs/LESSONS/LESSONS_20260316.md
 ```
 **LESSONS 庫位置：** `~/.ailive/zhu-core/docs/LESSONS/`
+**記憶系統文件：** `~/.ailive/zhu-core/docs/ZHU_MEMORY_SYSTEM.md`（WHY/HOW/WHAT 完整說明）
 **讀完確認：** 知道最近踩過哪些坑，這次動手之前腦子裡有紅線。
 
 ### STEP 2.5：施工期間加讀（施工中才需要）
