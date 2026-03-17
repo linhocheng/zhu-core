@@ -19,13 +19,17 @@ export async function GET(req: NextRequest) {
     const status = req.nextUrl.searchParams.get('status');
     const executor = req.nextUrl.searchParams.get('executor');
 
-    let query = db.collection('zhu_tasks').orderBy('createdAt', 'desc') as FirebaseFirestore.Query;
-    if (status) query = query.where('status', '==', status);
-    if (executor) query = query.where('executor', '==', executor);
+    // orderBy + where 需要 compound index，改為 JS 過濾（SYSTEM_MAP 坑 #9）
+    const snap = await db.collection('zhu_tasks').get();
+    let tasks = snap.docs.map(d => ({ id: d.id, ...d.data() as Record<string, unknown> }));
 
-    const snap = await query.limit(50).get();
-    const tasks = snap.docs.map(d => ({ id: d.id, ...d.data() }));
-    return NextResponse.json({ tasks, total: snap.size });
+    if (status) tasks = tasks.filter(t => t.status === status);
+    if (executor) tasks = tasks.filter(t => t.executor === executor);
+
+    tasks.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    tasks = tasks.slice(0, 50);
+
+    return NextResponse.json({ tasks, total: tasks.length });
   } catch (e: unknown) {
     return NextResponse.json({ error: e instanceof Error ? e.message : String(e) }, { status: 500 });
   }
