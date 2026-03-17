@@ -56,6 +56,7 @@ export async function POST(req: NextRequest) {
       executor,
       trigger,
       triggerHour: triggerHour ?? null,
+      triggerMinute: body.triggerMinute ?? 0,
       priority,
       context,
       createdBy,

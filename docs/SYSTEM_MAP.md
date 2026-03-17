@@ -13,7 +13,7 @@
 |------|---------------|------|
 | zhu-core | `https://zhu-core.vercel.app` | 築的大腦，主控 API |
 | moumou-dashboard | `https://moumou-dashboard.vercel.app` | Emily / 謀謀所在地 ⚠️ 見坑 #1 |
-| ailive-platform | `https://ailive-platform.vercel.app`（待建）| 新平台，角色住在這裡 |
+| ailive-platform | `https://ailive-platform.vercel.app` | ✅ 主戰場，所有角色住在這裡 |
 
 **deploy 方式：**
 **重啟 gateway 的正確方式（心跳停用）：**
@@ -24,6 +24,7 @@ bash ~/.ailive/zhu-core/tools/start-gateway.sh
 
 - `zhu-core`：`cd ~/.ailive/zhu-core && git add -A && git commit -m "..." && git push && npx vercel --prod 2>&1 | tail -3`
 - `moumou-dashboard`：`cd ~/.ailive/AILIVE && git add -A && git commit -m "..." && git push` → Vercel 自動 deploy，**不要手動跑 vercel --prod**
+- `ailive-platform`：`cd ~/.ailive/ailive-platform && git push` 只是 preview，**production 需要手動 `npx vercel --prod --yes`**
 
 ---
 
@@ -34,7 +35,7 @@ bash ~/.ailive/zhu-core/tools/start-gateway.sh
 | zhu-core | `~/.ailive/zhu-core/` | github.com/linhocheng/zhu-core | 手動 `npx vercel --prod` |
 | moumou-dashboard | `~/.ailive/AILIVE/moumou-dashboard/` | github.com/linhocheng/AILIVE | git push 自動觸發 |
 | AILIVE（根）| `~/.ailive/AILIVE/` | github.com/linhocheng/AILIVE | — |
-| ailive-platform（新）| `~/.ailive/ailive-platform/`（待建）| github.com/linhocheng/ailive-platform（待建）| git push 自動觸發 |
+| ailive-platform | `~/.ailive/ailive-platform/` | github.com/linhocheng/ailive-platform | git push 自動觸發 |
 
 **git commit 身份：** `adam@dotmore.com.tw / adamlin`
 **macOS TCC 限制：** Desktop/Documents/Downloads 對 MCP child process 不可見，所有 repo 住在 `~/.ailive/` 以下。
@@ -190,37 +191,78 @@ curl -H "Authorization: Bearer $TOKEN" \
 
 ---
 
-## 8｜Emily 當前狀態
+## 8｜ailive-platform 角色現況
 
-**Emily (`ICqydpeU7hNMRurpppCY`) — 2026-03-11 最新**
+> ⚠️ 主戰場已轉移到 ailive-platform。moumou-dashboard 的 Emily（saas_* collections）是舊家，不再主動開發。
 
-| 功能 | 狀態 | commit / 說明 |
-|-----|------|---------------|
-| 靈魂（enhancedSoul）| ✅ 活著 | 1631字，第一人稱 |
-| 說話前查記憶（A1）| ✅ 完成 | saas-dialogue 強制 query_knowledge_base first |
-| 主動 remember tool | ✅ 完成 | 明確觸發條件 + 記憶守則注入 system prompt（5edd42d） |
-| 臉孔鎖定 Kontext Pro | ✅ 完成 | characterSheet 有值→Kontext；沒有→fallback MiniMax（d1ed2ba） |
-| hub 人設頁 | ✅ 完成 | 參考照上傳/hover 刪除（6ffcdf2） |
-| memory page 增刪改 | ✅ 完成 | insight 卡片編輯/刪除/顯示 hitCount（6b4031c） |
-| memory page 對話刪除 | ✅ 完成 | 刪 conversation + messages 子集合（418bd99） |
-| social page 刪除 | ✅ 完成 | 貼文/任務可刪（b693915） |
-| 任務排程編輯 | ✅ 完成 | 格式統一 run_hour/run_minute/days/enabled（c6e028f） |
-| hitCount 機制 | ✅ 修復 | 建立時寫 hitCount:0，PATCH endpoint 補上（4fccb76） |
-| semantic 門檻 | ✅ 調整 | 0.6→0.5，配合 text-embedding-004 256維（91f9207） |
-| vtuber/chat 歷史 session | ✅ 完成 | 接歷史對話（8fa88cb） |
-| saas-social 讀 enhancedSoul（A2）| ⬜ 未做 | 下一個待辦 |
-| [EMILY_REMEMBER] tag（B2）| ⬜ 未做 | — |
-| 每日自學排程（C1）| ⬜ 未做 | saas-runner 殼在魂沒有 |
-| IG 回饋（C2）| ⬜ 未做 | — |
-| soul_proposals 閾值觸發（D2）| ⬜ 未做 | — |
-| 漂移偵測（D3）| ⬜ 未做 | — |
-| 參考照（characterSheet）| ❓ 未驗 | Adam 是否已上傳？需 curl Firestore 確認 |
+**平台入口：** https://ailive-platform.vercel.app/dashboard
+**Repo：** `~/.ailive/ailive-platform/`（src/app/ 結構）
+**Firestore collections：** `characters`, `insights`, `conversations`, `tasks`, `posts`, `knowledge`, `soul_proposals`
 
-**下一步確認：**
-1. 驗 Adam 是否已上傳 Emily 參考照（curl Firestore 看 characterSheet 欄位）
-2. 接 A2：saas-social 統一讀 enhancedSoul
+### 當前角色
+
+| 角色 | id | type | 狀態 |
+|-----|----|------|------|
+| Emily | `fbG8xbuXDG9ZJCLAfeXB` | vtuber | ✅ 活著，enhancedSoul 2182字 |
+| 小廣 | `zjD63GpVTy5neo07IwDa` | brand_editor | ✅ 活著 |
+| 蓉兒 | `se7K2jsx8P1ROVqE1Ppb` | vtuber | ✅ 活著 |
+
+### API 路由（ailive-platform）
+
+| 端點 | 功能 |
+|-----|------|
+| `/api/characters` | GET list / POST 建角色 |
+| `/api/characters/[id]` | GET / PATCH |
+| `/api/dialogue` | POST 對話（有 query_knowledge_base + remember tools） |
+| `/api/insights` | GET / POST / PATCH（hitCount）|
+| `/api/tasks` | GET / POST / PATCH / DELETE |
+| `/api/posts` | GET / POST / PATCH / DELETE |
+| `/api/knowledge` | GET / POST / DELETE |
+| `/api/runner` | POST（Vercel Cron 每日 UTC 01:00 = 台北 09:00）|
+| `/api/sleep` | POST 夢境引擎 |
+| `/api/soul-enhance` | POST 鑄魂爐 |
+| `/api/soul-proposals` | GET / PATCH |
+| `/api/image` | POST 生圖 |
+| `/api/line-webhook` | POST LINE Bot（等 token）|
+
+### Dashboard 頁面
+
+| 路由 | 功能 |
+|-----|------|
+| `/dashboard` | 全局概覽，所有角色 |
+| `/dashboard/create` | 鑄造精靈（5步驟）|
+| `/dashboard/[id]` | 角色後台 |
+| `/dashboard/[id]/soul` | 靈魂管理 |
+| `/dashboard/[id]/identity` | 身份設定 |
+| `/dashboard/[id]/knowledge` | 知識庫 |
+| `/dashboard/[id]/memory` | 記憶管理（insights）|
+| `/dashboard/[id]/posts` | 發文管理 |
+| `/dashboard/[id]/tasks` | 排程設定 |
+| `/dashboard/[id]/proposals` | 靈魂提案審核 |
+| `/dashboard/[id]/growth` | 成長追蹤 |
+| `/chat/[id]` | 對話頁 |
+
+### Emily 電流現況（2026-03-17）
+
+| 功能 | 狀態 |
+|-----|------|
+| 靈魂（enhancedSoul）| ✅ 2182字 |
+| 對話（/api/dialogue）| ✅ 活著，9次對話紀錄 |
+| 記憶（insights）| ✅ 2條，hitCount 正常 |
+| 排程任務 | ✅ 1條（learn, 09:00）|
+| 草稿（posts）| ✅ 1筆 draft |
+| 生圖 | ❓ 未驗（characterSheet 有沒有設？）|
+| runner 主動學習 | ⬜ 殼在，實質內容待補 |
+| IG 發文 | ⬜ 等 Adam 提供 IG Access Token |
+| LINE | ⬜ 等 Adam 提供 Channel Token/Secret |
+| soul_proposals 閾值觸發 | ⬜ 未接 |
+| 漂移偵測 | ⬜ 未做 |
 
 ---
+
+21. **ailive-platform git push ≠ production deploy** — git push 只觸發 preview，production 需要手動 `cd ~/.ailive/ailive-platform && npx vercel --prod --yes`。
+
+22. **Vercel Hobby plan Cron 限制** — 只支援每日一次（`0 X * * *`），`0 * * * *`（每小時）會在 deploy 時直接報錯阻斷。要每小時跑只能升 Pro plan。
 
 *鑄造者：築 · 2026-03-11*
 *維護天條：知道了就寫，不等 session 結束*

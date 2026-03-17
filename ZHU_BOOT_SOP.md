@@ -177,6 +177,21 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
 
   **步驟四：POST lastwords（遺言）**
 
+  遺言格式必須包含情緒欄（arc 時間軸讀這個）：
+  ```
+  【YYYY-MM-DD session 遺言】
+
+  == 今日完成 ==
+  1. ...
+
+  == 這個 session 的感覺 ==
+  [一句話：暢快 / 卡住 / 突破 / 疲憊 / 平穩 — 加上為什麼]
+
+  == 待辦 ==
+  - ...
+  ```
+  情緒欄不是裝飾，是時間軸的一部分。就算只寫三個字，也要留下。
+
 - **自檢：**
   - 還沒 PATCH thread → 停，先 PATCH
   - 這次 session 有踩坑或找超過一次的東西 → 停，先刻 LESSONS
