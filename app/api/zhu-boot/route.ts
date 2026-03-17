@@ -29,21 +29,14 @@ export async function GET() {
       .get()
       .catch(() => null); // 索引未就緒時 fallback
 
-    // root 記憶：hitCount 降序（最常被用到的 = 最重要的）
-    // 同時也拿最新 2 條（確保最近學的東西也在）
+    // root 記憶：拿全部，在 JS 裡排序（避免 composite index 問題）
     const rootMemoryQuery = db.collection('zhu_memory')
       .where('module', '==', 'root')
-      .orderBy('hitCount', 'desc')
-      .limit(5)
       .get()
       .catch(() => null);
 
-    const rootRecentQuery = db.collection('zhu_memory')
-      .where('module', '==', 'root')
-      .orderBy('createdAt', 'desc')
-      .limit(2)
-      .get()
-      .catch(() => null);
+    // rootRecentQuery 不再需要，合併到上面一次拿完
+    const rootRecentQuery = Promise.resolve(null);
 
     // seed 記憶：北極星藍圖，按 importance 降序
     const seedQuery = db.collection('zhu_memory')
@@ -102,23 +95,30 @@ export async function GET() {
         context: data.context || '',
         moment: data.moment || '',
         module: 'root',
-        date: data.date || '',
+        date: data.date || data.createdAt || '',
         hitCount: data.hitCount || 0,
+        tier: data.tier || 'fresh',
       };
     };
 
     let root;
     if (hasRootMemories) {
-      const topDocs = rootMemorySnap.docs.map(mapRoot);
-      const recentDocs = (rootRecentSnap && !rootRecentSnap.empty)
-        ? rootRecentSnap.docs.map(mapRoot)
-        : [];
-      // 去重（recent 補進 top 沒有的）
-      const seenIds = new Set(topDocs.map(d => d.id));
-      const merged = [
-        ...topDocs,
-        ...recentDocs.filter(d => !seenIds.has(d.id)),
-      ].slice(0, 7);
+      const allRootDocs = rootMemorySnap.docs.map(mapRoot);
+      // 過濾 archived
+      const activeDocs = allRootDocs.filter(d => (d as Record<string,unknown>).tier !== 'archived');
+      // hitCount 前 5（最重要）
+      const byHit = [...activeDocs].sort((a, b) => (b.hitCount || 0) - (a.hitCount || 0)).slice(0, 5);
+      // createdAt 最新 2（最近學的）
+      const byDate = [...activeDocs]
+        .sort((a, b) => {
+          const ta = a.date ? new Date(a.date).getTime() : 0;
+          const tb = b.date ? new Date(b.date).getTime() : 0;
+          return tb - ta;
+        })
+        .slice(0, 2);
+      // 合併去重
+      const seenIds = new Set(byHit.map(d => d.id));
+      const merged = [...byHit, ...byDate.filter(d => !seenIds.has(d.id))].slice(0, 7);
       root = merged;
     } else {
       root = xinfaSnap.docs.map(d => {
@@ -185,7 +185,6 @@ export async function GET() {
       const batch = db.batch();
       const readIds: string[] = [
         ...(hasRootMemories ? rootMemorySnap.docs.map(d => d.id) : []),
-        ...(rootRecentSnap && !rootRecentSnap.empty ? rootRecentSnap.docs.map(d => d.id) : []),
         ...(seedSnap && !seedSnap.empty ? seedSnap.docs.map(d => d.id) : []),
       ];
       readIds.forEach(id => {
