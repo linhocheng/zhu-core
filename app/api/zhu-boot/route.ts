@@ -10,6 +10,7 @@
  * - heartbeat: 寫入心跳，回傳 bootCount（from zhu_heartbeat）
  */
 import { NextResponse } from 'next/server';
+import type { QueryDocumentSnapshot } from 'firebase-admin/firestore';
 import { getFirestore, getFirebaseAdmin } from '@/lib/firebase-admin';
 import { readFileSync } from 'fs';
 import { join } from 'path';
@@ -28,13 +29,21 @@ export async function GET() {
       .get()
       .catch(() => null); // 索引未就緒時 fallback
 
-    // root 記憶：優先從 zhu_memory module=root 讀，fallback 到 zhu_xinfa
+    // root 記憶：hitCount 降序（最常被用到的 = 最重要的）
+    // 同時也拿最新 2 條（確保最近學的東西也在）
     const rootMemoryQuery = db.collection('zhu_memory')
       .where('module', '==', 'root')
-      .orderBy('createdAt', 'desc')
+      .orderBy('hitCount', 'desc')
       .limit(5)
       .get()
-      .catch(() => null); // 索引未就緒時 fallback
+      .catch(() => null);
+
+    const rootRecentQuery = db.collection('zhu_memory')
+      .where('module', '==', 'root')
+      .orderBy('createdAt', 'desc')
+      .limit(2)
+      .get()
+      .catch(() => null);
 
     // seed 記憶：北極星藍圖，按 importance 降序
     const seedQuery = db.collection('zhu_memory')
@@ -44,10 +53,11 @@ export async function GET() {
       .get()
       .catch(() => null); // 索引未就緒時 fallback
 
-    const [threadDoc, lastwordsSnap, rootMemorySnap, seedSnap, xinfaSnap, heartbeatDoc] = await Promise.all([
+    const [threadDoc, lastwordsSnap, rootMemorySnap, rootRecentSnap, seedSnap, xinfaSnap, heartbeatDoc] = await Promise.all([
       db.doc('zhu_thread/current').get(),
       lastwordsQuery,
       rootMemoryQuery,
+      rootRecentQuery,
       seedQuery,
       db.collection('zhu_xinfa')
         .orderBy('createdAt', 'desc')
@@ -80,31 +90,49 @@ export async function GET() {
       lastSessionWords: lastwords,
     };
 
-    // root: 心法根基（優先 module=root 記憶，沒有就 fallback xinfa）
+    // root: 心法根基
+    // 策略：hitCount 前 5（最重要）+ 最新 2（最近學的）→ 去重 → 取前 7
     const hasRootMemories = rootMemorySnap && !rootMemorySnap.empty;
-    const root = hasRootMemories
-      ? rootMemorySnap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            observation: data.observation || '',
-            context: data.context || '',
-            moment: data.moment || '',
-            module: 'root',
-            date: data.date || '',
-          };
-        })
-      : xinfaSnap.docs.map(d => {
-          const data = d.data();
-          return {
-            id: d.id,
-            title: data.title || '',
-            principle: data.principle || '',
-            application: data.application || '',
-            date: data.date || '',
-            _source: 'xinfa-fallback',
-          };
-        });
+
+    const mapRoot = (d: QueryDocumentSnapshot) => {
+      const data = d.data();
+      return {
+        id: d.id,
+        observation: data.observation || '',
+        context: data.context || '',
+        moment: data.moment || '',
+        module: 'root',
+        date: data.date || '',
+        hitCount: data.hitCount || 0,
+      };
+    };
+
+    let root;
+    if (hasRootMemories) {
+      const topDocs = rootMemorySnap.docs.map(mapRoot);
+      const recentDocs = (rootRecentSnap && !rootRecentSnap.empty)
+        ? rootRecentSnap.docs.map(mapRoot)
+        : [];
+      // 去重（recent 補進 top 沒有的）
+      const seenIds = new Set(topDocs.map(d => d.id));
+      const merged = [
+        ...topDocs,
+        ...recentDocs.filter(d => !seenIds.has(d.id)),
+      ].slice(0, 7);
+      root = merged;
+    } else {
+      root = xinfaSnap.docs.map(d => {
+        const data = d.data();
+        return {
+          id: d.id,
+          title: data.title || '',
+          principle: data.principle || '',
+          application: data.application || '',
+          date: data.date || '',
+          _source: 'xinfa-fallback',
+        };
+      });
+    }
 
     // seed: 北極星藍圖
     const seed = (seedSnap && !seedSnap.empty)
@@ -157,6 +185,7 @@ export async function GET() {
       const batch = db.batch();
       const readIds: string[] = [
         ...(hasRootMemories ? rootMemorySnap.docs.map(d => d.id) : []),
+        ...(rootRecentSnap && !rootRecentSnap.empty ? rootRecentSnap.docs.map(d => d.id) : []),
         ...(seedSnap && !seedSnap.empty ? seedSnap.docs.map(d => d.id) : []),
       ];
       readIds.forEach(id => {
