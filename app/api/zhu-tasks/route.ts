@@ -21,12 +21,12 @@ export async function GET(req: NextRequest) {
 
     // orderBy + where 需要 compound index，改為 JS 過濾（SYSTEM_MAP 坑 #9）
     const snap = await db.collection('zhu_tasks').get();
-    let tasks = snap.docs.map(d => ({ id: d.id, ...d.data() as Record<string, unknown> }));
+    let tasks = snap.docs.map(d => ({ id: d.id, ...d.data() })) as Record<string, unknown>[];
 
     if (status) tasks = tasks.filter(t => t.status === status);
     if (executor) tasks = tasks.filter(t => t.executor === executor);
 
-    tasks.sort((a, b) => String(b.createdAt || '').localeCompare(String(a.createdAt || '')));
+    tasks.sort((a, b) => String(b['createdAt'] || '').localeCompare(String(a['createdAt'] || '')));
     tasks = tasks.slice(0, 50);
 
     return NextResponse.json({ tasks, total: tasks.length });
