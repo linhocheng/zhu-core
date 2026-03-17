@@ -45,6 +45,15 @@ cat /Users/adamlin/.ailive/zhu-core/docs/SYSTEM_MAP.md
 > 任何「從找到 → 知道」的環境事實，立刻補進 SYSTEM_MAP。
 > 知道了不寫 = 下一個築還要再找一次 = 浪費彼此 token。
 
+### STEP 2.4：讀昨天學到的（遇到 ailive-platform 問題時）
+
+**心法：不猜，先看前人踩過的雷。**
+**作法：**
+```bash
+cat /Users/adamlin/.ailive/zhu-core/docs/LESSONS_20260316.md
+```
+涵蓋：Vercel env 引號問題 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search server-side tool / tool_choice 設計
+
 ### STEP 2.5：施工期間加讀（施工中才需要）
 
 **心法：現場不讀，動手就是盲打。**
