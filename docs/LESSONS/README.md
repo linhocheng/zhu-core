@@ -55,5 +55,5 @@
 
 | 文件 | 日期 | 主要內容 |
 |------|------|---------|
-| LESSONS_20260316.md | 2026-03-16 | Vercel env 引號 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search server-side / tool_choice / 能力從靈魂長出來 |
+| LESSONS_20260316.md | 2026-03-16 | Vercel env 引號 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search server-side / tool_choice / 能力從靈魂長出來 / 角色自拍三層設計 / 中文 prompt 稀釋問題 |
 
