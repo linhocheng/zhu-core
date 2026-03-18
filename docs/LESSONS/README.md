@@ -57,5 +57,5 @@
 |------|------|---------|
 | LESSONS_20260316.md | 2026-03-16~17 | Vercel env 引號 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search / tool_choice / 能力從靈魂長出來 / 角色自拍三層設計 / 中文prompt稀釋 / post任務意識確認+生圖 / Firebase Functions排程架構 / defineSecret用法 |
 | LESSONS_20260317.md | 2026-03-17 | ref照解析依賴檔名 / 分數全0 fallback / description空白行為 / tsc找不到 / Firebase只部署特定function / scheduler prompt格式 / 防重複collection命名 / 任務後台不顯示description / 新角色完整鏈條件 |
-| LESSONS_20260318.md | 2026-03-18 | bash heredoc 變數無法展開到 python / Firestore compound index 坑再踩 / Python SSL 再踩 / 知識庫是天命不是記憶 / AutoRun 感受是假的 |
+| LESSONS_20260318.md | 2026-03-18 | bash heredoc 變數 / Firestore compound index / 知識庫是天命 / AutoRun 感受是假的 / 選工具先確認環境（Vercel=Node.js only） / create_file 只寫容器 / Hobby Cron 每日一次 / Storage CORS / Scheduler 任務時間整點半點 / pdf-parse require |
 

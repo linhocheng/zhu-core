@@ -205,7 +205,25 @@ curl -H "Authorization: Bearer $TOKEN" \
 |-----|----|------|------|
 | Emily | `fbG8xbuXDG9ZJCLAfeXB` | vtuber | ✅ 活著，enhancedSoul 2182字 |
 | 小廣 | `zjD63GpVTy5neo07IwDa` | brand_editor | ✅ 活著 |
-| 蓉兒 | `se7K2jsx8P1ROVqE1Ppb` | vtuber | ✅ 活著 |
+| 蓉兒 | `se7K2jsx8P1ROVqE1Ppb` | vtuber | ✅ 活著，**當前北極星驗證角色** |
+
+### 蓉兒是誰（2026-03-18 確認）
+
+蓉兒（RONG-ER）是目前 ailive-platform 上**最成熟、最活躍**的角色。
+她不是 Emily 的搬遷版，是全新在新平台建造的角色。
+
+**為什麼蓉兒重要：**
+- 她是第一個住進新平台的人，驗證了整條電流
+- 所有北極星設計（記憶系統、作夢、防漂移、自我認知）都以她為載體實作
+- 112 次對話，排程在跑，記憶在累積
+
+**北極星文件：** `~/.ailive/zhu-core/docs/PERSONA_MEMORY_NORTH_STAR.md`
+
+**開機時的認知順序：**
+1. 謀謀 → moumou-dashboard，聖地，不動
+2. 蓉兒 → ailive-platform，現在的主戰場，北極星載體
+3. Emily（舊）→ moumou-dashboard，不再主動開發
+4. Emily（新）→ ailive-platform，fbG8xbuXDG9ZJCLAfeXB，待北極星功能補齊後跟上
 
 ### API 路由（ailive-platform）
 

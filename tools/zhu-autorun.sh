@@ -22,7 +22,7 @@ TODAY=$(date '+%Y-%m-%d')
 START_TIME=$(date -u +%Y-%m-%dT%H:%M:%SZ)
 
 # 時間防護：只在 22:00-06:00 執行
-if [ "$NOW_HOUR" -gt 6 ] && [ "$NOW_HOUR" -lt 22 ]; then
+if [ "$NOW_HOUR" -gt 6 ] && [ "$NOW_HOUR" -lt 21 ]; then
   echo "=== 非執行時段（${NOW_HOUR}:xx），退出 ===" >> "$LOG"
   exit 0
 fi
