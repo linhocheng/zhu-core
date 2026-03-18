@@ -6,6 +6,7 @@ interface ZhuTask {
   title: string;
   type: string;
   status: string;
+  executionMode?: string;  // 'auto' | 'notify' | 'impossible'
   triggerHour?: number;
   triggerMinute?: number;
   context?: string;
@@ -29,6 +30,27 @@ const TYPE_LABELS: Record<string, string> = {
   other: '📌 其他',
 };
 
+const EXECUTION_MODES = [
+  {
+    value: 'auto',
+    label: '⚡ 自動執行',
+    desc: '讀/寫記憶、提煉洞察、Telegram 通知',
+    color: '#22c55e',
+  },
+  {
+    value: 'notify',
+    label: '🔔 通知後等確認',
+    desc: '會影響 production 資料、角色靈魂、不可逆操作',
+    color: '#f59e0b',
+  },
+  {
+    value: 'impossible',
+    label: '🚫 目前無法自動化',
+    desc: 'Claude Code / deploy / 需要瀏覽器互動',
+    color: '#71717a',
+  },
+];
+
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, i) => i);
 
 export default function TasksPage() {
@@ -36,17 +58,14 @@ export default function TasksPage() {
   const [loading, setLoading] = useState(true);
   const [showArchived, setShowArchived] = useState(false);
 
-  // 新增表單
   const [title, setTitle] = useState('');
   const [type, setType] = useState('heartbeat');
+  const [executionMode, setExecutionMode] = useState('auto');
   const [triggerHour, setTriggerHour] = useState(21);
   const [triggerMinute, setTriggerMinute] = useState(0);
   const [context, setContext] = useState('');
   const [priority, setPriority] = useState('normal');
   const [adding, setAdding] = useState(false);
-
-  // 編輯
-  const [editingId, setEditingId] = useState<string | null>(null);
 
   const load = async () => {
     setLoading(true);
@@ -65,7 +84,7 @@ export default function TasksPage() {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        title, type, triggerHour, triggerMinute,
+        title, type, executionMode, triggerHour, triggerMinute,
         context, priority, status: 'pending',
         executor: 'zhu_auto', trigger: 'scheduled',
       }),
@@ -96,6 +115,8 @@ export default function TasksPage() {
   const activeTasks = tasks.filter(t => !['archived', 'completed'].includes(t.status));
   const archivedTasks = tasks.filter(t => ['archived', 'completed'].includes(t.status));
 
+  const getModeInfo = (mode?: string) => EXECUTION_MODES.find(m => m.value === mode) || EXECUTION_MODES[0];
+
   const inputCls = "w-full bg-zinc-800 border border-zinc-700 rounded px-3 py-2 text-sm text-zinc-200 focus:outline-none focus:border-amber-500";
 
   return (
@@ -111,9 +132,23 @@ export default function TasksPage() {
           <p className="text-zinc-500 text-xs mt-1">AutoRun 每 30 分鐘掃一次，執行時間符合的 pending 任務</p>
         </div>
 
+        {/* 邊界說明 */}
+        <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-4 mb-6">
+          <div className="text-zinc-400 font-bold text-xs mb-3">築的執行邊界</div>
+          <div className="space-y-2">
+            {EXECUTION_MODES.map(m => (
+              <div key={m.value} className="flex items-start gap-3">
+                <span className="text-sm shrink-0" style={{ color: m.color }}>{m.label}</span>
+                <span className="text-xs text-zinc-600">{m.desc}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+
         {/* 新增任務 */}
         <div className="bg-zinc-900 border border-zinc-800 rounded-xl p-5 mb-6">
           <div className="text-zinc-400 font-bold text-sm mb-4">+ 新增任務</div>
+
           <div className="grid grid-cols-2 gap-3 mb-3">
             <div className="col-span-2">
               <label className="text-xs text-zinc-500 block mb-1">任務名稱 *</label>
@@ -121,6 +156,25 @@ export default function TasksPage() {
                 placeholder="例如：每日遺言洞察提煉"
                 className={inputCls} />
             </div>
+
+            {/* 執行方式（最重要的選擇） */}
+            <div className="col-span-2">
+              <label className="text-xs text-zinc-500 block mb-2">執行方式 *</label>
+              <div className="grid grid-cols-3 gap-2">
+                {EXECUTION_MODES.map(m => (
+                  <button key={m.value} onClick={() => setExecutionMode(m.value)}
+                    className="p-3 rounded-lg border text-left transition-all"
+                    style={{
+                      borderColor: executionMode === m.value ? m.color : '#3f3f46',
+                      background: executionMode === m.value ? m.color + '15' : 'transparent',
+                    }}>
+                    <div className="text-xs font-bold mb-1" style={{ color: m.color }}>{m.label}</div>
+                    <div className="text-xs text-zinc-600 leading-tight">{m.desc}</div>
+                  </button>
+                ))}
+              </div>
+            </div>
+
             <div>
               <label className="text-xs text-zinc-500 block mb-1">類型</label>
               <select value={type} onChange={e => setType(e.target.value)} className={inputCls}>
@@ -154,7 +208,7 @@ export default function TasksPage() {
               </select>
             </div>
             <div className="col-span-2">
-              <label className="text-xs text-zinc-500 block mb-1">任務說明（context）</label>
+              <label className="text-xs text-zinc-500 block mb-1">任務說明</label>
               <textarea value={context} onChange={e => setContext(e.target.value)}
                 rows={3} placeholder="這個任務要做什麼？築執行時會讀這段說明。"
                 className={inputCls + ' resize-none'} />
@@ -184,57 +238,61 @@ export default function TasksPage() {
           <div className="space-y-3 mb-6">
             {activeTasks
               .sort((a, b) => (a.triggerHour ?? 99) - (b.triggerHour ?? 99))
-              .map(task => (
-              <div key={task.id}
-                className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
-                style={{ borderLeft: `3px solid ${STATUS_COLORS[task.status] || '#52525b'}` }}>
-                <div className="flex items-start justify-between gap-3">
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1 flex-wrap">
-                      <span className="font-bold text-sm">{task.title}</span>
-                      <span className="text-xs text-zinc-500">{TYPE_LABELS[task.type] || task.type}</span>
-                    </div>
-                    <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2">
-                      {task.triggerHour !== undefined && (
-                        <span className="text-amber-400 font-mono">
-                          ⏰ {String(task.triggerHour).padStart(2,'0')}:{String(task.triggerMinute ?? 0).padStart(2,'0')}
-                        </span>
-                      )}
-                      <span style={{ color: STATUS_COLORS[task.status] }}>● {task.status}</span>
-                      {task.priority && <span>priority: {task.priority}</span>}
-                    </div>
-                    {task.context && (
-                      <div className="text-xs text-zinc-600 bg-zinc-800/50 rounded px-2 py-1 leading-relaxed">
-                        {task.context.slice(0, 120)}{task.context.length > 120 ? '...' : ''}
+              .map(task => {
+                const modeInfo = getModeInfo(task.executionMode);
+                return (
+                  <div key={task.id}
+                    className="bg-zinc-900 border border-zinc-800 rounded-xl p-4"
+                    style={{ borderLeft: `3px solid ${modeInfo.color}` }}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1 flex-wrap">
+                          <span className="font-bold text-sm">{task.title}</span>
+                          <span className="text-xs" style={{ color: modeInfo.color }}>{modeInfo.label}</span>
+                        </div>
+                        <div className="flex items-center gap-3 text-xs text-zinc-500 mb-2 flex-wrap">
+                          {task.triggerHour !== undefined && (
+                            <span className="text-amber-400 font-mono">
+                              ⏰ {String(task.triggerHour).padStart(2,'0')}:{String(task.triggerMinute ?? 0).padStart(2,'0')}
+                            </span>
+                          )}
+                          <span style={{ color: STATUS_COLORS[task.status] }}>● {task.status}</span>
+                          <span className="text-zinc-600">{TYPE_LABELS[task.type] || task.type}</span>
+                          {task.priority && <span className="text-zinc-700">p:{task.priority}</span>}
+                        </div>
+                        {task.context && (
+                          <div className="text-xs text-zinc-600 bg-zinc-800/50 rounded px-2 py-1 leading-relaxed">
+                            {task.context.slice(0, 120)}{task.context.length > 120 ? '...' : ''}
+                          </div>
+                        )}
+                        {task.lastRunAt && (
+                          <div className="text-xs text-zinc-700 mt-1">
+                            上次執行：{new Date(task.lastRunAt).toLocaleString('zh-TW')}
+                          </div>
+                        )}
                       </div>
-                    )}
-                    {task.lastRunAt && (
-                      <div className="text-xs text-zinc-700 mt-1">
-                        上次執行：{new Date(task.lastRunAt).toLocaleString('zh-TW')}
+                      <div className="flex flex-col gap-1 shrink-0">
+                        <select
+                          value={task.status}
+                          onChange={e => updateStatus(task.id, e.target.value)}
+                          className="bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none">
+                          <option value="pending">pending</option>
+                          <option value="blocked">blocked</option>
+                          <option value="done">done</option>
+                        </select>
+                        <button onClick={() => archiveTask(task.id)}
+                          className="text-xs text-zinc-600 hover:text-red-400 border border-zinc-700 rounded px-2 py-1">
+                          封存
+                        </button>
                       </div>
-                    )}
+                    </div>
                   </div>
-                  <div className="flex flex-col gap-1 shrink-0">
-                    <select
-                      value={task.status}
-                      onChange={e => updateStatus(task.id, e.target.value)}
-                      className="bg-zinc-800 border border-zinc-700 text-xs text-zinc-300 rounded px-2 py-1 focus:outline-none">
-                      <option value="pending">pending</option>
-                      <option value="blocked">blocked</option>
-                      <option value="done">done</option>
-                    </select>
-                    <button onClick={() => archiveTask(task.id)}
-                      className="text-xs text-zinc-600 hover:text-red-400 border border-zinc-700 rounded px-2 py-1">
-                      封存
-                    </button>
-                  </div>
-                </div>
-              </div>
-            ))}
+                );
+              })}
           </div>
         )}
 
-        {/* 封存任務（可展開） */}
+        {/* 封存任務 */}
         <button onClick={() => setShowArchived(v => !v)}
           className="text-xs text-zinc-600 hover:text-zinc-400 mb-3">
           {showArchived ? '▲ 隱藏' : '▼ 顯示'} 封存任務（{archivedTasks.length}）
