@@ -168,7 +168,7 @@ export async function PATCH(req: NextRequest) {
       });
     }
 
-    const allowed = ['observation', 'context', 'moment', 'module', 'importance', 'tags'];
+    const allowed = ['observation', 'context', 'moment', 'module', 'importance', 'tags', 'tier', 'archived'];
     const safe: Record<string, unknown> = {};
     for (const k of allowed) { if (k in updates) safe[k] = updates[k]; }
     safe.updatedAt = new Date();

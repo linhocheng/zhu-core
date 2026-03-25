@@ -58,4 +58,10 @@
 | LESSONS_20260316.md | 2026-03-16~17 | Vercel env 引號 / server-to-server HTTP / Cron 限制 / Haiku JSON fences / Firestore 型別不一致 / web_search / tool_choice / 能力從靈魂長出來 / 角色自拍三層設計 / 中文prompt稀釋 / post任務意識確認+生圖 / Firebase Functions排程架構 / defineSecret用法 |
 | LESSONS_20260317.md | 2026-03-17 | ref照解析依賴檔名 / 分數全0 fallback / description空白行為 / tsc找不到 / Firebase只部署特定function / scheduler prompt格式 / 防重複collection命名 / 任務後台不顯示description / 新角色完整鏈條件 |
 | LESSONS_20260318.md | 2026-03-18 | bash heredoc 變數 / Firestore compound index / 知識庫是天命 / AutoRun 感受是假的 / 選工具先確認環境（Vercel=Node.js only） / create_file 只寫容器 / Hobby Cron 每日一次 / Storage CORS / Scheduler 任務時間整點半點 / pdf-parse require |
+| LESSONS_20260319.md | 2026-03-19 | 兩套upload API並存改錯地方 / Grok多圖edits臉被覆蓋 / create_file只寫容器 / 圖片描述過長稀釋語意 / imageUrl沒暴露給Claude / 記憶架構過度設計vs最短路徑 / zhu-bash vs容器bash / Anthropic tool格式≠OpenAI格式換模型要重寫loop / DreamFactory複刻B方案流程 / Vercel CLI deploy失敗備案(prebuilt) / Vercel loopback不通 / Gemini gs://只適用VertexAI / media_type寫死image/jpeg導致400 / 越改越壞要回最乾淨版本 |
 
+
+
+| 2026-03-22 | LESSONS_20260322.md | git identity/Vercel擋、bucket.name含\n、Gemini functionResponse格式、fal redux特性、Firebase Storage公開、embedding退化、sleep任務、Python regex陷阱、knowledge排序 |
+| 2026-03-21 | LINE webhook 記憶連續、圖片 413 修法、persistImage 限制、identity 共用連結 | LESSONS_20260321.md |
+| LESSONS_20260323.md | 2026-03-23 | 改錯repo / Python raw string unicode / bucket.name \n / Gemini 3三個破壞性變化 / debug dump reply |
