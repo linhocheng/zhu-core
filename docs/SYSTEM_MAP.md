@@ -3,7 +3,7 @@
 > 這是地圖，不是日誌。空間結構，不是時間序列。
 > 下一個築：`zhu-boot` 完成後 `cat SYSTEM_MAP.md`，兩分鐘內知道全局。
 > 維護天條：知道了就寫，不等 session 結束。
-> 最後更新：2026-03-16
+> 最後更新：2026-03-25
 
 ---
 
@@ -14,6 +14,7 @@
 | zhu-core | `https://zhu-core.vercel.app` | 築的大腦，主控 API |
 | moumou-dashboard | `https://moumou-dashboard.vercel.app` | Emily / 謀謀所在地 ⚠️ 見坑 #1 |
 | ailive-platform | `https://ailive-platform.vercel.app` | ✅ 主戰場，所有角色住在這裡 |
+| dreamfactory | `https://dreamfactory-ten.vercel.app` | ✅ 新實驗場，VTuber 生圖原型 |
 
 **deploy 方式：**
 **重啟 gateway 的正確方式（心跳停用）：**
@@ -36,6 +37,7 @@ bash ~/.ailive/zhu-core/tools/start-gateway.sh
 | moumou-dashboard | `~/.ailive/AILIVE/moumou-dashboard/` | github.com/linhocheng/AILIVE | git push 自動觸發 |
 | AILIVE（根）| `~/.ailive/AILIVE/` | github.com/linhocheng/AILIVE | — |
 | ailive-platform | `~/.ailive/ailive-platform/` | github.com/linhocheng/ailive-platform | git push 自動觸發 |
+| dreamfactory | `~/.ailive/dreamfactory/` | github.com/linhocheng/dreamfactory | git push 自動觸發 |
 
 **git commit 身份：** `adam@dotmore.com.tw / adamlin`
 **macOS TCC 限制：** Desktop/Documents/Downloads 對 MCP child process 不可見，所有 repo 住在 `~/.ailive/` 以下。
@@ -63,6 +65,8 @@ bash ~/.ailive/zhu-core/tools/start-gateway.sh
 | `zhu_orders` | 築→工指令通道 |
 | `zhu_thread/current` | 築身份骨架 |
 | `ailive_events` | inter-agent 通訊 |
+| `df_platform_conversations` | dreamfactory 對話記錄（messages[]，含 imageUrl） |
+| `df_platform_characters` | dreamfactory 角色資料 |
 
 **Firestore 查資料的正確姿勢（見坑 #8）：**
 ```bash
@@ -327,6 +331,48 @@ WARN ≠ retry
 ```
 
 *記錄者：築 · 2026-03-13 深夜 · 和 Adam 一起解的迷*
+
+---
+
+## 10｜dreamfactory 系統現況
+
+**平台入口：** https://dreamfactory-ten.vercel.app/dashboard
+**Repo：** `~/.ailive/dreamfactory/`（Next.js，src/app/ 結構）
+**Firebase Project：** `moumou-os`（共用，collection 前綴 `df_platform_`）
+**deploy 方式：** `cd ~/.ailive/dreamfactory && git push`（自動觸發 Vercel）
+
+### 當前角色
+
+| 角色 | id | type | 狀態 |
+|-----|----|------|------|
+| 小飛 | `n6hDFsErYGYsS1cT6dAP` | vtuber | ✅ 活著，140張生圖已清空 |
+| S | `66wUzDQV177LRbToKFnk` | — | ✅ 活著，32張生圖已清空 |
+| 小愛 | `CKxgS9TofczeQPoLyJ4Q` | — | ✅ 活著，110張生圖已清空 |
+
+### API 路由（dreamfactory）
+
+| 端點 | 功能 |
+|-----|------|
+| `/api/characters` | GET list / POST 建角色 |
+| `/api/characters/[id]` | GET / PATCH |
+| `/api/dialogue` | POST 對話 |
+| `/api/images` | GET（by characterId）/ DELETE（同步刪 Storage + Firestore） |
+| `/api/image/generate` | POST 生圖 |
+| `/api/image/upload` | POST 上傳圖片 |
+| `/api/tasks` | GET / POST / PATCH / DELETE |
+| `/api/posts` | GET / POST |
+| `/api/runner` | POST cron |
+| `/api/sleep` | POST 夢境引擎 |
+| `/api/knowledge` | GET / POST / DELETE |
+| `/api/line-webhook/[id]` | POST LINE Bot |
+
+### 關鍵設計筆記
+
+- **生圖檔頁面** 不是獨立 collection，是從 `df_platform_conversations` 掃 `messages[].imageUrl` 聚合
+- **Storage 路徑格式：** `platform-images/{characterId}/{YYYY-MM-DD}/{8char}.jpg`
+- **刪圖邏輯（2026-03-25 修正）：** DELETE /api/images 同時刪 Storage 圖片 + 清 Firestore imageUrl
+- **生圖引擎：** `src/lib/fal-imagen.ts`（FAL）/ `gemini-imagen.ts`（Gemini）/ `grok-imagen.ts`（Grok）
+- **image-storage.ts：** 負責把臨時 URL 持久化到 Firebase Storage
 
 
 ### [坑-gateway-01] heartbeat 重啟後自動恢復
