@@ -65,3 +65,4 @@
 | 2026-03-22 | LESSONS_20260322.md | git identity/Vercel擋、bucket.name含\n、Gemini functionResponse格式、fal redux特性、Firebase Storage公開、embedding退化、sleep任務、Python regex陷阱、knowledge排序 |
 | 2026-03-21 | LINE webhook 記憶連續、圖片 413 修法、persistImage 限制、identity 共用連結 | LESSONS_20260321.md |
 | LESSONS_20260323.md | 2026-03-23 | 改錯repo / Python raw string unicode / bucket.name \n / Gemini 3三個破壞性變化 / debug dump reply |
+| LESSONS_20260325.md | 2026-03-25 | save_skill 防重複（tool loop 雙寫）/ Skills 設計模式（記憶模糊 vs 技巧定型化）/ Firestore compound where 邊界 / 生圖費用漏追蹤（兩平台）/ knowledge-parse 圖片描述費用漏追 |
