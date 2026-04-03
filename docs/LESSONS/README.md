@@ -66,3 +66,5 @@
 | 2026-03-21 | LINE webhook 記憶連續、圖片 413 修法、persistImage 限制、identity 共用連結 | LESSONS_20260321.md |
 | LESSONS_20260323.md | 2026-03-23 | 改錯repo / Python raw string unicode / bucket.name \n / Gemini 3三個破壞性變化 / debug dump reply |
 | LESSONS_20260325.md | 2026-03-25 | save_skill 防重複（tool loop 雙寫）/ Skills 設計模式（記憶模糊 vs 技巧定型化）/ Firestore compound where 邊界 / 生圖費用漏追蹤（兩平台）/ knowledge-parse 圖片描述費用漏追 |
+| LESSONS_20260402.md | 2026-04-02 | 語音對話開發 | Web Speech API bug / TTS字庫 / 優化錯誤教訓 / 存在感問題 / STT 選型 |
+| LESSONS_20260403.md | 2026-04-03 | 黑盒子陷阱（最重要）/ 結構查詢vs語意搜尋 / 圖片條目污染 / embedding維度256→768 / Markdown噪音 / 補丁思維代價 / Voice Streaming Pipeline |

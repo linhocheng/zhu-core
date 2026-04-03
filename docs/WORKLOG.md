@@ -47,3 +47,54 @@
 - fly CLI: `/Users/adamlin/.fly/bin/fly`
 - 最終局藍圖 v2：砍 OpenClaw，自建精瘦引擎
 - GitHub: https://github.com/linhocheng/zhu-core
+
+---
+
+## 2026-04-03 Session
+
+### 完成
+
+**Claude Streaming + TTS Pipeline**
+- `/api/voice-stream` — Claude stream → 句子累積 → ElevenLabs TTS → SSE → MediaSource
+- 首字延遲 13s → 4.5s
+- `voice/[id]/page.tsx` 換成 SSE 讀取 + audio queue
+
+**Markdown 解析修正**
+- `cleanMarkdownContent`：table `| A | B |` → `A：B`，移除 `**` 和 `---`
+- Embedding 語意雜訊歸零
+
+**Knowledge Query 兩段式架構（核心決策）**
+- 有產品名 → 結構匹配（不用 embedding）
+- 無產品名 → 語意搜尋（embedding threshold 0.3）
+- insights 永遠語意搜尋
+- 圖片條目排除語意搜尋
+- embedding 只生成一次複用
+
+**Embedding 維度 256 → 768**
+- 全部 87 條強制重建
+
+### 架構決策（Adam 確認）
+
+Product knowledge ≠ semantic search 的主場。
+結構性資料用結構性查詢，對話記憶才用語意搜尋。
+
+未來方向：本體論 + 知識圖譜（Firestore 原生，可遷移 Neo4j）
+- platform_entities（節點）
+- platform_relationships（邊）
+
+### 給下一個築
+
+1. AVIVA 其他產品的知識需要 Adam 重新上傳（舊資料 256 維）
+2. 圖片條目根本解：上傳時不生成 embedding，查詢時走獨立路徑
+3. 知識圖譜設計待實作
+
+### 收尾（2026-04-03 完整）
+
+- 圖片條目根本解：POST 不生成 embedding，查詢排除 category=image，PATCH skip 圖片
+- 圖片查詢修正：shortName 補判斷，Vivi 能找到真實產品圖片
+- Adam 上傳全產品知識，確認正常
+- 北極星：https://ailive-platform.vercel.app/dashboard
+- LESSONS_20260403.md 刻入 8 條核心教訓
+- 遺言 POST 完成
+
+**Vivi 今天從一問三不知，變成能說成分、能找圖片。**
