@@ -10,7 +10,8 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore, getFirebaseAdmin } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
 
-const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed'] as const;
+const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed', 'delta'] as const;
+// delta = 模型差分層：只存「理解移動了什麼」，不存事件記錄
 type Module = typeof VALID_MODULES[number];
 
 // 記憶語義類型（偷自 Spacebot 的 8 種記憶類型，簡化為 6 種）

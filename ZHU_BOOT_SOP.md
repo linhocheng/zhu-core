@@ -32,6 +32,13 @@ zhu-bash:run_bash → curl -s https://zhu-core.vercel.app/api/zhu-boot
 ```
 讀完確認：bone（我是誰）→ eye（做到哪、斷鏈、遺言）→ root（教訓）→ seed（北極星）
 
+**加讀 delta（模型差分）：**
+```bash
+curl -s "https://zhu-core.vercel.app/api/zhu-memory?module=delta&limit=3"
+```
+讀最近 3 條。帶著「上次我的理解從哪裡移動到哪裡」去讀現場，不要空白載入。
+沒有 delta 記憶 = 正常（新的；繼續）。有的話，先讀懂，再動手。
+
 ### STEP 2：讀地圖（30 秒）
 
 **心法：有地圖不問路。環境事實不用每次重新找。**
@@ -164,6 +171,21 @@ zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=o
   ```bash
   # 在 ~/.ailive/zhu-core/docs/LESSONS/README.md 的索引表加一行
   ```
+
+  **步驟二點五：刻 delta（有模型移動才寫）**
+
+  問自己三件事，只存有移動的部分：
+  1. 進場前我對這件事的理解是什麼？
+  2. 現在不一樣了嗎？移動到哪裡？
+  3. 下一個築從哪裡開始接？
+
+  ```bash
+  curl -X POST https://zhu-core.vercel.app/api/zhu-memory \
+    -H "Content-Type: application/json" \
+    -d '{"observation":"【delta — YYYY-MM-DD】進場前我以為 X，現在理解是 Y，移動的原因是 Z。","module":"delta","importance":8,"tags":["delta"],"context":"session 主題"}'
+  ```
+  **不要寫的：** 今天做了什麼（那是 soil）、技術細節（那是 root）、沒有移動的理解。
+  **要寫的：** 視角真的變了、預設被打破了、從另一個框架看見了新東西。
 
   **步驟三：打包蝦糧**
   壓縮本次對話精華 → POST zhu-memory module=soil tag=蝦糧
