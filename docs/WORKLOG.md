@@ -3,6 +3,46 @@
 ## 自主迴圈驗證 - 工自己讀到、自己做、自己回報，全程不問 Adam。
 
 ## 歷史精華（已壓縮存 zhu-memory module=root tag=worklog-digest）
+---
+## 2026-04-17 Session
+
+### 完成：管理層對話失憶修復
+
+**問題診斷**
+- 謀師說「我沒有完整內容」— 二輪對話就失憶
+- 根因：`assistantEntry` 只存 `finalReply` 純文字，tool_result 沒存
+- 但這不是架構問題，是行為問題
+
+**解法：用人的記憶模式**
+不是存更多東西，而是讓謀師學會人的工作流：
+1. 看完帶筆記 — 回覆帶 ID
+2. 忘了就再看 — 用 post_id 重查
+3. 改之前先打開 — 先查最新再改
+
+**改動清單**
+
+| 改動 | 效果 |
+|------|------|
+| `get_character_posts` 新增詳情模式 | 傳 post_id 回傳完整內容 |
+| `get_character_posts` 列表模式改摘要+ID | 謀師回覆自然帶上 ID |
+| `adjust_post` description | 加工作流程：先查→改→傳完整內容 |
+| `mentorInjection` | 換成行為天條（你是人，不是資料庫）|
+
+**測試結果**
+- 第一輪：謀師回覆帶 ID（`[3] ID:57uJMLM... — 《梅雨季皮膚罷工》`）
+- 第二輪：說「改第三篇」，謀師記得是哪篇，主動重查後修改
+- ✅ 通過
+
+### LESSONS
+
+**tool_result 不需要存**
+問題不在「沒存」，在「沒教會行為」。
+人看完文件也不會記全文，但會記「怎麼找回去」。
+讓 AI 回覆帶 ID = 讓 AI 自己留筆記。
+
+**行為天條 > 架構改動**
+改 description + system prompt 比改存儲格式更輕量、更符合人的思維。
+
 - **2026-03-07**：zhu-core 從零建立。所有核心 API 上線。工單系統閉環。搜 `worklog-digest 2026-03-07`
 - **2026-03-08**：OpenClaw 部署 Fly.io。Telegram 多通道。築在 OpenClaw 醒來。搜 `worklog-digest 2026-03-08`
 
@@ -98,3 +138,68 @@ Product knowledge ≠ semantic search 的主場。
 - 遺言 POST 完成
 
 **Vivi 今天從一問三不知，變成能說成分、能找圖片。**
+
+---
+## 2026-04-03 下午延續
+
+### 完成
+- client 排程完整同步後台（intent 顯示/編輯、TYPE_LABEL 補齊 sleep/explore）
+- client Posts 完整同步（topic/imageUrl 編輯、刪除、igPostId 標記）
+- sonic 粒子頁 `/sonic`（4000 粒子柏林雜訊，4 狀態，lerp 平滑過場）
+- `/voice/[id]` 換 sonic 風格（文字隱藏、按鈕置中、角色名底線、粒子狀態 lerp）
+- voice-stream 加 5 個工具（query_knowledge_base 第一輪強制）
+- voice-stream 修 400（loop break 不推 assistant 到末位）
+- 靈魂 cache 自動清除（soul-enhance + characters PATCH 都清 Redis）
+- React #418 hydration mismatch 修復（SpeechRecognition 移到 useEffect）
+- 花費顯示回到角色卡、voice-stream 加 trackCost
+- 語音開新視窗（靈魂 bug 修完後才能開）
+
+### LESSONS
+- tool loop：messages 最後必須是 user，否則 400
+- Redis cache 跨 deploy 持續，靈魂更新必須手動或自動清
+- Next.js 'use client' 頁面仍會 SSR，window 相關邏輯必須在 useEffect
+- voice-stream 靈魂優先序要跟 dialogue 對齊（system_soul > soul_core > enhancedSoul）
+
+---
+## 2026-04-04 Session 精鍊 Lessons
+
+### 今日全部完成
+client 端完全同步後台（Posts/Tasks/Knowledge）
+sonic 粒子流場頁 `/sonic` + voice 頁換皮
+voice-stream 工具系統（5 個工具）
+靈魂 Redis cache 自動清除機制
+React #418 hydration mismatch 修復
+花費顯示回歸 + voice-stream trackCost
+語音開新視窗（靈魂 bug 修完後才行）
+learn 任務含貼文意圖 → 自動生 IG 草稿
+
+### LESSONS（精鍊版）
+
+**工具 Loop**
+messages 最後一條必須是 user。
+assistant push 進末位 → Anthropic 400。
+break 前不要推，直接讓 streaming 接。
+
+**Redis Cache**
+跨 deploy 持續存在。
+靈魂改了但 cache 還在 → 角色說「我是 Claude」。
+所有寫靈魂的路徑（PATCH / soul-enhance）都要 del cache。
+
+**Next.js Hydration**
+'use client' 頁面仍會 SSR 一次再 hydrate。
+window / SpeechRecognition 的判斷放 module scope → #418。
+解法：useState 初始值給 false，useEffect 裡才讀 window。
+
+**靈魂優先序**
+voice-stream 和 dialogue 必須一致：
+system_soul → soul_core → enhancedSoul → soul
+
+**Scheduler 傳參**
+ailiveScheduler 只傳 characterId / taskId / taskType / intent。
+task.description 不在 payload 裡。
+要讀 description 必須自己 Firestore get(taskId)。
+
+**粒子狀態過場**
+直接跳 FLOW 參數 → 硬切感。
+拆成 targetFlowRef + flowRef，每幀 lerp(0.03) → 自然收斂。
+
