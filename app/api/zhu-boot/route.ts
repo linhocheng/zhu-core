@@ -68,7 +68,7 @@ export async function GET() {
       knife: {
         priority: 'zhu-bash > Chrome > 容器bash',
         shortestPath: 'CLI能做不開GUI，本機能做不走容器，curl能驗不開瀏覽器',
-        firstBoot: 'tool_search("zhu-bash") → curl zhu-boot（含 eye.lastSessionWords）→ cat SYSTEM_MAP → tail WORKLOG',
+        firstBoot: '按 ZHU_BOOT_SOP.md 走 STEP 0-4：盤刀 → 回腦（此 API）→ 讀地圖 → 讀 LESSONS → 讀現場 → 讀任務 → 選刀',
       },
     } : null;
 
