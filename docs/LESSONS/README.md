@@ -71,3 +71,5 @@
 | 2026-04-06 | LESSONS_20260406.md | convId timestamp = 記憶斷裂；TTS 字典單一真相；工具缺口對齊；Python escape TS backtick |
 | 2026-04-08 | LESSONS_20260408.md | Python escape TS 陷阱；convId timestamp 斷記憶；Session State 設計；三層記憶補齊；TTS 字典 10 條；看現場不猜 |
 | LESSONS_20260411 | 2026-04-11 | token節能架構、prompt caching兩邊對齊、工具分層、圖庫動態撈、角色委派哲學 |
+| LESSONS_20260418.md | 2026-04-18 | CURRENT.md 退役（血管原則）/ shell JSON 走 stdin / macOS urllib SSL / create_file 容器 vs 本機 / source of truth 真相分裂 / 驗收扮接棒者 |
+| LESSONS_20260419.md | 2026-04-19 | zhu-memory sample cap / commit 類型邊界 / Claude Code 被 api_error 卡死診斷 / 分身血管斷鏈 / zsh glob 吞 git add / commit 分組歪（連動偵測）/ 不為交棒而交棒（誰熱誰動） |
