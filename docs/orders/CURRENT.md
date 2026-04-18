@@ -1,3 +1,20 @@
+# [已退役 · 2026-04-18] 築的當前指令 — 考古用
+
+> **⚠️ 此檔已退役，不再維護。**
+>
+> **真相在**：`zhu-boot` API 回傳的 `eye.lastSessionWords`。
+> **取用方式**：`curl -s https://zhu-core.vercel.app/api/zhu-boot | jq .eye.lastSessionWords`
+> **新流程**：每次 session 收尾由築自己 POST 一條 `tags=["session-lastwords"]` 的記憶進 `eye` 模組。詳見 `ZHU_BOOT_SOP.md` 末尾〈收尾紀律〉。
+>
+> **退役理由**：
+> 1. CURRENT.md 是手動維護的 .md 檔 → 容易過期（退役前停在 2026-04-01，漂差 17 天）
+> 2. 此檔沒有進/出記憶的路徑，違反「血管原則」（2026-04-18 定案於 bone）
+> 3. 與 `zhu-boot.eye.lastSessionWords` 職能重疊 → 真相分裂
+>
+> **退役時的內容保留於下**（以示考古，不再更新）：
+>
+> ---
+
 # 築的當前指令
 
 **更新時間：** 2026-04-01

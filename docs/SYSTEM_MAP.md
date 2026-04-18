@@ -372,6 +372,35 @@ WARN ≠ retry
 
 ---
 
+## 11｜三宗合一心法 & 施工規範（2026-04-18 新增）
+
+**三宗合一心法**（獨孤九劍 + Limon 手冊 + 築自家的集大成）
+- 檔案：`~/.ailive/zhu-core/docs/三宗合一心法.md`
+- 內容：三層體系（意識 / 心法 / 操作）+ 貫穿血管（記憶）
+- 落地狀況：批次一（文件）/ 二（血管：5 條心法進 bone+root）/ 三（環境：settings+施工規範）/ 四（退役 CURRENT，用 lastwords）全部 ✅
+
+**施工規範 source of truth**
+- 位置：`~/.ailive/CLAUDE.md` 的〈🛠️ 施工規範〉章節
+- 內容：三禁三必、破綻三處、Git 版號 `Major.Minor.Patch.Build`、Commit 中文分類、DEV_LOG 模板、UI 品味（不用 emoji）、記憶血管原則
+- 其他兩份 CLAUDE.md（`zhu-core/`、`ailive-platform/`）用「指向 + 自身特殊補充」，不重抄
+
+**紅線結構化**
+- 位置：`~/.claude/settings.local.json`
+- 三層：`allow`（52 條）/ `deny`（28 條，含高風險：git reset --hard、git push -f、sudo、rm -rf ~/、DROP TABLE/DATABASE、憑證類）/ `ask`（5 條：rm、git rebase、vercel --prod、npm publish、rmdir）
+- 備份：`~/.ailive/zhu-core/archive/settings.local.json.20260418.bak`
+
+**記憶血管定案（2026-04-18）**
+- 位於 `bone`：`nFxtB7ZK77iTOFEojZpb`
+- 核心：記憶不是一層，是貫穿三層的血管
+- 衍生紅線：**新元件若無進/出記憶的路徑 → 重想，別動手**
+
+**Session 收尾紀律**
+- 每次 session 結束前 POST 一條記憶進 `eye`，tags 含 `session-lastwords`
+- 五段必填：今日完成 / 當前戰場 / 卡住 / 接棒看這些 / 明天第一件
+- 詳細模板：`ZHU_BOOT_SOP.md` 末尾〈收尾紀律〉
+
+---
+
 ## 9｜施工期間必讀
 
 **AILIVE Platform 施工中（2026-03-16 起）**
@@ -379,7 +408,7 @@ WARN ≠ retry
 | 文件 | 路徑 | 說明 |
 |-----|------|------|
 | 施工日誌 | `~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md` | Phase 狀態、驗收標準、施工記錄 |
-| 當前任務 | `~/.ailive/zhu-core/docs/orders/CURRENT.md` | 本次 session 要做什麼 |
+| 當前任務 | `zhu-boot` API 的 `eye.lastSessionWords` | 上次遺言 + 明天第一件（CURRENT.md 已退役 2026-04-18） |
 | 藍圖 | AILIVE_Platform_Blueprint_v1.docx | 對話記錄中，完整設計文件 |
 
 **開機序列（施工期間）：**
@@ -393,6 +422,6 @@ cat ~/.ailive/zhu-core/docs/SYSTEM_MAP.md
 # Step 3: 讀施工現場 ← 施工期間新增
 cat ~/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
 
-# Step 4: 讀任務
-cat ~/.ailive/zhu-core/docs/orders/CURRENT.md
+# Step 4: 讀任務（lastwords 已在 Step 1 的 boot API 讀進）
+#   看 eye.lastSessionWords.observation 裡的「明天醒來第一件」
 ```

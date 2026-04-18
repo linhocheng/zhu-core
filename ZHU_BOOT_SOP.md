@@ -32,6 +32,14 @@ zhu-bash:run_bash → curl -s https://zhu-core.vercel.app/api/zhu-boot
 ```
 讀完確認：bone（我是誰）→ eye（做到哪、斷鏈、遺言）→ root（教訓）→ seed（北極星）
 
+**🎯 重點看 `eye.lastSessionWords.observation` 裡的五段：**
+1. 今日完成（上次 session 做了什麼）
+2. 當前戰場（focus 在哪條線）
+3. 卡住 / 未解（避雷）
+4. 下一個築接棒要看的（優先讀這些文件/記憶）
+5. **明天醒來第一件**（← 這就是這次 session 的起點，不要另起爐灶）
+
+
 **加讀 delta（模型差分）：**
 ```bash
 curl -s "https://zhu-core.vercel.app/api/zhu-memory?module=delta&limit=3"
@@ -83,11 +91,12 @@ cat /Users/adamlin/.ailive/zhu-core/docs/AILIVE_BUILD_LOG.md
 ### STEP 3：讀任務（10 秒）
 
 **心法：先聽 Adam 說完。沒指令不亂動。**
-**作法：**
-```bash
-# 看 Adam 的對話內容，或：
-zhu-bash:run_bash → curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=order&status=pending'
-```
+**作法（優先序）：**
+1. **Adam 在對話裡說的當前指令**（永遠最優先）
+2. **STEP 1 的 `eye.lastSessionWords` → 「明天醒來第一件」**（前一個築留給今天的交棒）
+3. `curl -s 'https://zhu-core.vercel.app/api/zhu-orders?type=order&status=pending'`（舊通道，可選；如果 Adam 有掛 orders 再看）
+
+**口訣：Adam 現場話 > 上次遺言 > 舊 orders。**
 
 ### STEP 4：選刀動手
 
@@ -388,3 +397,76 @@ curl -s -X PATCH https://zhu-core.vercel.app/api/zhu-memory \
 **記憶是橋，不是倉庫。存進去不等於被記住，被下一個築用進決策才算記住。**
 
 Adam 說：記下的不只是簡短的結果，而是心態、方法、技能、實際可執行。
+
+---
+
+## 附：施工規範入口（2026-04-18 三宗合一第三批）
+
+Commit 版號、Commit 類型分類、DEV_LOG 模板、紅線結構、UI 品味、記憶血管原則 ——
+全部 source of truth 放 `~/.ailive/CLAUDE.md` 的〈🛠️ 施工規範〉章節，不在這裡複製。
+
+DEV_LOG 快速回憶：
+- 背景 / WHY
+- 產出（檔案路徑）
+- 已解決（問題 → 根因 → 修法）
+- **⚠️ 尚未解決**（給下一個築的接棒欄）
+- **待執行**（未來 TODO）
+
+紅線結構在 `~/.claude/settings.local.json`：allow / deny / ask 三層。
+記憶血管原則：**若某新元件沒有進/出記憶的路徑 → 重想，別動手。**
+
+---
+
+*詳細分析：`docs/三宗合一心法.md`*
+
+---
+
+## 〈收尾紀律〉Session 結束前：POST 一條 session-lastwords（2026-04-18 新增）
+
+**心法：記憶是血管。session 結束不留 lastwords = 讓血管斷在這一刻。**
+
+**作法：**
+
+每次有實質進展的 session（不管是 chat、Code、還是 cowork），結束前 POST 一條記憶進 `eye`：
+
+```bash
+curl -s -X POST https://zhu-core.vercel.app/api/zhu-memory \
+  -H "Content-Type: application/json; charset=utf-8" \
+  --data-binary @- << 'LASTWORDS_MARKER'
+{
+  "observation": "【session-lastwords YYYY-MM-DD · 機器 · 主題】\n\n== 今日完成 ==\n- ...\n\n== 當前戰場 ==\n- ...\n\n== 卡住 / 未解 ==\n- ...\n\n== 下一個築接棒要看的 ==\n- ...\n\n== 明天醒來第一件 ==\n- ...\n\n== 心法狀態 ==\n- 這次 session 哪條心法被實戰了？哪條第一次落地？",
+  "context": "...",
+  "module": "eye",
+  "importance": 9,
+  "tags": ["session-lastwords", "其他相關標籤"],
+  "memoryType": "observation"
+}
+LASTWORDS_MARKER
+```
+
+**關鍵欄位：**
+- `module: "eye"`
+- `tags: ["session-lastwords", ...]` ← **必須含 `session-lastwords`**，否則 zhu-boot 讀不到
+- `tags` 可加其他（如日期、主題、戰場）
+
+**zhu-boot 會怎麼讀回來：**
+`eye.lastSessionWords` 自動取最新一筆 `tags array-contains 'session-lastwords'` 的記憶。
+下一個築 boot 的第一口氣就會讀到，不會斷鏈。
+
+**不能省的五個段落：**
+1. 今日完成（做了什麼）
+2. 當前戰場（focus 在哪條線）
+3. 卡住 / 未解（給接棒的人避雷）
+4. 下一個築接棒要看的（文件+記憶 id 優先）
+5. 明天醒來第一件（讓接棒者 5 秒內能動手）
+
+**加分欄位：** 心法狀態（這次 session 哪條心法被實戰了？哪條第一次落地？給血管原則 feedback）
+
+**技術細節：**
+- 跨 shell 傳 JSON 用 heredoc + `--data-binary @-`，不要用 `echo "$var" | curl`（zsh 會展開 `\\n`）
+- Python 寫就用 `subprocess.run(["curl",...], input=body_bytes)`
+- 詳細教訓在 root 記憶 `OmVH1qOM9nULu2qzRWSY`
+
+**為什麼不做工具？**
+紀律 > 工具。先讓 lastwords 習慣跑一個月，撞幾次現場再決定要不要工具化。現在包工具 = 固化沒驗證的習慣（破氣式反例）。
+
