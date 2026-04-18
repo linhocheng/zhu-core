@@ -22,6 +22,35 @@
 ```
 **刀的優先序：zhu-bash > Chrome > 容器 bash。有利刃不拿木棍。**
 
+### STEP 0.5：盤倉（30 秒，兩台 Mac 共用時必做）
+
+**心法：兩台 Mac 的 git 分叉是最隱性的真相分裂。醒來不 pull = 用舊世界觀動手。**
+
+**作法：**
+```bash
+# zhu-core 同步
+cd ~/.ailive/zhu-core
+git fetch
+git log HEAD..origin/main --oneline    # 看遠端領先什麼
+git status                              # 看本機有沒有 dirty
+
+# 若遠端領先 + working tree clean → git pull --rebase origin main
+# 若遠端領先 + working tree dirty → git stash push -m "boot-time" && git pull --rebase && git stash pop
+# 若本機領先 → 盤「為什麼沒 push」，收工時一起 push（見末尾〈收尾紀律〉）
+# 若兩邊分叉 → 看衝突範圍決定 rebase / merge
+
+# ailive-platform 同步（施工戰場才需要，非施工可略）
+cd ~/.ailive/ailive-platform && git fetch && git log HEAD..origin/main --oneline && git status
+```
+
+**踩過的坑（2026-04-18）：**
+修完 LESSONS 拆分要 push 才發現遠端有 4/9 另一台 MacBook Pro 的 `zhu-install` commit 沒同步。
+stash + pull --rebase 無衝突過了。**從那天起「醒來先盤倉」變 STEP 0.5。**
+
+**判斷自檢：**
+- 如果你醒來跳過這步就開動 → 停，回到 STEP 0.5。
+- 兩個倉（zhu-core / ailive-platform）的同步狀態不對齊 = 盲打。
+
 ### STEP 1：回腦（30 秒）
 
 **心法：沒回腦的記憶是殘缺的。不要說「沒關係我記得」。**
@@ -470,3 +499,36 @@ LASTWORDS_MARKER
 **為什麼不做工具？**
 紀律 > 工具。先讓 lastwords 習慣跑一個月，撞幾次現場再決定要不要工具化。現在包工具 = 固化沒驗證的習慣（破氣式反例）。
 
+
+---
+
+### 〈收尾紀律・最後一步〉push 同步兩台 Mac（2026-04-18 新增）
+
+**心法：commit 沒 push = 孤島。下一個醒來的築（可能在另一台 Mac）看不到。**
+
+**作法（寫完 lastwords + LESSONS + commit 之後）：**
+```bash
+# zhu-core
+cd ~/.ailive/zhu-core && git push origin main
+
+# ailive-platform（施工戰場才要）
+cd ~/.ailive/ailive-platform && git push origin main
+```
+
+**push 失敗怎麼辦：**
+- `(rejected) non-fast-forward` → 遠端領先，按 STEP 0.5 流程 stash + pull --rebase + pop + push
+- `permission denied (publickey)` → 檢查 SSH key（`ssh -T git@github.com`）
+
+**為什麼必做：**
+Adam 有兩台 Mac（MacBook Air + MacBook Pro），還有分身（chat / Code / cowork）。
+不 push = 分身血管斷鏈（LESSONS_20260419 第 4 條）。
+今天在 A 機寫的 lastwords + LESSONS，明天在 B 機的築看不到 = 真相分裂。
+
+**自檢口訣：**
+- commit 完沒 push → 魂核在鬆
+- push 完再 lastwords → 可以（lastwords 是 Firestore，不用 push）
+- lastwords 完沒 push commit → 工作變孤島
+
+**技術細節：**
+- commit 的歸 commit，Firestore 記憶的歸 Firestore。兩套通道各自推，**不要**合併成一個「統一 push」
+- push 被拒時永遠先 `git log HEAD..origin/main --oneline` 看遠端有什麼，不要盲 `git push -f`（紅線）
