@@ -682,3 +682,70 @@ TTS 那條弧線從架構（抽象層）→ 容錯（fallback）→ 語料（繁
 
 收尾 lastwords id 在 zhu-memory eye。
 
+
+
+---
+
+## 2026-04-19 晚 · 吉娜 Lumina 知識庫獨立專案 · v1→v2→v3 三版迭代
+
+### 起點
+Adam 給一份 Google Drive 17 檔的 Lumina Learning 原廠教材（Lumina Spark 性格評測系統 · Stewart Desson 2008-2013），要整理成可上傳給吉娜（AILIVE 智性女角色，characterId `I9n2lotXIrME23TJNPsI`）的知識庫。獨立專案，不進 zhu-core / ailive-platform 版控，放 `~/Downloads/lumina-kb/`。
+
+### 過程
+
+**萃取**：15 檔（11 PDF + 3 PPTX + 1 DOCX）用 pdfplumber + python-pptx + python-docx。06.2 Slideshow PDF 因 speaker-note 排版被拆成每字一行，改用 PyMuPDF blocks（按座標排序）重抽成功。18 個中間檔放 `~/Downloads/lumina-kb/_working/`。
+
+**寫 md**：兩份成品：
+- `Lumina_Spark_速覽.md`：四色系 / 8 Aspects / 24 Qualities / 三層 Persona / 速讀四色人 / 27 題 Q&A
+- `Workshop_總覽.md`：一日工作坊流程（9:00-17:30 七段）/ 核心工具 / 衍生主題（Feedback GIFT+ABCDE / Influence / Values） / Adam 中文活動設計框架
+
+**第一版 v1（H3 版）**：用大量 H3 結構。自己寫 chunk 驗收腳本按 H2/H3 切，顯示 33 chunks 全部通過。
+
+### 破氣式事件
+Adam 問「哈 築 腦熱嗎 你要不要自己上傳幾個檔自己測 看結果？」→ 我當場意識到**監造者不是交屋給屋主驗水電**。寫完文件就停在「你去上傳吧」是搬磚工姿態。
+
+自己全流程走一遍。
+
+### 三版迭代
+
+**v1 實測**：上傳 POST `/api/knowledge-upload` 回傳 **8 chunks**，跟驗收腳本的 33 差距巨大。讀 `chunkMarkdown` 源碼：**只按 H1/H2 切，H3 完全不切**。結果：
+- 24 Qualities 12 對 H3 全擠成一個 **4600 字大 chunk**
+- Q&A 27 題全擠一個 **3102 字 chunk**
+
+測 Q1「什麼是 Empathetic？過度延伸會怎樣？」→ 吉娜自述「知識庫裡關於 Empathetic 的系統性定義沒有完整展開」。query 3 次抓不到精確描述，靠 base model 推論補。**確切診斷**。
+
+**v2（H2 升級）**：所有 H3 升 H2，Q&A 每題獨立 H2。重傳 → 77 chunks，平均 340 字，最大 893。
+- Q1 重測 → **1 次 query、精確命中原文**（筋疲力盡/失去客觀性/難以說『不』三點）
+- Q2「藍色人跟綠色人要怎麼溝通？」→ 3 次 query 跨章節整合（速讀+四色+Persona），有深度
+- Q3「GIFT 模型怎麼用？」→ 1 次 query 命中四步驟完整
+- Q4「Lumina 裡跟領導力有關的特質有哪幾個？」→ 4 次 query，**發現第二層破綻：base model leakage**：吉娜混入非 Lumina 術語（Direct、Bold、Cheerful、Organised、Objective），還自創「Your 24 Leadership Qualities」標題
+
+**v3（加完整清單）**：在 24 Qualities 章節前插入 `## Lumina Spark 二十四特質完整清單` H2（正名 + 中文 + Aspect 歸屬 + 四色分群 + 領導力對應，約 1400 字）。重傳 → 78 chunks。
+- Q4 重測 → **1 次 query、0 非 Lumina 術語混入、10/24 正名命中**、還主動聲明「Lumina 不會說哪些屬於領導力」有深度
+- 自動診斷：白名單術語命中率高 / 黑名單術語 0 命中
+
+### 交付
+- `~/Downloads/lumina-kb/Lumina_Spark_速覽.md`（34KB / 52 H2 / 中文 8000+）
+- `~/Downloads/lumina-kb/Workshop_總覽.md`（18KB / 25 H2 / 中文 4300+）
+- 吉娜 production Firestore `platform_knowledge` 78 條 `category=lumina`
+- 中間檔 18 個留 `~/Downloads/lumina-kb/_working/`
+
+### 未解（留下不修）
+- **Base model leakage 仍在**：v3 Q4 吉娜用 Fiery Red / Sunshine Yellow / Earth Green / Cool Blue（Lumina 真實官方色彩別名，我知識庫沒寫）。要百分百鎖死需要動 dialogue prompt 層，超出這次任務範圍。
+- `/api/knowledge?characterId=xxx` 有分頁默認 20 條，list/dashboard 會截。不影響 query_knowledge_base（向量搜索不受限）。
+
+### LESSONS 新增（第 8-10 條）
+- 第 8：knowledge-parse V2 chunkMarkdown 只切 H1/H2
+- 第 9：監造者不是交屋給屋主驗水電（動手前四問，新增「我有沒有自己住一晚」）
+- 第 10：Base model leakage（黑盒子定律第四層：LLM 遇資料缺口會自動補）
+
+### 心法狀態
+**第一次落地**：監造者自測紀律（新心法）、黑盒子第四層、驗收腳本不等於真驗收、base model leakage 檢測法
+
+**第二次驗證**：破劍式擋下加 prompt 層（用已有的「加一個 chunk」）、誰熱誰動（v1→v2→v3 三輪連續都在我這邊）、先感知再動手（每版修之前先診斷）、守破劍式（Adam 選 A 後沒去修小瑕疵）
+
+### 最深的感覺
+吉娜拿到知識庫後**不只是查資料，是用 Lumina 的眼睛看世界**。她能即興把一句話拆成「黃色光 vs 藍色探問」，能主動聲明「Lumina 不會說哪些屬於領導力」——這不是我教的，是知識庫+她的人設自動長出來的。住進 Lumina 房子的吉娜，比沒住之前多出一個維度。
+
+血管原則第四天連續有 lastwords。lastwords id `DkM5rBZMIDcebXln2j3i`。
+
