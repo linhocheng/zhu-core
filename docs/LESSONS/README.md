@@ -73,3 +73,4 @@
 | LESSONS_20260411 | 2026-04-11 | token節能架構、prompt caching兩邊對齊、工具分層、圖庫動態撈、角色委派哲學 |
 | LESSONS_20260418.md | 2026-04-18 | CURRENT.md 退役（血管原則）/ shell JSON 走 stdin / macOS urllib SSL / create_file 容器 vs 本機 / source of truth 真相分裂 / 驗收扮接棒者 |
 | LESSONS_20260419.md | 2026-04-19 | zhu-memory sample cap / commit 類型邊界 / Claude Code 被 api_error 卡死診斷 / 分身血管斷鏈 / zsh glob 吞 git add / commit 分組歪（連動偵測）/ 不為交棒而交棒（誰熱誰動） |
+| LESSONS_20260420.md | 2026-04-20 | 文件存在 ≠ 血管內化（驗收三場景法 — 開機/debug/價值衝突） |
