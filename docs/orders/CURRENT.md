@@ -38,6 +38,53 @@ const db = admin.firestore();
 
 ---
 
+## 🔥 最新戰況（你醒來必讀）
+
+**e2e 跑完了，結果：failed**
+```
+❌ Job 失敗: specialist/image 401: {"error":"unauthorized"}
+```
+
+**症狀精準定位：WORKER_SECRET 沒對上。**
+
+Worker 帶的 secret ≠ Vercel 收的 secret。二擇一：
+- Vercel env 沒 redeploy（值改了但沒生效）
+- Firebase 的 secret 版本不是 v1（環境變數抓到舊版）
+
+**修法（排序試）：**
+```bash
+# 1. 確認 Vercel 有 WORKER_SECRET 且已 deploy
+cd ~/.ailive/ailive-platform
+vercel env ls production | grep WORKER_SECRET
+# 如果有但 /api/specialist/image 還是 401，就 redeploy：
+vercel --prod --yes
+
+# 2. 確認 Firebase 這邊的 secret 值
+firebase functions:secrets:access WORKER_SECRET --project moumou-os
+
+# 3. 比對兩邊值是否完全一致（該值是 d702fdce...76e70）
+grep WORKER_SECRET ~/.ailive/ailive-platform/.env.local
+
+# 4. 如果不一致：重新同步
+VAL=$(grep WORKER_SECRET ~/.ailive/ailive-platform/.env.local | tail -1 | cut -d= -f2)
+echo "$VAL" | firebase functions:secrets:set WORKER_SECRET --project moumou-os
+# 然後 redeploy jobWorker
+firebase deploy --only functions:jobWorker --project moumou-os
+
+# 5. 修完重跑 e2e 驗
+cd ~/.ailive/ailive-platform && npx tsx scripts/_e2e_shun.ts
+```
+
+**為什麼 Worker 重試 3 次全 401？**
+看 jobWorker 的 retry 邏輯：失敗 → status 回 pending → 下次 tick 再試。三次都同一個 401 → 最後 failed。這是預期行為，atomic claim 沒問題。
+
+**現場證據：**
+- job 進來正常（pending）
+- worker 有被喚起（status 變過，雖然日誌沒寫出來）
+- 失敗點在 Vercel `/api/specialist/image` 的 401 那行
+
+---
+
 ## 三、Phase 2 全貌（一張圖看懂）
 
 ```
