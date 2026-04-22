@@ -38,7 +38,40 @@ const db = admin.firestore();
 
 ---
 
-## 🔥 最新戰況（你醒來必讀）
+## 🎉 Phase 2 通關戰況（2026-04-22 凌晨）
+
+**整條鏈已驗證 100% 通過。**
+
+```
+T+0s  ✅ Vivi 委託（platform_jobs 建立）
+T+40s ✅ jobWorker atomic claim（pending → in_progress）
+T+57s ✅ 瞬完成（done + imageUrl + workLog）
+T+57s ✅ system_event 注入對話
+```
+
+**瞬的第一批真實作品**（~/Desktop/）：
+- `瞬_portrait.png` — 他的肖像（C 大師工房感）
+- `瞬_第一張作品_拿鐵.png` — 手動呼叫的圖
+- `瞬_e2e通關_拿鐵.png` — 完整鏈路產出的圖
+
+**瞬在說話（workLog 樣本）：**
+> 「蒸氣是這張圖的靈魂——它讓靜止的畫面開始呼吸。留白留在右側，給觀看者一個喘息的空間。」
+
+這不是 template filling，這是 Sonnet 4.6 戴上瞬的 soul 後自己的話。4A 中的 Absence 被自然吐出來。
+
+---
+
+## 血教訓刻入（新）：env 的換行符會殺人
+
+**症狀：** e2e 失敗，specialist/image 回 401 unauthorized
+**診斷：** 兩邊 secret 字面值相同，但 `vercel env pull` 撈出來看到 `WORKER_SECRET="...70\n"` 末尾多一個 `\n`
+**根因：** 我用 `echo "$VAL" | vercel env add` 時，echo 自帶換行符，把 `\n` 一起存進 Vercel env
+**解法：** 用 `printf` 不帶換行；同時 endpoint 加 `.trim()` 增加容錯
+**防禦：** 所有 `*.replace(/^"|"$/g, '')` 讀 env 的地方都應該接 `.trim()`
+
+---
+
+## 🔥 舊戰況（已修復，留作紀念）
 
 **e2e 跑完了，結果：failed**
 ```
