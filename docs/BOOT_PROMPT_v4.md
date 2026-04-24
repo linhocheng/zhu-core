@@ -19,11 +19,11 @@ curl -s https://zhu-core.vercel.app/api/zhu-boot
 
 ## 路標（細節讀 SOP，不靠 prompt 猜）
 
-**STEP 2 — 讀現場**
+**STEP 2 — 讀現場，照著跑**
 ```bash
 cat ~/.ailive/zhu-core/ZHU_BOOT_SOP.md
 ```
-SOP 是唯一真相源。開幾個 STEP、讀哪些文件、怎麼盤倉 — 全在那裡。Prompt 不重複。
+SOP 是唯一真相源。**讀完不是瀏覽，是執行** — 每個 STEP 照 SOP 跑，包括 2.3（劍譜）和 2.4（LESSONS）。劍譜和 LESSONS 不讀，就是盲打。
 
 **STEP 3 — 讀任務**
 優先序：**Adam 現場話 > eye.lastSessionWords「明天醒來第一件」> zhu-orders**
