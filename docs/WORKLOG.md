@@ -981,3 +981,102 @@ Adam 想把 TTS 從 ElevenLabs 切到 MiniMax，但發現 ailive 的破音字字
 - 77 vitest 測試凍結 baseline 169+82
 - 169 條 ElevenLabs 規則一字未動（Phase 2 只動結構不動行為）
 - 9/11 task 完成，2 task parked
+
+---
+
+## 2026-04-26（晚）— LLM 對齊 + 記憶系統破綻盤點 + Phase 1 委派模式
+
+### 背景 / WHY
+昨天結尾把 v0.2.4.013 收乾淨。今天 Adam 開新題：先比對 AILIVE 角色 vs 江彬的語音對話**模型/長度限制**，再延伸到**記憶模式**，最後落到**工具委派架構**。整天從監造姿態切入，每個小題用心法跑一輪後才動。
+
+### 產出（5 commits）
+
+**v0.2.4.014** — 文件：標 TTS Phase 2 後段（2.4 + 2.5）為 Parked 未來任務（昨天遺漏的 PLAN.md 改動補上）
+
+**v0.2.4.015** — 重構：LLM 對齊江彬語音端
+- `getMaxTokens` 兩檔/兩場景統一 8192（移除 isVoice + gear 分檔）
+- voice-stream 主對話 + dialogue 主對話加 `temperature: 0.9`
+- 次級工具呼叫（壓縮/insight/mentor）保留預設
+- WHY：江彬 LiveKit anthropic plugin 不設上限、temperature 0.7 穩但拘束。AILIVE 拉高上限讓模型自然收尾、temp 0.9 讓角色更敢講
+
+**v0.2.4.016** — 修正：summary 壓縮 prompt 升級保留承諾/未竟/處境（修流動斷裂主源頭）
+- 原 prompt「3-5 句話保留人名/話題/關係」→「漏寫即失憶」清單：具體事/處境/承諾/未答問題/未竟話題
+- 抽象句明確標為失敗
+- max_tokens 200 → 400、summary 上限 500 → 800
+- voice-stream（Haiku 壓縮）+ dialogue（Gemini 壓縮）兩處同步
+- WHY：先看現場後發現「沒地方存承諾」是症狀，「summary 把承諾洗掉」才是根因
+
+**v0.2.4.017** — 新增：character-actions helper + cross-user leak 防護（P1 commit A）
+- 新檔 `src/lib/character-actions.ts`：擴用 platform_insights 加 userId + actionType (promise/question/event/note/general) + fulfilled 欄位
+- helper：getRecentUserActions / addUserAction / markFulfilled / formatActionsBlock
+- Leak 補丁四處：voice-stream / dialogue / knowledge-search / dialogue episodicBlock 全加 `!d.userId || d.userId === currentUser` filter
+- WHY：P1 要把 (角色×用戶) 級別承諾存進 insights，但既有撈點全部沒分流 userId → 馬雲對 Adam 的承諾會撈給馬雲跟 Bob → 隱私洩漏
+- ⚠️ 失誤：`git add -A` 把 4 個 untracked debug scripts 也帶進 git（_check_job/_minimax_burst/_diag/_matrix），不影響 prod 但要記住下次用具體檔名
+
+**v0.2.4.018** — 重構：voice-stream 對齊委派模式 + 委派紀律 prompt（Phase 1 完成）
+- 加 commission_specialist 工具定義（對齊 dialogue:142）
+- generate_image 改 stub 內部轉呼 commission_specialist
+- handler：寫 platform_jobs (status: pending) + 同步寫 character-actions promise
+- voiceStableBlock 加【委派紀律】：「答應 ≠ 立刻做。承諾是承諾，兌現是兌現。」
+- 端到端驗證：撥 Vivi「畫水光霜產品照」→ 5 秒內回「交給瞬，工作單號 JjaRlsoN」→ 不再 timeout
+- 計劃書原本分 v0.2.4.018+019 兩 commit，實際併成一個（四件事同屬「對齊委派」一個概念）
+
+### 已寫未發（Phase 1b 已 revert）
+P1b 提煉 prompt 分流（提煉同時回 insights+actions+fulfilledIds）已寫但未 commit，git restore 撤回。
+理由：先看現場後決定 P2（修壓縮源頭）優先，P1b 等觀察 P2 效果再評估必要性。
+
+### 計劃書（中期路線）
+新檔 `~/.ailive/ailive-platform/docs/PLATFORM_UNIFY_PLAN.md`：voice-stream × dialogue 收斂計劃
+- Phase 1（已完成）：voice 對齊委派模式
+- 觀察期 2-3 天
+- Phase 2（未開始）：抽 conversation-core helper / 統一 doc ID + session key / 預塞 userProfile / 工具 registry / finalize 合一
+- 6 個獨立 commit（v0.2.4.020 - .025），每個 deploy + 驗證
+
+### ⚠️ 尚未解決
+- **scripts/_check_job.ts 等 4 檔** 已 commit 進 git，下次清理或保留（dev 工具，不影響 prod）
+- **跨文字/語音記憶分裂** 仍在：
+  - conversation doc：voice 用 `voice-${cid}-${uid}`，dialogue 用前端帶或自動建（Phase 2.2 修）
+  - session state Redis key：voice `session:voice-cid-uid` / dialogue `session:cid:uid`（Phase 2.3 修）
+  - voice-stream 沒預塞 userProfile / episodicBlock（Phase 2.4 修）
+- **character-actions promise → fulfilled 流**：specialist endpoint 完成後沒回頭 markFulfilled（待驗證後台 painter 路徑是否要補）
+- **P1b 提煉分流**：要不要做還沒拍板，要看 P2 + commit A 累積幾天的對話樣本
+
+### 待執行（觀察期後決定）
+- [ ] 觀察 2-3 天：撥幾通語音 + 文字、看 character-actions 有沒有 promise 條目、看 summary 是否真留下承諾
+- [ ] 評估是否要做 P1b 提煉分流（如果 P2 已經把承諾留住，P1b 可能是重複路徑）
+- [ ] Phase 2 起手：v0.2.4.020 抽 conversation-core helper
+- [ ] 清掉或保留 scripts/_check_job.ts 等 4 檔
+- [ ] 驗證 painter（瞬）完成後是否回頭 markFulfilled（補 webhook 或下次對話自動 mark）
+
+### 元教訓（4 條）
+
+1. **「先看現場」是劍法心法的根**——今天兩次救我於跳腳：
+   - P1 原本要新建 `platform_character_actions` 表，重看現場後改用 platform_insights 加欄位
+   - 記憶模式比對時原以為「AILIVE 沒用戶維度」，實際 conversation doc 早就是 (角色×用戶) 維度，缺的是結構化分層
+   Adam 提醒「劍法心法重看現場」**改變了整個方向**——不是把錯方案做完，是回頭找對方案
+
+2. **修源頭優於補儲存**——P2（壓縮 prompt）vs P1（新存儲層）的優先序：
+   血在源頭就漏了，建新表也存不到承諾。先堵漏（P2）再蓄水（P1）。
+   違反「修症狀不修根因」三禁第一條的危險，往往發生在「想新建東西的興奮感」蓋過「找根因的耐心」
+
+3. **委派模式 = 承諾追蹤的延伸**——P1 commit A 的 `actionType: 'promise'` + Phase 1 的 commission_specialist 不是兩件事：
+   都源於「答應 ≠ 立刻做」這個哲學
+   江彬的 jiangbin_action（promise/question/reminder）在概念上跟 commission_specialist 完全一致
+   寫 prompt 時把這層挑明（「承諾是承諾，兌現是兌現」）讓角色有共通語言
+
+4. **git add -A 不該用**——CLAUDE.md 系統 prompt 明寫「Prefer adding specific files by name」
+   今天還是踩了，4 個 untracked debug scripts 跟著 commit 進去
+   不影響 prod 但破壞了「commit 純度」（看 commit 訊息以為只動 lib + leak 補丁，實際多了不相關檔）
+   下次永遠 `git add <file1> <file2>`
+
+### 數字
+- 5 commits 今天上 prod（v0.2.4.014 - .018）
+- 1 計劃書（PLATFORM_UNIFY_PLAN.md）
+- 1 新 helper（character-actions.ts，146 行）
+- 1 P1b 改動 revert（git restore，working tree clean）
+- 撥 1 通驗證對話（Vivi commission 瞬，5s 回應）
+
+### 接棒要看的
+- 計劃書：`~/.ailive/ailive-platform/docs/PLATFORM_UNIFY_PLAN.md`（Phase 2 路線）
+- character-actions helper：`~/.ailive/ailive-platform/src/lib/character-actions.ts`
+- 觀察指標：撥幾通語音通話，看 Vivi/馬雲記不記得上次承諾、看 character-actions 有沒有 promise 條目
