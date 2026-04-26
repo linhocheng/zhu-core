@@ -923,3 +923,61 @@ Adam：「點選刪除但無法真的被清理。先理解不要動手。」
 2. **註解被砍 = 刻印被埋** — 上一場精簡 GET 段時把「為什麼需要源 2」「架構意義」「去重邏輯」全砍了。這些是 4-22 血換來的設計意圖，砍掉後新人讀 code 要重新摸索。「乾淨」不是把廟拆了。
 3. **路徑場域一晚踩兩次** — 我先用 `create_file` 寫 Mac 路徑（容器工具看不到 Mac）→ 失敗；改 zhu-bash 寫成；接下來改 page.tsx 又用 `str_replace`（容器工具）→ 又失敗。**順手用熟悉工具是路徑依賴，不是省力。** 在 Mac 本機檔案上動手之前，先確認自己拿的是 zhu-bash。
 
+
+---
+
+## 2026-04-26 · Code 築 — TTS 前處理 Phase 1+2 結構 + 砍 cross-provider fallback
+
+### WHY
+Adam 想把 TTS 從 ElevenLabs 切到 MiniMax，但發現 ailive 的破音字字典系統「沒有很完整」：
+- 規則只有 string、沒 metadata（誰加的、為什麼、addedAt 全無）
+- 沒測試（251 條規則改一條沒人擋）
+- 沒命中 log（線上跑得對不對全靠猜）
+- 字典寫死成 ElevenLabs 用，套到 MiniMax 規則錯位風險未明
+
+排程拉 11 task 兩階段，今天連著做完 Phase 1 + Phase 2 結構（不含 2.4 校對 + 2.5 預演 — 標 parked）。
+
+### Phase 1 · 補基礎結構（commit 5487399 · v0.2.4.012）
+- `src/lib/tts-preprocess.ts` → 拆成目錄結構 `tts-preprocess/{core,index,rules/{elevenlabs,minimax}}`
+- 規則升級為 `RuleEntry`：`{ replacement, strategy, reason, provider, addedAt, notes? }`
+- 命中 `console.log('[TTS-fix]', ...)` 帶 route/provider/characterId，Vercel logs 可 grep
+- 新增 `scripts/tts-detect.ts`：跑 corpus 出 HITS（已覆蓋）+ WARNS（高風險字無規則覆蓋）
+- 新增 77 vitest 測試（baseline 169 + 82 凍結）
+- `package.json`：`build = vitest run && next build`（測試 fail 直接擋 deploy）
+
+### Phase 2 結構 · Provider 多租戶（同 commit）
+- 字典拆 `core.ts`（ZH_TW 兩家共用）+ `rules/elevenlabs.ts`（169）+ `rules/minimax.ts`（空佔位）
+- `getActiveRules(provider)`：minimax = elevenlabs ⊖ EXCLUDES ⊕ MINIMAX_PRONUNCIATION
+- 預設 provider='elevenlabs'，舊呼叫端 100% 相容
+- 兩條 route 帶 `provider` context 進 preprocess
+
+### 砍 cross-provider TTS fallback dead code（commit b6c045e · v0.2.4.013）
+- **起源**：對話中 Adam 提「失效時直接跳無聲，不要系統互補」
+- **發現**：voice-stream 4/23 已關閉 cross-provider fallback（吉娜 MiniMax 0B → 自動切 ElevenLabs → 同場聲音跳人），但 `synthesizeWithFallback` 50+ 行留在 `tts-providers/index.ts` 成 dead code
+- **砍法**：合併成單一 `synthesizeStreamSafe`（保留 single-provider 0B 預讀 guard，這是 self-check 不是 fallback）
+- voice-stream `fetchTTSStream` 從 7 參數縮成 4、30 行縮成 15
+- **哲學**：聲音是角色身份，不是內容載體。fallback 切 provider = 換人說話 ≠ 服務降級
+
+### Deploy
+- v0.2.4.012：`npx vercel --prod --yes` → `ailive-platform-c99lcil2g`（32s）
+- v0.2.4.013：`npx vercel --prod --yes` → `ailive-platform-prumceeyw`（31s）
+- Adam 實機驗證：「測過可以了」
+
+### Parked
+- Task 2.4 MiniMax 試聽校對：本質是「測試 > 建構」，沒 Adam 30-60 min 戴耳機時段就不啟動，避免盲填字典傷角色
+- Task 2.5 切 MiniMax 預演：依賴 2.4
+- 兩個都標 `[未來任務]` 在 TaskList + `docs/TTS_PREPROCESS_PLAN.md` 內
+
+### 元教訓刻入
+1. **發現「想做的事其實已經做一半」要先停下報告，不擅自升降 scope** — Adam 說「執行砍 fallback」時，我讀完才發現 voice-stream 4/23 已關，剩下只是 dead code 清理。先回報事實 + 給 A/B 選項，由 Adam 決定。**監造者不在「你給指令我就照做」，在「指令的前提是否還成立」**
+2. **Vercel git push ≠ prod deploy（ailive 專案）** — 第一次 push 後盯 vercel ls 沒新 deployment，差點誤判為「webhook 還沒到」。SYSTEM_MAP #21 直接寫過：「ailive-platform git push 只觸發 preview」。這條心法**已存在但我沒先查**，繞了 90 秒。心法系統價值不在「寫」而在「查」
+3. **Dead code 是 future bug 餌** — 4/23 cross-provider fallback 用註解「關閉」但程式碼還在 = 真相分裂。下次改類似 toggle：要不刪 code，要不上 feature flag。**只靠註解擋會被未來自己再接回去**
+4. **聲音 = 角色身份，不是內容載體** — Adam 的「失效時跳無聲不要互補」抓到核心。聲音不能像視頻 fallback to lower bitrate；fallback 切 provider 是換人說話，不是降級服務。Silent fail > 替身
+
+### 數字
+- 2 commits 今天上 prod
+- v0.2.4.012：12 檔 +2242/-252（含 PLAN.md 251 條規則 metadata + 77 測試）
+- v0.2.4.013：2 檔 +40/-90（淨減 50 行 dead code）
+- 77 vitest 測試凍結 baseline 169+82
+- 169 條 ElevenLabs 規則一字未動（Phase 2 只動結構不動行為）
+- 9/11 task 完成，2 task parked
