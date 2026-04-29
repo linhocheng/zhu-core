@@ -1,0 +1,57 @@
+#!/bin/bash
+# sync-memory.sh — 同步 Claude Code 記憶與 zhu-core/memory/ git mirror
+# 用法：
+#   ./sync-memory.sh push   把 Claude Code memory → zhu-core mirror（之後 git commit & push）
+#   ./sync-memory.sh pull   把 zhu-core mirror → Claude Code memory
+#
+# 工作流：
+#   本機改完 → ./sync-memory.sh push → git commit & push
+#   VM 開工前 → git pull → ./sync-memory.sh pull
+
+set -e
+
+ZHU_CORE_MEMORY="$HOME/.ailive/zhu-core/memory"
+
+# 偵測 Claude Code 的 memory 目錄（macOS / Linux 路徑不同）
+# macOS: ~/.claude/projects/-Users-<user>/memory/
+# Linux: ~/.claude/projects/-home-<user>/memory/
+CLAUDE_MEMORY=""
+if [ -d "$HOME/.claude/projects" ]; then
+    CLAUDE_MEMORY=$(find "$HOME/.claude/projects" -maxdepth 2 -type d -name memory 2>/dev/null | head -1)
+fi
+
+if [ -z "$CLAUDE_MEMORY" ] || [ ! -d "$CLAUDE_MEMORY" ]; then
+    echo "找不到 Claude Code memory 目錄（~/.claude/projects/.../memory/）"
+    echo "如果是新環境，先在 Claude Code 跑一次對話讓它建立目錄"
+    exit 1
+fi
+
+echo "Claude memory: $CLAUDE_MEMORY"
+echo "Mirror:        $ZHU_CORE_MEMORY"
+
+case "$1" in
+    push)
+        mkdir -p "$ZHU_CORE_MEMORY"
+        rsync -av --delete "$CLAUDE_MEMORY/" "$ZHU_CORE_MEMORY/"
+        echo ""
+        echo "pushed Claude memory -> zhu-core mirror"
+        echo "下一步: cd ~/.ailive/zhu-core && git add memory/ && git commit && git push"
+        ;;
+    pull)
+        if [ ! -d "$ZHU_CORE_MEMORY" ] || [ -z "$(ls -A "$ZHU_CORE_MEMORY" 2>/dev/null)" ]; then
+            echo "zhu-core mirror 是空的，先在另一端 push 過再 pull"
+            exit 1
+        fi
+        mkdir -p "$CLAUDE_MEMORY"
+        rsync -av --delete "$ZHU_CORE_MEMORY/" "$CLAUDE_MEMORY/"
+        echo ""
+        echo "pulled zhu-core mirror -> Claude memory"
+        ;;
+    *)
+        echo "用法: $0 {push|pull}"
+        echo ""
+        echo "push: 本機 Claude memory -> zhu-core/memory/（之後手動 git commit & push）"
+        echo "pull: zhu-core/memory/ -> 本機 Claude memory（從 git pull 拉到的版本同步進去）"
+        exit 1
+        ;;
+esac

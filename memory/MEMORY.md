@@ -1,0 +1,11 @@
+- [Secret Manager 寫入用 printf 不用 echo](feedback_secret_manager_printf.md) — echo 留尾端 \n 會讓 aiohttp header 拒送、API 全斷
+- [動手前驗證 secret／API key 是否真的有效](feedback_validate_secrets_before_inject.md) — Vercel pull / 既有快照的 key 不一定有效，先 curl 200 才灌
+- [MiniMax 海外版 plan tier ≠ 餘額（2061 vs 2053）](feedback_minimax_plan_tier.md) — 2061 plan not support 儲值救不了，2053 才是儲值能解
+- [LiveKit Cloud project 共用時必用 agent_name 隔離](reference_livekit_agent_name_isolation.md) — 多業務共用同一 LiveKit 時不要靠 prompt 防呆，用 agent_name + RoomAgentDispatch
+- [LiveKit Agents 1.5.x token 必帶 RoomConfiguration](reference_livekit_1_5_room_configuration.md) — 1.5.x 預設 explicit dispatch，照 1.3.x 文件寫 token 會無聲失敗
+- [新 GCP project 第一次 deploy 雙必踩 IAM](reference_gcp_new_project_iam.md) — Cloud Build 必帶 --region、Cloud Run compute SA 必 grant secretAccessor
+- [jianbin-v2 全鏈路上線（2026-04-25）](project_jianbin_v2_live.md) — STT/LLM/TTS 三鏈全通，撥號實測 OK
+- [ailive 即時語音上線（2026-04-27）](project_ailive_realtime_voice_live.md) — LiveKit + Cloud Run + Deepgram + Haiku + MiniMax 端到端通，寫記憶 tool 待 Phase 7
+- [ailive 角色記憶系統三批升級（2026-04-28）](project_ailive_memory_system_upgrade.md) — M1 + B1-B4 + A1+A3 落地，三模式讀路徑全通
+- [寫架構診斷前必先核 code + 既有記憶](feedback_diagnosis_verify_before_write.md) — MEMORY_DIAGNOSIS.md 翻車過 user_profile / 漏即時撥號斷路
+- [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
