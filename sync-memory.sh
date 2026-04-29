@@ -27,8 +27,13 @@ if [ ! -d "$CLAUDE_MEMORY" ] && [ -d "$HOME/.claude/projects" ]; then
     done | sort -rn | head -1 | awk '{ $1=""; sub(/^ /,""); print }')
 fi
 
-if [ -z "$CLAUDE_MEMORY" ] || [ ! -d "$CLAUDE_MEMORY" ]; then
-    echo "找不到 Claude Code memory 目錄（~/.claude/projects/.../memory/）"
+if [ -z "$CLAUDE_MEMORY" ]; then
+    echo "無法決定 Claude Code memory 目錄路徑"
+    exit 1
+fi
+# push 必須要 source 存在；pull 會幫你建（VM 第一次同步用得到）
+if [ "$1" = "push" ] && [ ! -d "$CLAUDE_MEMORY" ]; then
+    echo "找不到 Claude Code memory 目錄：$CLAUDE_MEMORY"
     echo "如果是新環境，先在 Claude Code 跑一次對話讓它建立目錄"
     exit 1
 fi
