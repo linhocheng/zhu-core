@@ -16,7 +16,8 @@ ZHU_CORE_MEMORY="$HOME/.ailive/zhu-core/memory"
 # macOS: ~/.claude/projects/-Users-<user>/memory/
 # Linux: ~/.claude/projects/-home-<user>/memory/
 # 用 HOME 編碼路徑直指主家，避免抓到子專案 cwd 的 memory（之前 head -1 抓錯過）
-HOME_ENCODED=$(echo "$HOME" | sed 's|/|-|g')
+# Claude Code 把 cwd 編碼成 project subdir 名稱：/, _, . 全變 -
+HOME_ENCODED=$(echo "$HOME" | sed 's|[/_.]|-|g')
 CLAUDE_MEMORY="$HOME/.claude/projects/${HOME_ENCODED}/memory"
 
 # 後備：HOME 編碼路徑找不到時，回退到「.md 檔案最多」的那個 memory dir
