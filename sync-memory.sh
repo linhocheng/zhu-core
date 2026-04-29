@@ -15,9 +15,16 @@ ZHU_CORE_MEMORY="$HOME/.ailive/zhu-core/memory"
 # 偵測 Claude Code 的 memory 目錄（macOS / Linux 路徑不同）
 # macOS: ~/.claude/projects/-Users-<user>/memory/
 # Linux: ~/.claude/projects/-home-<user>/memory/
-CLAUDE_MEMORY=""
-if [ -d "$HOME/.claude/projects" ]; then
-    CLAUDE_MEMORY=$(find "$HOME/.claude/projects" -maxdepth 2 -type d -name memory 2>/dev/null | head -1)
+# 用 HOME 編碼路徑直指主家，避免抓到子專案 cwd 的 memory（之前 head -1 抓錯過）
+HOME_ENCODED=$(echo "$HOME" | sed 's|/|-|g')
+CLAUDE_MEMORY="$HOME/.claude/projects/${HOME_ENCODED}/memory"
+
+# 後備：HOME 編碼路徑找不到時，回退到「.md 檔案最多」的那個 memory dir
+if [ ! -d "$CLAUDE_MEMORY" ] && [ -d "$HOME/.claude/projects" ]; then
+    CLAUDE_MEMORY=$(find "$HOME/.claude/projects" -maxdepth 2 -type d -name memory 2>/dev/null | while read d; do
+        count=$(ls -1 "$d"/*.md 2>/dev/null | wc -l)
+        echo "$count $d"
+    done | sort -rn | head -1 | awk '{ $1=""; sub(/^ /,""); print }')
 fi
 
 if [ -z "$CLAUDE_MEMORY" ] || [ ! -d "$CLAUDE_MEMORY" ]; then

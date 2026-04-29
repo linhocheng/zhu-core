@@ -9,3 +9,4 @@
 - [ailive 角色記憶系統三批升級（2026-04-28）](project_ailive_memory_system_upgrade.md) — M1 + B1-B4 + A1+A3 落地，三模式讀路徑全通
 - [寫架構診斷前必先核 code + 既有記憶](feedback_diagnosis_verify_before_write.md) — MEMORY_DIAGNOSIS.md 翻車過 user_profile / 漏即時撥號斷路
 - [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
+- [Headless VM 灌 Claude Max OAuth 用 setup-token](reference_claude_code_headless_oauth.md) — `claude auth login` 在 headless Ink 不畫 prompt，要 setup-token + bracketed paste 餵 PTY
