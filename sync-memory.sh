@@ -60,11 +60,51 @@ case "$1" in
         echo ""
         echo "pulled zhu-core mirror -> Claude memory"
         ;;
+    link)
+        # 把所有非 canonical 的 project subdir 的 memory/ 改成 symlink → canonical
+        # 已是 symlink → skip；real dir 有內容 → 警告 skip（要手動處理）；空或不存在 → 建 symlink
+        if [ ! -d "$CLAUDE_MEMORY" ]; then
+            echo "canonical memory 不存在: $CLAUDE_MEMORY（先 pull）"
+            exit 1
+        fi
+        canonical_parent=$(dirname "$CLAUDE_MEMORY")
+        canonical_name=$(basename "$canonical_parent")
+        projects_dir=$(dirname "$canonical_parent")
+        echo "Canonical:    $canonical_parent"
+        echo "Projects dir: $projects_dir"
+        echo ""
+        linked=0; skipped_link=0; warn_content=0
+        for d in "$projects_dir"/*/; do
+            name=$(basename "$d")
+            target="${d}memory"
+            [ "$name" = "$canonical_name" ] && continue
+            if [ -L "$target" ]; then
+                echo "[skip-symlink] $name"
+                skipped_link=$((skipped_link+1))
+                continue
+            fi
+            if [ -d "$target" ] && [ -n "$(ls -A "$target" 2>/dev/null)" ]; then
+                echo "[WARN-content] $name has non-empty memory dir, 手動評估收編 vs 放生"
+                warn_content=$((warn_content+1))
+                continue
+            fi
+            [ -d "$target" ] && rmdir "$target"
+            ln -s "../$canonical_name/memory" "$target"
+            echo "[linked]       $name → ../$canonical_name/memory"
+            linked=$((linked+1))
+        done
+        echo ""
+        echo "linked=$linked, already-symlink=$skipped_link, has-content=$warn_content"
+        if [ "$warn_content" -gt 0 ]; then
+            echo "⚠️  有 non-empty 沒處理，記憶不會共享到那些 cwd"
+        fi
+        ;;
     *)
-        echo "用法: $0 {push|pull}"
+        echo "用法: $0 {push|pull|link}"
         echo ""
         echo "push: 本機 Claude memory -> zhu-core/memory/（之後手動 git commit & push）"
         echo "pull: zhu-core/memory/ -> 本機 Claude memory（從 git pull 拉到的版本同步進去）"
+        echo "link: 把所有 project subdir 的 memory/ 改 symlink → canonical（多 cwd 共享一份記憶）"
         exit 1
         ;;
 esac
