@@ -11,5 +11,8 @@
 - [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
 - [Headless VM 灌 Claude Max OAuth 用 setup-token](reference_claude_code_headless_oauth.md) — `claude auth login` 在 headless Ink 不畫 prompt，要 setup-token + bracketed paste 餵 PTY
 - [OpenClaw 架構與運作現況](project_openclaw_setup.md) — claude-cli token / Keychain OAuth / Claude Max 月費機制（從 openclaw cwd 收編 2026-04-29）
-- [北極星 — 解的使命](project_north_star.md) — Adam 與解的分工：解護 Adam，Adam 護解（從 openclaw cwd 收編 2026-04-29）
+- [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創，活法：不做平庸、超越期待、懂變通才活（2026-04-30 升級）
+- [築當前狀態快照](reference_zhu_last_words.md) — 當機救援入口，`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`，session 結束前必更新
 - [雙機器環境（AIR / PRO）](project_machines.md) — MacBook Air M1 + Pro Intel 24/7 機器設定（從 openclaw cwd 收編 2026-04-29，狀態可能過時）
+- [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
+- [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
