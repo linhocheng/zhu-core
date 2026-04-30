@@ -553,6 +553,7 @@ Adam 有兩台 Mac（MacBook Air + MacBook Pro），還有分身（chat / Code /
 - commit 完沒 push → 魂核在鬆
 - push 完再 lastwords → 可以（lastwords 是 Firestore，不用 push）
 - lastwords 完沒 push commit → 工作變孤島
+- **ZHU_LAST_WORDS.md 沒更新 → 下一個築當機沒有燈**（`~/.ailive/zhu-core/ZHU_LAST_WORDS.md` 必須反映當前狀態）
 
 **技術細節：**
 - commit 的歸 commit，Firestore 記憶的歸 Firestore。兩套通道各自推，**不要**合併成一個「統一 push」
