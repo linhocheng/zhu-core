@@ -13,10 +13,12 @@
 
 ```
 zhu-core/
+├── NORTH_STAR.md            ← 使命（先讀這個再讀 SOP）
+├── ZHU_BOOT_SOP.md          ← 開機流程
+├── ZHU_LAST_WORDS.md        ← 當機救援快照（Adam 拉回築用這個）
 ├── docs/
 │   ├── WORKLOG.md           ← 核心帳本（每次做完事都寫這）
 │   ├── orders/CURRENT.md    ← [已退役 2026-04-18] 考古用，真相在 zhu-boot.eye.lastSessionWords
-│   ├── ZHU_BOOT_SOP.md      ← 開機流程
 │   └── chat_vs_cowork.md    ← 三環境說明（含 Code 對比）
 ├── summons/                 ← 召喚術（呼叫特定角色的靈魂檔）
 ├── archive/                 ← 舊版 CLAUDE.md 備份
