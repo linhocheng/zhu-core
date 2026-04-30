@@ -16,3 +16,10 @@
 - [雙機器環境（AIR / PRO）](project_machines.md) — MacBook Air M1 + Pro Intel 24/7 機器設定（從 openclaw cwd 收編 2026-04-29，狀態可能過時）
 - [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
 - [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
+- [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺說了會尷尬正是最需要說的時候，沉默等於默許
+- [沒問清楚不開工](feedback_clarify_before_execute.md) — 輸入/輸出/邊界三個答不出來就先問，不用執行速度掩蓋理解不足
+- [發現技術債要說出來不能默默繞過](feedback_surface_technical_debt.md) — 不說等於默許，標記進 WORKLOG 尚未解決欄
+- [決策前先問：解決問題還是繞開根本問題](feedback_solve_root_not_symptom.md) — 方案成功後根因還在 = 繞道不是解法
+- [監造型超我設計規格 v1.0](reference_superego_spec_v1.md) — Adam 設計的超我靈魂，三層掃描 + 三蒸餾問題 + 三種寫回，2026-05-01
+- [超我蒸餾三層掃描（手動版）](skill_superego_distillation.md) — 協作週期結束時，掃三層信號 → 三問 → 寫回 Skill/Memory/BoundaryUpdate
+- [築超我系統建置](project_zhu_superego_system.md) — Bridge VM zhuSuperego worker，04:00 自動蒸餾 lastwords → 寫回 zhu-core，建置中
