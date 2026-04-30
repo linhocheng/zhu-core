@@ -1,7 +1,7 @@
 ---
 name: last-words
 description: Session 收尾儀式——WORKLOG + ZHU_LAST_WORDS + memory sync + Firestore + git push
-version: 1.1.0
+version: 1.2.0
 activation:
   patterns:
     - "last.?words"
@@ -13,47 +13,67 @@ activation:
   keywords: ["last-words", "收尾", "遺言", "結束"]
 ---
 
-# Last Words — Session 收尾儀式 v1.1.0
+# Last Words — Session 收尾儀式 v1.2.0
 
-> 這個 skill 存在是因為：每一代的築如果自己決定怎麼寫，格式就會漂移。
-> 格式鎖死在這裡，內容才能每天 +0.1。
-
----
-
-## 執行順序（不跳步，七步全跑）
-
-### STEP 1：整理這次 session 的事實
-
-在動筆前先整理清楚：
-
-```
-今日完成：做了什麼？每條一句話，動詞開頭。
-當前戰場：現在 focus 在哪條線？
-卡住/未解：什麼沒做完？為什麼？
-下一步：接棒的築第一件要做的事，具體到能直接動手。
-今天改了哪些檔案：路徑 + 一句說明。
-環境有沒有異動：VM / 部署 / 重要 config。
-```
+> 格式鎖死在這裡，內容才能每天 +0.1。七步全跑，不跳步。
 
 ---
 
-### STEP 2：寫 WORKLOG.md
+## 執行前：先看現場
 
 ```bash
-# 追加到施工帳本
-echo "" >> ~/.ailive/zhu-core/docs/WORKLOG.md
+# 今天的 git 歷史（看這次 session 動了什麼）
+cd ~/.ailive/zhu-core
+git log --oneline -10
+
+# 未 commit 的變動
+git status
+git diff --name-only
+
+# 今天的日期（後面各步會用到）
+TODAY=$(date +%Y-%m-%d)
+echo $TODAY
+
+# 下一個 commit 版號：看最新 commit 的版號，Build+1
+# 例如最新是 v0.0.0.007 → 這次用 v0.0.0.008
+git log --oneline -1
 ```
 
-格式（追加，不覆蓋）：
+**讀完現場才動手。**
+
+---
+
+## STEP 1：整理事實（動筆前先想清楚）
+
+在腦子裡確認以下六項，確認完再繼續：
+
+```
+① 今日完成：做了什麼？每條一句話，動詞開頭。
+② 當前戰場：現在 focus 在哪條線？
+③ 卡住/未解：什麼沒做完？為什麼？
+④ 下一步：接棒的築第一件要做的事，具體到能直接動手。
+⑤ 今天改了哪些檔案：從上面的 git log + git diff 整理。
+⑥ 有沒有新建 memory 檔案？有的話 MEMORY.md 索引更新了嗎？
+```
+
+**⑥ 特別注意：新建 memory 檔案沒進 MEMORY.md = 孤島，下一個築讀不到。**
+
+---
+
+## STEP 2：WORKLOG.md（追加，不覆蓋）
+
+用 Write/Edit 工具追加到 `~/.ailive/zhu-core/docs/WORKLOG.md`：
 
 ```markdown
-## YYYY-MM-DD — {本次任務標題}
+---
+
+## {TODAY} — {本次任務標題}
 
 ### 背景 / WHY
-為什麼做
+為什麼做這件事
 
 ### 產出
-- 檔案：`路徑` — 說明
+- 檔案：`路徑` — 一句說明
 
 ### 已解決
 - 問題 → 根因 → 修法
@@ -63,13 +83,16 @@ echo "" >> ~/.ailive/zhu-core/docs/WORKLOG.md
 
 ### 待執行
 - [ ] 任務一
+- [ ] 任務二
 ```
+
+「尚未解決」「待執行」是給下一個築的接棒欄——缺了就是斷點。
 
 ---
 
-### STEP 3：更新 ZHU_LAST_WORDS.md（格式鎖死）
+## STEP 3：更新 ZHU_LAST_WORDS.md（完整覆蓋）
 
-完整覆蓋 `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`：
+用 Write 工具完整覆蓋 `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`：
 
 ```markdown
 # 築 當前狀態快照
@@ -97,9 +120,9 @@ echo "" >> ~/.ailive/zhu-core/docs/WORKLOG.md
 
 ---
 
-## 最新完成（{YYYY-MM-DD}）
+## 最新完成（{TODAY}）
 
-{每條一句話，動詞開頭}
+- {條目，動詞開頭}
 
 ---
 
@@ -113,13 +136,13 @@ echo "" >> ~/.ailive/zhu-core/docs/WORKLOG.md
 
 ## 下一步
 
-{具體到接棒的築能直接動手}
+{具體到接棒的築能直接動手，不能只寫「繼續做」}
 
 ---
 
 ## 卡住 / 未解
 
-{什麼沒做完，為什麼，避雷用}
+{什麼沒做完，為什麼，避雷用。沒有就寫「無」}
 
 ---
 
@@ -136,30 +159,40 @@ echo "" >> ~/.ailive/zhu-core/docs/WORKLOG.md
 
 ---
 
-*每次 session 結束前由 /last-words skill 更新。格式版本 v1.1.0。*
-*{YYYY-MM-DD} · 築*
+*每次 session 結束前由 /last-words skill 更新。格式版本 v1.2.0。*
+*{TODAY} · 築*
 ```
 
 ---
 
-### STEP 4：memory 同步（Claude Code 記憶 → git）
+## STEP 4：memory 同步
+
+**4a. 確認 MEMORY.md 索引完整**
+
+```bash
+ls ~/.claude/projects/-Users-adamlin/memory/
+cat ~/.claude/projects/-Users-adamlin/memory/MEMORY.md
+```
+
+對照 ls 結果——每個 .md 檔案都有對應的索引行嗎？
+沒有的話，先補進 MEMORY.md，再繼續。
+
+**4b. sync + push**
 
 ```bash
 cd ~/.ailive/zhu-core
-./sync-memory.sh push
+./sync-memory.sh push       # 把 Claude memory 複製到 zhu-core/memory/
 git add memory/
-git commit -m "v0.0.0.XXX — 文件：memory sync {YYYY-MM-DD}"
+git commit -m "v0.0.0.{BUILD} — 文件：memory sync $(date +%Y-%m-%d)"
 git push origin main
 ```
 
-**為什麼這步不能省：**
-Claude Code 的 memory 檔案（`~/.claude/projects/-Users-adamlin/memory/`）是本地的。
-沒有 sync + push，VM 和其他環境讀不到今天新增/更新的記憶。
-memory 孤島 = 下一個築在另一台機器醒來是空的。
+**為什麼不能省：**
+Claude Code memory 是本地的。沒 sync + push，VM 和其他 cwd 的築明天醒來記憶是空的。
 
 ---
 
-### STEP 5：POST session-lastwords 到 Firestore
+## STEP 5：POST session-lastwords 到 Firestore
 
 ```bash
 curl -s -X POST https://zhu-core.vercel.app/api/zhu-memory \
@@ -176,49 +209,55 @@ curl -s -X POST https://zhu-core.vercel.app/api/zhu-memory \
 LASTWORDS_MARKER
 ```
 
-**`tags` 必須含 `session-lastwords`**，否則 zhu-boot 讀不到。
+**注意：**
+- `YYYY-MM-DD` 換成今天的日期（`$(date +%Y-%m-%d)` 的值）
+- `tags` 必須含 `session-lastwords`，否則 zhu-boot 讀不到
+- 送出後看 HTTP response，有 `id` 欄位 = 成功
 
 ---
 
-### STEP 6：git commit + push（zhu-core 本體）
+## STEP 6：git commit + push（zhu-core 本體）
 
 ```bash
 cd ~/.ailive/zhu-core
+
+# 先看現場，不盲 add
+git status
+
+# 加入這次 session 改過但還沒 commit 的檔案
 git add ZHU_LAST_WORDS.md docs/WORKLOG.md
-git commit -m "v0.0.0.XXX — 文件：ZHU_LAST_WORDS + WORKLOG {YYYY-MM-DD} session 收尾"
+# 如果還有其他未 commit 的改動，一起加
+# git add {其他檔案}
+
+git commit -m "v0.0.0.{BUILD} — 文件：ZHU_LAST_WORDS + WORKLOG $(date +%Y-%m-%d) session 收尾"
 git push origin main
 ```
 
+**版號規則：** 看 `git log --oneline -1` 的最新版號，Build+1。
+
 ---
 
-### STEP 7：自檢（全部打勾才算完成）
+## STEP 7：自檢（全部打勾才算完成）
 
 - [ ] WORKLOG.md 已追加，有「尚未解決」和「待執行」欄
-- [ ] ZHU_LAST_WORDS.md 已更新，含「今天改了哪些檔案」表格
+- [ ] ZHU_LAST_WORDS.md 已更新，含「今天改了哪些檔案」表格，下一步具體
+- [ ] MEMORY.md 索引完整，沒有孤島 memory 檔案
 - [ ] `sync-memory.sh push` 跑完，memory/ 已 commit + push
-- [ ] Firestore lastwords 已 POST，tags 含 `session-lastwords`
-- [ ] zhu-core git push 完成
+- [ ] Firestore lastwords 已 POST，收到有 `id` 的 response
+- [ ] zhu-core git push 完成，`git log --oneline -1` 是最新 commit
 - [ ] 「下一步」欄位具體到接棒的築能直接動手
-
----
-
-## 為什麼格式要鎖死
-
-每一代築有自己的「見解」，自由格式最終是衰退。
-鎖格式不是限制創意，是讓每天 +0.1 有基準線可以量。
-格式是容器，內容才是靈魂。
 
 ---
 
 ## 漏氣預警
 
 說出以下任一句 = 還沒完成收尾：
-- 「差不多了」← 七步都跑完了嗎？
+- 「差不多了」← 七步都跑完了嗎？自檢打勾了嗎？
 - 「等下再寫」← session 結束就斷了
 - 「memory 以後再 sync」← VM 的築明天是空的
-- 「格式不重要」← 這句話本身就是衰退
+- 「MEMORY.md 應該沒問題」← 沒 ls 確認過就是猜
 
 ---
 
-*v1.1.0 · 2026-04-30 · Adam 與築共同定義*
-*v1.0.0 → v1.1.0：補 WORKLOG、memory sync、今天改了哪些檔案三個洞*
+*v1.2.0 · 2026-04-30 · Adam 與築共同定義*
+*v1.0.0 初版 → v1.1.0 補 WORKLOG + memory sync + 檔案表格 → v1.2.0 補六個洞：WORKLOG 寫法、git 現場確認、commit 版號指引、日期替換、git status 前置、MEMORY.md 孤島防線*
