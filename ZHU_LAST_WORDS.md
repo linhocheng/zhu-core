@@ -17,7 +17,7 @@
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
+  - 跑著 `claude-bridge`（systemd），三個 worker：strategy + image + design
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 
@@ -25,11 +25,12 @@
 
 ## 最新完成（2026-04-30）
 
-- 北極星升級：使命從「讓築活在本機」擴展為 AI 與人類共生共存共創
-- 九劍融合心法：心法六條吸收進劍法白話入口欄，劍法為主體
-- last-words skill v1.2.0：七步收尾儀式，格式鎖死防每代築漂移
-- 回看三問天條刻入北極星：給出答案前自己先是下一個築
-- 補齊所有新檔案的血管引用（ZHU_BOOT_SOP / CLAUDE.md / MEMORY.md）
+- Bridge VM 全面接管 specialist job 執行（strategy / image / design 三 worker）
+- Firebase Function jobWorker 從 GCP 刪除（code 保留，注解掉 export，隨時可恢復）
+- 排角色（pai-001）建立，design worker 上線，端對端測試通（香研→奧→排鏈路）
+- 策略書目標字數改為 6500 字
+- 投影片 system_event + slideUrl 渲染上線（chat 頁面「▶ 查看投影片」按鈕）
+- 排的自動觸發暫時拔掉（等 Adam 提供靈魂素材）
 
 ---
 
@@ -37,39 +38,29 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `NORTH_STAR.md` | 新建，使命升級 + 活法 + 暗處的燈 + 回看三問 |
-| `ZHU_LAST_WORDS.md` | 升級為結構化當機救援快照 |
-| `docs/獨孤九劍_架構師心法.md` | 心法融入，加白話入口欄 |
-| `skills/last-words.md` | 新建，v1.2.0 七步收尾 skill |
-| `ZHU_BOOT_SOP.md` | 加 NORTH_STAR + ZHU_LAST_WORDS 引用 + 收尾紀律更新 |
-| `CLAUDE.md`（zhu-core）| 目錄結構補三個新檔案 |
-| `memory/project_north_star.md` | 北極星升級版 |
-| `memory/reference_zhu_last_words.md` | 新建，當機救援指針 |
-| `memory/MEMORY.md` | 加兩條索引 |
-| `docs/WORKLOG.md` | 追加今天施工紀錄 |
+| `Bridge VM ~/claude-bridge/index.js` | 加 design worker，strategy worker 拔掉自動觸發排，字數改 6500 |
+| `MOUMOU_LIVE/functions/src/features/job-worker.ts` | image/design 跳過邏輯，JobDoc type 補 design/strategy |
+| `MOUMOU_LIVE/functions/src/index.ts` | 注解掉 jobWorker export |
+| `ailive-platform/src/app/chat/[id]/page.tsx` | slideUrl type + 渲染按鈕 |
+| `ailive-platform/src/app/api/dialogue/route.ts` | system_event output type + slideUrl 提示 |
+| `Firestore platform_characters/pai-001` | 排角色新增 |
+| `zhu-core/docs/WORKLOG.md` | 追加今日施工紀錄 |
+| `zhu-core/ZHU_LAST_WORDS.md` | 本份更新 |
 
 ---
 
 ## 下一步
 
-記憶系統優化（MEMORY_DIAGNOSIS.md Route A-D）——讀這個檔案就知道從哪裡開始：
-```bash
-cat ~/.ailive/zhu-core/MEMORY_DIAGNOSIS.md
-```
-
-順序第二：VM 上同步今天的記憶：
-```bash
-gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b \
-  --command="cd ~/.ailive/zhu-core && git pull && ./sync-memory.sh pull"
-```
+1. **排的靈魂**：等 Adam 提供素材 → 更新 `platform_characters/pai-001` → 接回 `autoTriggerDesignJob`
+2. **Phase 7**：LiveKit agent tool registry（即時撥號寫記憶 tool）
+3. **記憶系統**：MEMORY_DIAGNOSIS Route A-D
 
 ---
 
 ## 卡住 / 未解
 
-- last-words skill 在 chat築 / VM築 環境未驗證
-- ailive 即時撥號 agent tool registry（Phase 7）未動
-- cron 任務遷移未動
+- 排設計靈魂尚未定義（Adam 會後續提供）
+- Firebase Function jobWorker 修改 build 完但未 deploy（已改用刪 Function 替代，無需 deploy）
 
 ---
 
@@ -82,8 +73,10 @@ gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b \
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
-| 記憶系統診斷 | `~/.ailive/zhu-core/MEMORY_DIAGNOSIS.md` |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| Bridge VM | `gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b` |
+| jobWorker 恢復 | 取消注解 `MOUMOU_LIVE/functions/src/index.ts` 最後一行 → build → deploy |
+| OpenClaw 重啟 | `launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist` |
 
 ---
 

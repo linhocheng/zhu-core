@@ -3,6 +3,37 @@
 ## 自主迴圈驗證 - 工自己讀到、自己做、自己回報，全程不問 Adam。
 
 ## 歷史精華（已壓縮存 zhu-memory module=root tag=worklog-digest）
+
+---
+
+## 2026-04-30 — Bridge VM 全面接管 job 執行 + 排角色測試
+
+### 背景 / WHY
+ailive-platform 的 specialist job（strategy/image/design）原本由 Firebase Function 執行，
+但 Vercel 有 300s timeout、Firebase Function 有執行時間和干擾問題。
+這次把執行層全搬到 Bridge VM（claude-bridge systemd），Firebase Function jobWorker 正式退場。
+
+### 產出
+- `Bridge VM ~/claude-bridge/index.js` — 加入 design worker（排），strategy worker 拔掉自動觸發排
+- `AILIVE/MOUMOU_LIVE/functions/src/features/job-worker.ts` — image/design 跳過邏輯（build 完，jobWorker Function 已從 GCP 刪除）
+- `AILIVE/MOUMOU_LIVE/functions/src/index.ts` — 注解掉 jobWorker export（恢復只需取消注解 + deploy）
+- `ailive-platform/src/app/chat/[id]/page.tsx` — 加 slideUrl 渲染（▶ 查看投影片按鈕）
+- `ailive-platform/src/app/api/dialogue/route.ts` — system_event 加 slideUrl 提示
+- Firestore `platform_characters/pai-001` — 排角色建立
+
+### 已解決
+- Firebase Function jobWorker 每分鐘搶 design job → 根因是 Function 不認識 design jobType → 直接刪掉 jobWorker Function，Bridge VM 獨立負責
+- Claude design worker 輸出 720 字非 HTML → 根因是 markdown 6700 字太長 + HTML 擷取邏輯太嚴 → 截斷 3500 字 + 從 response 任何位置提取 HTML block
+- 策略書字數目標從 5000 改為 6500
+
+### ⚠️ 尚未解決
+- 排（設計角色）暫時拔掉自動觸發，等 Adam 提供靈魂素材再接回
+- Firebase Function jobWorker code 保留在 job-worker.ts，恢復路徑：取消注解 index.ts → build → deploy
+
+### 待執行
+- [ ] Adam 提供排的靈魂素材後，接回 autoTriggerDesignJob
+- [ ] 記憶系統優化（MEMORY_DIAGNOSIS Route A-D）
+- [ ] Phase 7：LiveKit agent tool registry（即時撥號寫記憶）
 ---
 ## 2026-04-17 Session
 
