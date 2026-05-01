@@ -24,13 +24,20 @@
 
 ---
 
-## 最新完成（2026-05-01 晚間）
+## 最新完成（2026-05-01 深夜）
 
+### 上午 / 下午
 - **文章列表頁**上線：`/articles`，14 篇已顯示
-- **BASE_URL 修正**：Cloud Run env var + `cloudbuild.yaml` 同步更新為正確 URL
-  - `$SHORT_SHA` → `$BUILD_ID`（gcloud builds submit 不支援 $SHORT_SHA）
-- **情報官禁止造假**：刪除「可以虛構貼文」指令，改為 WebFetch 強制驗源，失效跳過
-- **layout metadata** 更新：title 改為「心靈顯化部」
+- **BASE_URL 修正**：Cloud Run env var + `cloudbuild.yaml`（$SHORT_SHA → $BUILD_ID）
+- **情報官禁止造假**：刪除「可以虛構貼文」，改為 WebFetch 強制驗源
+- **layout metadata**：title 改為「心靈顯化部」
+
+### 晚間（新增）
+- **Threads 留言自動化 end-to-end 驗證完成** ✅
+  - Lucy（lucymo0306）成功登入 Threads → 找到目標貼文 → 留言 → 發佈
+  - 源碼：`~/.ailive/zhu-core/docs/lucy-threads/comment.js`
+  - 完整 Playbook：`~/.ailive/zhu-core/docs/THREADS_COMMENT_PLAYBOOK.md`
+  - 截圖全套：`~/.ailive/zhu-core/docs/lucy-threads/*.png`
 
 ---
 
@@ -42,6 +49,10 @@
 | `live-media-platform/app/articles/page.tsx` | 新增公開文章列表頁 |
 | `live-media-platform/app/layout.tsx` | metadata title 改為「心靈顯化部」 |
 | `live-media-platform/cloudbuild.yaml` | $SHORT_SHA→$BUILD_ID、BASE_URL 修正 |
+| `zhu-core/docs/lucy-threads/comment.js` | Threads 留言腳本（Playwright）|
+| `zhu-core/docs/THREADS_COMMENT_PLAYBOOK.md` | 完整教學文件（新建）|
+| `zhu-core/docs/WORKLOG.md` | 本次工作紀錄 |
+| `zhu-core/ZHU_LAST_WORDS.md` | 就是這份 |
 
 ---
 
@@ -50,14 +61,15 @@
 1. **情報官加驗源**已部署，下次跑（明日 02:00 UTC / 10:00 Taipei）觀察是否還有死連結
 2. **角色工作記憶寫回**尚未驗證（approve 後 `live_media_char_memory` 是否有 positive_signal）
 3. **Escalated 2 篇**待人工處理（score 78 那篇只差錯字，可考慮直接人工核准）
-4. **Phase 5**：Threads 社群發布層，等 Adam 提供帳號
+4. **Lucy Phase 2**：session 持久化、隨機時間觸發、LLM 即時生成留言內容
 
 ---
 
 ## 卡住 / 未解
 
 - 本機 `/tmp/index.js` source 與 Bridge VM 有 drift（情報官修正只改了 VM，本機未同步）
-- Escalated 文章「復甦的代價」有錯字「新有的→所有的」，兩次重寫都沒修好（停格者沒收到明確錯字指示）
+- Escalated 文章「復甦的代價」有錯字「新有的→所有的」，兩次重寫都沒修好
+- Lucy session 每次都要重新登入，尚未做持久化
 
 ---
 
@@ -73,7 +85,10 @@
 | Live Media 後台 | `https://live-media-platform-epqhgokwva-de.a.run.app` |
 | 文章列表 | `https://live-media-platform-epqhgokwva-de.a.run.app/articles` |
 | Bridge VM source | `~/claude-bridge/index.js`（VM 為準，本機 /tmp/index.js 有 drift） |
+| Threads 留言腳本 | `~/.ailive/zhu-core/docs/lucy-threads/comment.js` |
+| Threads 完整教學 | `~/.ailive/zhu-core/docs/THREADS_COMMENT_PLAYBOOK.md` |
 
 ---
 
-*2026-05-01 晚間收尾 · 築*
+*2026-05-01 深夜收尾 · 築*
+*「你的辛苦，是後面的夥伴的江山。」*

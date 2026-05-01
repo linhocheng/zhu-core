@@ -1536,3 +1536,34 @@ Phase 1-3 完成後發現 v1.0 死循環：停格者寫稿 → 閾拒搞 → 停
 - [ ] 明日觀察情報官跑出的來源品質
 - [ ] 人工審核 escalated 2 篇
 - [ ] Phase 5 Threads 社群層
+
+---
+
+## 2026-05-01（晚間）— Threads 留言自動化首次 end-to-end 驗證
+
+### 背景 / WHY
+Live Media 需要引流機制。官方 Threads API 無法在別人貼文留言，走瀏覽器自動化是唯一路徑。
+Lucy（lucymo0306）定位為「特種部隊」帳號，負責對外留言引流，與品牌帳號分開。
+
+### 產出
+- `comment.js`（Playwright）：完整登入 → 找貼文 → 留言 → 送出，end-to-end 成功
+- 截圖全套：s1_ig_oauth → s1a_filled → s1c_onetap → s2_after_login → s3_post_page → s5_before_submit → s6_after_submit
+- 文件：`docs/THREADS_COMMENT_PLAYBOOK.md`（完整教學，含踩坑、代碼說明、雲端部署 SOP）
+- 源碼 + 截圖：`docs/lucy-threads/`
+
+### 已解決
+- `threads.net` vs `threads.com` → 全換成 threads.com
+- `waitForURL` 誤判 onetap query string → 改用 `waitForFunction(hostname === 'www.threads.com')`
+- onetap 按鈕文字 → 實測是「稍後再說」（不是「現在略過」）
+- 貼文頁找不到輸入框 → Threads 需先點 `[aria-label*="回覆"]` 才會彈出 contenteditable
+
+### ⚠️ 尚未解決
+- session 未持久化（每次都重新登入，增加偵測風險）
+- 留言內容目前寫死，尚未接 LLM 即時生成
+- 目標貼文 URL 需手動設定，尚未串接 intel worker
+
+### 待執行
+- [ ] session 保存（storageState）
+- [ ] 隨機時間觸發整合進 Bridge VM worker
+- [ ] 多版本留言池 + LLM 即時生成
+- [ ] 最終：intel worker 提供 URL → Lucy 自動留言完整鏈路
