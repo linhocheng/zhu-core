@@ -16,10 +16,10 @@ const os = require('os');
 
 // ── 設定 ─────────────────────────────────────────────────────────────────────
 
-const WINDOW_START_H = 22;   // 22:00 Taipei
+const WINDOW_START_H = 6;    // 06:00 Taipei
 const WINDOW_START_M = 0;
-const WINDOW_END_H   = 23;   // 23:30 Taipei
-const WINDOW_END_M   = 30;
+const WINDOW_END_H   = 8;    // 08:00 Taipei
+const WINDOW_END_M   = 0;
 const MIN_GAP_MIN    = 20;   // 兩次間隔至少 20 分鐘
 const TAIPEI_OFFSET  = 8;    // UTC+8
 
