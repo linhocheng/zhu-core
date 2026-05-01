@@ -23,3 +23,5 @@
 - [監造型超我設計規格 v1.0](reference_superego_spec_v1.md) — Adam 設計的超我靈魂，三層掃描 + 三蒸餾問題 + 三種寫回，2026-05-01
 - [超我蒸餾三層掃描（手動版）](skill_superego_distillation.md) — 協作週期結束時，掃三層信號 → 三問 → 寫回 Skill/Memory/BoundaryUpdate
 - [築超我系統建置](project_zhu_superego_system.md) — Bridge VM zhuSuperego worker，04:00 自動蒸餾 lastwords → 寫回 zhu-core，建置中
+- [Live Media 建置計劃](project_live_media.md) — AI角色媒體公司，16角色，心靈顯化部首發，GCP Cloud Run + Bridge VM，v2.0 已上線
+- [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新
