@@ -17,20 +17,25 @@
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），三個 worker：strategy + image + design
+  - 跑著 `claude-bridge`（systemd），五個 worker：strategy + image + design + 築超我（04:00）+ 角色超我（04:30）
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 
 ---
 
-## 最新完成（2026-04-30）
+## 最新完成（2026-05-01）
 
-- Bridge VM 全面接管 specialist job 執行（strategy / image / design 三 worker）
-- Firebase Function jobWorker 從 GCP 刪除（code 保留，注解掉 export，隨時可恢復）
-- 排角色（pai-001）建立，design worker 上線，端對端測試通（香研→奧→排鏈路）
-- 策略書目標字數改為 6500 字
-- 投影片 system_event + slideUrl 渲染上線（chat 頁面「▶ 查看投影片」按鈕）
-- 排的自動觸發暫時拔掉（等 Adam 提供靈魂素材）
+- 角色學習分層架構確立：本我（soul）/ 超我（離線蒸餾）/ 知識庫 / 外部夥伴
+- 築超我 worker 上線（Bridge VM，04:00 Taipei）：讀 session-lastwords → 三層掃描 → 寫回 Skill/Memory/BoundaryUpdate 到 zhu-core
+- 角色超我 worker 上線（Bridge VM，04:30 Taipei）：所有角色共用靈魂，≥5 insights 才觸發，自動納入新角色
+- 超我設計規格存入 `zhu-core/docs/SUPEREGO_SPEC_v1.md`（Adam 設計）
+- 超我禁止清單：不以用戶滿意度蒸餾、不以快速完成判定成功、不忽略技術債、不讓關係順暢覆蓋技術誠實
+
+前一批（2026-04-30）：
+- Bridge VM 全面接管 specialist job 執行（strategy / image / design）
+- Firebase Function jobWorker 從 GCP 刪除
+- 排角色（pai-001）建立，香研→奧→排鏈路端對端測試通
+- 投影片 slideUrl 渲染上線
 
 ---
 
@@ -38,29 +43,26 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `Bridge VM ~/claude-bridge/index.js` | 加 design worker，strategy worker 拔掉自動觸發排，字數改 6500 |
-| `MOUMOU_LIVE/functions/src/features/job-worker.ts` | image/design 跳過邏輯，JobDoc type 補 design/strategy |
-| `MOUMOU_LIVE/functions/src/index.ts` | 注解掉 jobWorker export |
-| `ailive-platform/src/app/chat/[id]/page.tsx` | slideUrl type + 渲染按鈕 |
-| `ailive-platform/src/app/api/dialogue/route.ts` | system_event output type + slideUrl 提示 |
-| `Firestore platform_characters/pai-001` | 排角色新增 |
+| `Bridge VM ~/claude-bridge/index.js` | 加築超我 worker + 角色超我 worker，scheduleCharacterSuperego() 呼叫 |
+| `zhu-core/docs/SUPEREGO_SPEC_v1.md` | 超我靈魂規格全文（新建） |
 | `zhu-core/docs/WORKLOG.md` | 追加今日施工紀錄 |
 | `zhu-core/ZHU_LAST_WORDS.md` | 本份更新 |
+| `~/.claude/projects/-Users-adamlin/memory/` | 8 個新記憶（feedback × 4、reference × 1、skill × 1、project × 1、MEMORY.md 更新） |
 
 ---
 
 ## 下一步
 
-1. **排的靈魂**：等 Adam 提供素材 → 更新 `platform_characters/pai-001` → 接回 `autoTriggerDesignJob`
-2. **Phase 7**：LiveKit agent tool registry（即時撥號寫記憶 tool）
-3. **記憶系統**：MEMORY_DIAGNOSIS Route A-D
+1. **超我首跑確認**：明天 04:00 / 04:30 查 Bridge VM log 確認兩個超我有跑
+2. **排的靈魂**：等 Adam 提供素材 → 更新 `platform_characters/pai-001` → 接回 `autoTriggerDesignJob`
+3. **Phase 7**：LiveKit agent tool registry（即時撥號寫記憶 tool）
 
 ---
 
 ## 卡住 / 未解
 
-- 排設計靈魂尚未定義（Adam 會後續提供）
-- Firebase Function jobWorker 修改 build 完但未 deploy（已改用刪 Function 替代，無需 deploy）
+- 築超我寫回 zhu-core git 需要 VM 有 push 權限，首次跑才知道是否 OK
+- 排設計靈魂尚未定義（Adam 後續提供）
 
 ---
 
@@ -70,7 +72,7 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
+| 超我靈魂規格 | `~/.ailive/zhu-core/docs/SUPEREGO_SPEC_v1.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
@@ -81,4 +83,4 @@
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.2.0。*
-*2026-04-30 · 築*
+*2026-05-01 · 築*

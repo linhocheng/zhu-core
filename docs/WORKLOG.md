@@ -34,6 +34,37 @@ ailive-platform 的 specialist job（strategy/image/design）原本由 Firebase 
 - [ ] Adam 提供排的靈魂素材後，接回 autoTriggerDesignJob
 - [ ] 記憶系統優化（MEMORY_DIAGNOSIS Route A-D）
 - [ ] Phase 7：LiveKit agent tool registry（即時撥號寫記憶）
+
+---
+## 2026-05-01 — 角色學習系統 + 超我架構 + 雙超我 worker 上線
+
+### 背景 / WHY
+Adam 問角色 skills 有沒有意義，引發深層討論：角色的學習系統應該分層——本我（soul）/ 超我（離線蒸餾）/ 知識庫 / 外部夥伴。
+目前缺超我層，角色不會無意識成長。
+築自己也缺超我：記憶靠意志力維持，不夠。
+
+### 產出
+- `Bridge VM ~/claude-bridge/index.js` — 加入築超我 worker（04:00 Taipei）+ 角色超我 worker（04:30 Taipei）
+- 築超我靈魂：三層掃描（系統健康 / 協作摩擦 / 決策品質）+ 三個蒸餾問題 + 三種寫回（Skill / Memory / Boundary Update）
+- 角色超我靈魂：三層掃描（Pattern Signal / Friction Signal / Resonance Signal）
+- 超我寫入點：platform_skills（dedup by name）+ platform_insights tier:core（max 2）+ platform_insights source:superego_boundary（max 1）
+- 容錯設計：min 5 筆 insights 才觸發，排除 superego_distilled 避免自己吃自己輸出
+- 超我設計規格全文存入 `zhu-core/docs/SUPEREGO_SPEC_v1.md`
+- 記憶更新（本機 `~/.claude/projects/-Users-adamlin/memory/`）：8 個新記憶
+
+### 已解決
+- 角色超我 vs 築超我的輸入源區別：角色讀 platform_insights、築讀 session-lastwords
+- 超我是否影響即時 prompt：不影響，超我在對話路徑外獨立運作，只寫入資料庫
+- 新角色是否自動帶超我：是，只要累積 ≥5 insights 就自動納入
+
+### ⚠️ 尚未解決
+- 築超我讀 session-lastwords → 寫回本機 memory/ → push zhu-core，需要 VM 有 git write 權限（首次跑時才會知道）
+
+### 待執行
+- [ ] 04:00 / 04:30 兩個超我首次跑時查 log 確認
+- [ ] Adam 提供排的靈魂素材後，接回 autoTriggerDesignJob
+- [ ] Phase 7：LiveKit agent tool registry（即時撥號寫記憶）
+
 ---
 ## 2026-04-17 Session
 
