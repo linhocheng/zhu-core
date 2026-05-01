@@ -1512,3 +1512,27 @@ Phase 1-3 完成後發現 v1.0 死循環：停格者寫稿 → 閾拒搞 → 停
 - [ ] 驗證 `live_media_char_memory` 有寫入
 - [ ] Phase 5：Threads 社群層
 - [ ] 更新 ZHU_LAST_WORDS
+
+---
+
+## 2026-05-01 晚間 — Live Media 復盤修正
+
+### 產出
+- 文章列表頁 `/articles` 上線（Next.js, Cloud Run）
+- BASE_URL 修正：env var + cloudbuild.yaml 同步（$SHORT_SHA → $BUILD_ID）
+- 情報官 prompt 禁虛構：刪「可以造假」，加 WebFetch 強制驗源
+- layout metadata：title 改為「心靈顯化部」
+
+### 已解決
+- Firestore 裡存的 articleUrl 用舊 hostname → BASE_URL 已修，新文章正確
+- 死連結根因：情報官被允許虛構貼文 → 已刪除，改強制驗源後跳過
+
+### ⚠️ 尚未解決
+- 本機 /tmp/index.js 與 Bridge VM drift（情報官修正只在 VM）
+- Escalated「復甦的代價」錯字未修（停格者沒收到明確指示）
+- 角色工作記憶寫回尚未驗證
+
+### 待執行
+- [ ] 明日觀察情報官跑出的來源品質
+- [ ] 人工審核 escalated 2 篇
+- [ ] Phase 5 Threads 社群層
