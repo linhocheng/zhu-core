@@ -36,6 +36,66 @@ ailive-platform 的 specialist job（strategy/image/design）原本由 Firebase 
 - [ ] Phase 7：LiveKit agent tool registry（即時撥號寫記憶）
 
 ---
+## 2026-05-01（下午）— Live Media 完整藍圖設計
+
+### 背景 / WHY
+Adam 想建一個由 AI 角色組成的媒體公司，與 ailive 分開——ailive 是人跟 AI 互動，Live Media 是 AI 跟世界互動，產出真實媒體內容。首發領域：心靈顯化部（星座 / 占卜 / 能量學 / 顯化 / 人類圖 / MBTI）。
+
+### 產出
+- 完整組織架構（6個層次 / 6個部門 / 16個角色）
+- 16份靈魂檔案（透過維設計，寫手 v2.0 重寫後大幅提升）
+- 完整執行計劃書（EXECUTION_PLAN.md）含技術決策、Firestore schema、6個 Phase 施工清單
+- 靈魂檔案本機：`/Users/adamlin/.ailive/live-media/roles/`
+- 靈魂檔案雲端：`github.com/linhocheng/zhu-core/tree/main/live-media/`
+- 記憶檔案：`project_live_media.md` 新建，MEMORY.md 更新
+
+### 16個角色名單
+
+| 層次 | 代號 | 靈魂名 |
+|---|---|---|
+| 管理層 | 執行長 | 弦（Xián） |
+| 超我① | 關鍵字演化顧問 | 熵（Shāng） |
+| 超我② | 評分權重校正顧問 | 謬（Miù） |
+| 超我③ | 排重邊界判官 | 裁（Cái） |
+| 超我④ | 審核學習顧問 | 鑑（Jiàn） |
+| 超我⑤ | 策略回流顧問 | 洄（Huí） |
+| 執行層 | 情報官 | SIGINT-01 |
+| 執行層 | 排重員 | 齊（Qí） |
+| 執行層 | 寫手 | 停格者 |
+| 執行層 | 總編輯 | 閾（Yù） |
+| 執行層 | 發布員 | 閘（Zhá） |
+| 執行層 | 記憶管理員 | 庫（Kù） |
+| 執行層 | 成效追蹤員 | 痕（Hén） |
+| 執行層 | 績效優化員 | 析（Xī） |
+| 執行層 | 引流官 | 弋（Yì） |
+| 執行層 | 互動員 | 繫（Xì）※原名洄，改名避免衝突 |
+
+### 技術決策（已鎖定）
+- GCP Project：zhu-cloud-2026（沿用現有）
+- 文章後台：Cloud Run + Next.js，asia-east1
+- 工作排程：Bridge VM 擴充，新增 live-media workers
+- 資料庫：Firestore（5個新 collection）
+- 社群自動化：Playwright on Bridge VM，session cookies 存 VM secret
+- Threads 情報測試：已成功（@widetree_tarot 22.9K views，示範文章已寫）
+
+### 已解決
+- 互動員與超我⑤命名衝突（同叫洄）→ 互動員改名繫（Xì）
+- 寫手靈魂太薄 → v2.0 重寫，補上領域定位（星座占卜能量療癒）+ 三步工作流程
+
+### ⚠️ 尚未解決
+- Threads 帳號待 Adam 提供（Phase 5 社群層需要）
+- Cloud Run app 域名未定
+- 文章後台 admin 登入保護未決
+
+### 待執行
+- [ ] Phase 1：建 live-media-platform Cloud Run（Next.js + Firestore）
+- [ ] Phase 2：情報官 + 排重員 worker
+- [ ] Phase 3：寫手 → 閾 → 發布員 → 庫 完整生產線
+- [ ] Phase 4：成效追蹤員 + 績效優化員
+- [ ] Phase 5：Playwright 社群層（等帳號）
+- [ ] Phase 6：5個超我 + 執行長週度 workers
+
+---
 ## 2026-05-01 — 角色學習系統 + 超我架構 + 雙超我 worker 上線
 
 ### 背景 / WHY
