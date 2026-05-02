@@ -6,6 +6,41 @@
 
 ---
 
+## 2026-05-02 — 鏡 IG 流水線上線 + ailive strategies 頁修復
+
+### 背景 / WHY
+Live Media MVP 測試完畢（弋/Lucy Threads 留言驗證通過），進入「主菜」：
+讓靈魂拍立得品牌在 lucymo IG 自動發文，由 AI 角色鏡生成內容。
+
+### 產出
+- `ailive-platform/src/app/api/ig-pipeline/run/route.ts` — 鏡 IG 流水線 API
+  - 接受 `pregenerated`（VM Sonnet 生）或 fallback Haiku 生
+  - 生圖：Gemini text-only（無 faceRef，純美學）
+  - 發文：IG Graph API v21.0（2步驟 container → publish）
+- `ailive-platform/src/app/dashboard/[id]/strategies/page.tsx` — 修復 strategies 頁卡「載入中」
+  - 根因：fetch 無 .catch() → setLoading(false) 永不執行
+  - 修法：.finally() + 紅色 error state + ↻ 重送按鈕
+- `zhu-dev:~/ig-pipeline-scheduler.sh` — VM 排程腳本
+  - source claude-bridge/.env → claude -p Sonnet → pregenerated → Vercel pipeline
+  - 每 3 小時，自動至 2026-05-03 10:00 CST 停止
+
+### 已解決
+- strategies 頁無限 loading → .finally() 修法
+- VM claude CLI 「Not logged in」→ source bridge .env 帶 CLAUDE_CODE_OAUTH_TOKEN
+- ailive /api/dialogue SSE 空回應 → curl -N 禁緩衝 + python 解析 SSE（見 skill_ailive_character_chat.md）
+
+### ⚠️ 尚未解決
+- 情報官尚未真正接入 Threads API（現在是 Claude 自行選題，非真實趨勢）
+- exec10 鏡角色尚未在 Firestore 建立（目前用 Vivi 的 IG 憑證）
+- IG token 有效期未知（Meta token 通常 60 天，到期需人工更新）
+
+### 待執行
+- [ ] 建 exec10 鏡角色於 Firestore（含靈魂代碼、品牌設定）
+- [ ] 情報官接 Threads 趨勢 API 或爬蟲，提供真實 topic 給鏡
+- [ ] 明天 10:00 後確認所有貼文質量，決定是否調整頻率和風格
+
+---
+
 ## 2026-04-30 — Bridge VM 全面接管 job 執行 + 排角色測試
 
 ### 背景 / WHY
