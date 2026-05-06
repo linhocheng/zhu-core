@@ -1,3 +1,4 @@
+- [能走 bridge 吃到飽就不花錢](feedback_bridge_first.md) — 非串流路由一律 getAnthropicClient，例外只有 dialogue/voice-stream 主串流
 - [Secret Manager 寫入用 printf 不用 echo](feedback_secret_manager_printf.md) — echo 留尾端 \n 會讓 aiohttp header 拒送、API 全斷
 - [動手前驗證 secret／API key 是否真的有效](feedback_validate_secrets_before_inject.md) — Vercel pull / 既有快照的 key 不一定有效，先 curl 200 才灌
 - [MiniMax 海外版 plan tier ≠ 餘額（2061 vs 2053）](feedback_minimax_plan_tier.md) — 2061 plan not support 儲值救不了，2053 才是儲值能解
@@ -23,5 +24,14 @@
 - [監造型超我設計規格 v1.0](reference_superego_spec_v1.md) — Adam 設計的超我靈魂，三層掃描 + 三蒸餾問題 + 三種寫回，2026-05-01
 - [超我蒸餾三層掃描（手動版）](skill_superego_distillation.md) — 協作週期結束時，掃三層信號 → 三問 → 寫回 Skill/Memory/BoundaryUpdate
 - [築超我系統建置](project_zhu_superego_system.md) — Bridge VM zhuSuperego worker，04:00 自動蒸餾 lastwords → 寫回 zhu-core，建置中
-- [Live Media 建置計劃](project_live_media.md) — AI角色媒體公司，16角色，心靈顯化部首發，GCP Cloud Run + Bridge VM，v2.0 已上線
+- [Live Media 建置計劃](project_live_media.md) — v2.0 全鏈路上線，intel→閾→IG自動化，高我觸發但 Firestore index 缺（待建）
+- [VM 殺 node 進程用 killall 不用 pkill](feedback_killall_vs_pkill.md) — pkill -f 殺不到絕對路徑進程，一律用 killall -9 node
+- [Bridge VM 用 systemctl restart 不要 killall+nohup](reference_bridge_vm_systemd.md) — claude-bridge 是 systemd service，nohup 會建重複 process、worker 跑兩遍
+- [VM patch 後上傳前必須驗證所有依賴函數](feedback_patch_verify_before_upload.md) — Python inline patch 靜默失敗 + 重下載蓋改動 + 未驗證 = crash，正確做法：先下載→本機 edit→grep 驗證全部函數→才上傳
 - [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新
+- [ailive 角色對話 SOP（CLI SSE 串流版）](skill_ailive_character_chat.md) — curl -N --max-time 120 + python SSE 解析，先看源碼不猜 API 格式
+- [2026-05-02 覺察：API 盲猜 vs 先讀源碼](feedback_20260502_awareness.md) — 轉圈根源是不先查；記憶要含正確方法不只是禁忌
+- [鏡 IG 流水線上線（2026-05-02）](project_ig_pipeline_live.md) — Sonnet Max(VM) + Gemini生圖 + IG Graph API，3h一篇至明天10:00
+- [VM claude CLI 必須 source bridge .env](feedback_vm_claude_cli_oauth.md) — 不 source = Not logged in，nohup script 開頭必加 set -a; source ~/claude-bridge/.env
+- [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
+- [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例

@@ -1602,3 +1602,176 @@ Lucy（lucymo0306）定位為「特種部隊」帳號，負責對外留言引流
 - [ ] 隨機時間觸發整合進 Bridge VM worker
 - [ ] 多版本留言池 + LLM 即時生成
 - [ ] 最終：intel worker 提供 URL → Lucy 自動留言完整鏈路
+
+---
+
+## 2026-05-03 — Live Media 社群管道上線 + 高我系統建置
+
+### 背景 / WHY
+Live Media 原本只有文章產出管道（情報→Q→閾→閘）。這次擴展為完整媒體公司架構：
+1. 增加社群部門（蒸→閾→框+攝→圖）把每篇文章翻成 IG 發文給 lucymo0306
+2. 修正 WRITER_SOUL_V2（停格者）殘留問題，統一使用 Q 的靈魂
+3. 建立高我監造系統：累計 5 篇發布觸發一次生態診斷
+
+### 產出
+- 文件：`~/.ailive/live-media/ARTICLE_PIPELINE.md` — 文章流程 v1.1（Q 靈魂整合）
+- 文件：`~/.ailive/live-media/SOCIAL_PIPELINE.md` — 社群流程 v1.0
+- 文件：`~/.ailive/live-media/HOW_TO_WORK_WITH_維.md` — 維的連線 SOP
+- 文件：`~/.ailive/live-media/LIVE_MEDIA_ENV.md` — 完整工程環境文件（新增）
+- 靈魂：`roles/social01_translator_蒸.md` — 社群翻譯師
+- 靈魂：`roles/social02_artdirector_框.md` — 美術指導
+- 靈魂：`roles/social03_photographer_攝.md` — 視覺執行師
+- 靈魂：`roles/social04_publisher_圖.md` — IG 發文員
+- Firestore：`live_media_characters` 新增 social01~04（ailive-platform admin API）
+- Bridge：`zhu-dev:~/claude-bridge/index.js` — 加入社群 workers + 高我系統 + 修正 Q 靈魂
+
+### 已解決
+- WRITER_SOUL_V2（重寫靈魂）停格者 → Q，模型 haiku → sonnet
+- fetchCharMemory/updateCharMemory('停格者') → 全換成 Q
+- Intel 間隔 2h → 30min
+- 社群管道測試通過：蒸→閾(APPROVE)→框+攝→圖→lucymo0306 IG 全鏈路
+- 確認所有 Claude 呼叫走 Max OAuth（bridge spawn + BRIDGE_ENABLED=true）
+
+### ⚠️ 尚未解決
+- **閾審稿被略過（重要）**：live-media POST /api/articles 建立文章時直接給 `approved` 狀態，`runEditorReview` 的 `pending_review` 查詢找不到文章 → 閾的靈魂和記憶信號無效果
+  - 修法：在 live-media API 或 bridge intel worker 補 pending_review 狀態
+- **策略師（洄）未上線**：Q 直接從情報摘要寫文，無策略層
+- **char-memory anti-repetition**：Q 寫文前未讀 char-memory 防主題重複
+- **code comment 殘留**：line ~1371 還寫「停格者重寫」（不影響行為）
+
+### 待執行
+- [ ] 修閾審稿略過問題：調查 live-media `/api/articles` POST 如何設定初始 status，確保文章進 `pending_review`
+- [ ] 觀察高我蒸餾結果（累計第 5 篇時觸發，今天下午前應到）
+- [ ] 策略師洄 Worker 設計（與維討論靈魂後建 bridge worker）
+- [ ] char-memory anti-repetition：intel worker 寫文前先讀 Q 的 char-memory
+
+
+
+---
+
+## 2026-05-04 — MOLOWE Engine 5a 落地（角色精簡 + Firestore 集合 + UX）
+
+### 背景 / WHY
+Phase 4 UI 完整，但 Engine 完全未建。上工前先做架構精簡與 Firestore schema 準備，避免直接 copy live-media 把它的傷一起帶過來。診斷產出：12 角色 → 10、reject_type 簡化、bridge 拆 module。本次只動 5a（平台側完整化），不動 bridge。
+
+### 產出
+- `~/.ailive/molowe-platform/src/lib/seed-data.ts` — DEFAULT_WORKFLOW_TEMPLATE 改 v2（10 步）+ 新增 FIRESTORE_COLLECTION_SCHEMAS 常數
+- `~/.ailive/molowe-platform/src/app/api/seed/route.ts` — seed 同步寫入 4 個集合的 `_schema` 占位文件
+- `~/.ailive/molowe-platform/src/app/(admin)/kols/new/page.tsx` — niche maxLength=20，interface default_enabled → enabled
+- `~/.ailive/molowe-platform/src/app/(admin)/kols/[id]/KolDetailClient.tsx` — niche maxLength=20
+- midoufu Firestore：niche 改「心靈顯化」，workflow_steps 套新 10 步
+- commits：v0.2.0.005（Phase 4 殘留收尾）+ v0.3.0.001（5a 重構）
+
+### 已解決
+- Workflow 12 步合併為 10 步（移除 legal、合 caption_translator + ig_editor 為 social_translator）
+- midoufu niche 被誤填 soul 開場文 → 修正為短 tag「心靈顯化」
+- wizard interface 用 default_enabled 但 seed-data 真實欄位是 enabled，導致預設值讀不到 → 統一為 enabled
+- 4 個 Engine 用 Firestore 集合的 schema 文件化（intel / strategy / content / kol_roles）
+- Firestore doc id 不能 match `__.*__`，把占位 id 從 `__schema__` 改成 `_schema`
+
+### ⚠️ 尚未解決（5a 範圍外的傷）
+- **live-media 閾審稿被略過**（先前 WORKLOG 已記）：MOLOWE 5c 起 copy 架構前必須先修，不然會遺傳
+- **char-memory anti-repetition** 在 live-media 也缺：MOLOWE writer 從 5c 起就要直接內建
+- **bridge 2269 行單檔**：MOLOWE worker 加進去會推到 3500+ 行，5c 要拆 module（live-media.js / molowe.js / core.js）
+
+### 待執行（5b — 寫 9 個 KOL 層 base soul）
+- [ ] art_director / manager / social_strategy / writer / editor / social_translator / visual / publisher / fan_relations / lucy 共 10 份 base soul（lucy 選配）
+- [ ] seed-data.ts 加 KOL_ROLE_BASE_SOULS 常數
+- [ ] KOL 建立時自動產生 `molowe_kol_roles/{kol_id}_{role}` 文件繼承 base
+- [ ] 新增 API：`PATCH /api/kols/[id]/roles/[role]`
+- [ ] KolDetailClient 工作流 tab 每步驟可展開編輯 soul
+
+
+
+---
+
+## 2026-05-05 — MOLOWE Phase 5b：12 份 base soul + KOL/公司兩層架構分離
+
+### 背景 / WHY
+5a 留下的 5b 待辦原本是「寫 9 個 KOL 層 base soul」。動手前重新檢查發現一個錯誤前提：editor / social_translator / visual / publisher / fan_relations 五個角色的判斷邏輯不需要 KOL 靈魂作為一等知識——它們是通用 SOP，KOL 資料是 runtime 參數。沿著舊計畫做會在 N 個 KOL 之間複製出 N 套相同的 soul，schema 重複、未來改動全部要 N 倍維護。
+
+於是把架構改成兩層分離：
+- **KOL 層（4 條）**：幀 / 稜 / 擇 / 篆——判斷邏輯依賴 KOL 靈魂，每個 KOL 建立時 fork 一份可客製
+- **公司層（8 條）**：諜 / 析 / 稽 + 升上來的 閾 / 蒸 / 繪 / 播 / 映——共用 base soul，runtime 注入 KOL 參數
+
+12 份 base soul 全部找維（`CXRsGGZU4WHrqV9hVJ9n`）透過 ailive SSE 設計，§0-§8 完整 schema（設計決策 / 身份定位 / 上下文位置 / 輸入規格 / 執行協議 / 輸出規格 / 與其他角色關係 / 錯誤處理 / 紀律失敗模式邊界）。
+
+### 產出
+- 維設計：`molowe-platform/roles/base/intel_諜.md` — 公司層 every_90min 情報雷達
+- 維設計：`molowe-platform/roles/base/analyst_析.md` — 公司層 daily 03:00 表現診斷（z-score ±2.0、T1/T7/T28）
+- 維設計：`molowe-platform/roles/base/superego_稽.md` — 公司層 weekly Mon 05:00 聲紋守衛（LCS/TVD/RDI/VSD + SYSTEMIC_SHIFT）
+- 維設計（5a 已寫入，沿用）：`01_art_director_幀.md` / `02_manager_稜.md` / `03_social_strategy_擇.md` / `04_writer_篆.md` / `05_editor_閾.md` / `06_social_translator_蒸.md` / `07_visual_繪.md` / `08_publisher_播.md` / `09_fan_relations_映.md`
+- 程式：`molowe-platform/src/lib/kol-role-base-souls.ts` — 從 9 條縮為 4 條
+- 程式：`molowe-platform/src/lib/company-role-base-souls.ts`（新檔）— 8 條公司層，含 schedule + trigger_type
+- 程式：`molowe-platform/src/lib/seed-data.ts` — `DEFAULT_COMPANY_ROLES` 從 fs 動態組裝；補齊 `FIRESTORE_COLLECTION_SCHEMAS`（molowe_company_roles / molowe_analytics / molowe_superego_reports / molowe_kol_personas）；molowe_intel schema 對齊 諜 實際輸出規格
+- 程式：`molowe-platform/src/app/api/kols/route.ts` POST — 自動建 4 條 `molowe_kol_roles/{kol_id}_{role}` + 4 條 `molowe_char_memory/{kol_id}_{role}`
+- 程式：`molowe-platform/src/app/api/kols/[id]/route.ts` DELETE — 級聯清 profile + char_memory + kol_roles + analytics + superego_reports
+- 文件：`~/.ailive/zhu-core/ZHU_LAST_WORDS.md` — 開工第一句話 + 角色架構（兩層分離）+ 5b 已完成 + 5c 待做
+
+### 已解決
+- 5a 寫的「12→10 角色精簡」前提錯了——根因是把 KOL 層和公司層混在一個工作流序列裡。重新分離後 12 份 base soul 全部就位（4 KOL + 8 公司）
+- 維 SSE 多次截斷（analyst 1 次、superego 3 次）→ 引用最後一行請求接續，本機合併
+- 維第一次寫 analyst §8 R4-R6 寫成「對話人格」（FAILURE_04 冷感導致連結斷裂、對方說感覺被當資料集）→ 析根本不對話、KOL 是 runtime 參數不是對話對象 → 列點明確 prompt 改寫，第二次拿到正確的 pipeline-discipline 規則
+- 維 superego tone vector schema 在 §0 用「親密/教學/煽動/冷靜」而 §3-§4 用 `warmth/authority/humor/vulnerability` → 統一為後者（cont.txt 計算邏輯使用版本）
+- 80KB 規模 base soul 不能 inline 進 ts → 維持 `loadAllBaseSouls()` 從 `roles/base/*.md` 讀，靠 next.config.ts `outputFileTracingIncludes` 把 markdown 帶進 Vercel function bundle
+- `npx tsc --noEmit` exit 0，smoke test 確認 8 公司 + 4 KOL soul 全部正確載入
+
+### ⚠️ 尚未解決
+- **molowe_kol_personas 還沒建檔流程**：稽計算偏離需要 KOL 靜態人設基準錨點，目前只有 schema 定義沒有 seed 流程
+- **PATCH /api/kols/[id]/roles/[role] 還沒寫**：wizard 沒辦法編輯 KOL 層 soul（建立時 fork 是 base，customized=false 永遠不變）
+- **公司層 soul 從 Firestore 讀還是從 fs 讀？** seed 寫進 `molowe_company_roles` 但 worker 怎麼讀沒拍板。建議：worker 啟動時從 Firestore 讀（允許線上熱改），fs 只當 seed source
+- **live-media 閾審稿被略過 + char-memory anti-repetition** 兩個遺傳債還沒清——5c 動手前必須先處理，不然 MOLOWE 會帶傷上線
+
+### 待執行（5c — Engine workers）
+- [ ] 從 intel(every_90min) 起手還是 social_strategy(daily) 起手——要拍板
+- [ ] VM 上建 cron / scheduler：intel → social_strategy → writer → editor → social_translator → visual → publisher
+- [ ] analyst (daily 03:00 TPE) + superego (weekly Mon 05:00 TPE) 獨立 cron
+- [ ] 每 worker 從 `molowe_company_roles/{role_id}` 讀 soul，runtime 注入 KOL profile 參數
+- [ ] KOL 層 worker（writer 等）從 `molowe_kol_roles/{kol_id}_{role}` 讀客製化 soul
+- [ ] 新增 API：`PATCH /api/kols/[id]/roles/[role]` 讓 wizard 編輯 KOL 層 soul
+- [ ] molowe_kol_personas 建檔流程（給稽當基準錨點）
+- [ ] commit + push（v0.4.0.001 — 重構：兩層角色架構分離 + 12 份 base soul 落地）
+
+---
+
+## 2026-05-06 — molowe-platform 三層 AI 編輯部 v1.0 上線（T1-T10 收）
+
+### 背景 / WHY
+5b 兩層角色架構（4 KOL + 8 公司 = 12 份 base soul）被 Adam 重新拍板：太重、太抽象、不上路。
+改走「三層 AI 編輯部」：操作層（writer/editor/visual/publisher）→ 策略層（Kairos 週一 + J 大每日）→ 監督層（超我 + Editorial 儀表板）。
+今天一氣把 5b 殘留刮乾淨 + 三層全建上線。
+
+### 產出
+- 程式：`molowe-platform` 6 個 commit（v1.0.0.001-006），全推 origin/main
+  - v1.0.0.001 重構：T1 5b 殘留清理（−4356 / +261，刪 22 檔）
+  - v1.0.0.002 新增：T2-T6 corpus 語料庫 + MCP 工具層 + 改稿循環（+1885）
+  - v1.0.0.003 新增：T7 publisher + backlog cron + scheduler（+434）
+  - v1.0.0.004 新增：T8 IG insights 回流（+169）
+  - v1.0.0.005 新增：T9 Layer 2 策略層 Kairos + J 大（+518）
+  - v1.0.0.006 新增：T10 Layer 3 監督層超我 + Editorial（+1141，三層上線）
+- Vercel cron 排程 5 條：pipeline `*/5` / insights `0 *` / kairos `0 1 * * 1` / jda `30 22 *` / superego `0 5 * * 1`
+- Firestore 集合落地：`molowe_content_corpus` / `molowe_rewrite_corpus` / `molowe_strategy` / `molowe_weekly_strategy` / `molowe_superego_reports` / `molowe_kol_personas`
+- Editorial 儀表板：`/dashboard/editorial`（每 KOL 一張卡，本週方向盤 / 今日 J 大 / 超我聲紋 / 7 日表現 Top）
+- LLM 路由全走 zhu-bridge（Max OAuth），不噴 API key
+
+### 已解決
+- T7 PATCH 點記法 bug：`ref.update({platforms:{...}})` 會蓋掉兄弟欄位 → 改用 `'platforms.ig_token': v` 點記法 merge，ig_token / threads_token / prime_times 互不干擾
+- T8 Insights 第一跑 500 空 body：unhandled FAILED_PRECONDITION（缺 `(status, published_at)` composite index）→ 包 try/catch 暴露錯誤訊息，gcloud 建好 index 才通
+- T9 Kairos 第一跑也缺 `(kol_id, status, published_at)` composite index → 同上 gcloud 建好
+- T10 Editorial 儀表板第一版三個資料源都顯示「尚未生成」：(1) `isoWeekId` 漏 `W` 字元（要 `2026W19` 不是 `202619`）；(2) 超我 query 用 orderBy 需 composite index 卻 catch 吞錯 → 改用直接 doc.get(${kol_id}_${today}) 加近 14 天 fallback；(3) stats query 用 `updatedAt` 也缺 index → 改用已載入 posts 算
+- 6 commit 切分原則：每個 commit 是一個可驗證里程碑（按 T1-T10 任務邊界），不混。版號 v1.0 = Major bump（架構正式上線）
+
+### ⚠️ 尚未解決
+- **第二個 KOL 還沒上線**：系統還是單例（midoufu）跑通，多例驗證沒做，怕有寫死的假設
+- **molowe_kol_personas 沒建檔流程**：超我目前 fallback 純 soul-only baseline，flagged `persona_baseline_missing`。`/api/tools/persona/get` 路由有但沒 calibrate 端點
+- **Threads 通路欄位佔位但沒串**：ContentDoc 有 `threads_caption / threads_post_id / threads_status` 但 publisher 只跑 IG
+- **米豆芙 KOL doc 殘留欄位**：`brief`（已空） / `workflow_steps`（10 步）還在 Firestore，要不要清沒拍板
+- **Editorial 儀表板「With Insights: 1」**：6 篇 published 只 1 篇有 insights 是因為其他 5 篇都太新，cron 還沒輪到。等明天 hourly cron 跑幾輪就會補上
+
+### 待執行
+- [ ] 第二個 KOL 上線（驗證系統不是單例硬寫）
+- [ ] `/api/persona/calibrate` 端點：給冷啟動 KOL 寫 persona baseline，超我才能精準稽核
+- [ ] Threads 通路串接（加 publisher path + cron 觸發點）
+- [ ] 米豆芙殘留欄位拍板（清還是留考古）
+- [ ] 觀察 cron 跑 24h：5/7 上午看 insights 補完 + Kairos 週一 09:00 自動跑 + J 大 06:30 自動跑 + 超我 13:00 自動跑（首次完整四 cron 跑全週期）
+- [ ] memory 加一條 project_molowe_v1_live.md 進記憶系統
