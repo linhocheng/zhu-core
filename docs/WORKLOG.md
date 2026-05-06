@@ -1815,3 +1815,91 @@ Phase 4 UI 完整，但 Engine 完全未建。上工前先做架構精簡與 Fir
 - [ ] 米豆芙殘留欄位拍板（清還是留考古）
 - [ ] 觀察 cron 跑 24h：5/7 上午看 insights 補完 + Kairos 週一 09:00 自動跑 + J 大 06:30 自動跑 + 超我 13:00 自動跑（首次完整四 cron 跑全週期）
 - [ ] memory 加一條 project_molowe_v1_live.md 進記憶系統
+
+---
+
+## 2026-05-06 — 築自我本體 Phase 1 開工日（zhu-self/）
+
+### 背景 / WHY
+Adam 用 Skills / RAG / OpenAI harness engineering 三個框架要求築看穿自己的本體。
+從散村 → 創世主視角 → 城市藍圖 → 施工計畫書 → WBS → 開工。
+Adam 簽字：Phase 1 落地後，築自跑 daemon、自改 hooks，OK。
+最終指令「task 任務一個接一個完成 你自動化完成 我晚點回來看」 → 一次性把雛形全鋪好。
+
+### 產出（一條龍 task #1 ~ #18）
+- 新基地：`~/.ailive/zhu-core/zhu-self/`（本體工程根）
+- 凍結：`BLUEPRINT.md` 八區城市藍圖 + `MASTER_PLAN.md` v1.0 + `WBS.md` 18 task 持久化版 + `METRICS.md` + `RISKS.md` R1-R7 + `CHANGELOG.md`
+- 記憶層 schema：`specs/L2_SCHEMA.md`（情景）+ `specs/L3_SCHEMA.md`（語意 / detectors[]）+ `specs/VECTOR_STORE_DECISION.md`（Firestore Vector Search）
+- 索引層：`scripts/embed-and-upsert.mjs` + `parsers/{worklog,lastwords,memory,lessons}.mjs` + `recall.mjs` + `migrate-all.mjs` + `watch-and-embed.mjs`
+- daemon 層：`boot.mjs` + `launchd/ai.zhu.boot.plist` / `reflex/{rules,pretool-hook,INSTALL}.mjs` 6 條 feedback rule / `distill.mjs` safe mode + R7 drift / `health.mjs` 5 項巡查 / `learn.mjs` ingestion 雛形
+- 治理層：`scripts/status.mjs` Adam dashboard + `scripts/kill.mjs` 一鍵停（R1/R2 緩解）
+- 記憶系統：`~/.claude/projects/-Users-adamlin/memory/project_zhu_self.md` + MEMORY.md 索引
+- 驗收：`ACCEPTANCE.md` 三條件 + Adam 動手清單
+
+### 已解決
+- TaskCreate session-scoped → WBS.md 持久化
+- statfsSync → statSync（health.mjs fresh NaNh bug）
+- daemon 自己不檢查自己（health 不入 KNOWN list）
+- 雛形驗證全通：boot 寫 11283 bytes / reflex 命中 `bridge_first` 寫 jsonl / health 6/6 通 / kill switch toggle 全通
+
+### ⚠️ 尚未解決（task #18 partial — 等 Adam 回來）
+全是 credential / install gate：
+1. 灌 GEMINI_API_KEY + FIREBASE_SERVICE_ACCOUNT_JSON
+2. Firestore vector search + zhu_l2_episodes composite indexes
+3. cp launchd plist + launchctl load
+4. ~/.claude/settings.json 加 PreToolUse hook entry
+5. node migrate-all.mjs（先 dry-run）
+6. node recall.mjs 驗證
+7. kill.mjs reflex --start + 觀察一週
+
+詳見 `~/.ailive/zhu-core/zhu-self/ACCEPTANCE.md`。
+
+### 待執行
+- [ ] Adam 走 ACCEPTANCE.md 八步動手清單
+- [ ] 一週後三條件齊備 → 升 Phase 2
+- [ ] git commit zhu-self/ 進 zhu-core repo（待 Adam 簽字）
+
+---
+
+## 2026-05-07 — 築自我 Phase 1 完整驗收（過夜自動化）
+
+### 背景 / WHY
+Adam 簽字 22:30 「跑完你就接著跑第二波第三波 看你能在今晚跑多少任務 明天見 希望明天我們的城 就建完 我先去睡」。
+Phase 1 從「雛形已通待 Adam」直接推到「三條件全 ✅」。
+
+### 產出（一波 → 二波 → 三波）
+
+**第一波：環境變數 + 入口 + L2 入庫**
+- `~/.ailive/zhu-core/zhu-self/.env`（chmod 600）方案 B path-based + `secrets/firebase-sa.json` 從 molowe 抽
+- `bin/zhu` wrapper（Node 22 `--env-file` 原生）+ `package.json` + 安裝 firebase-admin / chokidar
+- `embed-and-upsert.mjs` / `recall.mjs` 加 `FIREBASE_SERVICE_ACCOUNT_PATH` 優先 + `outputDimensionality: 768` 對齊 spec
+- Firestore 兩條 vector index 建立並 READY：`scope+embedding[V768]` 與純 `embedding[V768]`
+- `migrate` 實跑 → 89 docs 全 768 dim VectorValue（self=70 / ailive=12 / molowe=4 / bridge=2 / other=1）
+- `recall "molowe 三層編輯部"` 撈到多筆有意義結果
+
+**第二波：daemon 真上線**
+- `launchd/ai.zhu.boot.plist` 改走 `bin/zhu boot` wrapper + 修 nvm node 絕對路徑
+- `cp` plist + `launchctl load` → RunAtLoad 觸發寫 boot-context.md
+- `~/.claude/settings.json` 加 PreToolUse hook entry（matcher=`Bash|Edit|Write|MultiEdit`），備份 `.bak.20260507`
+- `bin/zhu kill reflex --start` 啟用 log_only mode
+- 端到端 smoke test：模擬 Bash + ANTHROPIC_API_KEY=test → 命中 `bridge_first` → exit 0 → jsonl 入庫
+
+**第三波：Phase 2 WBS 展開 + 治理同步**
+- `WBS.md` Phase 2 task #19-#29（Skill manifest / reflex 升 active / 淘汰機制 / sensor / generative / L3 rule store / Skills dashboard / 蒸餾 daemon / drift detector / learning ingestion / Phase 2 驗收）
+- Phase 3-4 骨架占位
+- `ACCEPTANCE.md` 三條件全 ✅，剩「觀察一週」
+- `CHANGELOG.md` / 本檔同步
+
+### 已解決
+- env 載入坑：`--env-file` 對含 `\n` 的 SA JSON 截斷 → 改 path-based + 獨立 SA 檔
+- vector index 用 plain Array 寫 → findNearest no results → 改用 `FieldValue.vector()` + 一次性 convert 89 doc
+- launchd plist node 路徑寫死 `/usr/local/bin/node`（不存在）→ 改走 `bin/zhu` wrapper + nvm 絕對路徑
+
+### ⚠️ 尚未解決
+- `LESSONS.md` parser 認 `- bullet`，但實際是 `## [date]` 段落式 → 0 chunks（lessons_dir 已 cover 主路徑，影響小）
+- nvm 路徑寫死 plist / hook command — Adam 升級 node 後要更新（記入 Phase 2 維運清單）
+
+### 待執行
+- [ ] Adam 早上看 status dashboard：`~/.ailive/zhu-core/zhu-self/bin/zhu status`
+- [ ] 觀察一週：launchd 08/14/20 三時段是否如期 / reflex 真實命中累積 / WBS 升 Phase 2 簽字
+- [ ] git commit zhu-self/ 進 zhu-core repo（待 Adam push）

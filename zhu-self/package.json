@@ -1,0 +1,20 @@
+{
+  "name": "zhu-self",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "築自我工程 — Phase 1 基礎設施",
+  "scripts": {
+    "boot": "bin/zhu boot",
+    "status": "bin/zhu status",
+    "migrate": "bin/zhu migrate",
+    "recall": "bin/zhu recall"
+  },
+  "dependencies": {
+    "firebase-admin": "^13.0.0",
+    "chokidar": "^4.0.0"
+  },
+  "engines": {
+    "node": ">=22"
+  }
+}

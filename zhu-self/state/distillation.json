@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "mode": "safe",
+  "trigger": "manual",
+  "note": "Phase 1 雛形 = CLI 手動觸發 + safe mode（寫 candidate 池）。Phase 2 接 Claude Code stop hook + idle 觸發。R7 緩解：drift 檢測 alert 時擋下。",
+  "updated_at": "2026-05-06T15:09:56.889Z"
+}

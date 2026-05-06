@@ -1,0 +1,7 @@
+{
+  "enabled": false,
+  "mode": "candidate_pool",
+  "phase": "1_skeleton",
+  "note": "Phase 1 只建管線雛形，所有 source enabled=false。Phase 4 才啟用。Adam review 升 L2/L3。",
+  "updated_at": "2026-05-06T15:09:56.889Z"
+}

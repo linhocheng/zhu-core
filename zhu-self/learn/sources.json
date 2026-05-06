@@ -1,0 +1,23 @@
+[
+  {
+    "id": "openai_blog",
+    "type": "rss",
+    "url": "https://openai.com/blog/rss/",
+    "enabled": false,
+    "note": "OpenAI 官方 blog（Phase 4 啟用）"
+  },
+  {
+    "id": "anthropic_news",
+    "type": "rss",
+    "url": "https://www.anthropic.com/news/rss.xml",
+    "enabled": false,
+    "note": "Anthropic news（Phase 4 啟用）"
+  },
+  {
+    "id": "claude_code_changelog",
+    "type": "web",
+    "url": "https://docs.anthropic.com/en/docs/claude-code/changelog",
+    "enabled": false,
+    "note": "Claude Code changelog（會用到的 hooks API 變更）"
+  }
+]

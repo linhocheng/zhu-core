@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+# 築 CLI wrapper
+#
+# 統一入口：把 zhu-self/.env 當原料倉，所有 daemon / script 走這裡進。
+# Node 22+ 原生 --env-file，零依賴。
+#
+# Usage:
+#   zhu boot              # 跑 boot.mjs
+#   zhu status            # status dashboard
+#   zhu kill <daemon>     # kill switch
+#   zhu kill --status
+#   zhu recall "..."      # L2 retrieval
+#   zhu migrate           # migrate-all（一次性入庫）
+#   zhu migrate --dry     # dry-run（看 chunks 數）
+#   zhu health            # health check
+#   zhu distill           # 蒸餾 candidate
+#   zhu learn <args>      # learning CLI
+#
+#   zhu run <path>        # 任意腳本走 --env-file
+
+set -euo pipefail
+
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+ENV_FILE="$ROOT/.env"
+SCRIPTS="$ROOT/scripts"
+
+# .env 缺席就 warn 但不擋（boot/status/kill 不需要 secret）
+NODE_ENV_FLAG=""
+if [[ -f "$ENV_FILE" ]]; then
+  NODE_ENV_FLAG="--env-file=$ENV_FILE"
+fi
+
+cmd="${1:-}"; shift || true
+
+case "$cmd" in
+  boot)     exec node $NODE_ENV_FLAG "$SCRIPTS/boot.mjs" "$@" ;;
+  status)   exec node $NODE_ENV_FLAG "$SCRIPTS/status.mjs" "$@" ;;
+  kill)     exec node $NODE_ENV_FLAG "$SCRIPTS/kill.mjs" "$@" ;;
+  recall)   exec node $NODE_ENV_FLAG "$SCRIPTS/recall.mjs" "$@" ;;
+  migrate)
+    if [[ "${1:-}" == "--dry" ]]; then
+      shift
+      ZHU_SELF_DRY_RUN=1 exec node $NODE_ENV_FLAG "$SCRIPTS/migrate-all.mjs" "$@"
+    else
+      exec node $NODE_ENV_FLAG "$SCRIPTS/migrate-all.mjs" "$@"
+    fi
+    ;;
+  health)   exec node $NODE_ENV_FLAG "$SCRIPTS/health.mjs" "$@" ;;
+  distill)  exec node $NODE_ENV_FLAG "$SCRIPTS/distill.mjs" "$@" ;;
+  learn)    exec node $NODE_ENV_FLAG "$SCRIPTS/learn.mjs" "$@" ;;
+  watch)    exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
+  embed)    exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
+  run)
+    target="${1:-}"; shift || true
+    [[ -z "$target" ]] && { echo "usage: zhu run <script>"; exit 2; }
+    exec node $NODE_ENV_FLAG "$target" "$@"
+    ;;
+  ""|--help|-h)
+    sed -n '4,21p' "${BASH_SOURCE[0]}"
+    exit 0
+    ;;
+  *)
+    echo "unknown command: $cmd" >&2
+    echo "try: zhu --help" >&2
+    exit 2
+    ;;
+esac

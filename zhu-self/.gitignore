@@ -1,0 +1,18 @@
+# 機密 — 任何 SA / private key 一律擋
+.env
+.env.*
+!.env.example
+secrets/
+*.pem
+*.key
+firebase-sa*.json
+
+# state / logs（築自己跑出來的，不入 repo）
+state/boot-context.md
+state/health.json
+logs/
+candidates/
+learn/candidates/
+
+# node
+node_modules/
