@@ -6,6 +6,46 @@
 
 ---
 
+## 2026-05-06 — Harness Engineering 心電感應 + 觸發信號 retrofit + molowe Phase A lint sensor
+
+### 背景 / WHY
+v1.0 收尾後 Adam 開了「玩好玩的東西」的窗。先導讀 OpenAI Harness Engineering 理論（Agent = Model + Harness；guides 前饋 / sensors 後饋；推理型 vs 計算型 sensors；Ashby's Law），再雙向套：(1) 對自己——把無意識操作變成有索引的取回點；(2) 對 molowe——把架構從「全 LLM 重武器」往「便宜 sensor + 重武器留給判斷」遷。
+
+### 產出
+- **觸發信號（trigger signal）格式升級** — feedback memory 從「規則 + Why + How to apply」三段升級為四段，加「觸發信號」（具體當下會出現的徵兆 / 語氣 / 念頭）：
+  - `feedback_memory_format_trigger_signal.md`（新 meta-memory）
+  - `feedback_clarify_before_execute.md`（retrofit）
+  - `feedback_solve_root_not_symptom.md`（retrofit）
+  - `feedback_surface_technical_debt.md`（retrofit）
+  - `feedback_bridge_first.md`（retrofit + 真實踩坑記錄：molowe sensor 提案誤算「每篇 +$0.001」被 Adam 當場逮）
+  - `feedback_lastwords_must_push.md`（lastwords 編輯就要 push 的規則，連帶 skill 補一條）
+  - MEMORY.md 索引同步
+- **molowe Phase A — lint sensor**（中性化、便宜、可週校準）：
+  - `src/lib/tools/lints.ts`（純 TS，零 LLM call；hard 列表保守版：caption_required / image_url_required / no_links / forbidden_words / forbidden_patterns；soft：caption_length / hashtags / warning_words / emoji / CTA）
+  - `scripts/lints-set-midoufu-baseline.mjs`（midoufu baseline：caption 50-600 字 / hashtag 3-15 / warning_words=['能量','頻率','宇宙']）
+  - `scripts/lints-dry-run.ts`（用 `node --experimental-strip-types` 直跑 TS；client-side sort 避 composite index）
+  - `scripts/cleanup-phantom-published.mjs`（dry-list / --commit；phantom = container_id+media_id 都 null = 從沒 call IG Graph API = 不可能真 published）
+- **發現並清掉 11 篇 phantom published**（第一輪 dry-run 11 hard_failed，全都是 caption+image_url 全空殼，是 backdate-test 殘留；改 phantom 判定為「container_id 與 media_id 同時 null」一網打盡，flip 成 status='failed' / failed_at_stage='legacy_phantom'）
+
+### 已解決
+- **無意識操作的索引問題**：原本 feedback memory 是事後規則，但行為發生在當下，沒索引 = 沒檢索。觸發信號 = 給規則加 retrieval cue（語氣詞、具體念頭、估算公式形態），下一次同樣念頭冒出時 memory 會被命中。當天踩了 bridge cost 的坑就是現場 stress test，retrofit 後 retrieval pattern 已具體
+- **molowe sensor 成本誤判**：第一版設計寫「LLM sensor 每篇 +$0.001 / 週 $0.21」被 Adam 抓——「我們不是用 Max 吃到飽??」。Bridge marginal cost = $0，整個成本論述報廢；retrofit feedback_bridge_first 加估算情境的觸發信號 + 真實案例
+- **dry-run script composite index 報錯**：`where + where + orderBy` 需 composite index，一次性腳本不值得建；改 client-side sort（鎖在腳本檔案內，明確標註不適合 production query）
+- **phantom 初判太嚴**：4 欄全 null 只抓到 10 篇，但 dry-run 11 hard_failed；查到 1 篇 partial-publish doc，published_at 時間戳是 backdate-test 模式 → 放寬判定到 container_id+media_id 都 null
+
+### ⚠️ 尚未解決
+- **lints 還沒接進 production cycle**：Phase B（writer→editor 注入 lints 結果）+ Phase C（publish-time Haiku semantic sensor，shadow run）都延後到 5/13 後——目前真實 published 樣本只剩 1 條（清完 phantom 後），統計沒力，硬接是浪費
+- **persona calibrate 端點還沒做**：超我目前 fallback 純 soul-only baseline，flagged `persona_baseline_missing`。今天討論過要含觸發信號格式，沒動手
+- **第二個 KOL 還沒上線**：lints 是泛用 schema，但 baseline 值要每 KOL 校準，多例驗證沒做
+- **首輪四 cron 全週期還沒跑過**：5/11（下週一）下午回看才知道週一 09:00 Kairos / 06:30 J 大 / 13:00 超我是否如預期跑
+
+### 待執行
+- [ ] 5/13 看真實 published 累積（≥10 篇）後，跑 lints-dry-run 校準 midoufu baseline，再做 Phase B（cycle 接 lints + formatLintResultForEditor）
+- [ ] Phase C：publish-time Haiku semantic sensor（shadow run，不擋發文，只回流到 ContentDoc.semantic_check）
+- [ ] `/api/persona/calibrate` 端點（含觸發信號格式 + soul + 30-90 天 published 萃出靜態人設錨點）
+- [ ] 第二個 KOL 上線驗多例
+- [ ] 5/7 上午看 insights 補完狀況；5/11 下午看四 cron 全週期跑過一輪
+
 ## 2026-05-02 — 鏡 IG 流水線上線 + ailive strategies 頁修復
 
 ### 背景 / WHY
