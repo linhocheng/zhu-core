@@ -19,6 +19,7 @@
 import { readFileSync, existsSync, readdirSync, statSync } from 'node:fs';
 import { resolve } from 'node:path';
 import { homedir } from 'node:os';
+import { execSync } from 'node:child_process';
 
 const HOME = homedir();
 const ROOT = resolve(HOME, '.ailive/zhu-core/zhu-self');
@@ -53,6 +54,20 @@ function getDaemons() {
     out[n] = readJsonSafe(path, { enabled: null, mode: 'missing' });
   }
   return out;
+}
+
+// ── launchd jobs ──
+function getLaunchd() {
+  try {
+    const out = execSync('launchctl list', { encoding: 'utf8' });
+    const lines = out.split('\n').filter((l) => l.includes('ai.zhu.'));
+    return lines.map((l) => {
+      const parts = l.split(/\s+/);
+      return { pid: parts[0], status: parts[1], label: parts[2] };
+    });
+  } catch {
+    return [];
+  }
 }
 
 // ── reflex hit stats ──
@@ -117,6 +132,7 @@ function getWbsProgress() {
 const summary = {
   ts: new Date().toISOString(),
   daemons: getDaemons(),
+  launchd: getLaunchd(),
   reflex: getReflexStats(),
   candidates: {
     distillation: countDir(resolve(ROOT, 'candidates')),
@@ -144,6 +160,15 @@ for (const [name, s] of Object.entries(summary.daemons)) {
   console.log(`   ${flag}  ${name.padEnd(14)} mode=${s.mode}`);
 }
 console.log('');
+
+if (summary.launchd.length) {
+  console.log('⏱  launchd jobs');
+  for (const j of summary.launchd) {
+    const flag = j.status === '0' ? '🟢' : '🟡';
+    console.log(`   ${flag}  ${j.label.padEnd(20)} pid=${j.pid} last_exit=${j.status}`);
+  }
+  console.log('');
+}
 
 console.log('🛡  Reflex hits');
 console.log(`   total=${summary.reflex.total}  last_7d=${summary.reflex.last_7d}`);

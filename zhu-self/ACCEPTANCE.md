@@ -57,6 +57,7 @@
 - ✅ `migrate-all.mjs` 實跑：63 files / 89 chunks / 0 fail
 - ✅ Firestore `zhu_l2_episodes` collection: 89 docs, 全 768 dim VectorValue, 分布 self=70 / ailive=12 / molowe=4 / bridge=2 / other=1
 - ✅ `bin/zhu recall "molowe 三層編輯部"` 撈到多筆有意義結果（含 MOLOWE Engine 5a 落地段落）
+- ✅ `ai.zhu.migrate` launchd 每 6 小時自動 migrate（idempotent dedup，新增/改動的 chunk 才上）— 觀察週新內容會自動入 L2
 
 **過去未列項目（全 2026-05-07 自動完成）**：
 - ✅ `.env` 配置（方案 B path-based）：GEMINI 39 chars / SA path → `secrets/firebase-sa.json`（project=`moumou-os`，chmod 600）

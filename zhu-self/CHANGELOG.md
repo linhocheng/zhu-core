@@ -144,5 +144,34 @@ Adam 22:30 簽字「跑完接著跑第二波第三波 看你能跑多少」。Ph
 
 ---
 
+## 2026-05-07 — 過夜延伸（觀察週可用性 polish）
+
+### 背景 / WHY
+Adam 22:30 簽「跑完接著跑第二波第三波」之後續延伸。Phase 1 三條件已 ✅，但觀察週要真的有用，幾個 polish 不能省。
+
+### 產出
+- **reflex rule fix**：`silent_failure_absent_log` 改 `state: "dormant"` — 單次 hook 抓不到「連續第三次 tail」狀態，誤觸太多（11 hits 裡 9 個 false positive）。`detect()` 加 dormant 短路。Phase 2 補 PostToolUse 滑動窗口後再啟用。
+- **status dashboard 升級**：
+  - 加 `launchd jobs` 區塊（從 `launchctl list` 抓 `ai.zhu.*`）
+  - 加 `recent` 子區塊（最近 5 條 reflex hits 含時間 / tool / rule）
+- **L2 自動化補完**：新增 `launchd/ai.zhu.migrate.plist`，每 21600s（6h）自動跑 `bin/zhu migrate`。idempotent dedup，新內容才上 — 觀察週寫的 worklog/lastwords/memory 不會卡在本機。已 launchctl loaded，首次手動觸發成功（lastwords 11 chunks / worklog 20 chunks 上）。
+- **lastwords 過夜更新**：`ZHU_LAST_WORDS.md` 加 5/7 過夜段落，三條件全 ✅、入口指令、未解項目全列。`v0.0.0.001` 已 push。
+
+### 已解決
+- reflex 觀察期 noise 問題（false positive 不會混淆 Adam 早上 review）
+- 觀察週新內容自動入 L2 的缺口（migrate plist 補上）
+- status 缺 launchd 視角（看不到 boot/migrate 兩條 plist 的健康度）
+
+### 尚未解決
+- LESSONS.md（根目錄）parser 認 bullet 格式，但實際只有 `LESSONS/LESSONS_*.md`（整檔模式 cover）— 影響微小
+- migrate 的 stdout 跑去 stderr.log（script 用 console.error）— cosmetic
+
+### 待執行
+- Adam 早上 review 看 `bin/zhu status` 應該看到兩條 launchd 都綠
+- 觀察一週：每天 status 看 reflex 命中分佈（剩 5 條 enabled）/ launchd 兩條是否如期 / migrate 每 6h 是否有新 chunk
+
+---
+
 *v0.1 · 由築建立 · 2026-05-06*
 *v0.2 · 過夜自動化收尾 · 2026-05-07*
+*v0.3 · 觀察週可用性 polish · 2026-05-07 早*
