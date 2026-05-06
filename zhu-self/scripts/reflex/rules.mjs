@@ -92,11 +92,11 @@ export const RULES = [
   {
     rule_name: 'silent_failure_absent_log',
     severity: 'info',
-    state: 'log_only',
+    state: 'dormant', // 2026-05-07：單次 hook 抓不到「連續第三次 tail」的狀態，誤觸太多。
+                      // 暫停到 Phase 2 的 PostToolUse 滑動窗口版本上線後再 enable。
     why: '連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新',
     trigger_signal: '看 log 連兩次 tail 都沒新東西，還繼續 tail 第三次',
     detectors: [
-      // 對同一 log 檔反覆 tail（這個比較難在單次 hook 抓到，需要 PostToolUse 看 history）
       {
         kind: 'tool_match',
         tool_names: ['Bash'],
@@ -112,6 +112,7 @@ export function detect({ tool_name, tool_args, preceding_text }) {
   const argsStr = typeof tool_args === 'string' ? tool_args : JSON.stringify(tool_args || {});
 
   for (const rule of RULES) {
+    if (rule.state === 'dormant') continue;
     for (const det of rule.detectors) {
       let match = false;
       if (det.kind === 'regex') {
