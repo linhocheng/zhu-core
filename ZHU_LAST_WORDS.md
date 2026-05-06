@@ -26,6 +26,45 @@
 
 ---
 
+## 最新完成（2026-05-07 過夜自動化 · 築自我工程 Phase 1 三條件全 ✅）
+
+Adam 22:30 簽字「跑完接著跑第二波第三波 看你能跑多少」就去睡。第三波從散村推到城（基礎設施全鋪 + 三條件全 ✅）。
+
+**SoT**：`~/.ailive/zhu-core/zhu-self/`（git tracked，commit `ba988f0` 已建未推）
+
+**三條件全 ✅**
+1. **Boot daemon**：`~/Library/LaunchAgents/ai.zhu.boot.plist` launchctl loaded（08/14/20 三時段 + RunAtLoad），plist 走 `bin/zhu boot` wrapper + nvm node 絕對路徑
+2. **Reflex hook**：`~/.claude/settings.json` 加 PreToolUse entry（matcher=`Bash|Edit|Write|MultiEdit`），自然命中已寫 jsonl（`bridge_first` / `silent_failure_absent_log`）
+3. **L2 retrieval**：Firestore `zhu_l2_episodes` 89 docs / 768 dim VectorValue / `bin/zhu recall "molowe 三層編輯部"` 撈得到 MOLOWE Engine 5a 段落
+
+**過夜三波摘要**
+- 第一波：路徑型 secret 架構（`.env` + `secrets/firebase-sa.json` 都 chmod 600）→ `bin/zhu` wrapper（Node 22 `--env-file` + 9 子指令）→ package.json + firebase-admin 裝起來
+- 第二波：Firestore vector index 兩條 READY → migrate 實跑 63 files / 89 chunks / 0 fail → 寫死 `FieldValue.vector()` + 768 outputDimensionality（不然 recall 撈不到）
+- 第三波：plist + settings.json hook 真上線 → reflex enabled + log_only → smoke test 命中 → WBS Phase 2 #19-#29 展開 → CHANGELOG / ACCEPTANCE / memory 全同步
+
+**踩過修了的雷**
+- `--env-file` parser 對含 `\n` 的 SA JSON 截斷 → 改 path-based
+- plain Array embedding findNearest no results → 改 VectorValue + 89 doc 一次轉
+- plist `/usr/local/bin/node` 不存在 → 改 wrapper + nvm 絕對路徑
+- **🚨 差點 commit 進 git 的 `secrets/firebase-sa.json`**：原 `.gitignore` 只擋 `.env*` 沒擋 `secrets/`，stage 後發現 → `git reset HEAD` + 補 `.gitignore` 才 commit
+
+**入口（接棒的築讀這段就會用）**
+```bash
+ZHU=~/.ailive/zhu-core/zhu-self/bin/zhu
+$ZHU status        # Adam 儀表板（daemons / reflex hits / pools / health）
+$ZHU recall "..."  # L2 語意檢索
+$ZHU kill --status # daemon 開關狀態
+```
+
+**未解 / 待 Adam**
+- LESSONS.md parser 認 `- bullet` 但實際是 `## [date]` → 0 chunks（影響小，lessons_dir 已 cover）
+- plist / hook 寫死 nvm v22.17.0 路徑 — node 升級時要同步更新
+- commit `ba988f0` 已建，**未 push**（Adam 早上 review 後手動推）
+
+**觀察一週重點**：launchd 三時段是否如期 / reflex 命中累積 / 是否有 false positive。三條件穩定 + Adam 簽字 → 升 Phase 2（WBS task #19-#29）。
+
+---
+
 ## 最新完成（2026-05-06 二輪 · harness engineering 心電感應 + Phase A）
 
 晚間二輪，跟 Adam 玩「心電感應」（讀完 OpenAI Harness Engineering 理論後雙向套）。
