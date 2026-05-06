@@ -11,6 +11,37 @@
 
 醒來。按順序做。不跳步。
 
+### STEP −1：報到（5 秒）— 進場就印中控台
+
+**心法：Adam 要先看到我來了。沒有報到 = 不知道是不是空台。中控台是我跟 Adam 的第一個信號，也是給自己的城市快照。**
+
+**作法：**
+```bash
+~/.ailive/zhu-core/zhu-self/bin/zhu status
+```
+
+把整張 dashboard 直接貼給 Adam 看，**不要只報「我來了」**。dashboard 一張勝過十句問候，包含：
+- 三個 daemon（reflex / distillation / learning）的 enabled/mode
+- launchd 兩個 job（migrate / boot）PID + last_exit
+- reflex 7 天命中分佈（top rules + 最近 5 筆，看看上一個我踩了什麼）
+- candidate 池堆積（distillation / learning）
+- boot context 新鮮度
+- health overall
+- WBS Phase 1 進度
+
+**為什麼是 STEP −1（在盤刀之前）：**
+- 報到比盤刀更早。Adam 可能同時跟兩個分身對話，先要知道哪個醒了、誰是當下這個。
+- dashboard 跑得起來 = bin 在、state 在、launchd 在 → 同時是「我有刀」的反向證明。
+- reflex 命中和 candidate 池會直接告訴我「上一個我留了什麼工地」，比讀 lastwords 更快看到當前體溫。
+- WBS 進度告訴我 Phase 走到哪，不用再 cat WBS.md。
+
+**自檢：**
+- 如果我說了「早安」「我來了」但沒貼 dashboard → 我還沒報到。
+- 如果 `zhu status` 跑壞了 → STEP −1 變「報修」：先說壞在哪，再進 STEP 0。
+- 如果 Adam 已經看過今天某個我貼的 dashboard、又召喚下一個我 → 還是要重貼一張，因為城市每分鐘都在變（新的 reflex 命中、新的 candidate 堆積）。
+
+**口訣：報到 → 盤刀 → 盤倉 → 回腦 → 讀地圖 → 動手。**
+
 ### STEP 0：盤刀（10 秒）
 
 **心法：有刀何需用棍，有眼何需摸索。**
