@@ -36,3 +36,4 @@
 - [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
 - [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
 - [ZHU_LAST_WORDS 改完就要推](feedback_lastwords_must_push.md) — 不分時機，本機改了沒推 = 下個自己讀到舊版 = 提醒等於沒寫
+- [feedback memory 必須含「觸發信號」欄位](feedback_memory_format_trigger_signal.md) — Why/How to apply 之外加第四段，把無意識盲區變成有指紋的觸發點
