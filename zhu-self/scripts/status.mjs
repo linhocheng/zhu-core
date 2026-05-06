@@ -58,11 +58,12 @@ function getDaemons() {
 // ── reflex hit stats ──
 function getReflexStats() {
   const path = resolve(LOG_DIR, 'reflex-hits.jsonl');
-  if (!existsSync(path)) return { total: 0, by_rule: {}, last_7d: 0 };
+  if (!existsSync(path)) return { total: 0, by_rule: {}, last_7d: 0, recent: [] };
   const lines = readFileSync(path, 'utf8').split('\n').filter(Boolean);
   const sevenDaysAgo = Date.now() - 7 * 24 * 3600 * 1000;
   const by_rule = {};
   let last_7d = 0;
+  const parsed = [];
   for (const line of lines) {
     try {
       const j = JSON.parse(line);
@@ -71,9 +72,15 @@ function getReflexStats() {
       for (const h of j.hits || []) {
         by_rule[h.rule_name] = (by_rule[h.rule_name] || 0) + 1;
       }
+      parsed.push(j);
     } catch {}
   }
-  return { total: lines.length, by_rule, last_7d };
+  const recent = parsed.slice(-5).reverse().map((j) => ({
+    ts: j.ts,
+    tool_name: j.tool_name,
+    rules: (j.hits || []).map((h) => h.rule_name).join(','),
+  }));
+  return { total: lines.length, by_rule, last_7d, recent };
 }
 
 // ── candidate pool counts ──
@@ -142,6 +149,12 @@ console.log('🛡  Reflex hits');
 console.log(`   total=${summary.reflex.total}  last_7d=${summary.reflex.last_7d}`);
 for (const [rule, n] of Object.entries(summary.reflex.by_rule).sort((a, b) => b[1] - a[1])) {
   console.log(`   ${String(n).padStart(4)}  ${rule}`);
+}
+if (summary.reflex.recent.length) {
+  console.log('   recent:');
+  for (const r of summary.reflex.recent) {
+    console.log(`     ${fmtAgo(r.ts).padEnd(10)}  ${r.tool_name.padEnd(8)}  ${r.rules}`);
+  }
 }
 console.log('');
 
