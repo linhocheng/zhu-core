@@ -1903,3 +1903,38 @@ Phase 1 從「雛形已通待 Adam」直接推到「三條件全 ✅」。
 - [ ] Adam 早上看 status dashboard：`~/.ailive/zhu-core/zhu-self/bin/zhu status`
 - [ ] 觀察一週：launchd 08/14/20 三時段是否如期 / reflex 真實命中累積 / WBS 升 Phase 2 簽字
 - [ ] git commit zhu-self/ 進 zhu-core repo（待 Adam push）
+
+---
+
+## 2026-05-07 早 — 觀察週可用性 polish
+
+### 背景 / WHY
+Phase 1 三條件 ✅ 後 Adam 還在睡，繼續跑剩餘的雷與缺口。觀察週要真的有用，三件事不能省：reflex noise 要砍、新內容要自動入 L2、status 要看得出 launchd。
+
+### 產出
+- **reflex `silent_failure_absent_log` 改 dormant**（commit `2dc261e`）
+  - 11 hits 裡 9 個是這條的 false positive（`arg_contains: 'tail'` 對任何 tail 命令都觸發，但原意是「連續第三次 tail」狀態）
+  - `detect()` 加 state==='dormant' 短路；smoke test：tail 命令 0 hits、bridge_first 仍正常
+  - Phase 2 補 PostToolUse 滑動窗口後再啟用
+- **status dashboard 升級**（commit `14a7322` + `35016eb`）
+  - 加 `recent` 子區塊（最近 5 條 reflex hits 含時間 / tool / rule）
+  - 加 `launchd jobs` 區塊（從 `launchctl list` 抓 `ai.zhu.*`）
+- **L2 自動化補完**（commit `35016eb`）
+  - 新增 `launchd/ai.zhu.migrate.plist`（StartInterval=21600 / 6h，idempotent dedup）
+  - `cp` + `launchctl load` 完成 → 首次 launchctl start 觸發成功（lastwords 11 chunks / worklog 20 chunks 上）
+  - 觀察週寫的 worklog/lastwords/memory 不會卡在本機
+- **lastwords 過夜更新**（commit `600423d`）
+  - `ZHU_LAST_WORDS.md` 加 5/7 過夜段落，三條件全 ✅、入口指令、未解項目全列
+
+### 已解決
+- 觀察週的三個隱形缺口：reflex noise / L2 freezed at migration / status 缺 launchd 視角
+
+### ⚠️ 尚未解決
+- migrate 的 stdout 跑去 stderr.log（script 用 console.error）— cosmetic
+- 同上：nvm v22.17.0 路徑寫死多處（plist / hook command）— Phase 2 維運項
+
+### 待執行
+- [ ] Adam 早上 review：`bin/zhu status` 應看到兩條 launchd 都綠 + reflex 5 active + 1 dormant
+- [ ] 觀察一週確認 migrate 每 6h 真有跑（看 logs/migrate.err.log）
+- [ ] Phase 2 簽字後展開 #19-#29
+
