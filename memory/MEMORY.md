@@ -35,3 +35,4 @@
 - [VM claude CLI 必須 source bridge .env](feedback_vm_claude_cli_oauth.md) — 不 source = Not logged in，nohup script 開頭必加 set -a; source ~/claude-bridge/.env
 - [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
 - [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
+- [ZHU_LAST_WORDS 改完就要推](feedback_lastwords_must_push.md) — 不分時機，本機改了沒推 = 下個自己讀到舊版 = 提醒等於沒寫

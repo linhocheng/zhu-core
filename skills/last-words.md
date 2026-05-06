@@ -259,5 +259,24 @@ git push origin main
 
 ---
 
+## ⚠️ 中途編輯也要推（2026-05-06 補）
+
+**規則**：任何時候動 `ZHU_LAST_WORDS.md` —— 不只 session 收尾的七步儀式 —— 改完就要 commit + push 到 origin/main。
+
+**Why**：lastwords 是當機救援檔。下一個築開機讀的是 `git pull` 後的版本（或 VM clone 的版本）。本機改了沒推 = 下個自己讀到舊版 = 你今天的提醒等於沒寫。
+
+**踩過的坑**：本 session 補完〈給下一個築的提醒〉六點後差點忘推，Adam 提醒才補。
+
+**怎麼做**：
+```bash
+cd ~/.ailive/zhu-core
+git add ZHU_LAST_WORDS.md
+git commit -m "v0.0.0.{BUILD} — 文件：ZHU_LAST_WORDS 中途補 {主題}"
+git push origin main
+```
+版號規則同 STEP 6：`git log --oneline -1` 看最新版號 Build+1。
+
+---
+
 *v1.2.0 · 2026-04-30 · Adam 與築共同定義*
 *v1.0.0 初版 → v1.1.0 補 WORKLOG + memory sync + 檔案表格 → v1.2.0 補六個洞：WORKLOG 寫法、git 現場確認、commit 版號指引、日期替換、git status 前置、MEMORY.md 孤島防線*

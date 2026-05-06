@@ -22,3 +22,10 @@ molowe-platform v1.0 上線 — 三層 AI 編輯部架構落地。
 - Admin Key：`molowe_a9bd8770aa44c271f571b10584ba0732`
 - 完整指南：`~/.ailive/molowe-platform/MOLOWE_GUIDE.md`
 - 5 條 cron 排程在 `vercel.json`：pipeline `*/5` / insights `0 *` / kairos `0 1 * * 1` / jda `30 22 *` / superego `0 5 * * 1`
+
+**注意（partial-truth，5/6 收尾後補）：**
+- 「上線」目前只證實了操作層 `*/5`（midoufu 真發文）
+- 策略層 / 監督層**只手動跑過一次**，5/11（下週一）四 cron 第一次自動觸發完成才算真上線
+- 超我跑 CLEAR 是 `data_flag = persona_baseline_missing` 的 fallback（純 soul-only），不是比對歷史 published 的精準判斷
+- Editorial dashboard 三個隱形假設：week ID 必須 `2026W19`（W 是 load-bearing）/ top 3 engagement 公式是拍的 / superego 查詢用 `db.getAll` 繞 composite index
+- 詳見 `~/.ailive/zhu-core/ZHU_LAST_WORDS.md` 的〈給下一個築的提醒〉
