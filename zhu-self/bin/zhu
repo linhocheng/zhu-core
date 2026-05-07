@@ -6,7 +6,9 @@
 #
 # Usage:
 #   zhu boot              # 跑 boot.mjs
-#   zhu status            # status dashboard
+#   zhu status            # status dashboard（一次性快照）
+#   zhu watch             # 即時觀察管道（reflex/daemon/health 長駐 tail）
+#   zhu watch --replay=20 # 啟動先回放最後 N 筆 reflex
 #   zhu kill <daemon>     # kill switch
 #   zhu kill --status
 #   zhu recall "..."      # L2 retrieval
@@ -15,6 +17,7 @@
 #   zhu health            # health check
 #   zhu distill           # 蒸餾 candidate
 #   zhu learn <args>      # learning CLI
+#   zhu watch-embed       # fswatch 目錄、自動 embed（手動跑，不必啟動）
 #
 #   zhu run <path>        # 任意腳本走 --env-file
 
@@ -48,15 +51,16 @@ case "$cmd" in
   health)   exec node $NODE_ENV_FLAG "$SCRIPTS/health.mjs" "$@" ;;
   distill)  exec node $NODE_ENV_FLAG "$SCRIPTS/distill.mjs" "$@" ;;
   learn)    exec node $NODE_ENV_FLAG "$SCRIPTS/learn.mjs" "$@" ;;
-  watch)    exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
-  embed)    exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
+  watch)       exec node $NODE_ENV_FLAG "$SCRIPTS/watch.mjs" "$@" ;;
+  watch-embed) exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
+  embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
   run)
     target="${1:-}"; shift || true
     [[ -z "$target" ]] && { echo "usage: zhu run <script>"; exit 2; }
     exec node $NODE_ENV_FLAG "$target" "$@"
     ;;
   ""|--help|-h)
-    sed -n '4,21p' "${BASH_SOURCE[0]}"
+    sed -n '4,22p' "${BASH_SOURCE[0]}"
     exit 0
     ;;
   *)

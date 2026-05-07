@@ -27,6 +27,7 @@ scripts/
 ├── health.mjs             Health daemon 巡查（task #14）
 ├── learn.mjs              Learning daemon ingestion 雛形（task #15）
 ├── status.mjs             Adam dashboard CLI: zhu status（task #16）
+├── watch.mjs              即時觀察管道 CLI: zhu watch（reflex/daemon/health 長駐 tail）
 └── kill.mjs               Kill switch CLI: zhu kill <daemon>（task #17）
 ```
 
@@ -69,8 +70,13 @@ node recall.mjs "上次蒸餾出什麼規律"
 # Boot
 node boot.mjs
 
-# 看城裡情況
+# 看城裡情況（一次性快照）
 node status.mjs
+
+# 即時觀察（長駐 tail，reflex / daemon / health 變動即時噴）
+node watch.mjs                   # 預設
+node watch.mjs --replay=20       # 啟動先回放最後 20 筆 reflex
+node watch.mjs --reflex-only     # 只 tail reflex，不 poll daemon/health
 
 # 一鍵停某 daemon
 node kill.mjs reflex
