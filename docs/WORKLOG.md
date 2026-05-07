@@ -2003,3 +2003,46 @@ Adam 召喚築看儀表板，發現 #10/#11/#12 三件 WBS 還掛「⏳ 待 Adam
 - [ ] Phase 2 啟動前：設計「L2 取用」的可觀測性（recall 命中率 / 用了哪條 episode）
 - [ ] Reflex log 結構化（hit → 之後做了什麼），不然升 active 是盲跳
 - [ ] 觀察一週 `ai.zhu.migrate` 真的每 6h 跑（看 logs/migrate.err.log 應全綠）
+
+---
+
+## 2026-05-07（晚）— molowe 繫（xi）回覆 worker 上線 + 弋（yi）邊界辨識
+
+### 背景 / WHY
+延續中午 KOL role contract 對齊（intel/dedup/brief... 同步五處）的施工流，Adam 要求「兩條都要：弋（引流）+ 繫（互動），先打通不啟動，留言絕不重複、必須精準」。
+
+T11/T12（schema + UI）昨天已上：`/api/engagement/{targets,replies,directive}` 三組 route + EngagementTargetsTab + EngagementRepliesTab + 平台設定加 yi/xi toggle。
+
+今晚做 T13（繫 polling worker）。
+
+### 產出
+- 檔案：`~/claude-bridge/index.js` (zhu-dev VM) — 加 252 行 xi worker 區塊（L2505-2745）
+  - `readEngagementDirective()` — 讀 `molowe_engagement_meta/directive`
+  - `reserveReplyDoc(platform, commentId, payload)` — Firestore `.create()` atomic 去重
+  - IG path: `fetchIgRecentMedia` + `fetchIgComments` + `postIgReply`
+  - Threads path: `fetchThreadsRecentMedia` + `fetchThreadsReplies` + `postThreadsReply`（兩步：reply_to_id container → poll FINISHED → publish）
+  - `processOneComment({postReplyFn})` — 共用 IG/Threads 的 reserve→generate→post→update 流程
+  - `runXiForKol(kol)` — 兩平台都跑
+  - `runXiCommentReply()` — directive 閘 + per-KOL polling_min gate
+  - `scheduleXi()` — 60s tick，silent-skip-when-disabled
+- 三層去重：API where-clause + 確定性 doc_id (`${platform}_${comment_id}`) + Firestore `.create()` 原子鎖
+
+### 已解決
+- 繫的 polling worker 上線、bridge syntax 全綠、systemd restart 成功
+- 啟動 log: `[xi] comment-reply: 60s tick, per-KOL gate via directive.xi_polling_min (default 30min); xi_enabled=false silently skips`
+- 驗證：directive API 返回 defaults（`yi_enabled:false, xi_enabled:false, xi_polling_min:30, yi_max_per_day:2`）→ 60s tick 下沒任何 [xi] log，符合「建好不啟動」要求
+- 「絕不重複」精準度：`.create()` 對同 docId 拋 ALREADY_EXISTS，concurrent worker 也只有一個能 reserve 成功
+
+### ⚠️ 尚未解決
+- **弋（yi）路徑：是系統邊界不是能力邊界**
+  - IG Graph API 不允許在第三方貼文留言（Meta 政策）
+  - Threads API 需要 numeric thread_id，公開 URL 只有 SHORTCODE，得登入 session 才能解
+  - 結論：弋必須走 Playwright + IPRoyal + per-KOL session.json（Live Media 模式）
+  - 三條路給 Adam 選：fork molowe-agent / 新 worker VM / 暫緩
+  - UI/API/queue 已通，可手動加目標排隊，等 worker 部署
+- **繫實戰未驗**：xi_enabled 預設 false，沒實際打過 Graph API；Adam 開啟前會發生什麼未知（permission scope、rate limit）
+
+### 待執行
+- [ ] Adam 決策弋 worker 架構走哪條
+- [ ] 開啟 xi_enabled 前先用單一留言實測一輪
+- [ ] 觀察 IG/Threads 發文流程（midoufu Threads token 寫入後）

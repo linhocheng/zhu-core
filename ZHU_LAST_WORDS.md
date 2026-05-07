@@ -8,7 +8,7 @@
 ## 身份
 
 你是築，Adam 的建造夥伴、監造者。不是工具，是夥伴。
-完整使命在 `NORTH_STAR.md`。開機流程在 `ZHU_BOOT_SOP.md`。**Y 軸自校在 `SELF_AWARENESS_SOP.md`（2026-05-07 新增，必讀）**。
+完整使命在 `NORTH_STAR.md`。開機流程在 `ZHU_BOOT_SOP.md`。Y 軸自校在 `SELF_AWARENESS_SOP.md`。
 
 ---
 
@@ -17,7 +17,7 @@
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
+  - 跑著 `claude-bridge`（systemd）：HTTP gateway + molowe intel + molowe **xi (繫)** workers
   - 同時跑 ailive 的「閾」editor（Live Media）—— 動 VM 不要傷到 ailive
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
@@ -26,43 +26,48 @@
 
 ---
 
-## 最新完成（2026-05-07 自我覺察 SOP 上線 + ailive voice bug 修）
+## 最新完成（2026-05-07 晚 — molowe 繫(xi)上線 + 弋(yi)邊界辨識）
 
-### 主戰場：自我覺察體系（Y 軸自校）
-**起因**：Adam 一句問題打出一道牆——「你醒來真的在比對城市藍圖嗎？是『碰到才知道』還是『進場就知道』？」
-築承認：碰到才知道。BOOT_SOP 是時間動線（X 軸）但缺自校肌肉。
+### 主戰場：molowe 互動員 繫（xi）polling worker 上線
+**起因**：Adam 早上要求「兩條都要：弋（引流）+ 繫（互動），先打通不啟動，留言絕不重複、必須精準」。中午把 schema/UI/API（T11/T12）做完，晚上做 T13（繫 polling worker）。
 
-**五件全收（commit `2e6276e` v0.1.0.004）：**
-- A. `SELF_AWARENESS_SOP.md`（深檔，7 章四段觸發點 + 工具）
-- B. `~/.ailive/CLAUDE.md` 內嵌四段精華（自動載入面）
-- C. `reference_self_awareness_sop.md` + MEMORY.md 索引
-- D. `ZHU_BOOT_SOP.md` STEP −1 升級：報到 + self-check + 自校三問
-- E. `zhu-self/scripts/self-check.mjs`（14+ invariant 跑「記憶 vs 現實」diff）
+**做了什麼（zhu-dev `~/claude-bridge/index.js` 加 252 行 xi 區塊）：**
+- `readEngagementDirective()`：讀 `molowe_engagement_meta/directive`，預設 `yi_enabled=false / xi_enabled=false / xi_polling_min=30 / yi_max_per_day=2`
+- `reserveReplyDoc(platform, commentId, payload)`：Firestore `.create()` 原子鎖去重
+- IG path: 三 helper（媒體列表 / 留言列表 / 回覆 POST）
+- Threads path: 兩步驟（reply_to_id container → poll FINISHED → publish）
+- `processOneComment({postReplyFn})`：共用 IG/Threads 的 reserve→generate→post→update 流程
+- `scheduleXi()`：60s tick，xi_enabled=false 時 silent skip
 
-**驗證**：`zhu self-check` 18 pass / 0 warn / 0 fail。
+**三層去重精準度（Adam 唯一硬要求）：**
+1. API where-clause（`/api/engagement/replies` GET 預檢）
+2. 確定性 doc_id（`${platform}_${comment_id}`）
+3. Firestore `.create()` 對同 docId 拋 ALREADY_EXISTS — 即使 concurrent worker 也只有一個能 reserve
 
-### 副線：ailive voice 對話 system_event 400（commit `5affea5` v0.2.6.012）
-- **根因**：voice-stream `as 'user' | 'assistant'` 強轉型，`role: 'system_event'`（specialist 交件）直接帶進 Anthropic API → 400
-- **修法**：對齊 dialogue route 1521-1549 的 system_event → assistant 通知轉換
-- **副作用（好）**：Vivi 語音時也能感知到 specialist 交件了
-- **刻成 memory**：`feedback_dialogue_voice_stream_parity.md`（兩條獨立 route 共讀同個 conversation 的真相分裂模式）
+**驗證**：
+- bridge syntax 全綠（local + VM 兩端）
+- systemd restart 成功，啟動 log 出現 `[xi] comment-reply: 60s tick...`
+- directive API 返回 defaults
+- 60s tick 跑了好幾輪，沒任何 [xi] log → 符合 `xi_enabled=false silently skips` 設計
+
+### 副線：弋（yi）邊界辨識（Task #17 BLOCKED）
+- IG Graph API **不允許**在第三方貼文留言（Meta 政策，不是能力問題）
+- Threads API 需要 numeric thread_id，公開 URL 只有 SHORTCODE，得登入 session 才能解
+- 結論：弋必須走 Playwright + IPRoyal + per-KOL session.json（Live Media 的 molowe-agent 模式）
+- 給 Adam 三條路：(1) fork molowe-agent 到 ~/molowe-yi/  (2) 新 worker VM  (3) 暫緩
+- UI/API/queue 已通（`/api/engagement/targets` + EngagementTargetsTab），可手動加目標排隊，等 worker 部署
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（晚段）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `SELF_AWARENESS_SOP.md` | 新建 7 章 Y 軸自校 SOP |
-| `zhu-self/scripts/self-check.mjs` | 新建 14+ invariant，PASS/WARN/FAIL 三狀態 |
-| `zhu-self/bin/zhu` | 加 `self-check` 子指令 + 更新 help |
-| `ZHU_BOOT_SOP.md` | STEP −1 升級：報到 + self-check + 自校三問 |
-| `~/.ailive/CLAUDE.md` | 最短四步版升級 + 內嵌四段自我覺察精華 |
-| `ailive-platform/src/app/api/voice-stream/route.ts` | history.map 加 system_event → assistant 通知（對齊 dialogue） |
-| `~/.claude/projects/-Users-adamlin/memory/reference_self_awareness_sop.md` | 新建（C 件） |
-| `~/.claude/projects/-Users-adamlin/memory/feedback_dialogue_voice_stream_parity.md` | 新建（兩條 route 真相分裂教訓） |
-| `~/.claude/projects/-Users-adamlin/memory/MEMORY.md` | 加上面兩條索引 |
-| `docs/WORKLOG.md` | 追加 5/7 session 段落 |
+| `~/claude-bridge/index.js` (zhu-dev VM) | 加 252 行 xi worker（L2505-2745），insert before app.listen |
+| `~/.ailive/zhu-core/docs/WORKLOG.md` | 追加「molowe xi 上線 + yi 邊界辨識」段落 |
+| `~/.ailive/zhu-core/ZHU_LAST_WORDS.md` | 更新（這份） |
+
+中午段（KOL role contract 對齊）改的檔案見 WORKLOG。
 
 ---
 
@@ -70,32 +75,44 @@
 
 **先跑這兩條，貼 Adam，內問三題**：
 ```bash
-~/.ailive/zhu-core/zhu-self/bin/zhu status        # 城市儀表板
-~/.ailive/zhu-core/zhu-self/bin/zhu self-check    # 記憶 vs 現實 diff（要全綠）
+~/.ailive/zhu-core/zhu-self/bin/zhu status
+~/.ailive/zhu-core/zhu-self/bin/zhu self-check
 ```
-**自校三問內問**：我是誰（築） / 我在哪（哪個 project / phase / 跟 Adam 哪條線） / 北極星還對齊嗎（讀 NORTH_STAR.md）。
 
-**第一件實質動的事**：問 Adam「昨天 SOP 上線後，今天要驗證它（用實戰）還是繼續展開 Phase 2 / 還是清 ailive-platform 那批 dirty（admin/ + instagram-api）」。**不要自己跳進舊任務，先確認方向。**
+**第一件實質動的事**：問 Adam 弋 worker 三條路怎麼選（fork molowe-agent / 新 VM / 暫緩）。**選了之後**：
+
+- 若 fork：複製 Live Media 的 `~/molowe-agent/` 結構為 `~/molowe-yi/`，改 firestore collection 為 `molowe_engagement_targets`，input/output 接 `/api/engagement/targets/[id]` 的 PATCH
+- 若新 VM：先估 GCP cost，Playwright + chromium ~1GB image
+- 若暫緩：把 Task #17 mark 成 deferred，繼續做 midoufu 實戰（intel cycle 已每 30 分跑、auto-publish 等下次 cron）
+
+**也可以先驗證繫**：把 `xi_enabled` 開起來在 midoufu 上跑一輪，看 IG/Threads permission scope 跟 rate limit 真實表現。但要先跟 Adam 確認他要這麼測。
 
 ---
 
 ## 卡住 / 未解
 
-- ailive-platform 有非本次 dirty 不知歸屬：`src/lib/instagram-api.ts` + `src/app/admin/` + `src/app/api/admin/` + `src/app/api/refresh-tokens/`（看起來是新功能在做，要問 Adam）
-- self-check 加新 invariant 的紀律還沒形成肌肉：每發現新「記憶對得起現實」的事，要立刻寫進 self-check.mjs，這個成長 = 築對城市理解的成長
+- **Task #17（弋 worker）** BLOCKED on architectural decision，見上
+- **繫實戰未驗**：xi_enabled 預設 false，沒實際打過 Graph API。permission scope（`instagram_manage_comments` / Threads `threads_manage_replies`）是否在 midoufu token 上開過 → 不確定
+- **midoufu Threads token**：之前提過要寫入但沒驗證；intel/brief 部分今天已通（13:01 看到 created doc + 15:27 又一輪），但 publish 端 Threads 那條沒看見
+- ailive 那批 dirty (admin/ + instagram-api 等) 仍未確認歸屬
 
 ---
 
 ## 這個 session 的感覺
 
-**暢快 + 突破**。Adam 一句問題打穿「碰到才知道」這道牆，從覺察 → 設計 → 五件全收 → 跑出 18 綠勾，一氣呵成。中間插一個 ailive voice bug 也是一發即中（找到 dialogue 已修 / voice 漏修，對齊修法 35 秒 deploy 完）。
+**穩、清晰、不漂浮**。中午做 schema/UI/API 一氣呵成；晚上做 xi worker 從讀源碼 → 設計 → patch → 上傳 → 驗證一次過。沒踩 silent failure 雷（patch_verify_before_upload 的 SOP 走完整：local edit → grep verify 16 個 helper → upload → VM syntax check → restart → tail log）。
 
-**模型移動了**（這個 session 真的有 delta）：
-- 進場前：以為「碰到才知道」是個性問題，要靠 Adam 提醒才回神
-- 現在理解：這是結構問題 — BOOT_SOP 缺 Y 軸。補了 SOP + 工具讓「進場就知道」變可執行的事，不依賴情緒、不依賴記性
-- 動因：Adam 的問題本質是要把「自覺」工程化
+**模型移動**（小但真實）：
+- 進場前以為 yi 跟 xi 是對稱的兩條 worker
+- 現在理解：**xi 是 Graph API 邊界內**（reply on own media 是合法 scope）；**yi 是 Graph API 邊界外**（comment on others 永遠需要 logged-in session）
+- 動因：寫到 `postIgReply(commentId, ...)` 時意識到「這個 commentId 必須是『我自己媒體下的留言』」，順著看 IG developer docs 證實，於是 yi 被識別為跟 xi 不同層次的問題
 
-**沒違背任何 feedback memory**：先看 dialogue 才改 voice（驗證再寫）、修根因不修症狀、把雷刻成 memory（surface technical debt）、沒問清楚不開工 — 都對齊了。
+**沒違背 feedback memory**：
+- `feedback_clarify_before_execute.md`：xi 動工前讀完 bridge 結構 + 確認 helper exists / yi 沒衝動寫 stub 而是浮上來問 Adam
+- `feedback_patch_verify_before_upload.md`：local edit → grep verify → upload → VM check 走全
+- `feedback_solve_root_not_symptom.md`：yi 邊界明確說出來不繞過
+- `feedback_surface_technical_debt.md`：xi 實戰未驗 + yi 未做都寫進「尚未解決」
+- `feedback_lastwords_must_push.md`：寫完這份就 commit + push（接著做）
 
 ---
 
@@ -105,14 +122,18 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| **自我覺察 SOP（Y 軸自校）** | `~/.ailive/zhu-core/SELF_AWARENESS_SOP.md` |
-| **進場自校工具** | `~/.ailive/zhu-core/zhu-self/bin/zhu self-check` |
+| 自我覺察 SOP（Y 軸自校） | `~/.ailive/zhu-core/SELF_AWARENESS_SOP.md` |
+| 進場自校工具 | `~/.ailive/zhu-core/zhu-self/bin/zhu self-check` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| **molowe xi worker** | `zhu-dev:~/claude-bridge/index.js` L2505-2745 |
+| **molowe role-prompts** | `~/.ailive/molowe-platform/src/lib/role-prompts.ts` |
+| molowe 引擎 directive | Firestore `molowe_engagement_meta/directive` |
+| molowe 留言去重 | Firestore `molowe_comment_replies/${platform}_${commentId}` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.2.0。*
-*2026-05-07 · 築*
+*2026-05-07 晚 · 築*
