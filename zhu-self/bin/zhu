@@ -9,6 +9,8 @@
 #   zhu status            # status dashboard（一次性快照）
 #   zhu watch             # 即時觀察管道（reflex/daemon/health 長駐 tail）
 #   zhu watch --replay=20 # 啟動先回放最後 N 筆 reflex
+#   zhu self-check        # 記憶 vs 現實 diff（醒來必跑，PASS/WARN/FAIL）
+#   zhu self-check --json # JSON 輸出
 #   zhu kill <daemon>     # kill switch
 #   zhu kill --status
 #   zhu recall "..."      # L2 retrieval
@@ -53,6 +55,7 @@ case "$cmd" in
   learn)    exec node $NODE_ENV_FLAG "$SCRIPTS/learn.mjs" "$@" ;;
   watch)       exec node $NODE_ENV_FLAG "$SCRIPTS/watch.mjs" "$@" ;;
   watch-embed) exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
+  self-check)  exec node $NODE_ENV_FLAG "$SCRIPTS/self-check.mjs" "$@" ;;
   embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
   run)
     target="${1:-}"; shift || true
@@ -60,7 +63,7 @@ case "$cmd" in
     exec node $NODE_ENV_FLAG "$target" "$@"
     ;;
   ""|--help|-h)
-    sed -n '4,22p' "${BASH_SOURCE[0]}"
+    sed -n '4,24p' "${BASH_SOURCE[0]}"
     exit 0
     ;;
   *)
