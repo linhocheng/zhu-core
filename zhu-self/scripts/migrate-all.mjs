@@ -12,10 +12,33 @@ import { spawn } from 'node:child_process';
 import { homedir } from 'node:os';
 import { resolve, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { readdirSync, statSync, existsSync } from 'node:fs';
+import { readdirSync, statSync, existsSync, readFileSync, writeFileSync } from 'node:fs';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
+
+// 自動 load .env（launchd 不繼承 shell env）
+const envPath = resolve(__dirname, '../.env');
+if (existsSync(envPath)) {
+  for (const line of readFileSync(envPath, 'utf8').split('\n')) {
+    const m = line.match(/^([A-Z_]+)=(.+)$/);
+    if (m && !process.env[m[1]]) process.env[m[1]] = m[2].trim();
+  }
+}
 const SCRIPT = resolve(__dirname, 'embed-and-upsert.mjs');
+const DRY_RUN = process.env.ZHU_SELF_DRY_RUN === '1';
+
+// ── mtime cache：跳過未改動的檔案，節省 Gemini embed 費用 ──
+const CACHE_PATH = resolve(__dirname, '../.migrate-cache.json');
+function loadCache() {
+  try { return JSON.parse(readFileSync(CACHE_PATH, 'utf8')); } catch { return {}; }
+}
+function saveCache(cache) {
+  writeFileSync(CACHE_PATH, JSON.stringify(cache, null, 2));
+}
+function fileChanged(absPath, cache) {
+  const mtime = statSync(absPath).mtimeMs;
+  return !cache[absPath] || cache[absPath] < mtime;
+}
 
 const SOURCES = {
   worklog: [resolve(homedir(), '.ailive/zhu-core/docs/WORKLOG.md')],
@@ -64,19 +87,32 @@ async function main() {
 
   console.error(`[total] ${all.length} files`);
 
+  const cache = loadCache();
+  const forceAll = process.argv.includes('--force');
+
   let ok = 0;
+  let skipped = 0;
+  let embedded = 0;
   let fail = 0;
+
   for (const f of all) {
+    if (!forceAll && !fileChanged(f, cache)) {
+      skipped++;
+      continue;
+    }
     try {
       await runOne(f);
+      cache[f] = statSync(f).mtimeMs;
       ok++;
+      embedded++;
     } catch (e) {
       console.error(`[fail] ${e.message}`);
       fail++;
     }
   }
 
-  console.error(`[done] ok=${ok} fail=${fail}`);
+  if (!DRY_RUN) saveCache(cache);
+  console.error(`[done] ok=${ok} skipped=${skipped} embedded=${embedded} fail=${fail}`);
 }
 
 main().catch((e) => {
