@@ -41,3 +41,5 @@
 - [launchctl unload ≠ disable](feedback_unload_is_not_disable.md) — 只 bootout 不搬 plist，下次開機 launchd 會把服務復活 → 記憶會說謊
 - [築自我覺察 SOP（Y 軸自校）](reference_self_awareness_sop.md) — 進場/中段/壓縮前/收尾四段觸發點 + zhu self-check 指令，補 BOOT_SOP 「碰到才知道」漏洞
 - [dialogue 改完要對齊 voice-stream](feedback_dialogue_voice_stream_parity.md) — 兩條獨立 route 共讀 platform_conversations，history 處理只修一邊 = 沒修
+- [ai.zhu.migrate.plist 的 API key 沒進 git](reference_zhu_migrate_plist_keys.md) — 重建 plist 時手動補 GEMINI_API_KEY + FIREBASE_SERVICE_ACCOUNT_PATH，否則靜默失敗
+- [跨系統 role contract 兩邊都要對齊](feedback_role_contract_two_sides.md) — bridge 期待 role_prompts.brief 但 platform 沒 default，五處同步：RoleId/LABELS/VARS/DEFAULTS/PATCH allowlist/ROLE_ORDER
