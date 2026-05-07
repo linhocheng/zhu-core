@@ -26,9 +26,9 @@
 | 7 | vector store 選型對比表 | #1 | ✅ done |
 | 8 | 寫入 hook：新 .md 自動 chunk + embed | #5, #7 | ✅ done |
 | 9 | retrieval API 雛形 | #7 | ✅ done |
-| 10 | 全 memory + WORKLOG + lastwords 入庫 | #5, #7, #8 | ✅ done（雛形）/ ⏳ 待 Adam 灌 secret 實跑 |
-| 11 | Boot daemon — launchd 自動讀 boot 三件套 | — | ✅ done（腳本）/ ⏳ 待 Adam launchctl load |
-| 12 | Reflex daemon — 6 條 feedback hook 化（log-only） | #6 | ✅ done（腳本）/ ⏳ 待 Adam 加 settings.json hook |
+| 10 | 全 memory + WORKLOG + lastwords 入庫 | #5, #7, #8 | ✅ done（2026-05-07 實跑 66/66 + auto-env + skip-if-unchanged + embed 計數） |
+| 11 | Boot daemon — launchd 自動讀 boot 三件套 | — | ✅ done（ai.zhu.boot + ai.zhu.migrate 跑著，last_exit=0） |
+| 12 | Reflex daemon — 6 條 feedback hook 化（log-only） | #6 | ✅ done（log_only 跑著，7 天 13 次命中，升 active 是 #20） |
 | 13 | Distillation daemon — zhu-superego 升級為 idle 觸發 | #5 | ✅ done（safe mode 雛形） |
 | 14 | Health daemon — 自我健檢巡查 | — | ✅ done |
 | 15 | Learning daemon ingestion pipeline 雛形 | — | ✅ done |
