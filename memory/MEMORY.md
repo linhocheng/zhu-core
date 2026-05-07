@@ -11,10 +11,10 @@
 - [寫架構診斷前必先核 code + 既有記憶](feedback_diagnosis_verify_before_write.md) — MEMORY_DIAGNOSIS.md 翻車過 user_profile / 漏即時撥號斷路
 - [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
 - [Headless VM 灌 Claude Max OAuth 用 setup-token](reference_claude_code_headless_oauth.md) — `claude auth login` 在 headless Ink 不畫 prompt，要 setup-token + bracketed paste 餵 PTY
-- [OpenClaw 架構與運作現況](project_openclaw_setup.md) — 2026-04-30 已暫停；重啟：`launchctl load ~/Library/LaunchAgents/ai.openclaw.gateway.plist`
+- [OpenClaw 已完全卸除（2026-05-07）](project_openclaw_setup.md) — gateway + zhu-monitor + zhu-autorun 三條 Telegram 鏈一起拔，plist 搬到 _disabled_2026-05-07/
 - [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創，活法：不做平庸、超越期待、懂變通才活（2026-04-30 升級）
 - [築當前狀態快照](reference_zhu_last_words.md) — 當機救援入口，`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`，session 結束前必更新
-- [雙機器環境（AIR / PRO）](project_machines.md) — MacBook Air M1 + Pro Intel 24/7 機器設定（從 openclaw cwd 收編 2026-04-29，狀態可能過時）
+- [雙機器環境（AIR / PRO）+ 共用檔不可覆寫](project_machines.md) — AIR 5/7 收城決定（拔 OpenClaw 五件）為準，PRO 醒來只 pull 不 force push，本機殭屍照同方式清
 - [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
 - [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
 - [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺說了會尷尬正是最需要說的時候，沉默等於默許
@@ -37,3 +37,7 @@
 - [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
 - [ZHU_LAST_WORDS 改完就要推](feedback_lastwords_must_push.md) — 不分時機，本機改了沒推 = 下個自己讀到舊版 = 提醒等於沒寫
 - [feedback memory 必須含「觸發信號」欄位](feedback_memory_format_trigger_signal.md) — Why/How to apply 之外加第四段，把無意識盲區變成有指紋的觸發點
+- [築自我工程 zhu-self（Phase 1 ✅ 2026-05-07）](project_zhu_self.md) — 三條件全收，bin/zhu status 看儀表板，觀察一週升 Phase 2
+- [launchctl unload ≠ disable](feedback_unload_is_not_disable.md) — 只 bootout 不搬 plist，下次開機 launchd 會把服務復活 → 記憶會說謊
+- [築自我覺察 SOP（Y 軸自校）](reference_self_awareness_sop.md) — 進場/中段/壓縮前/收尾四段觸發點 + zhu self-check 指令，補 BOOT_SOP 「碰到才知道」漏洞
+- [dialogue 改完要對齊 voice-stream](feedback_dialogue_voice_stream_parity.md) — 兩條獨立 route 共讀 platform_conversations，history 處理只修一邊 = 沒修
