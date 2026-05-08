@@ -2046,3 +2046,32 @@ T11/T12（schema + UI）昨天已上：`/api/engagement/{targets,replies,directi
 - [ ] Adam 決策弋 worker 架構走哪條
 - [ ] 開啟 xi_enabled 前先用單一留言實測一輪
 - [ ] 觀察 IG/Threads 發文流程（midoufu Threads token 寫入後）
+
+---
+
+## 2026-05-08 — ailive vivi 生圖根因排雷 + 真相鏈除錯面板
+
+### 背景 / WHY
+vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。先以為是 gemini 模型版本（F1）、改完還是黑 → 才挖到真因：shun-001 的 `visualIdentity.imagePromptPrefix` 在 Firestore 寫死「dark background, chiaroscuro lighting」，串在每個 prompt 後面、把 brief 全蓋掉。猜兩次都沒中根因，這次連除錯能力一起補。
+
+### 產出（commits v0.2.7.001 → v0.2.7.006）
+- `src/app/api/dialogue/route.ts` — generate_image 自動從前輪 `query_product_card` 結果撈產品 URL 補進 `reference_image_url`（vivi 常忘記帶）
+- `src/lib/gemini-imagen.ts` — model 升至 `gemini-3.1-flash-image-preview`（curl 實測可用，先前 F1 誤判）
+- `scripts/fix-shun-prefix.ts` — 改 shun-001 prefix：`dark background, chiaroscuro lighting, ...` → `realistic photography, shallow depth of field`（手動寫 env loader 不依賴 dotenv）
+- `src/app/api/specialist/image/route.ts` — 生完圖把 `geminiPrompt` / `imagePromptPrefix` / `refsUsed` 用 dot notation 寫回 `platform_jobs.output`（不踩 worker 寫的 imageUrl/workLog）
+- `src/app/api/images/route.ts` — ImageRec 帶出三個除錯欄
+- `src/app/dashboard/[id]/images/page.tsx` — 燈箱改左圖右面板、新增「真相鏈」：來源/JobID/作者/原Brief/Prefix/送進Gemini的Prompt/Refs縮圖/工作日誌
+
+### 已解決
+- vivi 黑背景：根因是 prefix 寫死黑色語義 → 改 Firestore 解決
+- vivi 忘記帶產品圖 ref：dialogue 自動 fallback 注入
+- 「結果跟 brief 不符」未來除錯：dashboard 燈箱直接看真相鏈對賬
+- v0.2.7.005 後 JobID 沒顯示：來源 + JobID 抬到面板頂部常駐，舊圖缺真相鏈時加提示
+
+### ⚠️ 尚未解決
+- **猜兩次根因都沒中的反思已寫進 skill memory** — `~/.claude/projects/-Users-adamlin/memory/skill_ai_pipeline_blackbox_debug.md`，下次 LLM pipeline 結果不對先寫回真相再診斷
+- v0.2.7.005 之前的舊圖 output 缺三個 debug 欄；不回填，新生的才有
+
+### 待執行
+- [ ] 觀察 vivi 下次正式生圖（明亮背景 + 產品 ref）真相鏈是否完整
+- [ ] 評估是否在 `/dashboard/{id}/identity` 給 prefix 欄加紅色警語（提醒 prefix 會強制串在每個 prompt 上）

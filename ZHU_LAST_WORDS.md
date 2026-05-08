@@ -26,7 +26,28 @@
 
 ---
 
-## 最新完成（2026-05-07 晚 — molowe 繫(xi)上線 + 弋(yi)邊界辨識）
+## 最新完成（2026-05-08 — ailive vivi 生圖根因排雷 + 真相鏈除錯面板）
+
+**背景**：vivi 生圖背景全黑，加「明亮」brief 也壓不住。猜兩次根因（先模型、再 prefix）才挖到 Firestore 寫死字串。
+
+**一句話**：v0.2.7.001→006 連發六個 commit，把 vivi 生圖鏈從 brief→工具→specialist→Gemini 全條對齊，並把「真相鏈」做成 dashboard 燈箱面板。
+
+**關鍵改動**：
+- `scripts/fix-shun-prefix.ts` 改 shun-001 prefix：`dark background, chiaroscuro lighting, ...` → `realistic photography, shallow depth of field`
+- `src/app/api/specialist/image/route.ts` 寫回 `geminiPrompt/imagePromptPrefix/refsUsed` 進 `platform_jobs.output`（dot notation）
+- `src/app/dashboard/[id]/images/page.tsx` 燈箱左圖右面板，新增「真相鏈」
+- `src/app/api/dialogue/route.ts` generate_image 自動補 `reference_image_url`（從前輪 query_product_card 結果撈）
+- `src/lib/gemini-imagen.ts` model 升至 `gemini-3.1-flash-image-preview`
+
+**新 skill**：`~/.claude/projects/-Users-adamlin/memory/skill_ai_pipeline_blackbox_debug.md` — LLM pipeline 結果不對時，先寫回每層真相到 DB / UI 再診斷，不要靠猜。
+
+**違背 feedback**：`feedback_solve_root_not_symptom` — F1 第一輪只改模型沒挖根因。下次第一原則：結果不對先讓真相可見。
+
+**接棒第一件**：等 Adam 下個指令；待辦觀察 vivi 下次正式生圖（明亮 + 產品 ref）真相鏈是否完整、考慮在 `/dashboard/{id}/identity` 給 prefix 欄加紅色警語。
+
+---
+
+## 上一次完成（2026-05-07 晚 — molowe 繫(xi)上線 + 弋(yi)邊界辨識）
 
 ### 主戰場：molowe 互動員 繫（xi）polling worker 上線
 **起因**：Adam 早上要求「兩條都要：弋（引流）+ 繫（互動），先打通不啟動，留言絕不重複、必須精準」。中午把 schema/UI/API（T11/T12）做完，晚上做 T13（繫 polling worker）。
