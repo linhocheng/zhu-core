@@ -26,24 +26,57 @@
 
 ---
 
-## 最新完成（2026-05-08 — ailive vivi 生圖根因排雷 + 真相鏈除錯面板）
+## 最新完成（2026-05-08 晚 — molowe 北極星對齊 v1.2 收尾）
 
-**背景**：vivi 生圖背景全黑，加「明亮」brief 也壓不住。猜兩次根因（先模型、再 prefix）才挖到 Firestore 寫死字串。
+**主戰場**：molowe-platform。
 
-**一句話**：v0.2.7.001→006 連發六個 commit，把 vivi 生圖鏈從 brief→工具→specialist→Gemini 全條對齊，並把「真相鏈」做成 dashboard 燈箱面板。
+**一句話**：把 molowe 整套對齊北極星：yi 引流鏈三層守住、發現官接進角色系統、Kairos/J 大/稽 prompt 後台化、NORTH_STAR.md 升 v1.2。
 
-**關鍵改動**：
-- `scripts/fix-shun-prefix.ts` 改 shun-001 prefix：`dark background, chiaroscuro lighting, ...` → `realistic photography, shallow depth of field`
-- `src/app/api/specialist/image/route.ts` 寫回 `geminiPrompt/imagePromptPrefix/refsUsed` 進 `platform_jobs.output`（dot notation）
-- `src/app/dashboard/[id]/images/page.tsx` 燈箱左圖右面板，新增「真相鏈」
-- `src/app/api/dialogue/route.ts` generate_image 自動補 `reference_image_url`（從前輪 query_product_card 結果撈）
-- `src/lib/gemini-imagen.ts` model 升至 `gemini-3.1-flash-image-preview`
+**這個 session 連續做完六件**：
 
-**新 skill**：`~/.claude/projects/-Users-adamlin/memory/skill_ai_pipeline_blackbox_debug.md` — LLM pipeline 結果不對時，先寫回每層真相到 DB / UI 再診斷，不要靠猜。
+1. **Phase 1-4 yi 引流鏈三層守住**
+   - discovery worker prompt 改吃 kol.role_prompts，不再用 soul fallback
+   - yi-post worker 上線（5min tick，FIFO approved，directive.yi_enabled 閘 + 每日 yi_max_per_day 上限）
+   - 30 天同 author cooldown 三層擋：API PATCH approve/posted、UI 跳 alert、worker 自動 reject
+   - 視覺裝飾 5 欄（style_guide / aesthetic / appearance_dominance / color_palette / fixed_elements）接進 visual prompt，有填才加，midoufu 現有 prompt 不變
 
-**違背 feedback**：`feedback_solve_root_not_symptom` — F1 第一輪只改模型沒挖根因。下次第一原則：結果不對先讓真相可見。
+2. **角色 × 後台對齊盤點**
+   - 對 Adam 報出 13 個角色的「北極星層 / role_prompts 註冊 / UI 後台調整」三欄狀態
+   - 找到兩個沒對齊：發現官 prompt 寫死 bridge / Kairos+J 大+稽 prompt 寫死 worker
 
-**接棒第一件**：等 Adam 下個指令；待辦觀察 vivi 下次正式生圖（明亮 + 產品 ref）真相鏈是否完整、考慮在 `/dashboard/{id}/identity` 給 prefix 欄加紅色警語。
+3. **Step 1：發現官接進 RoleId 系統**
+   - `RoleId` 加 'discovery'，ROLE_LABELS '發現官'
+   - PATCH allowlist + KolDetailClient ROLE_ORDER + workers/types.ts 全對齊
+   - bridge 改：`role_prompts.discovery → engagement_yi → soul fallback`，template 變數會代入 target.author / target.post_preview
+
+4. **Step 2：策略 / 監督層 prompt 後台化**
+   - 新 collection `molowe_system_prompts/v1`
+   - `lib/system-prompts.ts`（server）+ `lib/system-prompts-shared.ts`（labels/defaults，client 安全）
+   - `/api/system-prompts` GET/PATCH（admin key）
+   - `/dashboard/system-prompts` 三欄編輯器 + 還原預設 + 即時存
+   - kairos.ts / jda.ts / superego.ts 改 `await getSystemPrompt(name)`，空值自動 fallback
+
+5. **NORTH_STAR.md 升 v1.2**
+   - 三層架構補 **Layer 1.5 外部互動層**（發現官 → 弋 / 繫）
+   - 加三條 2026-05-08 補丁：Layer 1.5 定義、發現官入角色系統、公司級 prompt 後台化
+
+6. **Deploy**
+   - Vercel prod deploy 6+ 次，bridge restart 3 次
+   - 上線時 logs 兩條 worker 都喊到位：`[discovery] 60s tick` + `[yi-post] 5min tick`
+
+**違背 feedback**：無重大違背。每次都先盤、Adam 確認再動手。
+
+**情緒**：暢快+清醒。兩個沒對齊的點 Adam 一說可以我就動手，沒卡頓。
+
+**接棒第一件**（明天醒來最先做）：
+- (a) 觀察夜間 discovery worker 是否有跑出新 target：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b --command="sudo journalctl -u claude-bridge --since '12 hours ago' | grep '\[discovery\]'"`
+- (b) 若 Adam 要驗 system-prompts UI：引他打開 `/dashboard/system-prompts` 改一條 Kairos → 還原預設 → 看 Firestore `molowe_system_prompts/v1` 是否寫入
+- (c) 北極星優先序 #2「RAG 內容語料庫」是下一個大塊，**要新 session 開**，不要疊在當前
+
+**重要連結**：
+- molowe 北極星：`~/.ailive/molowe-platform/NORTH_STAR.md`（v1.2）
+- 後台 system prompts：https://molowe-platform.vercel.app/dashboard/system-prompts
+- Admin Key：`molowe_a9bd8770aa44c271f571b10584ba0732`
 
 ---
 
