@@ -2075,3 +2075,46 @@ vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。
 ### 待執行
 - [ ] 觀察 vivi 下次正式生圖（明亮背景 + 產品 ref）真相鏈是否完整
 - [ ] 評估是否在 `/dashboard/{id}/identity` 給 prefix 欄加紅色警語（提醒 prefix 會強制串在每個 prompt 上）
+
+---
+
+## 2026-05-09 早 — molowe 三件收尾：discovery 驗、auto-publish silent skip 修補、yi 隊現況盤
+
+### 背景 / WHY
+昨晚 molowe v1.2 收尾留三件接棒：(a) 驗 discovery 夜跑 (b) 驗 system-prompts UI (c) RAG 大塊另開。早上 Adam 先讓我盤藍圖、心法+雷+記憶模式摸一遍，然後排「今晚三件不用你決策的小工」。
+
+### 產出
+- **Task #1（驗 discovery）**：bridge active 自昨晚 22:34 台北、12h 內 3 筆 midoufu 入隊（@judy102388 / @hshabits.co / @nothing.talks）+ 2 次 API 暫時錯誤（已自動恢復）。健康。
+- **Task #2（驗 system-prompts）**：API GET 返回 100% 等於 code defaults → Firestore `molowe_system_prompts/v1` 從未被寫入。lib + API + UI wired correctly，等 Adam 自己開 UI 觸發寫入。
+- **Task #3（Threads publish 流動斷裂根因）**：midoufu kol 後台 `threads_token: PRESENT` 但 `threads_user_id: MISSING`。`auto-publish/route.ts:122` gate 是雙欄位 AND，缺 user_id 整段 if 跳過、不寫 doc 也不 log → **完全靜默**。修補方案：後台直接補 user_id（UI 已有欄位，KolDetailClient.tsx:621-644）。Adam 標記明天討論（Threads ID 是否同 IG ID 待驗）。
+- **Task #4（結構修補 silent skip）**：`auto-publish/route.ts:120-145` 改三層分支
+  - `hasThToken && hasThUserId` → 正常 publish
+  - `hasThToken && !hasThUserId` → status='skipped' skip_reason='missing_threads_user_id' + console.warn
+  - 都沒有 → status='skipped' skip_reason='no_threads_creds'（不 warn，正常情境）
+  - updateDoc 一律寫 `threads_status` + 視情況寫 `threads_skip_reason` / `threads_error` / `threads_post_id` / `threads_publish_at`
+  - typecheck pass，Vercel prod deploy 成功
+- **Task #5（yi 隊現況盤）**：發現 discovery 寫進的是 `molowe_community_targets`（API `/api/community/targets`），不是 `molowe_engagement_targets`（後者是繫 xi 用）。**雙集合分清楚**：
+  - 弋（yi）= `molowe_community_targets` = 發現官引流到別人貼文 = 4 筆 pending
+  - 繫（xi）= `molowe_engagement_targets` = 自己貼文下的留言 = 0 筆
+  - midoufu pending 4 筆 doc 結構齊全（kol_id, platform=threads, post_url, post_author, post_preview, draft_comment, status, discovered_at），draft_comment 已由 LLM 生成好
+  - **沒有任何 worker 在消費 pending → posted**（Task #17 BLOCKED 在這）
+
+### 已解決
+- silent skip 結構雷補上（破氣式應用：同類 bug 第三次 = 架構問題的預防式版本）
+- midoufu Threads publish 為何沒見根因確認 = 純資料缺口
+
+### ⚠️ 尚未解決
+- **midoufu 後台補 `threads_user_id` + `threads_handle`**（明天討論 + 驗證 Threads User ID 是否等於 IG User ID）
+- **yi worker 三選一決策**（Task #17 BLOCKED）：
+  - A. fork molowe-agent → `~/molowe-yi/`（Playwright + IPRoyal + per-KOL session）— 快，但 AIR 要常開
+  - B. 新 GCP worker VM — 穩 24/7，但 ~$10/月 + chromium 1GB image
+  - C. 暫緩 — 4 筆 pending 持續累積
+- **publish-now route 沒對齊 auto-publish**：`/api/content/[id]/publish-now/route.ts` 只跑 IG 沒跑 Threads（一致性裂痕，今天沒動）
+- **意外提前發了一篇 IG**（content id `KLFGkTgrjTLaKoBq93LU`）：診斷時戳 `/api/cron/auto-publish` 觸發真實 publish，本來下次 cron 也會發但時機被我提前。學到：驗 publish 流程要找 dry-run 路徑，不要直接戳 cron。
+
+### 待執行
+- [ ] Adam 後台補 midoufu `threads_user_id` + `threads_handle`，補完戳 publish-now 驗 Threads `status: published`
+- [ ] Adam 三選一決策弋 worker
+- [ ] 觀察下次 cron 自然觸發時 silent skip 修補的 console.warn / Firestore field 是否真的寫
+- [ ] publish-now route 對齊 auto-publish（補 Threads 副發）— 等 yi worker 決完一起做
+
