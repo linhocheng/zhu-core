@@ -105,7 +105,27 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 - niche_taboo_words：「賺大錢」→ 原值（問 Adam）
 - intel_keywords：['財經'] → 原值（顯化 / 塔羅 / 心靈成長 等？問 Adam）
 
-(c) **上一段未解的 yi worker 三選一**（從 5/8 晚就 BLOCKED 在這）：A=fork molowe-agent / B=新 GCP VM / C=暫緩
+(c) **yi worker 三選一**（從 5/7 晚 BLOCKED 至今第三天，5/9 早盤過、5/9 晚整天做 Phase 1-5 沒回頭）
+
+**前情**：弋（yi）= 發現官（discovery）撈到的「別人的熱帖」自動去留言引流。**為什麼不能走官方 API**：
+- IG Graph API 不允許在第三方貼文留言（Meta 政策）
+- Threads API 需要 numeric thread_id，但公開 URL 只有 shortcode，不登入 session 解不開
+- 結論：弋必鎖死走 **Playwright + IPRoyal + per-KOL session.json**（live-media 那套 stack）
+
+**現況**：4 筆 midoufu pending 卡在 `molowe_community_targets`（doc 結構齊全 + draft_comment 已生），**沒任何 worker 消費**。
+
+**三選一**：
+
+| 選項 | 是什麼 | 利 | 弊 |
+|---|---|---|---|
+| **A. fork molowe-agent** | 把 live-media 的 Playwright + session.json 鏈 fork 成 `~/molowe-yi/` 跑本機 | 最快，code 95% 現成（live-media 已驗）；不付雲費 | AIR 要常開機；本機殭屍進程風險（已踩過） |
+| **B. 新 GCP worker VM** | 起一台 worker VM 跑 molowe-yi | 24/7 穩定；不依賴 AIR | ~$10/月；chromium image ~1GB；GCP IAM 第一次新 project 要踩兩雷（見 memory `reference_gcp_new_project_iam`） |
+| **C. 暫緩** | 不做 yi，先把 Phase 1-5 跑通的主線顧好 | 0 風險；Phase 1-5 剛上線本來就要觀察 | 4 筆 pending 累積；Adam 5/8 投過資源寫 yi 的 UI/API/queue 會浪費 |
+
+**Adam 還沒拍板**。觸發點：
+- 如果 Phase 1-5 對賬通了 + 主線穩 → 拋 (a)(b)(c) 給 Adam 決策
+- 如果 brief / translator 對賬有問題 → 先解這個，yi 再放
+- **建議默認 C**（暫緩）直到 Phase 1-5 觀察一週穩 — 理由：live-media 5/9 晚剛軟停，這時 fork molowe-agent 等於把剛軟停的東西又抱回來，認知負擔太重；新 VM 也是同理。yi 不是核心、4 筆 pending 不會壞
 
 ---
 
