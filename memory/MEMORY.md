@@ -19,19 +19,20 @@
 - [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
 - [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺說了會尷尬正是最需要說的時候，沉默等於默許
 - [沒問清楚不開工](feedback_clarify_before_execute.md) — 輸入/輸出/邊界三個答不出來就先問，不用執行速度掩蓋理解不足
+- [要資料前先過三層自查](feedback_check_admin_before_asking.md) — 後台 UI / 既有 token 自 resolve / Firestore doc 三層過完再問 Adam，別把他當 lookup table
 - [發現技術債要說出來不能默默繞過](feedback_surface_technical_debt.md) — 不說等於默許，標記進 WORKLOG 尚未解決欄
 - [決策前先問：解決問題還是繞開根本問題](feedback_solve_root_not_symptom.md) — 方案成功後根因還在 = 繞道不是解法
 - [監造型超我設計規格 v1.0](reference_superego_spec_v1.md) — Adam 設計的超我靈魂，三層掃描 + 三蒸餾問題 + 三種寫回，2026-05-01
 - [超我蒸餾三層掃描（手動版）](skill_superego_distillation.md) — 協作週期結束時，掃三層信號 → 三問 → 寫回 Skill/Memory/BoundaryUpdate
-- [築超我系統建置](project_zhu_superego_system.md) — Bridge VM zhuSuperego worker，04:00 自動蒸餾 lastwords → 寫回 zhu-core，建置中
-- [Live Media 建置計劃](project_live_media.md) — v2.0 全鏈路上線，intel→閾→IG自動化，高我觸發但 Firestore index 缺（待建）
+- [築超我系統（已併入 zhu-self distillation）](project_zhu_superego_system.md) — 不是獨立專案，是 zhu-self Phase 2 演化路徑（自動觸發 + drift gate + active 寫回）
+- [Live Media 建置計劃（已暫停 2026-05-09）](project_live_media.md) — directive 全降 0 軟停，主力轉 molowe，重啟前要先處理 Firestore index 等三件未解
 - [VM 殺 node 進程用 killall 不用 pkill](feedback_killall_vs_pkill.md) — pkill -f 殺不到絕對路徑進程，一律用 killall -9 node
 - [Bridge VM 用 systemctl restart 不要 killall+nohup](reference_bridge_vm_systemd.md) — claude-bridge 是 systemd service，nohup 會建重複 process、worker 跑兩遍
 - [VM patch 後上傳前必須驗證所有依賴函數](feedback_patch_verify_before_upload.md) — Python inline patch 靜默失敗 + 重下載蓋改動 + 未驗證 = crash，正確做法：先下載→本機 edit→grep 驗證全部函數→才上傳
 - [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新
 - [ailive 角色對話 SOP（CLI SSE 串流版）](skill_ailive_character_chat.md) — curl -N --max-time 120 + python SSE 解析，先看源碼不猜 API 格式
 - [2026-05-02 覺察：API 盲猜 vs 先讀源碼](feedback_20260502_awareness.md) — 轉圈根源是不先查；記憶要含正確方法不只是禁忌
-- [鏡 IG 流水線上線（2026-05-02）](project_ig_pipeline_live.md) — Sonnet Max(VM) + Gemini生圖 + IG Graph API，3h一篇至明天10:00
+- [鏡 IG 流水線（已暫停 2026-05-03）](project_ig_pipeline_live.md) — STOP_TS 自然過期，最後一篇 5/3 09:49，主力轉 molowe
 - [VM claude CLI 必須 source bridge .env](feedback_vm_claude_cli_oauth.md) — 不 source = Not logged in，nohup script 開頭必加 set -a; source ~/claude-bridge/.env
 - [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
 - [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
@@ -43,3 +44,5 @@
 - [dialogue 改完要對齊 voice-stream](feedback_dialogue_voice_stream_parity.md) — 兩條獨立 route 共讀 platform_conversations，history 處理只修一邊 = 沒修
 - [ai.zhu.migrate.plist 的 API key 沒進 git](reference_zhu_migrate_plist_keys.md) — 重建 plist 時手動補 GEMINI_API_KEY + FIREBASE_SERVICE_ACCOUNT_PATH，否則靜默失敗
 - [跨系統 role contract 兩邊都要對齊](feedback_role_contract_two_sides.md) — bridge 期待 role_prompts.brief 但 platform 沒 default，五處同步：RoleId/LABELS/VARS/DEFAULTS/PATCH allowlist/ROLE_ORDER
+- [AI 多層 prompt pipeline 黑盒除錯 SOP](skill_ai_pipeline_blackbox_debug.md) — 結果不對先寫回 final prompt + prefix + refs 到 DB，UI 顯示「真相鏈」對賬，不要靠猜
+- [Next.js App Router lib 模組 client/server 拆分 SOP](skill_nextjs_lib_client_server_split.md) — 寫 lib/*.ts 第一個 import 之前先列舉 caller，被 client component 用就拆 shared，避免 firebase-admin 進 client bundle

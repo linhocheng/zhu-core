@@ -1,9 +1,24 @@
 ---
-name: 鏡 IG 流水線上線（2026-05-02）
-description: 靈魂拍立得 lucymo IG 自動發文pipeline，Sonnet Max 生文案 + Gemini 生圖 + IG Graph API 發文
+name: 鏡 IG 流水線（已暫停 2026-05-03）
+description: lucymo IG 自動發文 pipeline，2026-05-03 STOP_TS 過期自然停，主力轉 molowe，現處暫停狀態
 type: project
 originSessionId: 1f508fc4-3965-4471-a5fd-c41836c621c1
 ---
+
+## 狀態：已暫停（2026-05-03 起）
+
+**最後一篇**：2026-05-03 09:49 CST（postId `jImMBB3ifLRdu6u1Cp1l`，topic「你上一次真正休息」）
+**停因**：scheduler 內建 `STOP_TS=2026-05-03 10:00 CST` 自然過期
+**現況**（2026-05-09 確認）：
+- VM 上 `ig-pipeline-scheduler.sh` 已停（無新 log entry from 5/3 09:49 起）
+- bridge live-media worker 仍 90min tick，但 directive `articles_per_cycle=0` / `ig_per_cycle=0` → 全 skip
+- 5/9 清掉 5/3 殘留的 SIGINT-01 zombie process（PID 281344）
+**重啟條件**：Adam 明確指示。重啟前要 (1) 改 STOP_TS (2) bridge directive 改回 >0 (3) 確認 lucymo IG token 還有效
+
+---
+
+## 原始上線紀錄（2026-05-02）
+
 ## 架構
 
 ```

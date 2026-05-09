@@ -2118,3 +2118,49 @@ vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。
 - [ ] 觀察下次 cron 自然觸發時 silent skip 修補的 console.warn / Firestore field 是否真的寫
 - [ ] publish-now route 對齊 auto-publish（補 Threads 副發）— 等 yi worker 決完一起做
 
+
+---
+
+## 2026-05-09 晚 — molowe Phase 1-5 連跑（KOL 後台全可改 / 寫死全拔）
+
+### 背景 / WHY
+早盤盤點發現 5 處硬寫死（intel/discovery/engagement_yi/visual default + bridge MOLOWE_KEYWORDS + live-media 7 條 schedule 殘骸）。米豆芙若想切 niche（財經 / 動漫 / 雜誌任一）無法用後台改完，要動 code。今天連跑 19 task / 5 phase 把全部硬寫死拔乾。
+
+### 產出
+- 檔案：`molowe-platform/EXECUTION_PLAN_2026-05-09.md` — 19 task 5 phase 導行（v1.4.0.009.1 已 commit，前段 session 寫的）
+- 檔案：`molowe-platform/src/lib/role-prompts.ts` — intel/discovery/engagement_yi/visual default 中性化（拔顯化/塔羅/Chris 哈蘇）
+- 檔案：`molowe-platform/src/lib/workers/types.ts` — Kol 加 5 欄（intel_keywords/niche_taboo_words/visual_style_preset/brief_enabled/translator_enabled）+ ContentDoc 加 2 欄（intel_content_preview/brief_done）
+- 檔案：`molowe-platform/src/lib/visual-presets.ts` — 新檔，5 種視覺風格 preset（哈蘇 / 數據 / 產品 / 動漫 / 編輯）
+- 檔案：`molowe-platform/src/lib/workers/visual.ts` — 三層 fallback（自訂 → preset → 中性 default）
+- 檔案：`molowe-platform/src/lib/workers/brief.ts` — 新檔，runBrief(kol, post) 把熱帖轉 5 件骨架
+- 檔案：`molowe-platform/src/lib/workers/translator.ts` — 新檔，runTranslator(kol, article) 壓脆文 + hashtag
+- 檔案：`molowe-platform/src/app/(admin)/kols/[id]/KolDetailClient.tsx` — 視覺 tab 加 visual_style_preset 下拉、識別 tab 加 niche_taboo_words 輸入
+- 檔案：`molowe-platform/src/app/api/content/route.ts` — 接 intel_content_preview 寫進 ContentDoc
+- 檔案：`molowe-platform/src/app/api/cron/run/route.ts` — 串 brief（topic 不全 + 有 preview + brief_enabled !== false → 跑 brief 補骨架再進 writer）
+- 檔案：`molowe-platform/src/app/api/cron/auto-publish/route.ts` — 串 translator（無 threads_caption + translator_enabled !== false → 跑 translator 寫 threads_caption 才發 Threads）
+- 檔案：`zhu-dev:~/claude-bridge/index.js` — 拔 MOLOWE_KEYWORDS const + 拔 fallback 改 skip+warn / 軟停 7 條 live-media schedule（註解，不刪 code）/ intel post /api/content 帶 content_preview
+- Commits：v1.4.0.010（Phase 1+2）+ v1.4.0.011（Phase 5）兩次 push 到 main
+- Bridge restart 兩次（PID 746375 → 747263），4 個 molowe worker 全活（intel/xi/discovery/yi-post），無 [live-media] log
+
+### 已解決
+- 5 處硬寫死全拔 → 米豆芙改 niche 不需動 code
+- 三層 fallback（自訂 → preset → 中性）讓共用人格能切換不撞 schema
+- brief / translator 角色從 default prompt 升級成有 caller 的真 worker
+- live-media 殘骸軟停（保留 code，待後處置）
+- 後台微調 midoufu 驗欄位通鏈：visual_style_preset=anime / niche_taboo_words=賺大錢 / intel_keywords=['財經'] 三欄都驗到 prompt 真的切
+
+### ⚠️ 尚未解決
+- **brief / translator 端到端 1 cycle 待驗**：Phase 5 commit 已推、bridge 已 deploy、Vercel 自動部署中。下次 intel cycle 才會產出帶 intel_content_preview 的新 doc → cron/run 跑 brief → writer → visual → publisher → translator → Threads。需要時間自然走完。
+- **米豆芙測試值未還原**：visual_style_preset=anime（原是 hasselblad_4x5）、niche_taboo_words=賺大錢、intel_keywords=['財經']。Adam 說「先不用還原接著做 我後面來改」。
+- **scripts/verify-prompt-flow.mjs + scripts/check-recent-content.mjs** 未 commit（內部驗證腳本，先擱）
+
+### 待執行
+- [ ] **下次回來 grep log + Firestore 對賬**：
+  - bridge log 看新 intel cycle 有沒有產出帶 `intel_content_preview` 的 doc：
+    `gcloud compute ssh zhu-dev --zone=asia-east1-b --project=zhu-cloud-2026 --command="sudo journalctl -u claude-bridge --since '2 hours ago' | grep '\[molowe\] created doc'"`
+  - Vercel function logs 看 cron/run 有沒有跑 brief：
+    `cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platform.vercel.app | grep -E '\[cron/run\] brief|brief: JSON parse'`
+  - Firestore 抓最新 midoufu doc 看 `brief_done=true` + `topic.intent`/`scene_description` 非空 + `threads_caption` 非空：
+    `cd ~/.ailive/molowe-platform && node scripts/check-recent-content.mjs`
+- [ ] Adam 還原 midoufu 測試值（他自己會做）
+- [ ] 上一段 yi worker 三選一還沒處理（A=fork molowe-agent / B=新 VM / C=暫緩）

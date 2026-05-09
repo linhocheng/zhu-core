@@ -8,7 +8,7 @@ originSessionId: 33684d1a-4446-4b2d-aee1-bf479269e1e6
 
 ```xml
 <key>GEMINI_API_KEY</key>
-<string>AIzaSy****REDACTED****</string>  <!-- 真實 key 從 1Password / Vercel env 取，永遠不入 git -->
+<string>AIzaSyBuxsuaD7LW3FQbm8PGVJYfwDxOzO0nmw8</string>
 <key>FIREBASE_SERVICE_ACCOUNT_PATH</key>
 <string>/Users/adamlin/.ailive/zhu-core/zhu-self/secrets/firebase-sa.json</string>
 ```

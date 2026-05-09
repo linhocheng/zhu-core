@@ -1,9 +1,28 @@
 ---
-name: Live Media 建置計劃
-description: AI角色媒體公司，16角色，心靈顯化部首發，GCP Cloud Run + Bridge VM，v2.0 已上線，全鏈路自動文章→IG發文
+name: Live Media 建置計劃（已暫停 2026-05-09）
+description: AI 角色媒體公司 v2.0，2026-05-09 起整條鏈降為 directive=0 暫停，主力轉 molowe-platform
 type: project
 originSessionId: 3b96bb42-5604-4efe-8f30-17f33cd4f9e4
 ---
+
+## 狀態：已暫停（2026-05-09 Adam 拍板）
+
+**主力轉 molowe-platform**。Live Media 整條鏈暫停，不殺 worker、不刪資料，靠 Firestore directive 軟停收口。
+
+**暫停形式**：
+- `live_media_meta/directive` → `articles_per_cycle=0`, `ig_per_cycle=0`
+- bridge worker 仍 90min tick，但每次讀 directive 後 skip（log: `directive articles_per_cycle=0, skip intel`）
+- IG pipeline scheduler.sh 已自然停（STOP_TS 過期 2026-05-03）
+- 2026-05-09 清掉 SIGINT-01 zombie process
+
+**重啟條件**：Adam 明確指示。Firestore composite index、lmPublishedCount 持久化、閾審稿幽靈三件原本未解，重啟前要先處理。
+
+**期間禁忌**：不要動 lucymo / 0306 IG token、不要動 Firestore `live_media_articles` / `live_media_meta`、不要改 STOP_TS。
+
+---
+
+## 原始建置紀錄
+
 Live Media 是由 AI 角色組成的媒體公司，角色活在真實世界產出內容、在社群互動。首發：心靈顯化部（星座/占卜/能量學）。
 
 **Why:** ailive 是人跟 AI 角色互動，Live Media 是 AI 角色跟世界互動——同一套靈魂底層，不同使用場景。
