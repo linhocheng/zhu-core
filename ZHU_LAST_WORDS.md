@@ -107,6 +107,38 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 
 (c) **上一段未解的 yi worker 三選一**（從 5/8 晚就 BLOCKED 在這）：A=fork molowe-agent / B=新 GCP VM / C=暫緩
 
+---
+
+## ⚠️ 下棒陷阱清單（先看這個再動手，省得踩雷）
+
+1. **米豆芙是測試值狀態，不是壞掉**
+   - visual_style_preset=`anime` / niche_taboo_words=`賺大錢` / intel_keywords=`['財經']`
+   - 下次自然 cycle 跑會產出**動漫風格圖** + 文中**避諱「賺大錢」** + 搜**財經**新聞 — 全是 Adam 親手在後台改的測試值
+   - Adam 說「先不用還原接著做我後面來改」→ 你看到別以為壞了、別擅自改回原值
+   - 想還原問 Adam 原值是什麼
+
+2. **brief 是新 role，5 處對齊沒驗**（高機率踩點）
+   - 跨系統 contract 要對齊：RoleId / LABELS / VARS / DEFAULTS / PATCH allowlist / ROLE_ORDER（見 memory `feedback_role_contract_two_sides`）
+   - 對賬 1 cycle 時順手開後台 KOL prompt tab：https://molowe-platform.vercel.app/kols/midoufu → Prompt 角色 tab，**有沒有出現 brief / translator 兩個區塊？**
+   - 沒出現 = 某處漏對齊 → 5 處檢查（`role-prompts.ts` 的 RoleId / ROLE_LABELS / ROLE_VARS / DEFAULT_ROLE_PROMPTS / ROLE_ORDER + `KolDetailClient.tsx` PATCH allowlist）
+
+3. **bridge live-media 是軟停不是刪**
+   - `~/claude-bridge/index.js:2222-2234` 7 條 schedule 註解掉，code 還在
+   - bridge log 看不到 `[live-media]` 字樣是預期，**不要以為 bridge 壞了**
+   - Adam 說「之後再處理 live-media 平台命運」，不要主動動它
+
+4. **`scripts/lm-*.mjs` 是上 session 的一次性工具**
+   - `lm-detail / lm-find* / lm-set-directive-zero / lm-status` 全是 5/8 晚降 live-media directive 用的，跟 molowe 主線無關
+   - untracked 看到別亂 commit、別亂刪
+   - 只有這 session 寫的 `verify-prompt-flow.mjs` / `check-recent-content.mjs` / `verify-midoufu-fields.mjs` 已 commit（v1.4.0.011.1）
+
+5. **`ffa10d8` 沒重新 deploy 是對的**
+   - 該 commit 只動 `scripts/` + 文件，`src/` 沒變 → Vercel 還在 `8815dee` 是預期
+   - 下次自然 cycle 跑的還是 `8815dee` 的 brief/translator code（v1.4.0.011）
+   - 看 `vercel inspect` 顯示 `8815dee` 不是最新別困惑
+
+---
+
 **重要連結**：
 - molowe 北極星：`~/.ailive/molowe-platform/NORTH_STAR.md`（v1.2）
 - 執行導行（19 task）：`~/.ailive/molowe-platform/EXECUTION_PLAN_2026-05-09.md`
