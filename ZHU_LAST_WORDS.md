@@ -26,7 +26,66 @@
 
 ---
 
-## 最新完成（2026-05-09 晚 — molowe Phase 1-5 連跑：KOL 後台全可改 / 寫死全拔）
+## 最新完成（2026-05-10 — molowe 視覺三破綻整治 + 發現 bridge persona refusal 大雷 + dedup cascade）
+
+**主戰場**：molowe-platform。
+
+**一句話**：整治視覺 preset 三破綻（嚴格派 fallback / ref optional / UI 真相），途中發現 bridge VM 上 claude CLI 鎖在「Claude Code 軟體助理」身份、會拒絕「你是默爾」這種整篇 persona override — 這是**所有走 callBridge 的角色 prompt 都吃同一雷**的核心發現。最後補 cascade delete（content + corpus 同刪）。
+
+**這個 session 連跑七件事**：
+
+1. **第一刀完成 v1.4.0.015 / .016**（community.topics → kol.intel_keywords 真相分裂修補）
+   - Bridge VM `~/claude-bridge/index.js:2360-2385` 拔 community_settings.topics 讀取，改純 `kol.intel_keywords`
+   - Platform `community/settings/route.ts` GET + PATCH 都過濾掉殘留 topics 欄位
+   - 109 keyword 真的灌進 intel pass 1（主題「壽者相」沒找到貼文 — 這是預期，不是 bug）
+
+2. **視覺 preset 三破綻整治 v1.4.0.017-018**（重構：嚴格派 + ref 可選 + UI 真相）
+   - `workers/visual.ts`：preset='custom' 必讀 `role_prompts.visual` 否則 throw；preset 是內建 → 用 `VISUAL_PRESETS[k]`；都沒有 → DEFAULT。**preset='custom' 時 skip buildVisualConstraints 完全自治**（避免 5 欄位污染自訂 prompt）
+   - ref（character_reference_url）改可選：空白時 stage 2 純文字 prompt 出純場景圖
+   - `api/kols/[id]/route.ts` GET 不再灌 visual default → UI 看得出真實狀態
+   - `KolDetailClient.tsx`：preset='custom' 時 5 欄視覺身份 UI 變灰（pointer-events-none + opacity 50% + 黃色 banner「此處不生效」）；visual textarea 加動態 badge
+
+3. **Mör NO_IMAGE 大雷追到根因 v1.4.0.019**（debug 加 console.log）
+   - 症狀：Adam 給的 Mör prompt（「你是默爾，油畫家...」）跑 visual 一直 finish=NO_IMAGE
+   - 中段誤判：以為是 prompt 缺「== 最終輸出 == 英文 image prompt」段，建議 Adam 補
+   - Adam consent 加 `console.log [visual] kol=X preset=Y finalPrompt(head)+photoPrompt(full)` 進 visual.ts
+   - 重跑 + Vercel logs 撈出來看，photoPrompt 整段是「**I'm Claude Code, a software engineering assistant. I don't adopt alternative personas...**」
+   - **真相**：bridge VM 上 `claude` CLI 系統提示鎖死 Claude Code 身份，對「你是 X」整篇 persona override 直接拒絕。跟 Gemini 無關、跟 Mör prompt 內容無關
+   - Adam 改 Mör prompt 成純風格描述（沒 "你是 X"，純列風格規則 / 視覺參考 / 核心原則 / 質感 — 368 chars） → 27s 出圖 1.7MB 油畫風成功
+
+4. **寫文流程查證**（writer.ts + cycle.ts）
+   - writer = `runWriter` 一次 callBridge(maxTokens=1500) + JSON 解析（title/content/keywords）
+   - cycle = `runDraftCycle` writer → editor 審稿 → APPROVE/REJECT → 最多 1 次 rewrite → editor 二審
+   - **同樣走 callBridge → 同樣有 persona refusal 雷**：要看每個 KOL 的 `role_prompts.writer` 是不是 "你是 X" 開頭
+
+5. **派工節奏 + 發現官 7 欄位驗證**
+   - 全部生效。`enabled` / `daily_publish_quota` / `publish_interval_min` 在 `auto-publish/route.ts:92,98,99,110`；`draft_interval_min` 在 bridge VM `index.js:2373`；discovery 五欄（enabled / window_start/end / interval_min / min_replies / min_likes）在 bridge VM `index.js:2871,2872,2935,2936,2939`
+
+6. **dedup cascade delete v1.4.0.020**
+   - 發現破綻：DELETE `/api/content/[id]` 只刪 `molowe_content/X`，沒動 `molowe_content_corpus/X`
+   - corpus 是 vector 庫（ingestContentToCorpus 在 auto-publish:174 / publish-now:52 發文成功後寫），dedup/check 看的是這張
+   - 已發文後刪 content、corpus 還在 → 下次同主題會被當重覆 REJECT
+   - 修法：DELETE 改 batch 同刪 content + corpus，回傳 `corpus_deleted: bool`
+   - 部署 + curl 200 verified
+
+7. **記憶／文件動線**：寫這份 lastwords + 1.4.0.020 commit + push（接著做）
+
+**違背 feedback memory**：無重大違背。
+- ⚠️ 中段差點違背 `solve_root_not_symptom`：第一輪以為 NO_IMAGE 是 Mör prompt 格式問題（症狀層），幸好 Adam 同意加 console.log 才追到 bridge persona refusal 根因。教訓：debug AI pipeline **先把實際 prompt content 寫出來看**比猜內容快 10 倍（已有 memory `skill_ai_pipeline_blackbox_debug` — 這次沒第一時間想起來，要重讀）
+- ✅ `bridge_first`：visual stage 1 仍走 callBridge，沒繞回直連 Anthropic
+- ✅ `patch_verify_before_upload`：visual.ts 三次改動每次都 type-check 過再 deploy
+- ✅ `surface_technical_debt`：「writer prompt 是否踩 persona refusal 雷」「Mör cycle 端到端沒驗（caption 是手動 PATCH 的）」全寫進「未解」
+
+**情緒**：早段在 NO_IMAGE 卡 30 分鐘繞 prompt 格式，發現 console.log 真相後鬆一口氣 + 警醒。後段查 dedup cascade 用「破綻三處・真相分裂」一秒對中（content vs corpus 兩份）— 心法用熟了。整體節奏穩、Adam 信任度足、提問品質高（「以下不會干擾我的指令嗎」一句把我從技術細節拉回他的真實顧慮）。
+
+**模型移動**：
+- 進場前以為 visual NO_IMAGE 是 Mör prompt 缺英文 image prompt 段
+- 現在理解：是 bridge `claude` CLI 系統提示鎖在 Claude Code 身份、拒絕整篇 persona override。Mör prompt 內容根本沒到 Gemini，Gemini 收到的是工程助理拒絕語
+- 動因：加 console.log 印 photoPrompt(full)、Vercel logs 看到「I'm Claude Code...」字面拒絕語
+
+---
+
+### 上一次完成（2026-05-09 晚 — molowe Phase 1-5 連跑：KOL 後台全可改 / 寫死全拔）
 
 **主戰場**：molowe-platform。
 
@@ -199,25 +258,145 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 
 ## 下一步（明天醒來第一件 — 5 秒能動手）
 
-**先跑兩條進場自校，整段貼 Adam，內問三題（我是誰 / 我在哪 / 北極星還對齊嗎）**：
+**先跑兩條進場自校**：
 ```bash
 ~/.ailive/zhu-core/zhu-self/bin/zhu status
 ~/.ailive/zhu-core/zhu-self/bin/zhu self-check
 ```
 
-**第一件實質動的事**：依上面接棒 (a) 三條 grep + Firestore 對賬，驗 brief / translator 端到端 1 cycle。如果驗到 brief 補的骨架不夠強或 translator 脆文質量差，調 default prompt 即可（兩個 default 在 `role-prompts.ts:130-160` brief 段、`role-prompts.ts:216-244` translator 段）。
+**三件事的順序**：
+- (1) bridge persona refusal 全鏈路掃毒 ← **先做**（最高優先、會殺所有 KOL 內容）
+- (2) brief / translator 端到端對賬 ← (1) 沒踩雷或修完才做（不然驗到一半被拒絕語污染對不到帳）
+- (3) yi worker 三選一 ← 等 (1)(2) 都收完，跟 Adam 開新 thread 決策（不要在掃毒中途切過去）
 
-驗到通了 → mark Phase 5 完成、開新 thread 處理 yi worker 三選一。
+**掃毒範圍可以縮小**：5/9 晚 default prompt 已中性化（intel/discovery/engagement_yi/visual default 都拔了「你是 X」）→ 實際命中**只會在 KOL override 的 `role_prompts.X` 欄位**裡（後台手填的）。所以掃 N×9 個 cell 但大多會空、空就 skip default — 真要看的是 KOL 後台「角色 Prompt」tab 自填的部分。
 
 ---
 
-## 卡住 / 未解
+**第一件實質動的事 — bridge persona refusal 全鏈路掃毒**：
 
-- **brief / translator 端到端 1 cycle 待驗**（這個 session 主待辦）：code commit 推完、bridge restart 完，等下次 intel cycle 自然走完才能對賬
-- **米豆芙測試值未還原**：visual_style_preset=anime / niche_taboo_words=賺大錢 / intel_keywords=['財經']，Adam 自己會改
-- **yi worker 三選一**（從 5/8 晚 BLOCKED）：A/B/C 待決策
-- **scripts/verify-prompt-flow.mjs + check-recent-content.mjs 未 commit**：內部驗證腳本，先擱（不是壞事，避免 commit 一堆 one-off 腳本）
-- **publish-now route 沒對齊 auto-publish**（5/9 早段認的技術債）：`/api/content/[id]/publish-now/route.ts` 只跑 IG 沒跑 Threads，今天沒處理
+### 踩雷／不踩雷對照（5 秒辨識）
+
+| 踩雷（會被 bridge claude CLI 拒絕） | 不踩雷（純風格描述） |
+|---|---|
+| `你是默爾，一位油畫家。你只觀察動物與空間...` | `油畫畫布質感，可見畫布紋理，霧面質地...` |
+| `### [Soul Protocol: MÖR-V4]\n#### [Personality Matrix]\n- 你是默爾...` | `風格：Quint Buchholz（夢境感、低飽和）\n氛圍：Gregory Crewdson...` |
+| `你是攝影師 Chris，使用哈蘇 4x5...` | `哈蘇 4x5 大片幅美學，淺景深，自然光...` |
+| `扮演一位金剛經修行人，用比喻寫文...` | `金剛經風格的比喻句式，避免說教語氣...` |
+
+**規則**：不要任何「你是 X / 扮演 X / Persona / Soul Protocol」整篇 override。改寫成「以 X 的風格 / 美學 / 視角 / 句式產出 Y」純規則描述。
+
+### 掃毒指令
+
+```bash
+# Step 1：拉所有 KOL 看哪些 role 踩雷（注意：先 curl 一次看 wrapper 是 .items 還 .kols）
+curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" \
+  https://molowe-platform.vercel.app/api/kols | python3 -m json.tool | head -5
+# 確認 wrapper 後改下面 KEY
+
+KEY='items'   # ← 先 head 確認後填這
+curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" \
+  https://molowe-platform.vercel.app/api/kols | python3 -c "
+import sys, json
+data = json.load(sys.stdin)
+items = data.get('$KEY') or data.get('kols') or data.get('items') or []
+for k in items:
+    rp = k.get('role_prompts') or {}
+    for role in ['intel','brief','writer','editor','translator','visual','discovery','engagement_yi','engagement_xi']:
+        v = (rp.get(role) or '').strip()
+        head = v[:120].replace('\n',' ')
+        # 啟動詞 heuristic
+        if any(v.startswith(s) for s in ['你是','你扮演','扮演','### [Soul','### [Personality']):
+            print(f'⚠️  {k.get(\"kol_id\")}.{role}: {head}')
+"
+
+# Step 2：對任一踩雷 role，加 debug log（套路同 5/10 visual.ts:73-75 那次）
+#   位置：src/lib/workers/{role}.ts 的 callBridge 行後
+#   加：console.log(\`[\${role}] kol=\${kol.kol_id} promptHead=\${prompt.slice(0,400)} | response=\${raw.slice(0,400)}\`);
+#   deploy + 觸發 + npx vercel logs <deployment-url> --since 30m --no-follow --limit 50 --json | grep persona-mark
+#   若 response 出現 "I'm Claude" / "software engineering assistant" / "I don't adopt" / "alternative personas" → 踩雷確認
+
+# Step 3：去後台 https://molowe-platform.vercel.app/kols/<kol> → 角色 Prompt tab
+#   把該 role 的 textarea 改寫成上表「不踩雷」風格，存檔
+#   重跑驗證
+
+# Step 4：掃毒 + 修完，把臨時 debug log 拔掉
+#   visual.ts:75 那條 [visual] console.log 是 v1.4.0.019 加的 debug 也順手拔
+#   commit 訊息範例（接著 .020 後面）：
+#     v1.4.0.021 — 修正：清掉 visual debug log，跟 worker X 加的 persona-mark
+```
+
+**驗收條件**：
+- 所有 KOL × 9 角色掃完，沒有任何 prompt 開頭命中啟動詞 heuristic
+- midoufu Mör 跑完一輪自然 cycle（intel → brief → writer → editor → visual → translator → publish），caption 不是「I'm Claude...」拒絕語
+
+**如果驗下去發現踩雷的不只 visual**：寫一條 feedback memory `feedback_bridge_persona_refusal.md` — 規則 + 對照表 + 對 9 個 role 全有效
+
+### Mör 改後 prompt 完整版（2026-05-10 Adam 親手改、已驗過關 — 給接棒參照）
+
+```
+油畫畫布質感，可見畫布紋理，霧面質地，具有層次的筆觸堆疊
+去飽和色彩、電影感打光、柔和光暈、明暗對比（chiaroscuro）
+不要：數位藝術風格、不要亮面質感、不要超寫實、不要現代平面設計風格
+視覺參考
+風格：Quint Buchholz（夢境感、低飽和色彩、剪影感）
+氛圍：Gregory Crewdson（電影靜止畫面的沉靜感）
+敘事：Shaun Tan（無字故事、熟悉卻又陌生）
+核心原則:
+不要有人類角色、不要人物、不要臉孔
+可以是剪影式、抽象式，或只是局部被暗示出來
+不要畫出完整、寫實的物件
+只呈現痕跡、殘留、缺席感
+氛圍
+使用去飽和、統一而和諧的色彩配置
+不對稱，但保持平衡
+採用三分法構圖
+質感
+油畫畫布質感：可見畫布紋理、霧面質地、層層堆疊的筆觸
+整體應該帶有一種超越時代的感覺——像是任何一個年代都有可能出現的作品
+```
+
+長度：368 chars。位置：Firestore `molowe_kol_profiles/midoufu.role_prompts.visual`。出圖驗證：27s, 1.7MB PNG, 油畫風油 ✅
+
+### Debug 套路（這次踩雷學到的，獨立記）
+
+```
+1. 結果不對 → 不要猜 prompt 內容缺什麼
+2. 在 worker callBridge 前後加 console.log(promptHead + response) → deploy
+3. 觸發一次 → npx vercel logs <deployment-url> --since 30m --no-follow --limit 50 --json | python3 過濾 [worker-mark]
+4. 看實際 response — 若是「I'm Claude...」拒絕語就是 persona refusal；若是 JSON parse fail 就看 raw 哪裡崩
+5. 拔 log 前先存一份截圖 / 貼 lastwords，避免之後忘了長什麼樣
+```
+
+跟既有 memory `skill_ai_pipeline_blackbox_debug` 同源，但這次踩到 persona refusal 是該 skill 沒列的子型，要補。
+
+**第二件 — brief / translator 端到端 1 cycle 對賬**（從 5/9 晚帶過來，僅在 (1) 確認沒新踩雷後跑）：見上一輪 lastwords 接棒 (a) 三條 grep 指令（保留在第 85-96 行附近的歷史段，跟 ZHU_LAST_WORDS git history 對照）
+
+**第三件 — yi worker 三選一**（從 5/8 晚 BLOCKED 至今第四天）：等 (1)(2) 收完跟 Adam 開新 thread 決策（A=fork molowe-agent / B=新 GCP worker VM / C=暫緩，建議默認 C）
+
+---
+
+## 卡住 / 未解（5/10 更新）
+
+- 🆕 **bridge persona refusal 全鏈路風險未掃** ← **最高優先**：今天只發現 visual 踩雷且 Adam 已修。writer / editor / brief / translator / discovery / engagement / intel 任一個若用 "你是 X" 整篇 persona override 都會被 bridge claude CLI 拒絕回 "I'm Claude Code..."。9 個角色 × N 個 KOL 的 role_prompts 全要掃一次
+- 🆕 **Mör 整 cycle 端到端沒驗**：今天只手動觸發 visual 過關。content `xGVLrZfPlxAD7951Mmnq` 的 caption 是手動 PATCH 的測試文，不代表 writer 用 Mör 的 niche / soul 能寫出對的東西。要等下次自然 cycle 或手動 PATCH status=pending 跑全鏈
+- 🆕 **debug 加的 console.log 還在 visual.ts:75**：v1.4.0.019 的 debug log，正式上線可考慮拔掉（但 photoPrompt 印出來對 ops 觀察其實是好事，先留）
+- **brief / translator 端到端 1 cycle 待驗**（從 5/9 晚帶過來、今天沒做）
+- **米豆芙測試值狀態仍未還原**（5/9 晚帶過來）：visual_style_preset 已被 Adam 改成 `custom` 走自訂 Mör prompt（不是 anime 了）；niche_taboo_words / intel_keywords 不確定
+- **yi worker 三選一**（從 5/8 晚 BLOCKED 第四天）：A/B/C 待決策
+- **scripts/verify-prompt-flow.mjs + check-recent-content.mjs 未 commit**（5/9 晚帶過來）
+- **publish-now route 沒對齊 auto-publish**（5/9 早帶過來）
+
+## 今天改了哪些檔案（5/10 段）
+
+| 檔案 | 改了什麼 | commit |
+|---|---|---|
+| `molowe-platform/src/lib/workers/visual.ts` | 嚴格 fallback + ref optional + skip 5 欄 + console.log | v1.4.0.017/.018/.019 |
+| `molowe-platform/src/app/api/kols/[id]/route.ts` | GET 不灌 visual default | v1.4.0.017 |
+| `molowe-platform/src/app/(admin)/kols/[id]/KolDetailClient.tsx` | visual textarea badge + 5 欄 UI 變灰 | v1.4.0.017/.018 |
+| `molowe-platform/src/app/api/community/settings/route.ts` | PATCH 過濾殘留 topics | v1.4.0.016 |
+| `molowe-platform/src/app/api/content/[id]/route.ts` | DELETE cascade corpus | v1.4.0.020 |
+| `zhu-dev:~/claude-bridge/index.js:2360-2385` | 拔 community_settings.topics 讀取 | v1.4.0.015（bridge 端） |
 
 ---
 
@@ -262,4 +441,4 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.2.0。*
-*2026-05-09 晚 · 築*
+*2026-05-10 · 築*
