@@ -28,6 +28,7 @@
 - [Live Media 建置計劃（已暫停 2026-05-09）](project_live_media.md) — directive 全降 0 軟停，主力轉 molowe，重啟前要先處理 Firestore index 等三件未解
 - [VM 殺 node 進程用 killall 不用 pkill](feedback_killall_vs_pkill.md) — pkill -f 殺不到絕對路徑進程，一律用 killall -9 node
 - [Bridge VM 用 systemctl restart 不要 killall+nohup](reference_bridge_vm_systemd.md) — claude-bridge 是 systemd service，nohup 會建重複 process、worker 跑兩遍
+- [zhu-bridge index.js 不在 git，patch SOP](reference_bridge_not_in_git.md) — VM 那份是唯一 source，改動要 download→edit→grep verify→upload→systemctl restart，沒 rollback
 - [VM patch 後上傳前必須驗證所有依賴函數](feedback_patch_verify_before_upload.md) — Python inline patch 靜默失敗 + 重下載蓋改動 + 未驗證 = crash，正確做法：先下載→本機 edit→grep 驗證全部函數→才上傳
 - [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新
 - [ailive 角色對話 SOP（CLI SSE 串流版）](skill_ailive_character_chat.md) — curl -N --max-time 120 + python SSE 解析，先看源碼不猜 API 格式
