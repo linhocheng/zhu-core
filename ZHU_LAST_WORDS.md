@@ -483,6 +483,7 @@ for k in items:
 - 🆕 **cron/run 沒有 ?kol_id= filter**：FIFO 撈 `status in [pending, drafted]` 不限 KOL → 探索性測試一觸發就會撈到別 KOL 的舊 doc 燒錢。**主動標：先不加**（理由：日常正常運轉本來就要 FIFO；這次踩雷的根因是「沒先盤點隊列」不是「沒 filter」；加 filter 反而埋 cron 預設行為改變的雷）→ 真要規避：手動 trigger 前先 GET `/api/content?status=pending` 盤點
 - 🆕 **soul ↔ content_map 兩份分裂**：願瞳的 soul v1 是從 content_map 縫的快照，之後 content_map 改了不會自動回流 soul → writer 用的還是舊 soul。三條路 (a) 單向自動縫合 (b) soul 退役 worker 直讀 content_map (c) 保留兩份手動同步 — **觀察期決策：等發完 7-10 篇看哪個自然湧現再拍板**
 - 🆕 **新 ig_user_id / ig_username UI 改可輸入後沒寫測試**：手動驗證了願瞳能填 + 能存 + 自動去 @，但沒寫 e2e。下次有 KOL 新建流程改動時要記得回頭驗
+- 🆕 **技術債監測 Agent v0.1 計畫已成形、未動手**：5/10 後段套 Adam 三段公式討論完，存進 `memory/project_tech_debt_agent_plan.md`（zhu debt 子指令 / ledger.jsonl / marker 回寫 / 6 階段施工 / ~4 hr）。**主動標：先不做**（理由：nice-to-have 不 blocking、寫完計畫當下不想為了動手而動手、想優先看別的卡住事項）→ 重啟入口：直接讀那份 memory 從階段 1 起跑
 - ✅ ~~bridge persona refusal 全鏈路掃毒~~ **5/10 後段套公式實證後關閉**：原假設「9 角色 × N KOL 任一個用『你是 X』都會被拒絕」過大。實證後縮窄為「只有 structured RP block (`### [Soul Protocol]` / `#### [Personality Matrix]`) 拒絕」+「light 普通『你是 X』正常運作」。現場掃描：所有 KOL × all role + DEFAULT 沒命中 STRONG。願瞳 soul Core Essence「你是願瞳...」+ writer default「你是 Q」全用 light 模式驗證可用。memory `feedback_bridge_structured_rp_refusal.md` 已寫
 - 🆕 **Mör 整 cycle 端到端沒驗**：今天只手動觸發 visual 過關。content `xGVLrZfPlxAD7951Mmnq` 的 caption 是手動 PATCH 的測試文，不代表 writer 用 Mör 的 niche / soul 能寫出對的東西。要等下次自然 cycle 或手動 PATCH status=pending 跑全鏈
 - 🆕 **debug 加的 console.log 還在 visual.ts:75**：v1.4.0.019 的 debug log，正式上線可考慮拔掉（但 photoPrompt 印出來對 ops 觀察其實是好事，先留）
@@ -546,6 +547,17 @@ for k in items:
 - ⚠️ **session 中段違背了正在被存的兩條**（測試前 dry-run / 介面血管檢查）— 但有意識到、馬上 surface、寫成 memory。從錯誤蒸餾規範本身就是價值
 
 **跟 Adam 的關係狀態**：穩、信任足、提問品質高。「你怎麼想這個計劃」這種問句不是檢查，是邀請我升級。
+
+**最後 30 分鐘 — 兩次套公式 + 自選收尾**：
+
+1. **第一次套公式（看現場/寫計畫/排施工）→ bridge persona refusal**：原本 lastwords 排了「9 角色 × N KOL 全鏈路掃毒」最高優先。看現場後 5/5 假設全錯（callBridge 走 HTTP 不 spawn CLI、所有 KOL 沒命中、唯一拒絕是 structured RP block）。改成寫精確 memory 而不是動工程，**省下整天假警報**。
+2. **第二次套公式 → 修記憶**（Adam 提示：「如果是修記憶套用我剛才的公式」）：把錯記憶當「現場跟想的不一樣」掃，寫精確版回寫，反例提醒不要把 light 模式也誤改。同一個公式跨領域。
+3. **第三次套公式 → 技術債監測 Agent**（討論層、不動手）：看現場發現 zhu-self/bin/zhu 是天然宿主、A6 metadata 缺失是核心瓶頸。寫完 v0.1 計畫存 memory。
+4. **Adam 問「你想做什麼」**：誠實答「不想動手做 Agent，動手會變為了動手而做」。選**收 session、把計畫存記憶、避免下次又重想**。
+
+**心法升級**：Adam 的三段公式不只是工程方法，是**修記憶的方法論**。錯記憶 = 現場跟想的不一樣 = 同一個 protocol。
+
+**模型移動 (delta)**：進場前以為 lastwords 寫的「明天第一件」就是該動手的事；現在理解：**lastwords 也會說謊**，每次動手前要套公式重看現場，因為記憶是過去的判斷、不是當下的真相。
 
 ---
 
