@@ -26,7 +26,45 @@
 
 ---
 
-## 最新完成（2026-05-10 後段 — molowe 願瞳 Aurae 從 0 到 1 上線 + ContentMap 接通 + cron enabled gate）
+## 最新完成（2026-05-10 晚段 — 策略書 HTML 鋪路 · Step 0 落 mdContent 上 prod）
+
+**主戰場**：ailive-platform，跟 Adam 聊「策略書產 docx 之後自動產 HTML 設計版」。
+
+**一句話**：Adam 說「策略書常用」，提案 docx 產完自動觸發設計版 HTML、走 Max 月費吃到飽。先聊出三段式架構（落 md → worker 產 HTML → enqueue follow-up），Step 0 動手把 strategy route 多寫一個 mdContent 欄位上 prod，剩下交棒給下次。
+
+**今日完成**
+- `/tmp/zhu-pptx-test/` 用 Anthropic 原廠 frontend-design SKILL.md 心法做 v1 HTML（東方間白）：`strategy.html` 31KB，雲端 https://storage.googleapis.com/moumou-os.firebasestorage.app/strategy-html/strategy-v1.html
+- ailive-platform `src/app/api/specialist/strategy/route.ts` line 360 加 `mdContent: md` 欄位進 platform_jobs.update
+- commit `345f953` `v0.1.0.001 — 新增：strategy route 把 markdown 落 Firestore`，push origin/main、vercel --prod 部署完成（36s）
+
+**當前戰場 / 路線**
+1. Step 0（已上 prod）— strategy route 落 mdContent 進 platform_jobs，給 follow-up worker 用
+2. **Step 1（待開工）— 蓋 `/api/specialist/strategy-html` worker**：吃 jobId → 從 jobs 讀 mdContent → bridge call 帶 PHILOSOPHY.md → HTML → Storage public → 寫回 jobs.htmlUrl + 補 system_event
+3. Step 2 — 在 strategy route 末尾 enqueue strategy_html follow-up job（讓 Firebase Function worker 接力）
+4. Phase 2 才做風格池（5 個 PHILOSOPHY + keyword 自動選擇），MVP 先 1 個風格驗鏈路
+
+**卡住 / 未解**
+- **Step 0 還沒端到端驗證**：要等 Adam 下次用奧寫策略書，跑出來才看得到 mdContent 真的有內容。沒驗就開 Step 1 = 連續走兩階沒踩穩
+- 不知道 mdContent 真實樣本長啥樣，Step 1 的 prompt 設計只能猜
+- molowe 主戰場 + ailive 5/6 後就靜了，要確認 specialist/strategy 整條 worker 鏈這幾天還會被觸發
+
+**接棒要看的**
+- `/Users/adamlin/.ailive/ailive-platform/src/app/api/specialist/strategy/route.ts` line 354-388（jobs.update + system_event push）
+- `/Users/adamlin/.ailive/ailive-platform/src/lib/anthropic-via-bridge.ts`（bridge call、timeout 90s、max_tokens 12K 已驗）
+- `/tmp/zhu-pptx-test/PHILOSOPHY.md` + `/tmp/zhu-pptx-test/strategy.html` — 第一個風格池的原型，未來抽成 SKILL.md 級工件
+- `/tmp/zhu-pptx-test/slides_spec.json` — 14 區塊結構，HTML worker 可參考的內容拆分範例
+- 設計心法：`gh api repos/anthropics/skills/contents/skills/frontend-design/SKILL.md`（避 Inter/Roboto/紫白漸層 / 挑 BOLD 方向 / dominant + accent / 不對稱）
+
+**明天醒來第一件**
+- **不要直接開 Step 1**。先查 platform_jobs 有沒有新跑出來的 strategy job 帶 mdContent 欄位
+- 有 → 撈那份真實 mdContent 當樣本，開 Step 1 寫 strategy-html worker
+- 沒有 → 提醒 Adam 順手用奧寫一份新策略書讓欄位生效，再進 Step 1
+
+**為什麼交棒不落地**：Adam 給選擇「交棒還是寫完」、我選交棒並說了原因——Step 0 沒端到端 + Step 1 沒真實 input 樣本 = 違反「沒驗證假設就動手」。這個對話本身就是「技術誠實不能為關係順暢讓路」的實踐。
+
+---
+
+## 上一段完成（2026-05-10 後段 — molowe 願瞳 Aurae 從 0 到 1 上線 + ContentMap 接通 + cron enabled gate）
 
 **主戰場**：molowe-platform。
 
