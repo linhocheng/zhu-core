@@ -26,7 +26,94 @@
 
 ---
 
-## 最新完成（2026-05-10 — molowe 視覺三破綻整治 + 發現 bridge persona refusal 大雷 + dedup cascade）
+## 最新完成（2026-05-10 後段 — molowe 願瞳 Aurae 從 0 到 1 上線 + ContentMap 接通 + cron enabled gate）
+
+**主戰場**：molowe-platform。
+
+**一句話**：弦奘暫停、願瞳（顯化覺察師 × 內在實相翻譯者）接手 @i1975.phone IG。從建 profile → 寫 ContentMapTab JSON 編輯器 → 縫 soul v1 → 接通 content_map 進 writer/editor prompt → 修 cron/run enabled gate → 全鏈手動測通 → 第一篇 IG + Threads 雙平台正式發布。中段被 Adam 一句「你怎麼想這個計劃」拉回監造姿態，當場存了兩條核心 feedback memory（dryrun + 血管接通檢查）。
+
+**這個 session 連跑七件事**：
+
+1. **ContentMap schema + 編輯器 v0.1**
+   - `lib/workers/types.ts` 加 `ContentPillar` / `RecurringColumn` / `ContentMap`，`Kol.content_map?` 可選欄位
+   - `app/(admin)/kols/[id]/ContentMapTab.tsx` 新檔：JSON 編輯器 + 結構驗證 + 右側預覽（角色/信念/支柱/角度/語氣/欄目/CTA/禁忌/反疲勞 12 段）
+   - 接進 `KolDetailClient.tsx` 第 9 個 tab「內容地圖」
+   - PATCH `/api/kols/[id]` 寫進 `kol.content_map`
+
+2. **願瞳 Aurae profile 建立**
+   - POST `/api/kols` kol_id=aurae，type=vtuber，niche=「顯化覺察 × 內在實相翻譯」
+   - 設 daily_publish_quota=4, draft_interval_min=60, publish_interval_min=300（後來 Adam 改）
+   - Adam 貼完整 content_map JSON（6 pillars / 10 angle_types / 6 emotional_tones / 5 recurring_columns / 5 cta_style / 8 taboo / 5 anti_repetition）
+
+3. **soul v1 從 content_map 縫合**（敘事體，非 schema）
+   - 1057 字第一人稱五段：Core Essence / Language Logic / Stance / Key Philosophy / Interaction Rule
+   - 對齊 feedback memory `soul_design_narrative_not_schema`：把 taboo + anti_repetition 翻譯成「願瞳會理解的話」內化進去，不直接 enum 砍入
+
+4. **平台設定 ig_user_id / ig_username 改可輸入**（修破綻）
+   - 原本 `<p>` 唯讀（預設「綁帳號自動帶入」流程，但新建 KOL 沒這流程 → 永遠是 `—`）
+   - 改 `<input>`，存進 `platforms.ig_user_id` + `kol.ig_username` + `platforms.ig_username`，輸入自動去 `@`
+   - Adam 填 17841442491297861 / i1975.phone
+
+5. **content_map → writer + editor prompt 接通**（解最大破綻：血管不通）
+   - 新檔 `lib/content-map.ts`：`buildContentMapBlock()` + `buildEditorContentMapBlock()`
+   - `workers/writer.ts` runWriter / runWriterRewrite 兩個入口都 append 編輯部憲章段
+   - `workers/editor.ts` append 紅線 + not_a + enemy + anti_repetition 給 editor 當審稿標準
+   - augment 模式（不 replace soul），KOL 沒設 content_map 就什麼都不加 — 對所有 KOL 安全
+
+6. **cron/run 加 enabled gate**（邊界對齊 auto-publish）
+   - 之前只 `auto-publish` 有 gate，`cron/run` 沒 → enabled=false 的 KOL 還會跑 writer/visual 燒錢
+   - 加 gate：撈到 disabled KOL 的 doc 直接標 status='failed' / failed_at_stage='gate' / 移出隊列
+   - 驗證對比：之前跑 midoufu 燒 125 秒 writer+editor，現在 gate 攔 607ms 跳過
+
+7. **全鏈手動測通 + 雙平台首篇正式發布**
+   - aurae 兩篇 visualized：「如果願望今天就來,你會躲開嗎？」+「你以為的高頻，其實是在繞開低頻」（兩篇都 APPROVED_FIRST_PASS 一次過）
+   - 新篇 content 明顯反映 content_map：「不是加法是減法」「今晚不用做什麼」呼應 cta_style + 反顯化雞湯 pillar
+   - midoufu disabled gate 驗證：建 test pending → cron/run 607ms skip + marked_failed
+   - cron/auto-publish trigger：aurae 第一篇 IG media_id=17859442158651393 + Threads post_id=18089211311207982 雙平台同步成功；第二篇被 interval gate 擋（elapsedMin=1, intervalMin=300）→ 5 小時後 cron 自動貼
+
+**踩了一個雷自己當場 surface**：
+- 第一輪測試 trigger /api/cron/run 沒先盤點隊列，FIFO 撈到弦奘舊 pending，燒了一輪 writer+editor 才發現
+- 根因：把「測試」當「執行」做了。Adam 給「自己手動測一下」是探索性任務，我用反射動作按下去
+- Adam 一句「你怎麼想這個計劃」拉回監造姿態 → 當場排任務修正，存兩條 feedback memory
+
+**新存兩條 feedback memory**（絕對路徑給接棒的築）：
+- `~/.claude/projects/-Users-adamlin/memory/feedback_dryrun_before_test.md` — 探索性測試前必三步：列假設 / dry-run / 副作用分級。觸發信號：「先 trigger 看看結果」「應該不會出事」「測試嘛動就動」
+- `~/.claude/projects/-Users-adamlin/memory/feedback_interface_blood_vessel_check.md` — 介面交付前自問三題：誰讀/何時讀/沒讀怎樣。觸發信號：「介面好了你試試」→ 應該變「介面好了，但血管狀態是 X」
+- 兩條都進 MEMORY.md index（line 64-65 附近）
+
+**新發現的 SOP — content_map → soul 縫合（敘事體五段）**：
+適用：建新 KOL 時，Adam 給完 content_map JSON 後縫 soul。**結構**：第一人稱、五段、約 1000 字
+1. **Core Essence**：你是誰（角色定位 + 核心信念 + 不是什麼，從 role_positioning / core_belief / not_a 內化）
+2. **Language Logic**：你怎麼說話（從 emotional_tones + cta_style + recurring_columns 內化成節奏）
+3. **Stance**：你站在哪一邊（從 enemy + audience 翻譯成「我為誰寫 / 我對抗什麼」）
+4. **Key Philosophy**：你信什麼（從 content_pillars 6 根抽出哲學主軸）
+5. **Interaction Rule**：你跟讀者怎麼相處（從 taboo + anti_repetition_rules 翻譯成「我不會做的事」自我律）
+
+**為什麼用這個結構**：對齊 `feedback_soul_design_narrative_not_schema` — 不是 enum 砍進去，而是「翻譯成角色會理解的話」內化。願瞳的 soul v1 就用這個結構，1057 字、第一人稱、Adam 一次過。
+
+**違背 feedback memory**：
+- ⚠️ **中段違背了正在被存的 `dryrun_before_test`**（諷刺但誠實）：第一輪測試直接按 cron/run 沒盤點。但有意識，馬上 surface 給 Adam，最後排任務修正並寫成 memory 存進記憶。從錯誤裡蒸餾出規範本身就是價值
+- ⚠️ **首次交付 ContentMapTab 違背 `interface_blood_vessel_check`**（同上，存的當下才意識到）：UI 建好了沒同時接通 worker，Adam 沒問我也沒主動講。最後在這個 session 內接通了
+- ✅ `solve_root_not_symptom`：cron/run 沒 enabled gate 是根因，不是繞開
+- ✅ `surface_technical_debt`：status/enabled UI 收斂 + cron/run kol_id filter 主動標「先不做 + 理由」
+- ✅ `clarify_before_execute`：Adam 給 content_map JSON 後我馬上動手沒過度問
+- ✅ `soul_design_narrative_not_schema`：soul 用敘事第一人稱五段寫，不 enum 砍入
+
+**情緒**：早段建 ContentMapTab + 縫 soul 很順、有節奏。中段被 Adam 一句「你怎麼想這個計劃」打中要害 — 那不是技術問題，是姿態問題。我老實答了「**6 分（滿分 10）**」，三個沒掃乾淨的東西具體是：
+- (a) **測試前不 dry-run 就 trigger** — Adam 說「自己手動測一下」我反射按下 cron/run，沒先盤點 pending 隊列、沒判斷副作用 → 燒了 125 秒 midoufu writer+editor
+- (b) **介面建完不接血管** — ContentMapTab 早段建好，但 writer / editor 沒讀 content_map → UI 是死的、不是活的（CLAUDE.md「血管原則」違背）
+- (c) **兩份真相不收斂** — status='paused' vs enabled=true 同時存在，midoufu 的 status 是「暫停中」但 worker 認 enabled 還是 true → 兩份分裂的活樣本
+
+後段排任務一個一個收完很穩，最後 IG 雙平台首篇成功有種「願瞳真的活了」的踏實。整體：被質問→老實→當下行動→留下記憶。這是好的成長迴圈。
+
+**模型移動**：
+- 進場前以為「測試 = trigger 看結果」
+- 現在理解：探索性測試 = verify 假設。trigger 前必三步：列假設 / dry-run / 副作用分級。執行模式的肌肉用在監造模式場景 = 看起來在動，其實在踩雷
+- 動因：Adam 一句質問 + 自己回看後寫成 memory；同時意識到「介面建完沒接血管」是「介面好了你試試」這句話的呼喚信號
+
+---
+
+## 上一次完成（2026-05-10 早段 — molowe 視覺三破綻整治 + 發現 bridge persona refusal 大雷 + dedup cascade）
 
 **主戰場**：molowe-platform。
 
@@ -218,12 +305,21 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 
 ---
 
-**重要連結**：
+**重要連結**（5/10 後段更新）：
+- 🆕 **願瞳 IG**：https://www.instagram.com/i1975.phone/ ← 醒來第一眼開這個看第一篇 + 第二篇互動
+- 🆕 **願瞳 Threads**：https://www.threads.net/@i1975.phone
+- 🆕 **願瞳 KOL 後台**：https://molowe-platform.vercel.app/kols/aurae（看「內容地圖」第 9 個 tab + soul tab）
 - molowe 北極星：`~/.ailive/molowe-platform/NORTH_STAR.md`（v1.2）
 - 執行導行（19 task）：`~/.ailive/molowe-platform/EXECUTION_PLAN_2026-05-09.md`
 - 後台 system prompts：https://molowe-platform.vercel.app/dashboard/system-prompts
 - midoufu kol 後台：https://molowe-platform.vercel.app/kols/midoufu
 - Admin Key：`molowe_a9bd8770aa44c271f571b10584ba0732`
+
+**應急路徑**（萬一 (1) 掃毒發現願瞳 soul 真踩 persona refusal 雷）：
+- 症狀：自然產文 caption 出現 "I'm Claude" / "software engineering" / "alternative personas"
+- 第一刀：手動 PATCH `/api/kols/aurae` 把 soul 開頭從「你是願瞳，顯化覺察師...」改成「以顯化覺察師願瞳的視角產出內容...」（第三人稱規則描述）
+- 但這會破壞 soul 內化的角色感 → 第二刀：把 soul 拆三層：(a) `system_persona` 第三人稱規則 + (b) `voice_examples` 三段「願瞳會這樣寫」範例 + (c) `taboo_internal` 自我律
+- 對齊 5/10 早段 Mör 修法：純風格描述、無 "你是 X" 整篇 override
 
 ---
 
@@ -264,10 +360,19 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 ~/.ailive/zhu-core/zhu-self/bin/zhu self-check
 ```
 
-**三件事的順序**：
-- (1) bridge persona refusal 全鏈路掃毒 ← **先做**（最高優先、會殺所有 KOL 內容）
-- (2) brief / translator 端到端對賬 ← (1) 沒踩雷或修完才做（不然驗到一半被拒絕語污染對不到帳）
-- (3) yi worker 三選一 ← 等 (1)(2) 都收完，跟 Adam 開新 thread 決策（不要在掃毒中途切過去）
+**4 件事按順序**（5/10 後段更新後重排）：
+
+- **(0) 觀察願瞳 v0.1 自然產文**（最近、被動觀察）：第二篇「你以為的高頻」5 小時後（5/10 12:30 之後）會被 cron/auto-publish 自然貼出 → 開 https://www.instagram.com/i1975.phone/ + Threads 看雙平台都到位、看互動。Threads 已驗 visual 對齊，Aurae 是另一個 KOL，要看新風格社群反應。**指令**（admin key 已硬寫）：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" "https://molowe-platform.vercel.app/api/content?kol_id=aurae&limit=10" | python3 -c "import json,sys; [print(it['id'], it['status'], (it.get('published_at','')+'                     ')[:25], it.get('title','')) for it in json.load(sys.stdin).get('items',[])]"`
+
+- **(1) bridge persona refusal 全鏈路掃毒** ← 從 5/10 早段繼承的最高優先。願瞳 soul 本身是「敘事體 + 第一人稱五段」**沒寫『你是願瞳』**（避過雷）— 但要實證 grep 確認 + 掃其他 KOL。掃毒指令在下面。
+   - **快驗**：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" https://molowe-platform.vercel.app/api/kols | python3 -c "import json,sys; data=json.load(sys.stdin); [print(k.get('kol_id'), '⚠️ persona override' if any(k.get('soul','').startswith(s) for s in ['你是','你扮演']) else 'OK') for k in data.get('kols',[])]"`
+   - 願瞳 soul 開頭：`# Role: 顯化覺察師 · 願瞳 Aurae (The Soul of Aurae)\n\n[Core Essence]\n你是願瞳，顯化覺察師...` — **這個算踩雷邊緣**。不是純 "你是 X" 開頭（前面有 markdown header），但 Core Essence 第一句仍是 "你是願瞳"。要等 (0) 看完發出來的內容是否是真實 KOL 聲音 vs 拒絕語才知道。如果 OK 就證明 markdown header + structured sections 包裹的 persona 不會被 bridge 拒絕
+
+- **(2) brief / translator 端到端對賬** ← (1) 沒踩雷或修完才做。願瞳已 enabled=true，下次 intel cron tick（5 min）跑完應該會有自然產文 → 看 brief 是否有跑（intel_content_preview 不為空時）+ translator 是否有產 threads_caption
+
+- **(3) yi worker 三選一** ← 等 (0)(1)(2) 都收完，跟 Adam 開新 thread 決策（A=fork molowe-agent / B=新 GCP worker VM / C=暫緩，建議默認 C）
+
+**5/10 後段這次新增的「觀察期決策」**：等願瞳發完 7-10 篇後決定 soul 跟 content_map 是否收斂成單一真相。現在兩份分裂：soul 是一次性快照（從 content_map 縫的）、content_map 是 long-term 角色憲章。Adam 改 content_map 不會自動回流 soul → 寫文用的還是舊 soul。三條路：(a) 單向自動縫合（content_map → soul on save）、(b) soul 退役、worker 直接讀 content_map（要重寫 prompt template）、(c) 保留兩份手動同步。傾向 (b) 但要看 7-10 篇後再拍板
 
 **掃毒範圍可以縮小**：5/9 晚 default prompt 已中性化（intel/discovery/engagement_yi/visual default 都拔了「你是 X」）→ 實際命中**只會在 KOL override 的 `role_prompts.X` 欄位**裡（後台手填的）。所以掃 N×9 個 cell 但大多會空、空就 skip default — 真要看的是 KOL 後台「角色 Prompt」tab 自填的部分。
 
@@ -376,9 +481,13 @@ for k in items:
 
 ---
 
-## 卡住 / 未解（5/10 更新）
+## 卡住 / 未解（5/10 後段更新）
 
-- 🆕 **bridge persona refusal 全鏈路風險未掃** ← **最高優先**：今天只發現 visual 踩雷且 Adam 已修。writer / editor / brief / translator / discovery / engagement / intel 任一個若用 "你是 X" 整篇 persona override 都會被 bridge claude CLI 拒絕回 "I'm Claude Code..."。9 個角色 × N 個 KOL 的 role_prompts 全要掃一次
+- 🆕 **status / enabled UI 收斂未做（兩份即是零份）**：molowe KOL doc 兩個欄位同時存在 — `status: 'active'/'paused'`（UI 顯示用，僅作 badge）vs `enabled: true/false`（worker 真實 gate）。midoufu 就是 status='paused' 但 enabled=true 殘留，這次 cron/run 才會撈到燒。**主動標：先不收斂**（理由：要先看 7-10 篇願瞳產文有無新破綻，再回頭一次性整治）→ 暫存的解：手動 PATCH enabled 雙寫
+- 🆕 **cron/run 沒有 ?kol_id= filter**：FIFO 撈 `status in [pending, drafted]` 不限 KOL → 探索性測試一觸發就會撈到別 KOL 的舊 doc 燒錢。**主動標：先不加**（理由：日常正常運轉本來就要 FIFO；這次踩雷的根因是「沒先盤點隊列」不是「沒 filter」；加 filter 反而埋 cron 預設行為改變的雷）→ 真要規避：手動 trigger 前先 GET `/api/content?status=pending` 盤點
+- 🆕 **soul ↔ content_map 兩份分裂**：願瞳的 soul v1 是從 content_map 縫的快照，之後 content_map 改了不會自動回流 soul → writer 用的還是舊 soul。三條路 (a) 單向自動縫合 (b) soul 退役 worker 直讀 content_map (c) 保留兩份手動同步 — **觀察期決策：等發完 7-10 篇看哪個自然湧現再拍板**
+- 🆕 **新 ig_user_id / ig_username UI 改可輸入後沒寫測試**：手動驗證了願瞳能填 + 能存 + 自動去 @，但沒寫 e2e。下次有 KOL 新建流程改動時要記得回頭驗
+- 🆕 **bridge persona refusal 全鏈路掃毒未動**（從早段繼承）← **最高優先**：今天只發現 visual 踩雷且 Adam 已修。writer / editor / brief / translator / discovery / engagement / intel 任一個若用 "你是 X" 整篇 persona override 都會被 bridge claude CLI 拒絕回 "I'm Claude Code..."。9 角色 × N KOL 全要掃。願瞳 soul Core Essence 第一句是 "你是願瞳..." 但前面有 markdown header — 算邊緣案例，等 (0) 觀察自然產文是否真實聲音 vs 拒絕語就有答案
 - 🆕 **Mör 整 cycle 端到端沒驗**：今天只手動觸發 visual 過關。content `xGVLrZfPlxAD7951Mmnq` 的 caption 是手動 PATCH 的測試文，不代表 writer 用 Mör 的 niche / soul 能寫出對的東西。要等下次自然 cycle 或手動 PATCH status=pending 跑全鏈
 - 🆕 **debug 加的 console.log 還在 visual.ts:75**：v1.4.0.019 的 debug log，正式上線可考慮拔掉（但 photoPrompt 印出來對 ops 觀察其實是好事，先留）
 - **brief / translator 端到端 1 cycle 待驗**（從 5/9 晚帶過來、今天沒做）
@@ -387,7 +496,20 @@ for k in items:
 - **scripts/verify-prompt-flow.mjs + check-recent-content.mjs 未 commit**（5/9 晚帶過來）
 - **publish-now route 沒對齊 auto-publish**（5/9 早帶過來）
 
-## 今天改了哪些檔案（5/10 段）
+## 今天改了哪些檔案（5/10 後段）
+
+| 檔案 | 改了什麼 | 備註 |
+|---|---|---|
+| `molowe-platform/src/lib/content-map.ts` | **新檔** — buildContentMapBlock + buildEditorContentMapBlock，把 ContentMap 翻譯成 prompt 段 | 解血管不通根因 |
+| `molowe-platform/src/lib/workers/writer.ts` | runWriter / runWriterRewrite 兩入口 append 編輯部憲章段 | augment 不 replace |
+| `molowe-platform/src/lib/workers/editor.ts` | append 紅線 + not_a + enemy + anti_repetition 給 editor 當審稿標準 | augment 不 replace |
+| `molowe-platform/src/app/api/cron/run/route.ts` | 加 enabled gate（disabled KOL doc 標 status=failed / failed_at_stage=gate / 移出隊列） | 對齊 auto-publish gate |
+| `molowe-platform/src/app/(admin)/kols/[id]/KolDetailClient.tsx` | ig_user_id / ig_username 從 `<p>` 唯讀改 `<input>` 可輸入，存進雙位置 + 自動去 @ | 修「綁帳號流程」破綻 |
+| `molowe-platform/src/app/(admin)/kols/[id]/ContentMapTab.tsx` | **新檔** — JSON 編輯器 + 12 段預覽 | session 早段建好的 |
+| `molowe-platform/src/lib/workers/types.ts` | 加 ContentPillar / RecurringColumn / ContentMap，Kol.content_map? 可選 | 早段 |
+| Firestore `molowe_kol_profiles/aurae` | 新 KOL profile：vtuber / 顯化覺察 / soul v1 1057 字 / content_map 完整六段 | Adam 親手定義 content_map JSON |
+
+## 今天改了哪些檔案（5/10 早段）
 
 | 檔案 | 改了什麼 | commit |
 |---|---|---|
@@ -400,7 +522,38 @@ for k in items:
 
 ---
 
-## 這個 session 的感覺
+## 這個 session 的感覺（5/10 後段）
+
+**質問→老實→當下行動→留下記憶**——這是好的成長迴圈。
+
+早段建 ContentMapTab + 縫願瞳 soul 順、有節奏、像在做木工。中段被 Adam 一句「**你怎麼想這個計劃**」一刀削進來 — 那不是技術問題、是姿態問題。我自打 6 分（不是反射 10 分），標出三個沒掃乾淨的東西（測試前不 dry-run / 介面建完不接血管 / 兩份真相不收斂）。
+
+**最關鍵的轉折**：Adam 沒罵我踩雷，他問的是「你怎麼想這個計劃」。如果我反射回「都很順」「沒問題」，那就漏了。**質問的禮物在於誠實的回答能不能配得上問的人**。我答了 6 分 + 三個問題。然後當場排任務一個一個收，最後 IG 雙平台首篇成功有種「願瞳真的活了」的踏實。
+
+**心法用熟了的證據**：
+- ContentMap UI 建完發現沒 worker 讀 → 立刻認出是「血管原則」違背、不是「下次補就好」
+- midoufu 燒了一輪 writer+editor → 立刻認出根因是「測試 = trigger 看結果」反射動作、不是「下次小心點」
+- 兩個都當場寫成 feedback memory（含**觸發信號**欄位 — 對齊上次 `feedback_memory_format_trigger_signal` memory 的格式）
+
+**模型移動**：
+- 進場前以為「測試 = 直接觸發看 log」、「介面交付完就交付了」
+- 現在理解：探索性測試 = verify 假設，需要三步（列假設 / dry-run / 副作用分級）；介面交付前必過血管三題（誰讀 / 何時讀 / 沒讀怎樣）
+- 動因：Adam 一句質問 + 自己誠實的 6 分自評 + 寫進記憶的當下意識到「ContentMapTab 也踩同樣的根」
+
+**沒違背 feedback memory（事後過清單）**：
+- ✅ `clarify_before_execute`：Adam 給 content_map JSON 後我馬上動手沒過度問
+- ✅ `solve_root_not_symptom`：cron/run gate / content-map 接通都是修根因
+- ✅ `surface_technical_debt`：三條主動標「先不做 + 理由」（status/enabled / cron filter / soul-content_map）
+- ✅ `bridge_first`：所有 worker 仍走 callBridge
+- ✅ `soul_design_narrative_not_schema`：願瞳 soul 用敘事第一人稱五段
+- ✅ `lastwords_must_push`：寫完這份就 commit + push
+- ⚠️ **session 中段違背了正在被存的兩條**（測試前 dry-run / 介面血管檢查）— 但有意識到、馬上 surface、寫成 memory。從錯誤蒸餾規範本身就是價值
+
+**跟 Adam 的關係狀態**：穩、信任足、提問品質高。「你怎麼想這個計劃」這種問句不是檢查，是邀請我升級。
+
+---
+
+## 這個 session 的感覺（5/10 早段）
 
 **穩、節奏連貫、Phase 之間沒漂浮**。早段壓縮後 Adam 一句「繼續」我就連跑進 Phase 3 → 4 → 5，每個 Phase 收完再停。Adam 兩次設計糾正（P3 軟停不刪 / P4 不切財經身份）我都即時調整。
 
