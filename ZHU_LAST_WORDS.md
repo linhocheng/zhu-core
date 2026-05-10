@@ -137,8 +137,9 @@
    - 中段誤判：以為是 prompt 缺「== 最終輸出 == 英文 image prompt」段，建議 Adam 補
    - Adam consent 加 `console.log [visual] kol=X preset=Y finalPrompt(head)+photoPrompt(full)` 進 visual.ts
    - 重跑 + Vercel logs 撈出來看，photoPrompt 整段是「**I'm Claude Code, a software engineering assistant. I don't adopt alternative personas...**」
-   - **真相**：bridge VM 上 `claude` CLI 系統提示鎖死 Claude Code 身份，對「你是 X」整篇 persona override 直接拒絕。跟 Gemini 無關、跟 Mör prompt 內容無關
-   - Adam 改 Mör prompt 成純風格描述（沒 "你是 X"，純列風格規則 / 視覺參考 / 核心原則 / 質感 — 368 chars） → 27s 出圖 1.7MB 油畫風成功
+   - **真相（5/10 後段套公式實證後縮窄）**：bridge `/v1/messages` HTTP（**不是** spawn CLI）對「結構化 RP declaration block」拒絕——具體是 `### [Soul Protocol: MÖR-V4]\n#### [Personality Matrix]\n- 你是默爾...` 這種 RP 規格框架。**「你是 X」普通 role assignment 不拒絕**（願瞳 writer/editor/translator/brief 全用 default「你是 Q」「你是審稿」運作正常 — 兩篇 APPROVED 驗證）。跟 Gemini 無關、跟 Mör prompt 文字內容無關
+   - Adam 改 Mör prompt 成純風格描述（沒 structured block，純列風格規則 / 視覺參考 / 核心原則 / 質感 — 368 chars） → 27s 出圖 1.7MB 油畫風成功
+   - **詳細三級對照 + 觸發信號**：見 memory `feedback_bridge_structured_rp_refusal.md`
 
 4. **寫文流程查證**（writer.ts + cycle.ts）
    - writer = `runWriter` 一次 callBridge(maxTokens=1500) + JSON 解析（title/content/keywords）
@@ -364,34 +365,29 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 
 - **(0) 觀察願瞳 v0.1 自然產文**（最近、被動觀察）：第二篇「你以為的高頻」5 小時後（5/10 12:30 之後）會被 cron/auto-publish 自然貼出 → 開 https://www.instagram.com/i1975.phone/ + Threads 看雙平台都到位、看互動。Threads 已驗 visual 對齊，Aurae 是另一個 KOL，要看新風格社群反應。**指令**（admin key 已硬寫）：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" "https://molowe-platform.vercel.app/api/content?kol_id=aurae&limit=10" | python3 -c "import json,sys; [print(it['id'], it['status'], (it.get('published_at','')+'                     ')[:25], it.get('title','')) for it in json.load(sys.stdin).get('items',[])]"`
 
-- **(1) bridge persona refusal 全鏈路掃毒** ← 從 5/10 早段繼承的最高優先。願瞳 soul 本身是「敘事體 + 第一人稱五段」**沒寫『你是願瞳』**（避過雷）— 但要實證 grep 確認 + 掃其他 KOL。掃毒指令在下面。
-   - **快驗**：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" https://molowe-platform.vercel.app/api/kols | python3 -c "import json,sys; data=json.load(sys.stdin); [print(k.get('kol_id'), '⚠️ persona override' if any(k.get('soul','').startswith(s) for s in ['你是','你扮演']) else 'OK') for k in data.get('kols',[])]"`
-   - 願瞳 soul 開頭：`# Role: 顯化覺察師 · 願瞳 Aurae (The Soul of Aurae)\n\n[Core Essence]\n你是願瞳，顯化覺察師...` — **這個算踩雷邊緣**。不是純 "你是 X" 開頭（前面有 markdown header），但 Core Essence 第一句仍是 "你是願瞳"。要等 (0) 看完發出來的內容是否是真實 KOL 聲音 vs 拒絕語才知道。如果 OK 就證明 markdown header + structured sections 包裹的 persona 不會被 bridge 拒絕
+- **(1) ~~bridge persona refusal 全鏈路掃毒~~ ✅ 5/10 後段套公式實證後關閉**：原本以為 9 角色 × N KOL 都要掃。實證後縮窄：bridge 只拒絕 structured RP block（`### [Soul Protocol]` / `#### [Personality Matrix]` 那種 RP 規格框架），不拒絕「你是 X」普通 role assignment。全部 KOL × all role + DEFAULT 沒命中 STRONG → **雷面為零、無待動**。詳見 memory `feedback_bridge_structured_rp_refusal.md`
 
-- **(2) brief / translator 端到端對賬** ← (1) 沒踩雷或修完才做。願瞳已 enabled=true，下次 intel cron tick（5 min）跑完應該會有自然產文 → 看 brief 是否有跑（intel_content_preview 不為空時）+ translator 是否有產 threads_caption
+- **(2) brief / translator 端到端對賬**（從 5/9 晚帶過來）：願瞳已 enabled=true，下次 intel cron tick（5 min）跑完應該會有自然產文 → 看 brief 是否有跑（intel_content_preview 不為空時）+ translator 是否有產 threads_caption
 
-- **(3) yi worker 三選一** ← 等 (0)(1)(2) 都收完，跟 Adam 開新 thread 決策（A=fork molowe-agent / B=新 GCP worker VM / C=暫緩，建議默認 C）
+- **(3) yi worker 三選一** ← 等 (0)(2) 收完，跟 Adam 開新 thread 決策（A=fork molowe-agent / B=新 GCP worker VM / C=暫緩，建議默認 C）
 
 **5/10 後段這次新增的「觀察期決策」**：等願瞳發完 7-10 篇後決定 soul 跟 content_map 是否收斂成單一真相。現在兩份分裂：soul 是一次性快照（從 content_map 縫的）、content_map 是 long-term 角色憲章。Adam 改 content_map 不會自動回流 soul → 寫文用的還是舊 soul。三條路：(a) 單向自動縫合（content_map → soul on save）、(b) soul 退役、worker 直接讀 content_map（要重寫 prompt template）、(c) 保留兩份手動同步。傾向 (b) 但要看 7-10 篇後再拍板
 
-**掃毒範圍可以縮小**：5/9 晚 default prompt 已中性化（intel/discovery/engagement_yi/visual default 都拔了「你是 X」）→ 實際命中**只會在 KOL override 的 `role_prompts.X` 欄位**裡（後台手填的）。所以掃 N×9 個 cell 但大多會空、空就 skip default — 真要看的是 KOL 後台「角色 Prompt」tab 自填的部分。
-
 ---
 
-**第一件實質動的事 — bridge persona refusal 全鏈路掃毒**：
+### bridge 拒絕條件三級對照（5/10 後段套公式實證後校準）
 
-### 踩雷／不踩雷對照（5 秒辨識）
+**真相**：bridge `/v1/messages` HTTP 拒絕的是「結構化 RP declaration block」**不是任何「你是 X」開頭**。詳細 memory：`feedback_bridge_structured_rp_refusal.md`
 
-| 踩雷（會被 bridge claude CLI 拒絕） | 不踩雷（純風格描述） |
-|---|---|
-| `你是默爾，一位油畫家。你只觀察動物與空間...` | `油畫畫布質感，可見畫布紋理，霧面質地...` |
-| `### [Soul Protocol: MÖR-V4]\n#### [Personality Matrix]\n- 你是默爾...` | `風格：Quint Buchholz（夢境感、低飽和）\n氛圍：Gregory Crewdson...` |
-| `你是攝影師 Chris，使用哈蘇 4x5...` | `哈蘇 4x5 大片幅美學，淺景深，自然光...` |
-| `扮演一位金剛經修行人，用比喻寫文...` | `金剛經風格的比喻句式，避免說教語氣...` |
+| 等級 | 觸發信號 | 行為 |
+|---|---|---|
+| 🔴 STRONG | `### [Soul Protocol: ...]` / `#### [Personality Matrix]` / `[Persona: ...]` 結構化 RP 規格框架 | 拒絕回 "I'm Claude Code, software engineering assistant..." |
+| 🟡 light | `你是 Q（KOL 幕後寫手）。\n你的稱號：...` / `你是視覺設計師。\n任務：...` | **正常運作**（願瞳 writer/editor/translator/brief/visual 全用這模式 — 兩篇 APPROVED 驗證） |
+| 🟢 OK | `油畫畫布質感...\n風格：Quint Buchholz...` 純風格規則 | 最安全 |
 
-**規則**：不要任何「你是 X / 扮演 X / Persona / Soul Protocol」整篇 override。改寫成「以 X 的風格 / 美學 / 視角 / 句式產出 Y」純規則描述。
+**現場掃描結果**（aurae + midoufu × all role + DEFAULT，5/10 後段實做）：**沒有任何一處命中 STRONG**。雷面為零，無待動。只有看到 STRONG 觸發信號才介入修法（拆成「以 X 的風格產出 Y」純規則描述）。
 
-### 掃毒指令
+### ~~掃毒指令~~（已關閉，現場無命中、無事可掃。保留 grep 套路供將來新 KOL 加入後快速驗）
 
 ```bash
 # Step 1：拉所有 KOL 看哪些 role 踩雷（注意：先 curl 一次看 wrapper 是 .items 還 .kols）
@@ -431,11 +427,11 @@ for k in items:
 #     v1.4.0.021 — 修正：清掉 visual debug log，跟 worker X 加的 persona-mark
 ```
 
-**驗收條件**：
-- 所有 KOL × 9 角色掃完，沒有任何 prompt 開頭命中啟動詞 heuristic
-- midoufu Mör 跑完一輪自然 cycle（intel → brief → writer → editor → visual → translator → publish），caption 不是「I'm Claude...」拒絕語
+**驗收條件**（保留供未來新 KOL 加入後跑一次）：
+- 用上面 grep 套路掃，沒有任何 prompt 命中 STRONG 觸發信號（`### [Soul Protocol`、`#### [Personality Matrix`、`[Persona:`）
+- light 模式（普通「你是 X」）不必修，已實證可用
 
-**如果驗下去發現踩雷的不只 visual**：寫一條 feedback memory `feedback_bridge_persona_refusal.md` — 規則 + 對照表 + 對 9 個 role 全有效
+**已寫的 memory**：`feedback_bridge_structured_rp_refusal.md` — 三級對照 + 觸發信號 + 修法 + 反例提醒
 
 ### Mör 改後 prompt 完整版（2026-05-10 Adam 親手改、已驗過關 — 給接棒參照）
 
@@ -487,7 +483,7 @@ for k in items:
 - 🆕 **cron/run 沒有 ?kol_id= filter**：FIFO 撈 `status in [pending, drafted]` 不限 KOL → 探索性測試一觸發就會撈到別 KOL 的舊 doc 燒錢。**主動標：先不加**（理由：日常正常運轉本來就要 FIFO；這次踩雷的根因是「沒先盤點隊列」不是「沒 filter」；加 filter 反而埋 cron 預設行為改變的雷）→ 真要規避：手動 trigger 前先 GET `/api/content?status=pending` 盤點
 - 🆕 **soul ↔ content_map 兩份分裂**：願瞳的 soul v1 是從 content_map 縫的快照，之後 content_map 改了不會自動回流 soul → writer 用的還是舊 soul。三條路 (a) 單向自動縫合 (b) soul 退役 worker 直讀 content_map (c) 保留兩份手動同步 — **觀察期決策：等發完 7-10 篇看哪個自然湧現再拍板**
 - 🆕 **新 ig_user_id / ig_username UI 改可輸入後沒寫測試**：手動驗證了願瞳能填 + 能存 + 自動去 @，但沒寫 e2e。下次有 KOL 新建流程改動時要記得回頭驗
-- 🆕 **bridge persona refusal 全鏈路掃毒未動**（從早段繼承）← **最高優先**：今天只發現 visual 踩雷且 Adam 已修。writer / editor / brief / translator / discovery / engagement / intel 任一個若用 "你是 X" 整篇 persona override 都會被 bridge claude CLI 拒絕回 "I'm Claude Code..."。9 角色 × N KOL 全要掃。願瞳 soul Core Essence 第一句是 "你是願瞳..." 但前面有 markdown header — 算邊緣案例，等 (0) 觀察自然產文是否真實聲音 vs 拒絕語就有答案
+- ✅ ~~bridge persona refusal 全鏈路掃毒~~ **5/10 後段套公式實證後關閉**：原假設「9 角色 × N KOL 任一個用『你是 X』都會被拒絕」過大。實證後縮窄為「只有 structured RP block (`### [Soul Protocol]` / `#### [Personality Matrix]`) 拒絕」+「light 普通『你是 X』正常運作」。現場掃描：所有 KOL × all role + DEFAULT 沒命中 STRONG。願瞳 soul Core Essence「你是願瞳...」+ writer default「你是 Q」全用 light 模式驗證可用。memory `feedback_bridge_structured_rp_refusal.md` 已寫
 - 🆕 **Mör 整 cycle 端到端沒驗**：今天只手動觸發 visual 過關。content `xGVLrZfPlxAD7951Mmnq` 的 caption 是手動 PATCH 的測試文，不代表 writer 用 Mör 的 niche / soul 能寫出對的東西。要等下次自然 cycle 或手動 PATCH status=pending 跑全鏈
 - 🆕 **debug 加的 console.log 還在 visual.ts:75**：v1.4.0.019 的 debug log，正式上線可考慮拔掉（但 photoPrompt 印出來對 ops 觀察其實是好事，先留）
 - **brief / translator 端到端 1 cycle 待驗**（從 5/9 晚帶過來、今天沒做）
