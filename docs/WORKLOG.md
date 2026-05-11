@@ -2197,3 +2197,54 @@ vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。
 - [ ] 一週後查 `bridge_fallbacks` 統計（按 model + durationMs 排序）
 - [ ] 若 strategy stage 2 持續 fallback → 搬 Cloud Run worker pattern（複用 strategy-html-worker 架構）
 - [ ] P9 完成（本段 + lastwords + memory 寫入）
+
+## 2026-05-11 (下午) — strategy → Cloud Run worker 全鏈路通 + dialogue enqueue bundle/IAM 雙修
+
+### 背景 / WHY
+上面那段 P8 收尾時還留「Cloud Run 搬遷未動」尾巴。實際上同一天就動手做了，理由：
+1. bridge VM 走 Vercel 300s lambda 從一開始就會撞牆——bridge 90s timeout 雙燒只是表象，根因是長文 LLM call 不應該在 Vercel 端
+2. dialogue 路徑「fire-and-forget /api/specialist/strategy」會被 Vercel lambda 收尾 kill，孤兒 job 多
+3. 要徹底脫離 300s，方案就是搬 Cloud Run，跟 strategy-html-worker 平行
+
+### 產出
+- **新 Cloud Run service：`strategy-worker`**（`~/.ailive/strategy-worker/`）
+  - Express + Node 22 Alpine + tsx
+  - 流程：load job → load assignee/caller soul → Stage 1 caller refine (200-400 字) → Stage 2 assignee 5000 字 markdown → docx → Storage public → writeback + system_event → fire-and-forget enqueueStrategyHtml
+  - 走 bridge 10.140.0.2:3002 (Max OAuth 吃到飽)，兩段 LLM 都吃 Max 不燒 API key
+  - 身份隔離：自己有 SA + run.invoker；strategy-enqueuer SA 才能 trigger
+  - Idempotency: status==='done' && result.docUrl → skip
+- **`src/lib/cloud-tasks.ts` 重寫（platform 側）**
+  - 加 `enqueueStrategy(jobId)` 並改 `enqueueStrategyHtml` 共用 shared client
+  - **第一次 deploy 整段 import @google-cloud/tasks SDK → Turbopack runtime "Cannot find module as expression is too dynamic"**
+  - **第二次完全重寫成 fetch + Node crypto RS256 JWT → access_token → POST Cloud Tasks REST v2 API**（無 SDK 依賴）
+  - 50min token cache in-memory
+- **`src/app/api/dialogue/route.ts` line ~549**：strategy 改寫 platform_jobs `routedTo: 'cloud-run'` + 同步 await enqueueStrategy
+- **`src/app/api/voice-stream/route.ts` line ~652**：同上 parity 改動
+- **bridge VM `~/claude-bridge/index.js` line 263-272**：worker poll loop 改成 filter `routedTo !== 'cloud-run'`，避免 bridge 跟 Cloud Run 雙做
+- **`src/app/api/strategies/route.ts` + `dashboard/[id]/strategies/page.tsx`**：加 htmlUrl + htmlGeneratedAt 顯示，動作欄變兩按鈕（閱讀 HTML + 下載 docx）
+- **GCP IAM**：
+  - strategy-enqueuer SA grant `roles/iam.serviceAccountUser` ON itself（self-actAs，給 oidcToken 用）
+  - 其他 enqueuer/token-creator/run.invoker 上次施工已配齊
+
+### 已解決
+- **dialogue strategy 過去 fire-and-forget 會孤兒**：jobs 寫 pending 但 lambda 收尾 kill /api/specialist/strategy 的 ctx → 改 Cloud Tasks 完全脫離 lambda
+- **1 頁 bug**：bridge VM 單段生成 1053 字 → Cloud Run 兩段 9607 字（驗證 job tNf5zGfLY2ERSFaUPIvH）
+- **`@google-cloud/tasks` Turbopack bundle 炸**：SDK 內部 dynamic require 解析不出 → 完全捨棄 SDK 改 REST + 手簽 JWT
+- **IAM actAs**：strategy-enqueuer 用自己 key + oidcToken.serviceAccountEmail=自己 → grant self-actAs 解
+- **bridge VM 不再跑 cloud-run 路由的 strategy**：systemd restart 後 journalctl 顯示「skipped N cloud-run-routed job(s)」
+
+### 端到端驗證
+- 真實 dialogue job：`tNf5zGfLY2ERSFaUPIvH`
+  - status=done / mdChars=9607 / docUrl + htmlUrl 都生成
+  - completedAt 08:57:01 / htmlGeneratedAt 09:01:02（全鏈路 ~5 min）
+- Adam rescue job：`OthZ8x4EgfdPOAtlPBIW`（OpenClaw 策略，最早一條手動 curl trigger 救回的）
+  - mdChars=7083 + html 全鏈路通
+
+### ⚠️ 尚未解決
+- 兩個 orphan failed job 留下標 failed（mQiltIheMwKF8H0LWZmt / 1FUdSI0BTubR1ShGAL5J），保留歷史
+- 後台 strategies 頁前端尚未在 production 上真的開來看（建構 + deploy 通了但無瀏覽器驗證）
+
+### 待執行
+- [ ] Adam 用 browser 開 dashboard/CXRsGGZU.../strategies 看新版兩按鈕
+- [ ] 寫 LESSONS_20260511_strategy-cloud-run.md（fetch-based cloud-tasks + self-actAs IAM 教訓）
+- [ ] 收尾 session-lastwords
