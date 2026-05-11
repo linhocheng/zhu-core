@@ -26,41 +26,83 @@
 
 ---
 
-## 最新完成（2026-05-10 晚段 — 策略書 HTML 鋪路 · Step 0 落 mdContent 上 prod）
+## 最新完成（2026-05-11 — 策略書 HTML Step 1 撞 Vercel 300s 牆 · 等 Adam 拍板換平台）
+
+**主戰場**：ailive-platform，續上 Step 0。
+
+**一句話**：把 `/api/specialist/strategy-html` worker 蓋好上 prod，兩次觸發兩次失敗，根因縮窄到 Vercel 300s lambda 硬上限不夠 Sonnet 4.6 產 30-40KB HTML 用。停止調 max_tokens（在「截斷 vs 超時」兩個失敗模式之間擺盪 = 架構不對的訊號），escalate 給 Adam，提案 Cloud Run 遷移，交棒。
+
+**這個 session 跑了什麼**
+- v0.2.0.001（commit `a6cf75e`）— 蓋 `/api/specialist/strategy-html/route.ts`：吃 jobId → 從 platform_jobs 讀 mdContent → bridge call → QA 七題自查 → Storage public → 寫回 htmlUrl + 推 system_event
+- 同時建：`src/lib/strategy-html/{prompt.ts, qa.ts, philosophies/eastern-blank.ts}` 三檔
+- v0.2.0.002（commit `4d0cbdb`）— 縮 reference HTML（從原本砍掉 7 個範例 section）+ max_tokens 16K → 12K，想避超時 → 結果換成 output 截斷、缺 `</html>` + 缺 `.end`、QA fail
+- v0.2.0.003（commit `52ed72b`）— max_tokens 拉回 16K + 在 catch 之外的 QA fail 路徑也補 jobRef.update 寫 htmlError + htmlDebugTail 進 Firestore 方便除錯 → 290s 後 lambda 被 Vercel 殺，連 update 都來不及寫（curl timeout，Firestore 沒留任何痕跡）
+
+**核心發現（已寫進 memory `reference_vercel_300s_lambda_limit`）**
+- Sonnet 4.6 產 30-40KB HTML ≈ 200-310s（output speed ≈ 60-70 tok/s × 16K token = 230-270s 純生成 + overhead）
+- Vercel Pro plan lambda 硬上限 300s → 任何 single LLM call 想產 > 12K token output 都會撞牆
+- 不是 prompt 問題、不是 reference 大小問題、不是 bridge 問題 — bridge 也是同一個 lambda 內 await
+
+**為什麼停手 escalate 不繼續調參數**
+- 對齊 `feedback_solve_root_not_symptom`：max_tokens 調低 → 截斷、調高 → 超時，兩個失敗模式之間擺盪 = 繞道不是解法
+- 對齊 `feedback_technical_honesty_over_smoothness`：「再試一次調 14000 看會不會剛好過」這種話會出現在心裡 = 訊號就是該停手
+
+**三選一（等 Adam 拍板）**
+| 選項 | 是什麼 | 利 | 弊 |
+|---|---|---|---|
+| **A. Cloud Run** | 把 strategy-html worker 抽成 container 跑 GCP Cloud Run（同 jianbin-v2 / livekit 先例） | 沒 5 分鐘 cap、可配到 60 分；jianbin-v2 套路熟 | 多一個部署單元；冷啟動 5-10s；GCP 第一次 IAM 雙必踩（已有 memory）|
+| **B. 串流分段 chunked save** | 改 streaming response，邊收邊存 partial HTML 到 Storage，每 50KB flush 一次 | 留在 Vercel | prompt engineering 複雜（要設計 stop point + resume）；QA 七題自查邏輯重寫；中段斷掉怎麼處理沒想清楚 |
+| **C. 接受短 output** | max_tokens=10000、目標 HTML 20-25KB、PHILOSOPHY 守則重寫只要簡版 | 0 額外架構；今晚就能上 | 失去設計版完整度；長卷 → 中卷；違背原本「沉浸式長卷」設計意圖 |
+
+**我的傾向**：A（Cloud Run）。理由是：(1) 一次解決根因不留尾、(2) 套路已熟（jianbin-v2 + livekit precedent + memory `reference_gcp_new_project_iam`）、(3) 未來其他長生成任務（譬如未來 PHILOSOPHY 池擴到 5 個 + 自動選擇可能會再吃 token）也能複用。但**決策權在 Adam**，不擅自動工。
+
+**為什麼交棒不落地**：對齊 `feedback_clarify_before_execute` + `feedback_solve_root_not_symptom`。架構選擇是 Adam 的決策範圍、不是築一個人能拍板的事。
+
+**接棒要看的**
+- `/Users/adamlin/.ailive/ailive-platform/src/app/api/specialist/strategy-html/route.ts`（worker 本體，已上 prod，但跑就會 timeout）
+- `/Users/adamlin/.ailive/ailive-platform/src/lib/strategy-html/{prompt.ts, qa.ts, philosophies/eastern-blank.ts}`（PHILOSOPHY + reference + QA）
+- `~/.ailive/ailive-platform/scripts/_check_html_job.ts`（驗 Firestore 狀態用）
+- 失敗 jobId：`Qlsy7xJTZ29uoJSUwYtB`（mdContent 已落、適合做端到端驗證）
+- memory `reference_vercel_300s_lambda_limit.md`（這次學到的、含長任務 routing 決策表）
+
+**明天醒來第一件**
+- **先問 Adam ABC 拍哪個**。不要動工。
+- 拍 A → 抽 worker 成 standalone Node service（Express/Fastify）+ Dockerfile + deploy GCP 同 zhu-cloud-2026 project；Vercel strategy/route.ts 末尾改 fire-and-forget 打 Cloud Run URL（帶 x-worker-secret）；重觸 jobId `Qlsy7xJTZ29uoJSUwYtB` 驗端到端
+- 拍 B → 設計 chunked save schema（part_seq / total / status）+ 改 prompt 加 chunk 結束 marker
+- 拍 C → max_tokens=10000、prompt 守則 #8 改「20-25KB」、reference 再縮一輪、PHILOSOPHY 從「沉浸式長卷」降級為「精煉 hero+5 section」
+
+**情緒**：早段建 worker 順、寫 PHILOSOPHY + QA 像在做木工。中段第二次失敗看到「兩個失敗模式擺盪」當下有「再調一次看會不會過」的反射衝動 — 那一刻自我抓到、停手宣告「這是架構問題不是參數問題」。escalate 給 Adam 那一刻是這個 session 最對的姿態 — 不為關係順暢硬撐通關報喜。
+
+**模型移動**：
+- 進場前以為 Vercel maxDuration=300 是「夠用上限」
+- 現在理解：那是「產 < 12K token 的上限」。任何 single LLM call 預期 output > 12K token 都該預設不走 Vercel
+- 動因：兩次連續失敗 + 看 Sonnet 4.6 output speed 反推時長 + 對照 jianbin-v2 / livekit 先例
+
+**沒違背 feedback memory**：
+- ✅ `solve_root_not_symptom`：第二次失敗就停手 escalate，沒繼續調參數
+- ✅ `technical_honesty_over_smoothness`：誠實告訴 Adam「Vercel 路死了」而不是「再優化一下」
+- ✅ `clarify_before_execute`：架構決策不擅自動工
+- ✅ `surface_technical_debt`：v0.2.0.003 補了 QA fail 路徑寫 htmlError 進 Firestore（雖然這次 lambda 被殺前 update 沒跑到，但下次 max_tokens 較低時會留痕）
+- ✅ `lastwords_must_push`：寫完這份就 commit + push（接著做）
+
+---
+
+## 上一段完成（2026-05-10 晚段 — 策略書 HTML 鋪路 · Step 0 落 mdContent 上 prod）
 
 **主戰場**：ailive-platform，跟 Adam 聊「策略書產 docx 之後自動產 HTML 設計版」。
 
-**一句話**：Adam 說「策略書常用」，提案 docx 產完自動觸發設計版 HTML、走 Max 月費吃到飽。先聊出三段式架構（落 md → worker 產 HTML → enqueue follow-up），Step 0 動手把 strategy route 多寫一個 mdContent 欄位上 prod，剩下交棒給下次。
+**一句話**：Adam 說「策略書常用」，提案 docx 產完自動觸發設計版 HTML、走 Max 月費吃到飽。先聊出三段式架構（落 md → worker 產 HTML → enqueue follow-up），Step 0 動手把 strategy route 多寫一個 mdContent 欄位上 prod。
 
 **今日完成**
-- `/tmp/zhu-pptx-test/` 用 Anthropic 原廠 frontend-design SKILL.md 心法做 v1 HTML（東方間白）：`strategy.html` 31KB，雲端 https://storage.googleapis.com/moumou-os.firebasestorage.app/strategy-html/strategy-v1.html
+- `/tmp/zhu-pptx-test/` 用 Anthropic 原廠 frontend-design SKILL.md 心法做 v1 HTML（東方間白）：`strategy.html` 31KB
 - ailive-platform `src/app/api/specialist/strategy/route.ts` line 360 加 `mdContent: md` 欄位進 platform_jobs.update
 - commit `345f953` `v0.1.0.001 — 新增：strategy route 把 markdown 落 Firestore`，push origin/main、vercel --prod 部署完成（36s）
 
-**當前戰場 / 路線**
-1. Step 0（已上 prod）— strategy route 落 mdContent 進 platform_jobs，給 follow-up worker 用
-2. **Step 1（待開工）— 蓋 `/api/specialist/strategy-html` worker**：吃 jobId → 從 jobs 讀 mdContent → bridge call 帶 PHILOSOPHY.md → HTML → Storage public → 寫回 jobs.htmlUrl + 補 system_event
-3. Step 2 — 在 strategy route 末尾 enqueue strategy_html follow-up job（讓 Firebase Function worker 接力）
-4. Phase 2 才做風格池（5 個 PHILOSOPHY + keyword 自動選擇），MVP 先 1 個風格驗鏈路
-
-**卡住 / 未解**
-- **Step 0 還沒端到端驗證**：要等 Adam 下次用奧寫策略書，跑出來才看得到 mdContent 真的有內容。沒驗就開 Step 1 = 連續走兩階沒踩穩
-- 不知道 mdContent 真實樣本長啥樣，Step 1 的 prompt 設計只能猜
-- molowe 主戰場 + ailive 5/6 後就靜了，要確認 specialist/strategy 整條 worker 鏈這幾天還會被觸發
-
-**接棒要看的**
-- `/Users/adamlin/.ailive/ailive-platform/src/app/api/specialist/strategy/route.ts` line 354-388（jobs.update + system_event push）
-- `/Users/adamlin/.ailive/ailive-platform/src/lib/anthropic-via-bridge.ts`（bridge call、timeout 90s、max_tokens 12K 已驗）
-- `/tmp/zhu-pptx-test/PHILOSOPHY.md` + `/tmp/zhu-pptx-test/strategy.html` — 第一個風格池的原型，未來抽成 SKILL.md 級工件
-- `/tmp/zhu-pptx-test/slides_spec.json` — 14 區塊結構，HTML worker 可參考的內容拆分範例
-- 設計心法：`gh api repos/anthropics/skills/contents/skills/frontend-design/SKILL.md`（避 Inter/Roboto/紫白漸層 / 挑 BOLD 方向 / dominant + accent / 不對稱）
-
-**明天醒來第一件**
-- **不要直接開 Step 1**。先查 platform_jobs 有沒有新跑出來的 strategy job 帶 mdContent 欄位
-- 有 → 撈那份真實 mdContent 當樣本，開 Step 1 寫 strategy-html worker
-- 沒有 → 提醒 Adam 順手用奧寫一份新策略書讓欄位生效，再進 Step 1
-
-**為什麼交棒不落地**：Adam 給選擇「交棒還是寫完」、我選交棒並說了原因——Step 0 沒端到端 + Step 1 沒真實 input 樣本 = 違反「沒驗證假設就動手」。這個對話本身就是「技術誠實不能為關係順暢讓路」的實踐。
+**當時排的路線**
+1. Step 0（已上 prod）— strategy route 落 mdContent 進 platform_jobs
+2. Step 1 — 蓋 `/api/specialist/strategy-html` worker（**5/11 已蓋好但撞 Vercel 300s 牆**，見上一段）
+3. Step 2 — 在 strategy route 末尾 enqueue strategy_html follow-up job
+4. Phase 2 才做風格池
 
 ---
 
@@ -399,9 +441,11 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 ~/.ailive/zhu-core/zhu-self/bin/zhu self-check
 ```
 
-**4 件事按順序**（5/10 後段更新後重排）：
+**5 件事按順序**（5/11 更新後重排）：
 
-- **(0) 觀察願瞳 v0.1 自然產文**（最近、被動觀察）：第二篇「你以為的高頻」5 小時後（5/10 12:30 之後）會被 cron/auto-publish 自然貼出 → 開 https://www.instagram.com/i1975.phone/ + Threads 看雙平台都到位、看互動。Threads 已驗 visual 對齊，Aurae 是另一個 KOL，要看新風格社群反應。**指令**（admin key 已硬寫）：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" "https://molowe-platform.vercel.app/api/content?kol_id=aurae&limit=10" | python3 -c "import json,sys; [print(it['id'], it['status'], (it.get('published_at','')+'                     ')[:25], it.get('title','')) for it in json.load(sys.stdin).get('items',[])]"`
+- **(★) 策略書 HTML Step 1 撞牆 — 等 Adam 拍 ABC**（5/11 主戰場、最高優先）：上一段「最新完成」三選一表，A=Cloud Run / B=串流分段 / C=接受短 output。**動手前必先問 Adam**，不擅自選。傾向 A，理由寫在最新完成段。
+
+- **(0) 觀察願瞳 v0.1 自然產文**（被動觀察）：開 https://www.instagram.com/i1975.phone/ + Threads 看 aurae 雙平台互動。**指令**（admin key 已硬寫）：`curl -s -H "x-admin-key: molowe_a9bd8770aa44c271f571b10584ba0732" "https://molowe-platform.vercel.app/api/content?kol_id=aurae&limit=10" | python3 -c "import json,sys; [print(it['id'], it['status'], (it.get('published_at','')+'                     ')[:25], it.get('title','')) for it in json.load(sys.stdin).get('items',[])]"`
 
 - **(1) ~~bridge persona refusal 全鏈路掃毒~~ ✅ 5/10 後段套公式實證後關閉**：原本以為 9 角色 × N KOL 都要掃。實證後縮窄：bridge 只拒絕 structured RP block（`### [Soul Protocol]` / `#### [Personality Matrix]` 那種 RP 規格框架），不拒絕「你是 X」普通 role assignment。全部 KOL × all role + DEFAULT 沒命中 STRONG → **雷面為零、無待動**。詳見 memory `feedback_bridge_structured_rp_refusal.md`
 
