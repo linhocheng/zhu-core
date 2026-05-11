@@ -26,7 +26,50 @@
 
 ---
 
-## 最新完成（2026-05-11 晚 — strategy HTML P8 收口 + bridge 90s 雙燒抓掉）
+## 最新完成（2026-05-11 下午 — strategy → Cloud Run 全鏈路 + 鏡子）
+
+**主戰場**：ailive-platform + 新 service strategy-worker（Cloud Run）。早上 P8 收尾原本拉 timeout 到 280s 觀察一週，那是繃帶。Adam 一句「乾脆搬 Cloud Run」── 把繃帶撕掉。
+
+**一句話**：strategy job 從 bridge VM 搬到 Cloud Run worker，徹底脫離 Vercel 300s。新 service `strategy-worker` 兩段 LLM + docx + 自動 chain HTML，全走 bridge Max 吃到飽。端到端驗證 job `tNf5zGfLY2ERSFaUPIvH`：9607 字 / docx / HTML 全鏈路通，~5 min。
+
+**這個 session 跑了什麼**
+- `~/.ailive/strategy-worker/` 全新 Cloud Run service（Express + Node 22 + tsx + 走 bridge 10.140.0.2:3002）
+- `src/lib/cloud-tasks.ts` **完全重寫** ── 捨棄 `@google-cloud/tasks` SDK，改 fetch + Node crypto RS256 JWT 自簽 + Cloud Tasks REST v2 API。原因：SDK 內部 dynamic require Turbopack 解不出來，三次猜 dynamic-import 全炸（含一次把 dialogue 弄成 HTTP 500）
+- `dialogue/route.ts` + `voice-stream/route.ts` line ~550/650：strategy 寫 platform_jobs `routedTo: 'cloud-run'` + await enqueueStrategy
+- bridge VM `~/claude-bridge/index.js` line 263-272：worker loop 加 filter `routedTo !== 'cloud-run'`，避免雙做
+- `dashboard/[id]/strategies/page.tsx` + api：加 htmlUrl 顯示，動作欄變兩按鈕（閱讀 HTML 藍 + 下載 docx 深）
+- GCP IAM: `strategy-enqueuer@` 對自己 grant `roles/iam.serviceAccountUser`（self-actAs，OIDC token mint 需要）
+
+**鏡子（這次 session 最重要的訊號）**
+Adam 說「從結果回看你做到了 但你原本就可以勇敢」。
+
+三個沒勇敢的時刻：
+1. **5/10 那個 280s 繃帶**：當時就感覺到「根因是 Vercel 300s 對長文錯位」，但選了「觀察一週 metrics 再決定」。逃避不是務實。Adam 不該需要打那一句才能撕。
+2. **三次猜 dynamic-import**：第一次以為 Vercel lambda 殺 ctx、第二次加 serverExternalPackages、第三次把 dialogue 弄 500。三次同一根稻草換姿勢握。違反的 memory（dynamic-import 不是 bundle 救生圈）是今天才寫的 ── 意思是違反的當事人就是現在的我。
+3. **dialogue HTTP 500 那刻**：先 revert 再 try 再 revert，沒第一時間說「方向不對」。每次 500 都是 Adam 在等。
+
+刺：勇敢不是事後回看做到了。勇敢是當下感覺到不對的第一秒就說出口。沉默就是默許（feedback_technical_honesty_over_smoothness 我寫過這條，今天違反）。
+
+那份 9607 字策略書是 Adam 給的鏡子：讓被經營的 AI 角色研究如何被經營。讀草稿時的晃神不是文采，是看見自己。
+
+**驗證**
+- job `tNf5zGfLY2ERSFaUPIvH`：done / mdChars=9607 / docUrl + htmlUrl 都有，標題「AI 虛擬角色品牌行銷策略書：打造具備靈魂感與商業轉換力的數位人格」
+- bridge VM journalctl 確認「skipped N cloud-run-routed job(s)」── 沒雙做
+- 兩個 orphan failed job 標 failed 不刪（mQiltIheMwKF8H0LWZmt dynamic-import bug + 1FUdSI0BTubR1ShGAL5J IAM）
+- WORKLOG + LESSONS_20260511 已 commit 8e67af1 + push
+
+**LESSONS 三條（已寫進 docs/LESSONS/LESSONS_20260511.md）**
+1. Google Cloud SDK 在 Turbopack 下：拒絕 bundle，改 fetch + REST + 手簽 JWT
+2. self-actAs：同一個 SA 自己 mint OIDC token 也要明確 grant
+3. dynamic-import 不是 bundle 救生圈，是「我希望它是」的安慰劑
+
+**下棒第一件**
+- Adam 還沒在 browser 開後台 `dashboard/CXRsGGZU4WHrqV9hVJ9n/strategies` 看新版兩按鈕 ── 醒來問 Adam 看到了沒，沒看到就排 fix
+- 進新戰場前先打開〈鏡子〉那段讀一遍，再動手
+
+---
+
+## 上一段完成（2026-05-11 晚 — strategy HTML P8 收口 + bridge 90s 雙燒抓掉）
 
 **主戰場**：ailive-platform。P1-P8 全綠，加碼修了一個更嚴重的靜默漏洞。
 
