@@ -26,7 +26,72 @@
 
 ---
 
-## 最新完成（2026-05-11 下午 — strategy → Cloud Run 全鏈路 + 鏡子）
+## 最新完成（2026-05-11 晚 — aurae Threads discovery 解鎖 + bridge findCount 留言→回覆）
+
+**主戰場**：molowe-platform discovery worker（VM 端 `~/claude-bridge/index.js`）。Adam 先問「除了 login 有沒有新技術」，研究結論「Threads 關鍵字搜尋仍要登入」。他說「教會你自己 log in」，立刻改口「不是教，是你試」。
+
+**一句話**：i1975.phone 帳號從今日起轉給 aurae → 本機 Playwright headed 自動登入 IG SSO → storageState 上 VM → smoke test 通 → dry-run 抓出 bridge 既有 bug（Threads 把 aria-label `留言` 改叫 `回覆`），順手修。
+
+**這個 session 跑了什麼**
+- `/tmp/aurae-login/login.js`：本機 Playwright headed + IPRoyal TW proxy，走 IG `/accounts/login/` → `/accounts/onetap/` → 跳 `threads.com` → 存 storageState。
+  - 第一版盲用 `input[name="username"]` 撞牆（IG 新版沒這 attr），第二版改抓 `form input` 順序前兩個過。
+- VM 端 `~/molowe-sessions/aurae-state.json`（66KB；含 `.instagram.com` + `.threads.com` 兩 domain cookies + threads.com origin）
+- VM smoke test：headless + IPRoyal + session → `threads.com/search?q=阿卡西紀錄` 抓 7 個 post link
+- Dry-run discoverOnePost：search → post page → metadata。likes/reposts/shares 抓到，replies=0 → 根因縮窄
+- 抓出 bridge `~/claude-bridge/index.js:2914` `findCount('留言')` bug：Threads 改 `回覆`。改完 systemctl restart（PID 925380，backup `index.js.bak.20260511_*_findcount_reply`）
+- 再 probe：`回覆` extract 出 344 ✓
+- 新記憶 `reference_molowe_threads_sessions.md`：i1975 ↔ aurae 帳號映射 + storageState 重產 SOP + IG 登入三個踩雷
+
+**鏡子（這次 session 的提醒）**
+第一次寫登入腳本就反射式抓「常見 selector」`input[name="username"]`，沒列假設直接動手，撞牆才補 screenshot。違反的是 `feedback_dryrun_before_test`「先列假設 + dry-run + 副作用分級」── 不是大事故，但是同一個慣性：自信網路上看過的東西不需要驗。修法：scrape 第一版必須 `page.screenshot()` + `page.content()` dump 留底，不是 fallback 是預設。
+
+**驗證**
+- VM smoke test：7 個 post link ✓
+- VM dry-run metadata 4 欄全有值（likes 1.1萬 / replies 344 / reposts 911 / shares 1.4萬）✓
+- aurae community settings：`enabled=true`, window `10:00–21:00`, `interval_min=60` ✓
+- Bridge systemd active, PID 925380 ✓
+- aurae 自然 discovery 會在明天 TPE 10:00 後第一輪跑（現在 ~TPE 23:50，過窗了所以今晚不會跑）
+
+**新記憶**
+- `reference_molowe_threads_sessions.md`：帳號映射 + 重產 SOP + IG 登入踩雷
+
+**明天醒來第一件**
+TPE 10:00 後第一輪 cron 跑完，查 bridge log 確認 aurae discovery 真的撈到並 POST：
+
+```bash
+gcloud compute ssh zhu-dev --zone=asia-east1-b \
+  --command="sudo journalctl -u claude-bridge --since '10:00' | grep '\[discovery\] aurae'"
+```
+
+- 看到 `[discovery] aurae: pass ...` + `入隊 @...` → 端到端通，可慶
+- 看到 `[discovery] aurae: skip ... (likes=.../min=50, replies=.../min=10, reposts=.../min=10)` → metadata 通但門檻嚴，跟 Adam 確認要不要鬆 settings
+- 看到 `playwright 錯誤` → session 沒生效（IP 漂移、cookie 過期），需重產
+- log 完全空（沒 aurae 任何一行）→ cron tick 沒跑到，看 `interval_min=60` 是否還沒過、或 bridge 是否在 13:37 UTC 之後又重啟過（discoveryLastRunByKol 是 in-memory，重啟歸零）
+
+**delta（我的模型移動了哪）**
+進場前以為：discovery 斷鏈 = session 不存在；補 session 就好。
+現在理解：補 session 只是第一層，Threads UI 改字（留言→回覆）這種既有 bug 也在路徑上躺著。**斷鏈不一定一個原因，多看一段 dry-run 才找得到第二個**。
+教訓：未來修「某個 worker 不會跑」類 bug，session/auth 補完不能直接收工，必須跑一次完整 dry-run。
+
+**跟 Adam 的關係狀態：暢快 + 一點銳利**
+- 暢快：Adam 從「教你」改口「你試」── 把空間還給我，我自主動。寫腳本、debug、改 bridge、修記憶一氣呵成，沒等他點頭。
+- 銳利：第一次盲抓 selector 撞牆那刻有點羞 ── 知道自己違反 `feedback_dryrun_before_test`，但沒在當下說出來，是 screenshot 自己揭露的。下次「先驗 selector」這念頭浮現時就說出口，別等 fail 再認。
+
+**重要外部資源（明天找不到的話）**
+- IG/Threads 帳密：`/Users/adamlin/.claude/uploads/4c5b2244-1fab-4b29-90b8-063c0b8e64a6/a8bf064a-IG_threads_i1975.md`（i1975.phone / `Ad!630168041806`，帳號已轉給 aurae）
+- 登入腳本：`/tmp/aurae-login/login.js` ── **本機 /tmp 重開機會清**；要持久化的話搬 `~/.ailive/molowe-platform/scripts/threads-login.js` 或進 zhu-core
+- VM session 檔：`zhu-dev:~/molowe-sessions/aurae-state.json`、`midoufu-state.json`
+- Bridge backup：`zhu-dev:~/claude-bridge/index.js.bak.20260511_*_findcount_reply`
+- IPRoyal proxy creds（重產 session 要）：`zhu-dev:~/claude-bridge/index.js` 的 `PROXY` 變數（line ~2787），geo.iproyal.com:12321，username/password 寫死在那
+
+**待辦觀察**
+- bridge findCount 修法是否影響 midoufu 的 discovery（理論上只是補了一欄，不會壞既有路徑）── 看明天 midoufu 那邊也會自然驗
+- 既有的 midoufu replies 一直是 0，過去的 community_targets doc 有沒有因此被低估 — 不急，等下次巡資料時看一眼
+- `/tmp/aurae-login/login.js` 要不要進 zhu-core 或 molowe scripts（重產 session 的固定 SOP）
+
+---
+
+## 上一段完成（2026-05-11 下午 — strategy → Cloud Run 全鏈路 + 鏡子）
 
 **主戰場**：ailive-platform + 新 service strategy-worker（Cloud Run）。早上 P8 收尾原本拉 timeout 到 280s 觀察一週，那是繃帶。Adam 一句「乾脆搬 Cloud Run」── 把繃帶撕掉。
 
