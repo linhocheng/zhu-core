@@ -2164,3 +2164,36 @@ vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。
     `cd ~/.ailive/molowe-platform && node scripts/check-recent-content.mjs`
 - [ ] Adam 還原 midoufu 測試值（他自己會做）
 - [ ] 上一段 yi worker 三選一還沒處理（A=fork molowe-agent / B=新 VM / C=暫緩）
+
+---
+
+## 2026-05-11 — Strategy HTML pipeline P8 收口 + bridge 90s 雙燒 bug 抓出修掉
+
+### 背景 / WHY
+昨天（5/10）P1-P7 把 strategy → HTML 鏈路全部接通：Vercel 末段 enqueue Cloud Tasks → Cloud Run worker → bridge :3002（內網直連）→ Sonnet 4.6 出 HTML。今天 P8 端到端實測，順手回看「策略產製還有什麼在燒 API key」。
+
+### 產出
+- **strategy-html-worker / internal-server.js**：claude CLI 加 `--effort low` flag（VM 上 `~/claude-bridge/internal-server.js`）
+  - 根因：Sonnet 4.6 預設 extended thinking 吃光 32K output budget，剩 ~120 tokens 給 visible result
+  - 驗證：直接 VM 跑 41.8KB HTML / 16.5K tokens / 242s；Cloud Run 端到端 31.7KB / 231s / QA 4/4 pass
+  - systemd 已 restart，service active
+- **src/lib/generate-image.ts**：translateToEnglish 改走 bridge（`getAnthropicClient(apiKey)`），不再直連 API key
+  - 驗證：bridge curl 中文 prompt 翻譯通，沒撞 RP-block
+  - 已 deploy
+- **src/lib/anthropic-via-bridge.ts**：`BRIDGE_TIMEOUT_MS` 90s → 280s + 加 Firestore `bridge_fallbacks` metrics
+  - 已 deploy https://ailive-platform-i135kx6kx
+
+### 已解決
+- **HTML 只有 122 tokens 之謎** → 根因 extended thinking budget 吃光，`--effort low` 解
+- **generate-image 翻譯燒 API key** → 切走 bridge
+- **🔥 bridge 90s 靜默 fallback 雙燒**：anthropic-via-bridge.ts 90s timeout 後 fallback SDK，但 bridge VM 端**繼續跑完並燒 Max**，Vercel 端**也用 SDK 燒 API key**。journalctl 證據：05:05:29 sonnet-4-6 145s 完整跑完（>90s = 早被 Vercel abort 了，bridge 還在跑）
+  - 修法：timeout 拉到 280s（壓在 Vercel 300s lambda 內），fallback 保留但加 Firestore 記錄
+
+### ⚠️ 尚未解決
+- **fallback 觀察期一週**：看 `bridge_fallbacks` collection，哪條 model + 高頻 fallback → 候選搬 Cloud Run
+- **Cloud Run 搬遷未動**：specialist/strategy 是最大宗候選，但 P1-P8 那種八步施工成本不便宜，先靠 280s timeout 撐，metrics 看頻率再決定
+
+### 待執行
+- [ ] 一週後查 `bridge_fallbacks` 統計（按 model + durationMs 排序）
+- [ ] 若 strategy stage 2 持續 fallback → 搬 Cloud Run worker pattern（複用 strategy-html-worker 架構）
+- [ ] P9 完成（本段 + lastwords + memory 寫入）

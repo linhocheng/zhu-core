@@ -26,7 +26,31 @@
 
 ---
 
-## 最新完成（2026-05-11 — 策略書 HTML Step 1 撞 Vercel 300s 牆 · 等 Adam 拍板換平台）
+## 最新完成（2026-05-11 晚 — strategy HTML P8 收口 + bridge 90s 雙燒抓掉）
+
+**主戰場**：ailive-platform。P1-P8 全綠，加碼修了一個更嚴重的靜默漏洞。
+
+**一句話**：strategy-html 端到端通（midoufu 31.7KB / 231s / QA 4/4 pass，bridge :3002 內網直連）。回頭巡長文路徑時抓出 anthropic-via-bridge.ts 的 **90s 雙燒 bug**（Vercel abort 後 SDK 燒 API key、bridge VM 那邊 claude CLI 繼續跑完燒 Max）。修法套 C：timeout 90s → 280s + Firestore bridge_fallbacks metrics，已 deploy。
+
+**這個 session 跑了什麼**
+- claude CLI `--effort low` 解 Sonnet 4.6 extended thinking 吃光 32K output budget 的根因（單獨用 `--tools ""` 不夠）
+- bridge VM internal-server.js 改完 systemd restart，Cloud Run worker 端到端 QA pass
+- src/lib/generate-image.ts translateToEnglish 改走 bridge（停止燒 API key）
+- src/lib/anthropic-via-bridge.ts：BRIDGE_TIMEOUT_MS 90s → 280s + recordFallback() Firestore 寫入
+- deploy https://ailive-platform-i135kx6kx，已 alias prod
+- memory: feedback_bridge_silent_fallback_double_burn.md + reference_sonnet46_effort_low.md
+
+**明天醒來第一件**
+查 bridge_fallbacks Firestore 一日資料（model + durationMs 分布），決定哪條 route 該搬 Cloud Run。詳細指令在 zhu-boot 的 eye.lastSessionWords（id=IiruUOFba82guFpfNmIW）。
+
+**待辦觀察**
+- bridge_fallbacks 一週觀察期
+- specialist/strategy stage 2 是 Cloud Run 候選頭號（5000 字 markdown / max_tokens=12000）
+- ig-pipeline / soul-enhance / runner / sleep / cake/strategy-test 還沒巡過實際 fallback 狀況
+
+---
+
+## 歷史完成（2026-05-11 早 — 策略書 HTML Step 1 撞 Vercel 300s 牆，已被晚段 P1-P8 解開）
 
 **主戰場**：ailive-platform，續上 Step 0。
 
