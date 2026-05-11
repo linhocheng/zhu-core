@@ -1,5 +1,5 @@
 // reflex/rules.mjs
-// 6 條 feedback memory 的 detector 定義（task #12 雛形）。
+// 11 條 feedback memory 的 detector 定義（task #12 雛形 + 2026-05-09 擴 5 條 A 類）。
 // 都從 state="log_only"、severity="warn|info" 起步，跑兩週看資料再決定 enforce。
 // 後續會升級到從 Firestore zhu_l3_rules 動態讀取。
 
@@ -101,6 +101,78 @@ export const RULES = [
         kind: 'tool_match',
         tool_names: ['Bash'],
         arg_contains: 'tail',
+      },
+    ],
+  },
+
+  // ── 2026-05-09 擴 A 類 5 條（盤點 19 條 feedback 後補完）──
+
+  {
+    rule_name: 'secret_manager_printf',
+    severity: 'warn',
+    state: 'log_only',
+    why: 'echo 留尾端 \\n 會讓 aiohttp header 拒送、API 全斷；gcloud secrets 寫入要 printf %s 或 --data-file',
+    trigger_signal: '準備用 echo pipe 寫 GCP secret / API key / header 用的 secret',
+    detectors: [
+      {
+        kind: 'shell_pattern',
+        pattern: /echo\s+[^|]*\|\s*gcloud\s+secrets\s+versions\s+add/,
+      },
+    ],
+  },
+
+  {
+    rule_name: 'killall_vs_pkill',
+    severity: 'warn',
+    state: 'log_only',
+    why: 'pkill -f .*node 殺不到絕對路徑啟動的 node 進程，會留 zombie 雙進程',
+    trigger_signal: '在 VM context 用 pkill 殺 node — 殺不乾淨會雙跑',
+    detectors: [
+      {
+        kind: 'shell_pattern',
+        pattern: /pkill\s+(?:-[a-zA-Z]+\s+)*['"]?[^|;&'"]*node/,
+      },
+    ],
+  },
+
+  {
+    rule_name: 'unload_is_not_disable',
+    severity: 'warn',
+    state: 'log_only',
+    why: 'launchctl unload/bootout 只停當下進程，plist 留 LaunchAgents/ 下次開機會復活',
+    trigger_signal: '想永久停 launchd 服務，跑 unload/bootout 沒搬 plist',
+    detectors: [
+      {
+        kind: 'shell_pattern',
+        pattern: /launchctl\s+(?:unload|bootout)\b/,
+      },
+    ],
+  },
+
+  {
+    rule_name: 'bridge_vm_systemd',
+    severity: 'warn',
+    state: 'log_only',
+    why: 'claude-bridge 在 zhu-dev 是 systemd service，nohup 會建重複 process、worker 跑兩遍',
+    trigger_signal: '想重啟 bridge 用 nohup 或 killall+nohup — 應該 sudo systemctl restart claude-bridge',
+    detectors: [
+      {
+        kind: 'shell_pattern',
+        pattern: /(nohup[\s\S]{0,120}?node[\s\S]{0,120}?claude-bridge|claude-bridge[\s\S]{0,120}?nohup[\s\S]{0,120}?node|killall[\s\S]{0,120}?node[\s\S]{0,120}?claude-bridge|claude-bridge[\s\S]{0,120}?killall[\s\S]{0,120}?node)/,
+      },
+    ],
+  },
+
+  {
+    rule_name: 'vm_claude_cli_oauth',
+    severity: 'info',
+    state: 'log_only',
+    why: 'VM 上跑 claude CLI 不 source ~/claude-bridge/.env = Not logged in',
+    trigger_signal: 'nohup script 跑 claude -p 但開頭沒 set -a; source ~/claude-bridge/.env',
+    detectors: [
+      {
+        kind: 'shell_pattern',
+        pattern: /nohup[\s\S]{0,120}?claude\s+(?:-p\b|--print\b)/,
       },
     ],
   },
