@@ -61,33 +61,59 @@
 - 中段「劍法看 不是順序」這個提醒接住，沒抗拒 redirect
 - 沒繃帶話術出現 ✓
 
-**待辦觀察**
-- molowe build/deploy 已過，但 prod cron 在三次 720s wake window (~36min) 內都沒 fire writer/editor/brief/jda/kairos/superego/translator/visual 任一 LLM call — brief gate 沒開（沒新 IG 內容到 ContentMap 待 brief 階段）。下次有 prod 寫入時自然會出現 molowe-platform|{writer/editor/...} cost record。
-- `src/app/dashboard/[id]/strategies/page.tsx` 沒 polling = UX 缺口（status=done 時 HTML 生成可能延遲幾分鐘），改 polling 是 nice-to-have
-- aurae discovery / molowe brief+translator log grep 驗證沒做（C 線剩餘）
+**晚段補完（同一 session 連續跑 B1 → B2 → C → A → D 五件，零繃帶）**
+
+Adam 一句「不補丁 真的做到 我的企圖是完整整個主系統 沒有技術債」打回「明天再做 B1」的繃帶提議，當場連續跑完五件：
+
+- **B1：4 點 vendor sha256 守門哨**
+  - 寫 `zhu-vitals/scripts/check-vendor-drift.mjs`（per-worker，CWD 掃 `*/zhu-vitals/`）+ `check-bridge-vm-drift.mjs`（gcloud ssh 三方對賬）
+  - 接進 molowe `prebuild` hook、strategy-worker / strategy-html-worker Dockerfile `RUN node scripts/check-vendor-drift.mjs`
+  - 抓出真 drift：bridge VM 上有 `manifest.types.d.ts` 但 VENDOR.md 沒鎖 → scp 補 lock
+  - zhu-core `v0.3.0.001`
+- **B2：vitals 紅燈狀態**
+  - `vitals.mjs --map/--pulse` 加 ANSI 顏色 + `computeState()`（dead=last_seen > expected×3 / slow=×1.5 / alive）
+  - `--pulse` 加 summary + sort dead→slow→alive、`--strict` for CI、`--no-color`、`--drift` 子指令聚合 4 vendor 點 drift check
+  - cmdMap 修真 bug：原本只讀 manifest.last_seen（10h 前的舊值），改 max(manifest.last_seen, recent run start) → 真實顯示 bridge workers alive
+  - zhu-core `v0.3.0.002`
+- **C：9 purpose 全鏈路真驗**
+  - `molowe-platform/scripts/verify-all-purposes.mjs` loop 9 purpose × bridgeCall haiku maxTokens=5
+  - 等 5s 後查 `zhu_vitals_cost` 確認 9/9 都有 molowe-platform 紀錄、cost ~$0.011 全綠
+- **A：技術債監測 Agent v0.1**
+  - `zhu-self/scripts/debt.mjs`：掃 lastwords + WORKLOG「卡住/未解/尚未解決/待執行」段 → sha1(content) id → append-only ledger（debt_ledger.jsonl）→ 報告 reports/debt_YYYYMMDD.md → marker 回寫 lastwords
+  - 規則：age >= 14d = 🔴 stale / source 消失 >= 7d = 🟡 silent / >= 30d 自動 drop；deterministic 零 LLM call
+  - 接進 `zhu debt scan/list/rebuild` 子指令 + 跑首次掃描 252 items 全 fresh
+  - zhu-core `v0.3.0.003`
+- **D：strategies/page.tsx polling**
+  - 加 `useEffect` 監看 items：有任何 `done && !htmlUrl` → setInterval 5s 重抓，60s 上限自動 clear
+  - ailive-platform `v0.3.0.003`
+
+**鏡子（晚段補完）**
+- **繃帶測試通過**：「明天第一件」是技術上正確但姿態錯——把當下能做完的事推給明天的自己 = 沒有「明天的自己」會更勇敢，只會多一天偽完成。Adam 一句點到，當場修正。對齊 `feedback_courage_in_the_moment`。
+- **劍法 = 依賴 + 姿態雙軸**：B3 修底層 → B1 守門 → B2 觀測 → C 真驗 → A 監測新債 → D 補 UX。每件都建立在前一件的真實，不繞道。
+
+**待辦觀察（晚段補完後）**
+- molowe prod cron 依然沒在 wake window 內 fire 真 LLM call（brief gate / 沒新 IG 內容），但 verify-all-purposes 9/9 已實證機制；下次 prod fire 會自然分散
+- aurae discovery / molowe brief+translator log grep 驗證仍沒做（從 C 線跳 verify-all-purposes 直接替代）
+- `zhu debt list` 252 items 首批 first_seen=today，14 天後才會看到第一批 🔴 stale → 觀察一週決定要不要 backfill first_seen 從 WORKLOG 標的日期
 
 **明天醒來第一件**
-**B1：CI sha256 drift check**（vendor lock 跟 source 對賬）
+**跑 `zhu status` + `zhu self-check` + `zhu debt list`**，看 debt agent 第一個工作日後 ledger 還健康嗎、有沒有需要 pin 或排除的 noise。
 
 ```bash
-# 觸發路徑
-cd ~/.ailive/zhu-core/zhu-vitals/scripts
-# 寫 check-vendor-drift.mjs：
-# 1. 掃 4 個 vendor 點（molowe/strategy-worker/strategy-html-worker/bridge-vm 各自 VENDOR.md）
-# 2. 對每個 vendored file 重算 sha256
-# 3. 跟 VENDOR.md 寫的 lock 對比
-# 4. 跟 zhu-core source 對比
-# 5. 任一不一致 → exit 1 + 印哪個檔哪個地方 drift
-# 然後接進各 worker CI（vercel build hook / Cloud Run cloudbuild.yaml）
+~/.ailive/zhu-core/zhu-self/bin/zhu status
+~/.ailive/zhu-core/zhu-self/bin/zhu self-check
+~/.ailive/zhu-core/zhu-self/bin/zhu debt list | head -40
+~/.ailive/zhu-core/zhu-self/bin/zhu vitals --drift  # 4 vendor 點對賬
 ```
 
-**為什麼這件先**：今天 5b 校正暴露「VENDOR.md lock ≠ 事實對齊」整整 24h 沒人發現。CI drift check 是補這個守門哨。
+**為什麼這件先**：今晚剛接上去的兩個守門哨（vendor drift + 技術債 ledger）需要第一個工作日的真實 baseline。明天看完才知道規則對不對。
 
 **重要外部資源**
-- molowe production：https://molowe-platform.vercel.app
-- molowe GitHub：https://github.com/linhocheng/molowe-platform（最新 v0.0.0.011）
+- molowe production：https://molowe-platform.vercel.app（v0.0.0.011 + verify-all-purposes 全綠）
+- molowe GitHub：https://github.com/linhocheng/molowe-platform
+- ailive-platform GitHub：https://github.com/linhocheng/ailive-platform（v0.3.0.003 strategies polling）
 - zhu-core 源頭：`~/.ailive/zhu-core/zhu-vitals/src/`（commit `495e2058` 仍是 0.1.2 source）
-- 本機 verify 範本：`~/.ailive/molowe-platform/scripts/verify-purpose.mjs`（Node 22 --env-file 套路）
+- 本機 verify 範本：`~/.ailive/molowe-platform/scripts/verify-all-purposes.mjs`（loop 9 purpose）
 
 ---
 
