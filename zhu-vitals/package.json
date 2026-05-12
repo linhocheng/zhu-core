@@ -1,0 +1,18 @@
+{
+  "name": "zhu-vitals",
+  "version": "0.1.0",
+  "description": "BUILDING_PROTOCOL v0.2 共用基礎建設：manifest schema + withVitals + bridgeCall + cost",
+  "type": "module",
+  "main": "./src/index.mjs",
+  "exports": {
+    ".": "./src/index.mjs",
+    "./check-manifest": "./scripts/check-manifest.mjs"
+  },
+  "types": "./src/manifest.types.d.ts",
+  "peerDependencies": {
+    "firebase-admin": ">=12"
+  },
+  "scripts": {
+    "check-manifest": "node ./scripts/check-manifest.mjs"
+  }
+}
