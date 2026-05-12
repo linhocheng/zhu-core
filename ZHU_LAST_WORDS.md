@@ -964,3 +964,13 @@ for k in items:
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.2.0。*
 *2026-05-10 · 築*
+
+---
+
+## 🤖 技術債監測 (zhu debt agent v0.1)
+
+<!-- DEBT_AGENT_BEGIN -->
+🤖 技術債健康表（2026-05-12，zhu debt scan 自動生成，age >= 14d / silent >= 7d）
+
+✓ 全綠 — 沒老化、沒沉默條目。
+<!-- DEBT_AGENT_END -->

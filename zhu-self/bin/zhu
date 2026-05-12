@@ -27,6 +27,12 @@
 #   zhu vitals --<map|pulse|runs|cost> [--hours=N] [--days=N] [--json]
 #                        # BUILDING_PROTOCOL v0.2 統一讀取入口
 #
+#   zhu debt scan         # 掃 lastwords + WORKLOG，upsert ledger，生報告，回寫 marker
+#   zhu debt scan --dry   # dry-run，只印不寫
+#   zhu debt scan --no-writeback   # 寫 ledger + 報告但不動 lastwords
+#   zhu debt list         # 印 ledger 全表
+#   zhu debt rebuild      # 清空 ledger 重掃
+#
 #   zhu run <path>        # 任意腳本走 --env-file
 
 set -euo pipefail
@@ -64,6 +70,7 @@ case "$cmd" in
   self-check)  exec node $NODE_ENV_FLAG "$SCRIPTS/self-check.mjs" "$@" ;;
   embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
   vitals)      exec node $NODE_ENV_FLAG "$SCRIPTS/vitals.mjs" "$@" ;;
+  debt)        exec node $NODE_ENV_FLAG "$SCRIPTS/debt.mjs" "$@" ;;
   memory)
     sub="${1:-}"; shift || true
     case "$sub" in
@@ -85,7 +92,7 @@ case "$cmd" in
     exec node $NODE_ENV_FLAG "$target" "$@"
     ;;
   ""|--help|-h)
-    sed -n '4,24p' "${BASH_SOURCE[0]}"
+    sed -n '4,36p' "${BASH_SOURCE[0]}"
     exit 0
     ;;
   *)
