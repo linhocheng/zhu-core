@@ -21,6 +21,9 @@
 #   zhu learn <args>      # learning CLI
 #   zhu watch-embed       # fswatch 目錄、自動 embed（手動跑，不必啟動）
 #
+#   zhu memory new --type <feedback|skill|project|reference|user>
+#                        # 強制問完 v2 六欄才寫 memory 檔
+#
 #   zhu run <path>        # 任意腳本走 --env-file
 
 set -euo pipefail
@@ -57,6 +60,21 @@ case "$cmd" in
   watch-embed) exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
   self-check)  exec node $NODE_ENV_FLAG "$SCRIPTS/self-check.mjs" "$@" ;;
   embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
+  memory)
+    sub="${1:-}"; shift || true
+    case "$sub" in
+      new) exec node $NODE_ENV_FLAG "$SCRIPTS/memory-new.mjs" "$@" ;;
+      ""|--help|-h)
+        echo "usage: zhu memory new --type <feedback|skill|project|reference|user>"
+        exit 0
+        ;;
+      *)
+        echo "unknown memory subcommand: $sub" >&2
+        echo "try: zhu memory --help" >&2
+        exit 2
+        ;;
+    esac
+    ;;
   run)
     target="${1:-}"; shift || true
     [[ -z "$target" ]] && { echo "usage: zhu run <script>"; exit 2; }
