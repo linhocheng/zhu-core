@@ -16,6 +16,7 @@
  */
 import { getDb, expiresAt, uuid } from './firestore.mjs';
 import { VITALS_COLLECTIONS, TTL_DAYS } from './manifest.schema.mjs';
+import { getRunContext } from './with-vitals.mjs';
 
 const DEFAULT_MODEL = 'claude-sonnet-4-5';
 const DEFAULT_MAX_TOKENS = 1500;
@@ -41,9 +42,9 @@ function estimateCostUsd(model, inTokens, outTokens) {
 /**
  * @param {object} opts
  * @param {string} opts.prompt
- * @param {string} opts.worker_id     - manifest.worker_id
- * @param {string} opts.project       - 哪個 repo / app
- * @param {string} opts.purpose       - 這個 call 是做什麼用（draft / summary / classify ...）
+ * @param {string} [opts.worker_id]   - manifest.worker_id（缺則讀 ALS context）
+ * @param {string} [opts.project]     - 哪個 repo / app（缺則讀 ALS context）
+ * @param {string} [opts.purpose]     - 這個 call 是做什麼用（draft / summary / classify ...）
  * @param {string} [opts.model]
  * @param {number} [opts.maxTokens]
  * @param {string} [opts.system]
@@ -52,6 +53,11 @@ export async function bridgeCall(opts) {
   const url = process.env.BRIDGE_URL?.replace(/\/$/, '');
   const secret = process.env.BRIDGE_SECRET;
   if (!url || !secret) throw new Error('[zhu-vitals] BRIDGE_URL / BRIDGE_SECRET missing');
+
+  const ctx = getRunContext();
+  const worker_id = opts.worker_id ?? ctx?.worker_id ?? 'unknown';
+  const project = opts.project ?? ctx?.project ?? 'unknown';
+  const purpose = opts.purpose ?? 'bridge';
 
   const model = opts.model ?? DEFAULT_MODEL;
   const maxTokens = opts.maxTokens ?? DEFAULT_MAX_TOKENS;
@@ -84,14 +90,14 @@ export async function bridgeCall(opts) {
     await db.collection(VITALS_COLLECTIONS.cost).add({
       call_id,
       timestamp,
-      worker_id: opts.worker_id,
-      project: opts.project,
+      worker_id,
+      project,
       route: 'bridge',
       model,
       input_tokens: inTokens,
       output_tokens: outTokens,
       cost_usd_est: estimateCostUsd(model, inTokens, outTokens),
-      purpose: opts.purpose,
+      purpose,
       expires_at: expiresAt(TTL_DAYS.cost),
     });
   } catch (writeErr) {

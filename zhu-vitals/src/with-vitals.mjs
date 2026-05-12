@@ -4,15 +4,41 @@
  * 包住 entry handler。跑完寫一筆 final record 到 zhu_vitals_runs。
  * BUILDING_PROTOCOL v0.2 機制 B 統一單寫策略（不寫 start placeholder）。
  *
- * 用法：
+ * 同時透過 AsyncLocalStorage 把 { worker_id, project } 注進 context，
+ * 深層的 bridgeCall / 任何 LLM call site 可以 zero-arg 拿到 worker_id。
+ *
+ * 用法（plain handler，回傳 RunResult）：
  *   import { manifest } from './manifest.mjs';
  *   import { withVitals } from 'zhu-vitals';
  *   export default withVitals(manifest, async (input) => {
- *     // ... do work, return { status, items_processed, items_failed, metrics } ...
+ *     return { status, items_processed, items_failed, metrics };
  *   });
+ *
+ * 用法（Next.js Route，回傳 Response）：
+ *   const tracked = withVitals(manifest, handle);
+ *   export const GET = tracked;
+ *   export const POST = tracked;
+ *   // status 自動從 res.status 推導 (>=500 error, >=400 partial, else success)
  */
+import { AsyncLocalStorage } from 'node:async_hooks';
 import { getDb, expiresAt, uuid } from './firestore.mjs';
 import { VITALS_COLLECTIONS, TTL_DAYS, validateManifest } from './manifest.schema.mjs';
+
+const als = new AsyncLocalStorage();
+
+/**
+ * 讀當前 run context（worker_id / project / run_id）。
+ * @returns {{ worker_id: string, project: string|null, run_id: string } | null}
+ */
+export function getRunContext() {
+  return als.getStore() ?? null;
+}
+
+function looksLikeResponse(x) {
+  return !!x && typeof x === 'object'
+    && typeof x.status === 'number'
+    && typeof x.headers === 'object';
+}
 
 /**
  * @typedef {object} RunResult
@@ -25,7 +51,7 @@ import { VITALS_COLLECTIONS, TTL_DAYS, validateManifest } from './manifest.schem
  */
 
 /**
- * @template {(...args: any[]) => Promise<RunResult | void>} H
+ * @template {(...args: any[]) => Promise<any>} H
  * @param {import('./manifest.types').Manifest} manifest
  * @param {H} handler
  * @returns {H}
@@ -42,6 +68,11 @@ export function withVitals(manifest, handler) {
     async (...args) => {
       const run_id = uuid();
       const started_at = new Date();
+      const ctx = {
+        worker_id: manifest.worker_id,
+        project: manifest.project ?? null,
+        run_id,
+      };
 
       // 每個 process cold-start 第一次跑時 upsert manifest，CLI --map 用
       if (!manifestUpsertedInProcess) {
@@ -57,10 +88,20 @@ export function withVitals(manifest, handler) {
         }
       }
 
+      let raw;
       let result;
       let thrown;
       try {
-        result = (await handler(...args)) ?? {};
+        raw = await als.run(ctx, () => handler(...args));
+        if (looksLikeResponse(raw)) {
+          const s = raw.status;
+          result = {
+            status: s >= 500 ? 'error' : (s >= 400 ? 'partial' : 'success'),
+            metrics: { http_status: s },
+          };
+        } else {
+          result = raw ?? {};
+        }
       } catch (err) {
         thrown = err;
         result = {
@@ -92,7 +133,7 @@ export function withVitals(manifest, handler) {
       }
 
       if (thrown) throw thrown;
-      return result;
+      return raw;
     }
   );
 }
