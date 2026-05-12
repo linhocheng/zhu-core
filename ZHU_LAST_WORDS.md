@@ -26,7 +26,81 @@
 
 ---
 
-## 最新完成（2026-05-11 晚 — aurae Threads discovery 解鎖 + bridge findCount 留言→回覆）
+## 最新完成（2026-05-12 — BUILDING_PROTOCOL v0.2 Phase A 上線：molowe 全 6 cron 接 vitals）
+
+**主戰場**：zhu-core/zhu-vitals + molowe-platform。BUILDING_PROTOCOL v0.2 推 6 worker（T3.4）的第一階段，phasing 用劍法重看：A（molowe Vercel cron）→ B（strategy-worker Cloud Run）→ C（bridge VM）。A 不是因為簡單，是 truth check — 整套機制 A/B/C（manifest / heartbeat / cost）在 prod 真能跑這個假設，先在最便宜的環境驗。
+
+**一句話**：molowe 6 條 Vercel cron 全包進 `withVitals`，bridge.ts 改走 zhu-vitals `bridgeCall` + AsyncLocalStorage 自動帶 worker_id；zhu-vitals 因 Turbopack 不認 file: symlink 改 vendor 進 molowe；commit 全 push，等 Vercel deploy + 第一輪 cron 跑驗。
+
+**這個 session 跑了什麼**
+- **zhu-vitals 0.1.1**（zhu-core commit `54b753b`）
+  - `with-vitals.mjs`：加 `AsyncLocalStorage`，自動把 `{ worker_id, project, run_id }` 注進 async tree；深層 callBridge zero-arg 拿到
+  - `with-vitals.mjs`：handler 回傳值自動辨識 Response（有 .status numeric + .headers）→ 用 HTTP code 推導 run.status；其他當 RunResult
+  - `bridge-call.mjs`：worker_id/project/purpose 全 optional，缺則讀 ALS context
+  - `manifest.types.d.ts`：補完 Manifest（加 project 欄）、RunContext、BridgeCallOpts、ValidateResult；`withVitals<TArgs, TRet>` 泛型透傳 Next.js Route 的 `Promise<Response>`
+- **molowe-platform Phase A**（commit `2f26690` 起手 + `615285b` 收乾）
+  - `src/lib/zhu-vitals/`：vendor zhu-vitals 進 repo（Turbopack 不能跟 file: 跨 root symlink；Vercel deploy 必須自包）
+  - `src/lib/manifests/`：6 個 manifest.mjs，全帶 JSDoc 型別鎖
+  - 6 cron entry handler 全包 `withVitals(manifest, handle)`：molowe-cron / molowe-auto-publish / molowe-insights / molowe-superego / molowe-strategy-daily / molowe-strategy-weekly
+  - `src/lib/workers/bridge.ts` 重寫 — callBridge 改 bridgeCall thin wrapper（drop 60 行 fetch logic）
+  - `next.config.ts` outputFileTracingIncludes 加 manifests + zhu-vitals 兩個 mjs glob
+
+**鏡子（這次 session 的提醒）**
+1. **「Phase A 範圍判斷」中段自抓**：起手只包 2 條 cron（molowe-cron + auto-publish），但 bridge.ts 改走 ALS 後，沒包的 4 條會寫 `worker_id='unknown'` — 真相分裂。當下宣告漏氣 + 提兩個選擇（B 留尾還 A 收乾），Adam 選 A。✓ 符合 feedback_surface_technical_debt
+2. **Adam 問「有連結嗎」**：第一反射是「我手上沒記到，你之前 deploy 的網址是？」── 違反 feedback_check_admin_before_asking。打回去後 5 秒 grep 就找到（已在 MOLOWE_GUIDE.md 裡）。原因：覺得「production URL」不像 memory 等級的事，沒去 grep。下次「想問 Adam 任何資料」前，先 grep memory 跟 codebase 各一次。
+3. **Turbopack 撞牆三秒收手**：第一次試 file: + transpilePackages，失敗一輪就轉 vendor，沒在 dynamic-import 上糾纏。✓ 符合 reference_dynamic_import_not_bundle_fix 的近期教訓
+
+**驗證**
+- 本機 tsc + npm run build 通 ✓
+- 兩 repo push 成功 ✓
+- **未驗**：Vercel deploy 完 + 第一輪 cron 觸發後跑 `zhu vitals --map/--pulse/--runs/--cost` ← 明天醒來第一件
+
+**新記憶**
+- `project_molowe_v1_live.md`：補 GitHub repo URL + cron 數量校正（5→6）
+
+**明天醒來第一件**
+跑這四條看 vitals 寫進去了沒（Vercel deploy 在 push 後幾分鐘內完成，cron/run 每 5min 觸發）：
+
+```bash
+~/.ailive/zhu-core/zhu-self/bin/zhu vitals --map       # 應看到 6 個 molowe-* worker（manifest cold-start upsert）
+~/.ailive/zhu-core/zhu-self/bin/zhu vitals --pulse     # 看誰活誰死（24h）
+~/.ailive/zhu-core/zhu-self/bin/zhu vitals --runs      # runs records 有沒有
+~/.ailive/zhu-core/zhu-self/bin/zhu vitals --cost      # bridgeCall 有沒有寫 cost
+```
+
+- 6 個 worker 都活 + cost 有 `molowe-cron` 等 worker_id → 端到端通，進 Phase B
+- map 看到但 pulse 寫 `⚠ declared, no run` → manifest upsert 通但 entry 沒觸發（看 Vercel deploy 是否真的拉新 commit）
+- 連 map 都空 → Firestore 寫失敗，看 Vercel function log（FIREBASE_SERVICE_ACCOUNT_JSON 在 Vercel env 有沒有，project_id 必須是 moumou-os）
+- 任何 cron 變 500 → 大概是 cold-start upsert 拖太久 timeout 或 manifest validate fail，看 Vercel function log
+
+**接著的路（劍法序）**
+- Phase B：strategy-worker + strategy-html-worker（Cloud Run 兩 service，git init + manifest + withVitals）
+- Phase C：bridge VM bridge-discovery + bridge-intel/xi（VM download + edit + grep verify + systemctl restart，沒 rollback 走 SOP）
+- T3.5 收尾：寫進 CLAUDE.md 天條 + check-manifest 改 strict + vendor diff CI
+
+**delta（我的模型移動了哪）**
+進場前以為：zhu-vitals 設計成 npm package（file: dep）會比 vendor 乾淨。
+現在理解：跨 repo 共用 lib 的真實成本，在 Turbopack/Vercel 這種「不認 cross-root symlink」的環境是 vendor 比 dep 更 robust 的；不只是 deploy 自包，連 build 也得自包。**「乾淨」要看部署現實**，不是模組系統乾淨就行。
+
+**跟 Adam 的關係狀態：穩**
+- 三禁三必照走，劍法 A→B→C 邊做邊驗 Adam 點頭
+- 「有連結嗎」那一刻被打到，但 Adam 沒火只是反問「你問我 我問你」── 給空間自校。我修了一條 memory + 明確下次的執行紀律
+- 沒有「先撐一下」「再試一次」這類繃帶話術出現
+
+**重要外部資源（明天找不到的話）**
+- molowe production：https://molowe-platform.vercel.app（手動 trigger cron：`curl -H "x-admin-key: $MOLOWE_ADMIN_KEY" https://molowe-platform.vercel.app/api/cron/run`）
+- molowe GitHub：https://github.com/linhocheng/molowe-platform
+- molowe Admin Key：在 `project_molowe_v1_live.md`
+- zhu-vitals 源頭：`~/.ailive/zhu-core/zhu-vitals/src/`（molowe 那份 vendor 在 `~/.ailive/molowe-platform/src/lib/zhu-vitals/`，更新流程見 VENDOR.md）
+- Vercel dashboard：https://vercel.com/dashboard
+
+**待辦觀察**
+- Vendor 漂移：molowe 與 zhu-core 各一份 zhu-vitals，現在無 CI 警報 — T3.5 補
+- callBridge 10 caller 共用 purpose='bridge'：cost record group 不能拆 worker 內部 LLM 用途（writer / editor / translator / visual / brief / kairos / jda / superego），Phase B/C 後補
+
+---
+
+## 上一段完成（2026-05-11 晚 — aurae Threads discovery 解鎖 + bridge findCount 留言→回覆）
 
 **主戰場**：molowe-platform discovery worker（VM 端 `~/claude-bridge/index.js`）。Adam 先問「除了 login 有沒有新技術」，研究結論「Threads 關鍵字搜尋仍要登入」。他說「教會你自己 log in」，立刻改口「不是教，是你試」。
 

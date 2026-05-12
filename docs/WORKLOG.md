@@ -2248,3 +2248,41 @@ vivi 生圖背景一直是黑的，連加「明亮背景」brief 都壓不住。
 - [ ] Adam 用 browser 開 dashboard/CXRsGGZU.../strategies 看新版兩按鈕
 - [ ] 寫 LESSONS_20260511_strategy-cloud-run.md（fetch-based cloud-tasks + self-actAs IAM 教訓）
 - [ ] 收尾 session-lastwords
+
+---
+
+## 2026-05-12 — BUILDING_PROTOCOL v0.2 Phase A 上線（molowe-platform 全 6 cron 接 vitals）
+
+### 背景 / WHY
+T3.4 推 BUILDING_PROTOCOL v0.2 給 6 個 worker。phasing 用劍法重看：A（molowe，最低風險）→ B（strategy-worker Cloud Run）→ C（bridge VM）。A 不是因為簡單，是 truth check — 整套 withVitals + bridgeCall + Firestore + CLI 在 prod 真的能跑這個假設，必須先在最便宜的環境驗。
+
+### 產出
+- **zhu-core / zhu-vitals 0.1.1**（commit `54b753b`）
+  - `with-vitals.mjs`：加 `AsyncLocalStorage` context，withVitals 自動把 `{ worker_id, project, run_id }` 注進當前 async tree；深層 callBridge 不用顯式傳 worker_id
+  - `with-vitals.mjs`：handler 回傳值自動辨識 — 像 Response（有 .status numeric + .headers）→ 用 status code 推導 run.status (>=500 error / >=400 partial / else success)，metrics 收 http_status；其他當 RunResult 直接用
+  - `bridge-call.mjs`：worker_id / project / purpose 都改成 optional，缺則讀 ALS context；context 也沒就寫 'unknown'
+  - `manifest.types.d.ts` 補完 Manifest（加 project 欄）、RunContext、BridgeCallOpts、ValidateResult；withVitals signature 改泛型 `<TArgs, TRet>` 把 Next.js Route 的 `Promise<Response>` 回傳型別接住
+  - `package.json` exports 加 types resolution，bump 0.1.1
+- **molowe-platform vendor + 全 6 cron 接入**（commit `2f26690` + `615285b`）
+  - `src/lib/zhu-vitals/`：vendor zhu-vitals 進 repo（**Turbopack 不能跟 file: 跨 root symlink**；Vercel deploy 必須自包）。VENDOR.md 標源頭 + 更新流程
+  - `src/lib/manifests/`：6 個 manifest.mjs（molowe-cron / molowe-auto-publish / molowe-insights / molowe-superego / molowe-strategy-daily / molowe-strategy-weekly），都帶 `@type {import('../zhu-vitals/manifest.types').Manifest}` JSDoc 鎖型
+  - 6 個 cron entry handler 都包 `withVitals(manifest, handle)`，GET/POST 透過 tracked 函式呼叫
+  - `src/lib/workers/bridge.ts` 重寫 — callBridge 改成 bridgeCall 的 thin wrapper（drop 既有 60 行 fetch logic），worker_id 由 ALS context 自動帶入
+  - `next.config.ts` outputFileTracingIncludes 加 `src/lib/manifests/*.mjs` 與 `src/lib/zhu-vitals/*.mjs`（Vercel runtime tracing）
+- **CI 已 push**（兩 commit 給 molowe）：v0.0.0.006 起手、v0.0.0.007 收乾
+
+### 已解決
+- **Turbopack 不認 file: symlink**：第一輪試 `"zhu-vitals": "file:../zhu-core/zhu-vitals"` + `transpilePackages` 全失敗 → root 是 Vercel deploy 拉不到本機 file 路徑 → vendor 是真解
+- **Next.js Route handler 型別 mismatch**：withVitals 原本 `H extends (...) => Promise<unknown>` 廣型 → tsc 抱怨 `Promise<unknown>` 不滿足 RouteHandlerConfig → 改泛型 `<TArgs, TRet>` 透傳精確型別
+- **真相分裂（Phase A 中段自抓）**：起手只包了 2 條 cron，但 bridge.ts 改走 ALS context = 沒包的 4 條（superego / insights / strategy-daily / strategy-weekly）會寫 `worker_id='unknown'`。當下說出口收乾，Phase A 範圍正式 = 整個 molowe-platform 6 條 cron
+
+### ⚠️ 尚未解決
+- **Vendor 漂移風險**：molowe 那份 zhu-vitals 是手 cp，沒 CI diff 警報 → T3.5 加（diff 雙邊內容並 fail CI）
+- **Vercel deploy 還沒實際驗**：本機 build 通了，但 Vercel 端 deploy 完成 + 第一輪 cron 跑完才算端到端驗。等 5min（cron/run 觸發）後跑 `zhu vitals --pulse` 看
+- **callBridge 10 個 caller 的 purpose 沒分**：bridge.ts 預設 purpose='bridge'，writer / editor / translator / visual / brief / kairos / jda / superego 全壓在同一個 purpose；cost record group 只能 by project|route|model，不能拆 worker 內部 LLM 用途。Phase B/C 收完再回頭補
+
+### 待執行
+- [ ] 等 ~5min Vercel deploy + cron/run 觸發 → `zhu vitals --map / --pulse / --runs / --cost` 驗 6 個 molowe-* worker
+- [ ] Phase B：strategy-worker + strategy-html-worker Cloud Run（兩 service git init + manifest + withVitals）
+- [ ] Phase C：bridge VM bridge-discovery + bridge-intel/xi（VM download + edit + systemctl restart）
+- [ ] T3.5 收尾：把 BUILDING_PROTOCOL 寫進 CLAUDE.md 天條 + check-manifest 改 strict mode + vendor diff CI
