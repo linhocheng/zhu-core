@@ -1,6 +1,6 @@
 {
   "name": "zhu-vitals",
-  "version": "0.1.1",
+  "version": "0.1.2",
   "description": "BUILDING_PROTOCOL v0.2 共用基礎建設：manifest schema + withVitals + bridgeCall + cost",
   "type": "module",
   "main": "./src/index.mjs",

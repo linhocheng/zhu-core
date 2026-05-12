@@ -50,8 +50,11 @@ export function validateManifest(m) {
     }
   }
 
-  if (typeof o.report_cadence_seconds !== 'number' || o.report_cadence_seconds <= 0) {
-    errs.push('report_cadence_seconds 必須是正整數');
+  // on-demand worker 可填 0（不做 staleness 檢測）；其他必須正整數
+  if (typeof o.report_cadence_seconds !== 'number' || o.report_cadence_seconds < 0) {
+    errs.push('report_cadence_seconds 必須是非負整數');
+  } else if (o.expected_interval_seconds !== 'on-demand' && o.report_cadence_seconds === 0) {
+    errs.push('非 on-demand worker 的 report_cadence_seconds 必須 > 0');
   }
 
   if (!Array.isArray(o.reads_from)) errs.push('reads_from 必須是 array');

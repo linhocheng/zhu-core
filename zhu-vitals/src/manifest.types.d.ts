@@ -32,14 +32,39 @@ export interface RunContext {
   run_id: string;
 }
 
+export interface BridgeMessage {
+  role: 'user' | 'assistant';
+  content: string | Array<{ type: 'text'; text: string }>;
+}
+
 export interface BridgeCallOpts {
-  prompt: string;
+  /** 單 user message 簡易模式（與 messages 擇一） */
+  prompt?: string;
+  /** 完整 messages array（與 prompt 擇一） */
+  messages?: BridgeMessage[];
+  system?: string;
+  model?: string;
+  maxTokens?: number;
   worker_id?: string;
   project?: string;
   purpose?: string;
-  model?: string;
-  maxTokens?: number;
-  system?: string;
+  /** 覆寫 BRIDGE_URL / BRIDGE_SECRET（用於 VPC internal bridge） */
+  endpoint?: { url: string; secret: string };
+  /** undici Agent — 長文 LLM call 用（headersTimeout=0 / bodyTimeout=0） */
+  dispatcher?: unknown;
+}
+
+export interface BridgeCallResult {
+  text: string;
+  usage: {
+    input_tokens: number;
+    output_tokens: number;
+    cache_creation_input_tokens: number;
+    cache_read_input_tokens: number;
+  };
+  stop_reason: string | null;
+  model: string;
+  elapsed_ms: number;
 }
 
 export type ValidateResult =
@@ -64,4 +89,4 @@ export declare function withVitals<TArgs extends unknown[], TRet>(
   handler: (...args: TArgs) => Promise<TRet>,
 ): (...args: TArgs) => Promise<TRet>;
 
-export declare function bridgeCall(opts: BridgeCallOpts): Promise<string>;
+export declare function bridgeCall(opts: BridgeCallOpts): Promise<BridgeCallResult>;

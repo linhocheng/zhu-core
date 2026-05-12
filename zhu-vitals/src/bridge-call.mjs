@@ -4,14 +4,24 @@
  * 走 zhu-bridge HTTP gateway（Max OAuth 吃到飽），同時把成本估算寫進 zhu_vitals_cost。
  * 取代各 repo 自行實作的 callBridge / getAnthropicClient。
  *
- * 用法：
- *   import { bridgeCall } from 'zhu-vitals';
- *   const text = await bridgeCall({
- *     prompt: '...',
- *     worker_id: 'molowe-cron',
- *     project: 'molowe-platform',
- *     purpose: 'draft-summary',
- *     model: 'claude-sonnet-4-5',
+ * 0.1.2 升級（對齊 Cloud Run worker 真實需求）：
+ *   - 回傳 { text, usage, stop_reason, model, elapsed_ms }（不只是 text）
+ *   - 接受 prompt (string) 或 messages (array) 擇一
+ *   - 可選 endpoint: { url, secret } override（用於 VPC internal bridge）
+ *   - 可選 dispatcher（undici Agent）— 給長文 LLM call 用
+ *
+ * 用法 A（簡易，預設走外網 zhu-bridge）：
+ *   const { text } = await bridgeCall({ prompt: '...', purpose: 'classify' });
+ *
+ * 用法 B（內網 bridge + 長文 dispatcher）：
+ *   const { text, usage, stop_reason } = await bridgeCall({
+ *     messages: [{ role: 'user', content: '...' }],
+ *     system: '...',
+ *     model: 'claude-sonnet-4-6',
+ *     maxTokens: 12000,
+ *     endpoint: { url: `http://${host}:${port}`, secret },
+ *     dispatcher: longRunDispatcher,
+ *     purpose: 'stage2-write',
  *   });
  */
 import { getDb, expiresAt, uuid } from './firestore.mjs';
@@ -41,18 +51,24 @@ function estimateCostUsd(model, inTokens, outTokens) {
 
 /**
  * @param {object} opts
- * @param {string} opts.prompt
- * @param {string} [opts.worker_id]   - manifest.worker_id（缺則讀 ALS context）
- * @param {string} [opts.project]     - 哪個 repo / app（缺則讀 ALS context）
- * @param {string} [opts.purpose]     - 這個 call 是做什麼用（draft / summary / classify ...）
+ * @param {string} [opts.prompt]              - 單 user message 簡易模式（與 messages 擇一）
+ * @param {Array<{role:string,content:string|Array<{type:string,text:string}>}>} [opts.messages] - 完整 messages array
+ * @param {string} [opts.system]
  * @param {string} [opts.model]
  * @param {number} [opts.maxTokens]
- * @param {string} [opts.system]
+ * @param {string} [opts.worker_id]           - manifest.worker_id（缺則讀 ALS context）
+ * @param {string} [opts.project]             - 哪個 repo / app（缺則讀 ALS context）
+ * @param {string} [opts.purpose]             - 這個 call 是做什麼用
+ * @param {{url:string,secret:string}} [opts.endpoint]  - 覆寫 BRIDGE_URL / BRIDGE_SECRET（用於 VPC internal）
+ * @param {unknown} [opts.dispatcher]         - undici Agent (long-run 用)
+ * @returns {Promise<{text:string,usage:{input_tokens:number,output_tokens:number,cache_creation_input_tokens?:number,cache_read_input_tokens?:number},stop_reason:string|null,model:string,elapsed_ms:number}>}
  */
 export async function bridgeCall(opts) {
-  const url = process.env.BRIDGE_URL?.replace(/\/$/, '');
-  const secret = process.env.BRIDGE_SECRET;
-  if (!url || !secret) throw new Error('[zhu-vitals] BRIDGE_URL / BRIDGE_SECRET missing');
+  const url = (opts.endpoint?.url ?? process.env.BRIDGE_URL)?.replace(/\/$/, '');
+  const secret = opts.endpoint?.secret ?? process.env.BRIDGE_SECRET;
+  if (!url || !secret) throw new Error('[zhu-vitals] BRIDGE_URL / BRIDGE_SECRET missing (and no endpoint override)');
+
+  if (!opts.prompt && !opts.messages) throw new Error('[zhu-vitals] bridgeCall requires prompt or messages');
 
   const ctx = getRunContext();
   const worker_id = opts.worker_id ?? ctx?.worker_id ?? 'unknown';
@@ -61,28 +77,40 @@ export async function bridgeCall(opts) {
 
   const model = opts.model ?? DEFAULT_MODEL;
   const maxTokens = opts.maxTokens ?? DEFAULT_MAX_TOKENS;
+  const messages = opts.messages ?? [{ role: 'user', content: opts.prompt }];
+
   const call_id = uuid();
   const timestamp = new Date();
+  const t0 = Date.now();
 
-  const r = await fetch(`${url}/v1/messages`, {
+  const fetchOpts = {
     method: 'POST',
     headers: { Authorization: `Bearer ${secret}`, 'Content-Type': 'application/json' },
     body: JSON.stringify({
       model,
       max_tokens: maxTokens,
       system: opts.system,
-      messages: [{ role: 'user', content: opts.prompt }],
+      messages,
     }),
-  });
+  };
+  if (opts.dispatcher) fetchOpts.dispatcher = opts.dispatcher;
+
+  const r = await fetch(`${url}/v1/messages`, fetchOpts);
+  const elapsed_ms = Date.now() - t0;
 
   if (!r.ok) {
     const body = await r.text().catch(() => '');
-    throw new Error(`[zhu-vitals] bridge ${r.status}: ${body.slice(0, 200)}`);
+    throw new Error(`[zhu-vitals] bridge ${r.status} after ${elapsed_ms}ms: ${body.slice(0, 200)}`);
   }
   const data = await r.json();
   const text = data.content?.find((c) => c.type === 'text')?.text ?? '';
-  const inTokens = data.usage?.input_tokens ?? 0;
-  const outTokens = data.usage?.output_tokens ?? 0;
+  const usage = {
+    input_tokens: data.usage?.input_tokens ?? 0,
+    output_tokens: data.usage?.output_tokens ?? 0,
+    cache_creation_input_tokens: data.usage?.cache_creation_input_tokens ?? 0,
+    cache_read_input_tokens: data.usage?.cache_read_input_tokens ?? 0,
+  };
+  const stop_reason = data.stop_reason ?? null;
 
   // 寫 cost record（失敗不阻斷主流程）
   try {
@@ -94,15 +122,16 @@ export async function bridgeCall(opts) {
       project,
       route: 'bridge',
       model,
-      input_tokens: inTokens,
-      output_tokens: outTokens,
-      cost_usd_est: estimateCostUsd(model, inTokens, outTokens),
+      input_tokens: usage.input_tokens,
+      output_tokens: usage.output_tokens,
+      cost_usd_est: estimateCostUsd(model, usage.input_tokens, usage.output_tokens),
       purpose,
+      elapsed_ms,
       expires_at: expiresAt(TTL_DAYS.cost),
     });
   } catch (writeErr) {
     console.error('[zhu-vitals] writeCost 失敗:', writeErr instanceof Error ? writeErr.message : writeErr);
   }
 
-  return text.trim();
+  return { text: text.trim(), usage, stop_reason, model, elapsed_ms };
 }
