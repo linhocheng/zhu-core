@@ -43,6 +43,7 @@ function getProjectId(): string {
 export async function generateEmbedding(text: string): Promise<number[]> {
   const auth = getAuth();
   const tokenResult = await auth.getAccessToken();
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const accessToken = typeof tokenResult === 'string' ? tokenResult : (tokenResult as any)?.token || '';
   const projectId = getProjectId();
 

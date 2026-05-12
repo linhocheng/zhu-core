@@ -112,14 +112,14 @@ export async function POST(req: NextRequest) {
             });
             saved.push(`xinfa:${ref.id}`);
           } else if (item.type === 'memory' && item.observation) {
-            const module: Module = MODULES.includes(item.module as Module) ? item.module as Module : 'soil';
+            const mod: Module = MODULES.includes(item.module as Module) ? item.module as Module : 'soil';
             const embedding = await generateEmbedding(
               docToText({ observation: item.observation, context: item.context })
             ).catch(() => undefined);
             const ref = await db.collection('zhu_memory').add({
               observation: item.observation,
               context: item.context || '',
-              module,
+              module: mod,
               tags: item.tags || [],
               importance: 'normal',
               hitCount: 0,

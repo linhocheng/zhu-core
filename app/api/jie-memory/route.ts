@@ -107,7 +107,7 @@ export async function POST(req: NextRequest) {
     const body = await req.json();
 
     const { observation, context, moment: momentField, importance = 'normal', tags = [], memoryType } = body;
-    const module: Module = VALID_MODULES.includes(body.module) ? body.module : 'soil';
+    const mod: Module = VALID_MODULES.includes(body.module) ? body.module : 'soil';
 
     if (!observation) {
       return NextResponse.json({ error: 'observation 必填' }, { status: 400 });
@@ -127,7 +127,7 @@ export async function POST(req: NextRequest) {
       moment: momentField || '',
       importance,
       tags,
-      module,
+      module: mod,
       ...(validType ? { memoryType: validType } : {}),
       hitCount: 0,
       createdAt: new Date(),
@@ -135,7 +135,7 @@ export async function POST(req: NextRequest) {
       ...(embedding ? { embedding } : {}),
     });
 
-    return NextResponse.json({ success: true, id: ref.id, module, hasEmbedding: !!embedding });
+    return NextResponse.json({ success: true, id: ref.id, module: mod, hasEmbedding: !!embedding });
   } catch (e: unknown) {
     const message = e instanceof Error ? e.message : String(e);
     return NextResponse.json({ error: message }, { status: 500 });

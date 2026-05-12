@@ -92,6 +92,7 @@ function VisionTab({ showToast }: { showToast: (m: string) => void }) {
     setLoading(false);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const saveField = async (field: string, val: unknown) => {
@@ -305,6 +306,7 @@ function MemoryTab({ showToast }: { showToast: (m: string) => void }) {
     setLoading(false);
   }, [activeModule]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const deleteMemory = async (id: string) => {
@@ -411,6 +413,7 @@ function XinfaTab({ showToast }: { showToast: (m: string) => void }) {
     setLoading(false);
   }, []);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const deleteXinfa = async (id: string) => {
@@ -655,6 +658,7 @@ function PromptsTab({ showToast }: { showToast: (m: string) => void }) {
     setLoading(false);
   }, [activeId]);
 
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { load(); }, [load]);
 
   const active = prompts.find(p => p.id === activeId);

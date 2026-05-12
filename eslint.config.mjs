@@ -12,6 +12,10 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // 歸檔與 CJS 腳本（不掃 require/import 風格）
+    "docs/**",
+    "scripts/**/*.js",
+    "archive/**",
   ]),
 ]);
 
