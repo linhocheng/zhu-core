@@ -13,6 +13,8 @@
  *   --hours=N  （runs 時間窗，預設 24）
  *   --days=N   （cost 時間窗，預設 7）
  *   --json     （JSON 輸出，自動化用）
+ *   --strict   （--pulse 任一 worker dead → exit 1，給 cron / CI 用）
+ *   --no-color （關 ANSI 顏色）
  */
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
@@ -56,12 +58,50 @@ function tsToDate(ts) {
   return new Date(ts);
 }
 
+const useColor = process.stdout.isTTY && !flags.has('no-color');
+const C = {
+  red: (s) => useColor ? `\x1b[31m${s}\x1b[0m` : s,
+  yellow: (s) => useColor ? `\x1b[33m${s}\x1b[0m` : s,
+  green: (s) => useColor ? `\x1b[32m${s}\x1b[0m` : s,
+  dim: (s) => useColor ? `\x1b[2m${s}\x1b[0m` : s,
+};
+
+function colorizeState(state) {
+  if (state.startsWith('✗')) return C.red(state);
+  if (state.startsWith('⚠')) return C.yellow(state);
+  if (state.startsWith('✓')) return C.green(state);
+  return C.dim(state);
+}
+
+function computeState({ observed, declared, lagSec, expected }) {
+  if (!observed && !declared) return '? unknown';
+  if (!observed) return '⚠ declared, no run';
+  if (!declared) return '⚠ run, no manifest';
+  if (expected === 'on-demand') return '✓ on-demand';
+  if (lagSec > expected * 3) return '✗ dead';
+  if (lagSec > expected * 1.5) return '⚠ slow';
+  return '✓ alive';
+}
+
 async function cmdMap() {
   const db = getDb();
-  const snap = await db.collection(VITALS_COLLECTIONS.manifests).get();
-  const rows = snap.docs.map((d) => ({ id: d.id, ...d.data() }));
+  const [manifestSnap, runSnap] = await Promise.all([
+    db.collection(VITALS_COLLECTIONS.manifests).get(),
+    db.collection(VITALS_COLLECTIONS.runs)
+      .where('started_at', '>=', new Date(Date.now() - 24 * 3600 * 1000))
+      .get(),
+  ]);
+  const runLatest = new Map();
+  runSnap.docs.forEach((d) => {
+    const r = d.data();
+    const startedAt = tsToDate(r.started_at);
+    const cur = runLatest.get(r.worker_id);
+    if (!cur || (startedAt && startedAt > cur)) runLatest.set(r.worker_id, startedAt);
+  });
+  const rows = manifestSnap.docs.map((d) => ({ id: d.id, ...d.data() }));
   if (wantJson) {
-    console.log(JSON.stringify(rows, null, 2));
+    const enriched = rows.map((r) => ({ ...r, run_last_seen: runLatest.get(r.id) ?? null }));
+    console.log(JSON.stringify(enriched, null, 2));
     return;
   }
   console.log(`ZHU VITALS — 系統結構圖 (${rows.length} workers registered)\n`);
@@ -70,10 +110,20 @@ async function cmdMap() {
     return;
   }
   for (const r of rows) {
-    const lastSeen = fmtRelTime(tsToDate(r.last_seen));
+    const manifestSeen = tsToDate(r.last_seen);
+    const runSeen = runLatest.get(r.id) ?? null;
+    const lastSeenDate = (manifestSeen && runSeen)
+      ? (manifestSeen > runSeen ? manifestSeen : runSeen)
+      : (manifestSeen ?? runSeen);
+    const lastSeen = fmtRelTime(lastSeenDate);
     const interval = r.expected_interval_seconds === 'on-demand'
       ? 'on-demand' : `${r.expected_interval_seconds}s`;
-    console.log(`${pad(r.worker_id, 30)} (${r.env})`);
+    const lagSec = lastSeenDate ? (Date.now() - lastSeenDate.getTime()) / 1000 : Infinity;
+    const state = computeState({
+      observed: lastSeenDate, declared: true,
+      lagSec, expected: r.expected_interval_seconds,
+    });
+    console.log(`${pad(r.worker_id, 30)} (${r.env})  ${colorizeState(state)}`);
     console.log(`  cadence: ${pad(interval, 10)} llm: ${r.llm_route ?? '-'}`);
     console.log(`  reads:   ${(r.reads_from || []).join(', ') || '-'}`);
     console.log(`  writes:  ${(r.writes_to || []).join(', ') || '-'}`);
@@ -112,14 +162,7 @@ async function cmdPulse() {
     const expected = m?.expected_interval_seconds;
     const lastSeen = o?.last ?? tsToDate(m?.last_seen);
     const lagSec = lastSeen ? (Date.now() - lastSeen.getTime()) / 1000 : Infinity;
-    let state;
-    if (!o && !m) state = '? unknown';
-    else if (!o) state = '⚠ declared, no run';
-    else if (!m) state = '⚠ run, no manifest';
-    else if (expected === 'on-demand') state = '✓ on-demand';
-    else if (lagSec > expected * 3) state = '✗ dead';
-    else if (lagSec > expected * 1.5) state = '⚠ slow';
-    else state = '✓ alive';
+    const state = computeState({ observed: o, declared: m, lagSec, expected });
     return { worker_id: id, last_seen: lastSeen, expected, state };
   });
 
@@ -130,11 +173,22 @@ async function cmdPulse() {
   console.log(`ZHU VITALS — 生命狀態（24h 觀察窗）\n`);
   console.log(`${pad('worker', 30)} ${pad('last_seen', 14)} ${pad('expected', 12)} status`);
   console.log('-'.repeat(70));
+  rows.sort((a, b) => {
+    const order = (s) => s.startsWith('✗') ? 0 : s.startsWith('⚠') ? 1 : 2;
+    return order(a.state) - order(b.state) || a.worker_id.localeCompare(b.worker_id);
+  });
   for (const r of rows) {
     const exp = r.expected === 'on-demand' ? 'on-demand'
       : r.expected ? `${r.expected}s` : '-';
-    console.log(`${pad(r.worker_id, 30)} ${pad(fmtRelTime(r.last_seen), 14)} ${pad(exp, 12)} ${r.state}`);
+    console.log(`${pad(r.worker_id, 30)} ${pad(fmtRelTime(r.last_seen), 14)} ${pad(exp, 12)} ${colorizeState(r.state)}`);
   }
+  const dead = rows.filter((r) => r.state.startsWith('✗')).length;
+  const slow = rows.filter((r) => r.state.startsWith('⚠')).length;
+  console.log('');
+  if (dead > 0) console.log(C.red(`${dead} dead`) + ` (last_seen > expected × 3)`);
+  if (slow > 0) console.log(C.yellow(`${slow} slow/warn`) + ` (last_seen > expected × 1.5 或 declared but no run / run but no manifest)`);
+  if (dead === 0 && slow === 0) console.log(C.green('全綠'));
+  if (flags.has('strict') && dead > 0) process.exit(1);
 }
 
 async function cmdRuns() {
