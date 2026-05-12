@@ -7,12 +7,17 @@
  *   zhu vitals --pulse      # A × B：宣告 × 實際，誰活誰死
  *   zhu vitals --runs       # 最近 24h run，分組
  *   zhu vitals --cost       # 最近 7d 成本，分組
+ *   zhu vitals --drift      # 4 個 vendor 點 sha256 對賬（vendor 跟 source）
  *
  * flags 可加：
  *   --hours=N  （runs 時間窗，預設 24）
  *   --days=N   （cost 時間窗，預設 7）
  *   --json     （JSON 輸出，自動化用）
  */
+import { spawnSync } from 'node:child_process';
+import { existsSync } from 'node:fs';
+import { homedir } from 'node:os';
+import { join } from 'node:path';
 import { getDb } from '../../zhu-vitals/src/firestore.mjs';
 import { VITALS_COLLECTIONS } from '../../zhu-vitals/src/manifest.schema.mjs';
 
@@ -207,9 +212,58 @@ async function cmdCost() {
   }
 }
 
-const chosen = ['map', 'pulse', 'runs', 'cost'].find((f) => flags.has(f));
+async function cmdDrift() {
+  const ZHU_VITALS_SOURCE = join(homedir(), '.ailive/zhu-core/zhu-vitals/src');
+  const SCRIPT_LOCAL = join(homedir(), '.ailive/zhu-core/zhu-vitals/scripts/check-vendor-drift.mjs');
+  const SCRIPT_BRIDGE = join(homedir(), '.ailive/zhu-core/zhu-vitals/scripts/check-bridge-vm-drift.mjs');
+  const targets = [
+    { name: 'molowe-platform', cwd: join(homedir(), '.ailive/molowe-platform'), kind: 'local' },
+    { name: 'strategy-worker', cwd: join(homedir(), '.ailive/strategy-worker'), kind: 'local' },
+    { name: 'strategy-html-worker', cwd: join(homedir(), '.ailive/strategy-html-worker'), kind: 'local' },
+    { name: 'bridge-vm', cwd: null, kind: 'bridge' },
+  ];
+  const results = [];
+  for (const t of targets) {
+    let r;
+    if (t.kind === 'local') {
+      if (!existsSync(t.cwd)) {
+        results.push({ name: t.name, ok: false, msg: `dir 不存在: ${t.cwd}` });
+        continue;
+      }
+      r = spawnSync('node', [SCRIPT_LOCAL], {
+        cwd: t.cwd,
+        env: { ...process.env, ZHU_VITALS_SOURCE_DIR: ZHU_VITALS_SOURCE },
+        encoding: 'utf8',
+      });
+    } else {
+      r = spawnSync('node', [SCRIPT_BRIDGE], { encoding: 'utf8' });
+    }
+    const ok = r.status === 0;
+    const last = (r.stdout + r.stderr).trim().split('\n').slice(-1)[0] || '(no output)';
+    results.push({ name: t.name, ok, msg: last });
+  }
+  if (wantJson) {
+    console.log(JSON.stringify(results, null, 2));
+    return results.every((r) => r.ok) ? 0 : 1;
+  }
+  console.log(`ZHU VITALS — vendor drift check (4 vendor points)\n`);
+  for (const r of results) {
+    const tag = r.ok ? 'OK  ' : 'FAIL';
+    console.log(`  [${tag}] ${pad(r.name, 22)} ${r.msg}`);
+  }
+  const failed = results.filter((r) => !r.ok).length;
+  console.log('');
+  if (failed > 0) {
+    console.error(`${failed}/${results.length} drift`);
+    return 1;
+  }
+  console.log(`全綠 — ${results.length}/${results.length} vendor 對賬通過`);
+  return 0;
+}
+
+const chosen = ['map', 'pulse', 'runs', 'cost', 'drift'].find((f) => flags.has(f));
 if (!chosen) {
-  console.error('usage: zhu vitals --<map|pulse|runs|cost> [--hours=N] [--days=N] [--json]');
+  console.error('usage: zhu vitals --<map|pulse|runs|cost|drift> [--hours=N] [--days=N] [--json]');
   process.exit(2);
 }
 
@@ -218,6 +272,7 @@ try {
   else if (chosen === 'pulse') await cmdPulse();
   else if (chosen === 'runs') await cmdRuns();
   else if (chosen === 'cost') await cmdCost();
+  else if (chosen === 'drift') process.exit(await cmdDrift());
 } catch (e) {
   console.error(`[zhu vitals --${chosen}] ${e instanceof Error ? e.message : e}`);
   process.exit(1);
