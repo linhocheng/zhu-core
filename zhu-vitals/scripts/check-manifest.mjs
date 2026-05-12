@@ -1,59 +1,114 @@
 #!/usr/bin/env node
 /**
- * CI manifest validator. 給 vitals.yml workflow 用。
+ * CI manifest + vendor validator. 給 vitals.yml workflow 用。
  *
  * 用法（在 worker repo 根目錄跑）：
  *   node node_modules/zhu-vitals/scripts/check-manifest.mjs
+ *   # 或 vendored: node src/zhu-vitals-scripts/check-manifest.mjs
  *
- * 行為：
- *   - 找 ./manifest.ts | ./manifest.mjs | ./manifest.js
- *   - 找不到 → exit 0（pre-T3.1 grandfathered，CI 提示但不擋）
- *   - 找到 → dynamic import → validateManifest → invalid 就 exit 1
+ * 行為（T3.5 strict mode · 2026-05-12）：
+ *   1) 找所有 manifest：./manifest.{mjs,js} | **\/manifests/*.mjs
+ *      - 0 個 → exit 1（pre-T3.1 grandfathered 規矩已結束）
+ *      - 每個 dynamic import → validateManifest → 任何一個 invalid 就 exit 1
+ *   2) 找所有 vendored zhu-vitals 目錄（含 index.mjs + manifest.schema.mjs）
+ *      - 每個目錄必須有 VENDOR.md（sha256 lock + source commit）→ 缺則 exit 1
  *
- * T3.5 收尾後改成「找不到 manifest 一律 exit 1」。
+ * 排除：node_modules / .next / .git / dist / build
  */
-import { existsSync } from 'node:fs';
+import { existsSync, readdirSync, statSync } from 'node:fs';
 import { pathToFileURL } from 'node:url';
-import { resolve } from 'node:path';
+import { resolve, join, basename, dirname } from 'node:path';
 import { validateManifest } from '../src/manifest.schema.mjs';
 
 const CWD = process.cwd();
-const CANDIDATES = ['manifest.mjs', 'manifest.js', 'manifest.ts'];
+const SKIP_DIRS = new Set(['node_modules', '.next', '.git', 'dist', 'build', 'coverage', '.vercel']);
 
-const found = CANDIDATES.map((f) => resolve(CWD, f)).find(existsSync);
-
-if (!found) {
-  console.log('[zhu-vitals/check-manifest] (none found — pre-T3.1 grandfathered)');
-  process.exit(0);
+/**
+ * @param {string} root
+ * @param {(p: string) => boolean} match
+ * @returns {string[]}
+ */
+function walk(root, match) {
+  const out = [];
+  const stack = [root];
+  while (stack.length) {
+    const d = stack.pop();
+    let entries;
+    try { entries = readdirSync(d); } catch { continue; }
+    for (const name of entries) {
+      if (SKIP_DIRS.has(name)) continue;
+      const full = join(d, name);
+      let st;
+      try { st = statSync(full); } catch { continue; }
+      if (st.isDirectory()) stack.push(full);
+      else if (match(full)) out.push(full);
+    }
+  }
+  return out;
 }
 
-console.log(`[zhu-vitals/check-manifest] found: ${found}`);
+// ── 1. Manifest 搜尋 + 驗證 ──
+const manifestRoot = resolve(CWD, 'manifest.mjs');
+const manifestRootJs = resolve(CWD, 'manifest.js');
+const manifestFiles = walk(CWD, (p) => {
+  const dir = basename(dirname(p));
+  return dir === 'manifests' && p.endsWith('.mjs');
+});
+if (existsSync(manifestRoot)) manifestFiles.push(manifestRoot);
+if (existsSync(manifestRootJs)) manifestFiles.push(manifestRootJs);
 
-if (found.endsWith('.ts')) {
-  console.error('[zhu-vitals/check-manifest] manifest.ts 需要先 build 成 .mjs 才能驗證 (T3.5 處理)');
-  process.exit(0);
-}
-
-let mod;
-try {
-  mod = await import(pathToFileURL(found).href);
-} catch (e) {
-  console.error(`[zhu-vitals/check-manifest] import 失敗: ${e.message}`);
+if (manifestFiles.length === 0) {
+  console.error('[check-manifest] FAIL: 沒找到任何 manifest（manifest.mjs / manifest.js / **/manifests/*.mjs）');
+  console.error('  BUILDING_PROTOCOL v0.2 機制 A 強制：每個 worker 必須有 manifest 聲明');
   process.exit(1);
 }
 
-const m = mod.manifest ?? mod.default;
-if (!m) {
-  console.error('[zhu-vitals/check-manifest] manifest export 不存在（須 named export manifest 或 default export）');
-  process.exit(1);
+let manifestErrors = 0;
+for (const f of manifestFiles) {
+  const rel = f.replace(CWD + '/', '');
+  let mod;
+  try {
+    mod = await import(pathToFileURL(f).href);
+  } catch (e) {
+    console.error(`[check-manifest] FAIL ${rel}: import 失敗 — ${e.message}`);
+    manifestErrors++;
+    continue;
+  }
+  const m = mod.manifest ?? mod.default;
+  if (!m) {
+    console.error(`[check-manifest] FAIL ${rel}: export manifest 不存在`);
+    manifestErrors++;
+    continue;
+  }
+  const result = validateManifest(m);
+  if (!result.ok) {
+    console.error(`[check-manifest] FAIL ${rel}: schema 不合法`);
+    for (const e of result.errors) console.error(`    - ${e}`);
+    manifestErrors++;
+    continue;
+  }
+  console.log(`[check-manifest] ✓ ${m.worker_id} (${m.env}) — ${rel}`);
 }
 
-const result = validateManifest(m);
-if (!result.ok) {
-  console.error('[zhu-vitals/check-manifest] schema 不合法:');
-  for (const e of result.errors) console.error(`  - ${e}`);
-  process.exit(1);
+// ── 2. Vendor lock 檢查 ──
+const vendorDirs = new Set(
+  walk(CWD, (p) => basename(p) === 'index.mjs' && basename(dirname(p)) === 'zhu-vitals').map(dirname),
+);
+let vendorErrors = 0;
+for (const dir of vendorDirs) {
+  const rel = dir.replace(CWD + '/', '');
+  if (!existsSync(join(dir, 'VENDOR.md'))) {
+    console.error(`[check-manifest] FAIL ${rel}/: 缺 VENDOR.md（vendored zhu-vitals 必須記 source commit + sha256 lock）`);
+    vendorErrors++;
+  } else {
+    console.log(`[check-manifest] ✓ vendor ${rel}/ (VENDOR.md present)`);
+  }
 }
 
-console.log(`[zhu-vitals/check-manifest] ✓ ${m.worker_id} (${m.env})`);
+const total = manifestErrors + vendorErrors;
+if (total > 0) {
+  console.error(`[check-manifest] ${total} 個錯誤`);
+  process.exit(1);
+}
+console.log(`[check-manifest] OK — ${manifestFiles.length} manifest(s), ${vendorDirs.size} vendor dir(s)`);
 process.exit(0);
