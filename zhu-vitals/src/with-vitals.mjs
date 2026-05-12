@@ -36,10 +36,27 @@ export function withVitals(manifest, handler) {
     throw new Error(`[zhu-vitals] manifest invalid: ${check.errors.join('; ')}`);
   }
 
+  let manifestUpsertedInProcess = false;
+
   return /** @type {H} */ (
     async (...args) => {
       const run_id = uuid();
       const started_at = new Date();
+
+      // 每個 process cold-start 第一次跑時 upsert manifest，CLI --map 用
+      if (!manifestUpsertedInProcess) {
+        try {
+          const db = getDb();
+          await db.collection(VITALS_COLLECTIONS.manifests).doc(manifest.worker_id).set({
+            ...manifest,
+            last_seen: started_at,
+          }, { merge: true });
+          manifestUpsertedInProcess = true;
+        } catch (e) {
+          console.error('[zhu-vitals] manifest upsert 失敗:', e instanceof Error ? e.message : e);
+        }
+      }
+
       let result;
       let thrown;
       try {

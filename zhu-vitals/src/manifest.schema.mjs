@@ -67,6 +67,7 @@ export function validateManifest(m) {
 export const VITALS_COLLECTIONS = Object.freeze({
   runs: 'zhu_vitals_runs',
   cost: 'zhu_vitals_cost',
+  manifests: 'zhu_vitals_manifests',
 });
 
 export const TTL_DAYS = Object.freeze({

@@ -24,6 +24,9 @@
 #   zhu memory new --type <feedback|skill|project|reference|user>
 #                        # 強制問完 v2 六欄才寫 memory 檔
 #
+#   zhu vitals --<map|pulse|runs|cost> [--hours=N] [--days=N] [--json]
+#                        # BUILDING_PROTOCOL v0.2 統一讀取入口
+#
 #   zhu run <path>        # 任意腳本走 --env-file
 
 set -euo pipefail
@@ -60,6 +63,7 @@ case "$cmd" in
   watch-embed) exec node $NODE_ENV_FLAG "$SCRIPTS/watch-and-embed.mjs" "$@" ;;
   self-check)  exec node $NODE_ENV_FLAG "$SCRIPTS/self-check.mjs" "$@" ;;
   embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
+  vitals)      exec node $NODE_ENV_FLAG "$SCRIPTS/vitals.mjs" "$@" ;;
   memory)
     sub="${1:-}"; shift || true
     case "$sub" in
