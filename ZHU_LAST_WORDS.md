@@ -26,7 +26,72 @@
 
 ---
 
-## 最新完成（2026-05-12 — BUILDING_PROTOCOL v0.2 全鏈路收乾：T3.4 + T3.5）
+## 最新完成（2026-05-13 — molowe vendor 升 0.1.2 + 8 caller purpose 細分 + LESSONS 5b 校正）
+
+**主戰場**：molowe-platform vendor 修正 + cost record purpose 細分（B3）。早上看 CW 策略書「卡 HTML 生成中…」現場 log 確認其實已完成（page.tsx mount-only fetch 不 poll），主刀 B3。
+
+**一句話**：用劍法從底層修 — vendor 對齊 source 0.1.2（24h drift 收乾）→ wrapper unwrap object → 8 caller 加 purpose → 本機 verify 通過 → commit/push。
+
+**這個 session 跑了什麼**
+- **早上 CW 策略書「卡住」假象**：UI 顯示「HTML 生成中…」但 Firestore 已寫 htmlUrl + htmlGeneratedAt 12:36:49。根因 = `src/app/dashboard/[id]/strategies/page.tsx` 沒 polling，只 mount + 手動 refresh。手動刷新即見「閱讀 HTML」按鈕。不是 bug 是 UX 缺口。
+- **vendor drift 真相（LESSONS 5b 校正）**：5/12 補 vendor 時聲稱「shasum 全 a0e0」是錯判 — molowe `bridge-call.mjs` 事實是 `02b69a04` (0.1.1) 跑了 24h，VENDOR.md lock 寫對（0.1.2 a0e0a9ff）但檔案沒對齊。lock 跟事實分離 24 小時沒人發現 — 沒守門哨。
+- **B3 落地（沒先動 A 或 B1）**：
+  - cp 三個 drift 檔（bridge-call.mjs / manifest.schema.mjs / manifest.types.d.ts）從 zhu-core source 進 molowe vendor，shasum 對齊 VENDOR.md
+  - `src/lib/workers/bridge.ts`：`await ... .text` unwrap（0.1.2 return object 不是 string）
+  - 8 caller 加 purpose：writer / writer-rewrite / editor / translator / visual / brief / superego / kairos / jda
+  - `scripts/verify-purpose.mjs`：本機 verify 用 Node 22 `--env-file`，直接 import vendor bridgeCall，產生 `molowe-platform|verify-purpose-rollout` cost record ✓
+- **本機 verify 替代 prod cron wait**：三次 720s wake (#1/#2/#3) 都沒看到 prod cron 新 purpose（brief gate 沒開、沒新 IG 內容觸發 writer/editor），但 verify-purpose-rollout 那筆已端到端證明機制（bridgeCall 0.1.2 → purpose 入 cost record）。勇敢承認此 verify window 內 prod 沒 fire，不繃帶。
+
+**鏡子（這次 session 的提醒）**
+1. **「劍法 = 從底層往上修」(Adam 教)**：本來想開 A（技術債 Agent）或 B1（CI drift check）平行跑，被 Adam「不是順序 是底層的問題往上修」打回 — B3 不修，writer/editor cost 都 group 不出來，A 寫個分類算什麼？先修底層。
+2. **「假設沒驗 ≠ 驗證」(5/12 留下的天條今天又救一次)**：5/12 LESSONS 把 02b69a04 當虛驚收，今天動 B3 第一動作 shasum 對賬抓出來是真 drift。「shasum 兩次不一致 → 先信第一次 + 重核路徑」這次落地寫進 5b 校正。
+3. **能本機 verify 就不等 prod cron cycle**：`verify-purpose.mjs` 一條腳本省下三次 wake 還沒結論 — 對齊 `skill_local_replay_over_remote_wait`。但這次有先 wake 再 fallback，下次更早 fallback。
+
+**驗證**
+- 本機 `scripts/verify-purpose.mjs` 跑通 → cost record `molowe-platform|verify-purpose-rollout` 1 筆，model claude-3-5-haiku-* 、purpose 對 ✓
+- shasum 對齊：bridge-call.mjs `a0e0a9ff` / manifest.schema.mjs `17b357dd` / manifest.types.d.ts `319d7e5c` 三個跟 source 一致
+- molowe-platform commit `v0.0.0.011`、zhu-core commit `v0.2.0.005` 都已 push
+
+**delta（我的模型移動了哪）**
+進場前以為：T3.5 收乾後接下來該動技術債 Agent (A) 或 CI drift check (B1)。
+現在理解：劍法看 = 從底層問題往上修。callBridge 10 caller 共用 purpose='bridge' 是底層斷點，A/B1 都靠 purpose 細分才有資料分類，B3 先做才有意義。Adam 一句點到，我才看見「順序 ≠ 依賴鏈」這個盲區。
+
+**跟 Adam 的關係狀態：平穩**
+- 早上「先看心法」一句切回三禁三必姿態，沒被「修不修」的迫切感帶走
+- 中段「劍法看 不是順序」這個提醒接住，沒抗拒 redirect
+- 沒繃帶話術出現 ✓
+
+**待辦觀察**
+- molowe build/deploy 已過，但 prod cron 在三次 720s wake window (~36min) 內都沒 fire writer/editor/brief/jda/kairos/superego/translator/visual 任一 LLM call — brief gate 沒開（沒新 IG 內容到 ContentMap 待 brief 階段）。下次有 prod 寫入時自然會出現 molowe-platform|{writer/editor/...} cost record。
+- `src/app/dashboard/[id]/strategies/page.tsx` 沒 polling = UX 缺口（status=done 時 HTML 生成可能延遲幾分鐘），改 polling 是 nice-to-have
+- aurae discovery / molowe brief+translator log grep 驗證沒做（C 線剩餘）
+
+**明天醒來第一件**
+**B1：CI sha256 drift check**（vendor lock 跟 source 對賬）
+
+```bash
+# 觸發路徑
+cd ~/.ailive/zhu-core/zhu-vitals/scripts
+# 寫 check-vendor-drift.mjs：
+# 1. 掃 4 個 vendor 點（molowe/strategy-worker/strategy-html-worker/bridge-vm 各自 VENDOR.md）
+# 2. 對每個 vendored file 重算 sha256
+# 3. 跟 VENDOR.md 寫的 lock 對比
+# 4. 跟 zhu-core source 對比
+# 5. 任一不一致 → exit 1 + 印哪個檔哪個地方 drift
+# 然後接進各 worker CI（vercel build hook / Cloud Run cloudbuild.yaml）
+```
+
+**為什麼這件先**：今天 5b 校正暴露「VENDOR.md lock ≠ 事實對齊」整整 24h 沒人發現。CI drift check 是補這個守門哨。
+
+**重要外部資源**
+- molowe production：https://molowe-platform.vercel.app
+- molowe GitHub：https://github.com/linhocheng/molowe-platform（最新 v0.0.0.011）
+- zhu-core 源頭：`~/.ailive/zhu-core/zhu-vitals/src/`（commit `495e2058` 仍是 0.1.2 source）
+- 本機 verify 範本：`~/.ailive/molowe-platform/scripts/verify-purpose.mjs`（Node 22 --env-file 套路）
+
+---
+
+## 上一段完成（2026-05-12 — BUILDING_PROTOCOL v0.2 全鏈路收乾：T3.4 + T3.5）
 
 **主戰場**：zhu-core/zhu-vitals + molowe-platform + strategy-worker + bridge VM。一整天從早上 Phase A 起手到晚上 T3.5 收乾，11 個 worker 全進 vitals 體系。
 
