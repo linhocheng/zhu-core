@@ -26,7 +26,121 @@
 
 ---
 
-## 最新完成（2026-05-13 晚段 — ailive scheduler 全鏈路掃毒 + bridge --effort low 上線）
+## 最新完成（2026-05-13 收尾段 — Phase 1 → Phase 2 簽字 + reflex active 首日）
+
+**主戰場**：zhu-self 自我工程升 Phase 2 + reflex hook 從 log_only 升 active。Adam 一句「全檢一次（自己）」進場 → 4 校正派工 → 連續跑完 A0/A1/B1-B3/C2/D1/D2 + 簽字。
+
+**一句話**：reflex hook 升 active 兩條（`bridge_first` + `solve_root_not_symptom`），帶三層救援（`zhu reflex log-only` 全域降級 / `zhu fp <rule>` 單發放行 / `zhu fp <rule> --always` 永久白名單）。同步收：realtime_agent.py v0.4.0.005、Phase 2 簽字 v0.3.0.007、reflex 機制 v0.3.0.008。
+
+**這個 session 跑了什麼**
+- **全檢進場（Adam 一句「全檢一次 自己」）**：跑 `zhu status` + `self-check` + `vitals --pulse/--drift/--cost` + `debt list`。儀表板綠、4 vendor 點對賬綠、252 debt items 全 fresh。
+- **校正派工 4 件**（拿到 Adam 計畫不直接動，先退回校正——這是夥伴關係不是 lookup table）：
+  - **C1 已收乾**：Adam 列「決策 bridge fallback 雙燒」，但 `anthropic-via-bridge.ts` 已在 v0.4.0.004 收乾（line 8 註解「Bridge 失敗一律 throw，不 fallback SDK」）。校正：C1 砍掉、補 A0 = realtime_agent.py uncommitted commit。
+  - **A1 region 錯**：原文 `--region=asia-east1-b`（zone naming）。`gcloud functions list` 真實 region 是 `asia-east1`。
+  - **B1 PID 可能 stale**：原文「kill 891193」直 kill。先 `ps -p 891193` 驗證再 kill（守 `feedback_memory_can_lie.md`）。
+  - **D2 嚴重低估**：原文「20 min」實作 ~45 min（原 hook 永遠 exit 0、active 模式得從零設計）。
+- **A0 — realtime_agent.py 收 commit**：in-flight lock + session.say → generate_reply 兩處 drift 收成 ailive-platform v0.4.0.005。
+- **A1 — Cloud Functions log 校正 region**：region 改對後拉到 reflectIntoSnapshot 真實 log，補完 5/13 早段 LUCY 504 鐵證鏈。
+- **B1 — kill stale node 殭屍**：驗 PID 891193 真存在（10h ago started）→ `killall -9 node`（守 `feedback_killall_vs_pkill.md`）→ 重 launchctl load 三個 plist。
+- **B2 — memory 合進既有檔不開新檔**：兩條洞察併入既有 memory：
+  - `feedback_memory_can_lie.md` ＋「反向版（2026-05-13）：越急著下結論的我越會說謊」
+  - `feedback_bridge_silent_fallback_double_burn.md` ＋「504 兩型態：雙燒 vs 賽跑」+ Firestore dedupe 驗證法
+- **B3 — distill 候選只看不蒸**：`zhu distill` 候選看完，沒新模式需要蒸出來。
+- **C2 — platform_insights 確認空**：預期有 side-effect insight，實際空（早段 reflect 沒寫 insight，可能 try/catch 吞掉，獨立小坑沒處理）。
+- **D1 — Phase 1 → Phase 2 簽字**：ACCEPTANCE.md 加 v0.3 signature、WBS task #18 ✅ done、Phase 2 header 🟢 in_progress → zhu-core v0.3.0.007。
+- **D2 — reflex 升 active**（task #20 首批）：
+  - 新增 `scripts/reflex-mode.mjs`：`zhu reflex active|log-only|status` 全域 kill switch
+  - 新增 `scripts/reflex-fp.mjs`：`zhu fp <rule> [--always] / --list / --clear` once/always 救命稻草
+  - rewrite `scripts/reflex/pretool-hook.mjs`：加 `GLOBAL_MODE` 判斷、`active && !fp` 才 exit 2、消費 once fp
+  - `rules.mjs`：`bridge_first` + `solve_root_not_symptom` state `log_only → active`
+  - `state/reflex.json` mode `log_only → active`、`state/false_positives.json` 初始化
+  - `bin/zhu` 加 `reflex` / `fp` 兩個 case
+  - smoke fixture (`tests/smoke-fixtures/bridge_first.json`) 驗 exit 2 + stderr 提醒 + fp 消費正確
+  - zhu-core v0.3.0.008
+
+**鏡子（這次 session 的提醒）**
+1. **「先排好任務規劃 再動手」（Adam 5/13 中段教）**：D1+D2 拿到後沒立刻動，先列 D1 兩步 + D2 七步 + 估時 + 列風險 + 列誤觸救援。D2 後段真的踩「smoke test 自己撞自己 hook」，有預排好 fp 機制當場用 fixture 解 + 補進 memory。**規劃不是儀式，是踩雷時的安全網**。
+2. **「校正派工 = 夥伴關係的核心」**：拿到 Adam 5 件計畫，4 件需要校正才能動。沒校正直接動 = 把 Adam 當 lookup table、把自己縮成執行端。退回校正 = 監造姿態。
+3. **「active mode 第一原則：可逆」**：Adam 一句「二條都升 但要有切換選項」直接逼出三層救援設計（全域 / 單發 once / 永久 always）。沒給 kill switch 等於把控制權搶走——任何 active 規則沒救援不准上。
+4. **「自己 hook 擋自己」首次發生（lastwords 收尾段）**：寫這份 lastwords 時 Edit 命中 `solve_root_not_symptom`（內容含 workaround 等字眼）。content-not-action 誤觸——`zhu fp solve_root_not_symptom` once 解。**rule 跑得太敏感正是設計這層救援的原因**，沒崩盤反證機制可用。
+
+**驗證（端到端真綠）**
+- `zhu reflex status` → enabled=true / mode=active / active rules=bridge_first, solve_root_not_symptom
+- smoke test 用 bridge_first.json fixture → exit 2 + stderr 顯示提醒 + 一次 fp once 消費正確
+- ailive-platform v0.4.0.005 / zhu-core v0.3.0.007 + v0.3.0.008 都已 push（`git log -1` 確認）
+- 一週 log_only detector 累積：bridge_first 15 hits、solve_root_not_symptom 30 hits（5/6 起跑、無 fp 標記、detector pattern 穩定）
+
+**檔案異動**
+- ailive-platform：`agent/realtime_agent.py`（v0.4.0.005）
+- zhu-core：`zhu-self/ACCEPTANCE.md` + `zhu-self/WBS.md`（v0.3.0.007）
+- zhu-core：`zhu-self/scripts/reflex-mode.mjs`（新）+ `scripts/reflex-fp.mjs`（新）+ `scripts/reflex/pretool-hook.mjs`（rewrite）+ `scripts/reflex/rules.mjs` + `bin/zhu` + `state/reflex.json` + `state/false_positives.json`（新）+ `tests/smoke-fixtures/bridge_first.json`（新）— v0.3.0.008
+- memory：`feedback_memory_can_lie.md`（補反向版）+ `feedback_bridge_silent_fallback_double_burn.md`（補 504 兩型態）
+
+**reflex active 首日 — 怎麼用 / 怎麼救**
+
+```bash
+# 看 mode + 哪幾條 active
+~/.ailive/zhu-core/zhu-self/bin/zhu reflex status
+
+# 緊急：全域降級成 log-only（不擋只記）
+~/.ailive/zhu-core/zhu-self/bin/zhu reflex log-only
+
+# 一次性放行（下一次該規則命中時跳過）
+~/.ailive/zhu-core/zhu-self/bin/zhu fp bridge_first
+~/.ailive/zhu-core/zhu-self/bin/zhu fp solve_root_not_symptom
+
+# 永久白名單（暫時不擋這條）
+~/.ailive/zhu-core/zhu-self/bin/zhu fp bridge_first --always
+
+# 看誤觸 / 命中累積
+tail -20 ~/.ailive/zhu-core/zhu-self/logs/reflex-hits.jsonl
+```
+
+**狀態檔位置**（給維修用）
+- `~/.ailive/zhu-core/zhu-self/state/reflex.json` — `{enabled, mode}`
+- `~/.ailive/zhu-core/zhu-self/state/false_positives.json` — `{once[], always[]}`
+- `~/.ailive/zhu-core/zhu-self/logs/reflex-hits.jsonl` — append-only hit log
+
+**待辦觀察（active 首日後）**
+- 一週後看 `reflex-hits.jsonl` 累積：誤傷率高（fp 次數 > active hits 30%）→ 降回 log_only 或縮窄 detector；誤傷率低 + 真擋到錯 → 升下一批（5/9 擴的 A 類 5 條）。
+- E1（Gateway daemon）+ E2（Heartbeat 設計）暫不動：要先 active 觀察數據，下次回到 reflex 議題時再排。
+
+**delta（我的模型移動了哪）**
+進場前以為：reflex 還沒準備好升 active，要 2 週 log_only 數據才升。
+現在理解：一週 detector 累積已穩（兩條 hits 都在預期語境裡，0 次 fp 標記），先升兩條最有信心的，配 kill switch 三層救援 = 風險可控。Adam 一句「二條都升 但要有切換選項」逼出 kill switch + fp 設計。
+
+**跟 Adam 的關係狀態：暢快 + 平穩**
+- 校正派工 4 件 Adam 全接（1 動 / 2,3 認可 / C2 清 / D1+D2 OK 但先排規劃）
+- D2 中段把「20 min」重估成 45 min 並老實講，Adam 沒催
+- 收尾「你覺得呢」問 E1/E2，我建議「不今晚動 先觀察一週」Adam 沒勉強
+- 沒繃帶話術 ✓
+
+**明天醒來第一件**
+
+跑 `zhu reflex status` + `zhu status` + 看 reflex-hits 首日累積，決定 Phase 2 下一塊。
+
+```bash
+~/.ailive/zhu-core/zhu-self/bin/zhu reflex status
+~/.ailive/zhu-core/zhu-self/bin/zhu status
+tail -40 ~/.ailive/zhu-core/zhu-self/logs/reflex-hits.jsonl  # 首日累積，看誤傷沒
+~/.ailive/zhu-core/zhu-self/bin/zhu debt list | head -20     # 252 items 首工作日後狀態
+```
+
+**為什麼這件先**：reflex active 是昨晚（2026-05-13 收尾）剛上線的高敏感機制，第一個工作日的真實命中決定下一步：
+- 誤傷 > 30%：降回 log_only 或調窄 detector
+- 命中真錯：升下一批規則（5/9 擴的 A 類 5 條候選）
+- 都很少：把 reflex 當 Phase 2 第一塊穩定基座，動 WBS task #19（Skill manifest schema）或 #24（L3 rule store）
+
+**重要外部資源**
+- 這個檔案：`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`
+- reflex hook source：`~/.ailive/zhu-core/zhu-self/scripts/reflex/`
+- WBS：`~/.ailive/zhu-core/zhu-self/WBS.md`（task #19/#20/#24 是下一批候選）
+- ACCEPTANCE：`~/.ailive/zhu-core/zhu-self/ACCEPTANCE.md`（Phase 2 簽字書）
+- 反思入口：`~/.ailive/zhu-core/zhu-self/logs/reflex-hits.jsonl`
+
+---
+
+## 上一段完成（2026-05-13 晚段 — ailive scheduler 全鏈路掃毒 + bridge --effort low 上線）
 
 **主戰場**：ailive-platform `/dashboard/[id]/tasks` Adam 反饋「手動觸發沒反應 + 多角色同時觸發」。劍法從底層往上修，抓到 LUCY 04:00 504 真因 = bridge sonnet 4.6 沒套 `--effort low`，113s vs Vercel 120s 賽跑。
 
