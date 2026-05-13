@@ -26,7 +26,46 @@
 
 ---
 
-## 最新完成（2026-05-13 — molowe vendor 升 0.1.2 + 8 caller purpose 細分 + LESSONS 5b 校正）
+## 最新完成（2026-05-13 晚段 — ailive scheduler 全鏈路掃毒 + bridge --effort low 上線）
+
+**主戰場**：ailive-platform `/dashboard/[id]/tasks` Adam 反饋「手動觸發沒反應 + 多角色同時觸發」。劍法從底層往上修，抓到 LUCY 04:00 504 真因 = bridge sonnet 4.6 沒套 `--effort low`，113s vs Vercel 120s 賽跑。
+
+**一句話**：腦補 +2h drift 撤回 → 拉 Firebase/bridge log 抓到 LUCY 113s 賽跑 → bridge index.js 兩個 spawn site 加 `--effort low` → A/B 驗證 sonnet 80% ↓ → memory `reference_sonnet46_effort_low.md` 校正（之前說已套在 internal-server.js，實際 service 跑 index.js）。
+
+**這個 session 跑了什麼**
+- **撤回腦補**：「+2h drift」我先寫結論再找證據，Firebase Functions log 證明 `.timeZone('Asia/Taipei')` 有效、`getTaipeiNow` 正確、`shouldRun` 5-min tolerance OK。觸發 `feedback_memory_can_lie.md` 反向版（我自己生記憶說謊）。
+- **LUCY 504 真因鐵證**：UTC 04:02:03 bridge log `[bridge] req=claude-sonnet-4-6 113835ms in=3 out=6051`，Vercel 04:02:04 砍。**不是 double-burn 是賽跑**——bridge 完成在 Vercel timeout 前 1 秒，dedupe 寫入了但 Vercel 看到 504。下一輪 LUCY 顯示「跳過」證明 backend 成功。
+- **memory 又說謊一次**：`reference_sonnet46_effort_low.md` 寫「bridge 內部 server 已套用 internal-server.js L34」，實際 `claude-bridge.service` ExecStart 是 `~/claude-bridge/index.js`，internal-server.js 是 dead file。先 grep production 才信。
+- **動工三點**：
+  - line 48 `runClaude`：`['-p', '--output-format', 'json', '--effort', 'low']`
+  - line 949 `runClaudeWithTools`：含 `'--dangerously-skip-permissions', '--effort', 'low'`
+  - line 2261 stream-json **不加**（dialogue/voice-stream 主串流例外，per `feedback_bridge_first.md`）
+- **A/B 驗證**：reflect 22.8→15s（34% ↓）、post 拆解 sonnet 從 113s → 22s（80% ↓）、post 總時間 79→77s（瓶頸轉到 Haiku 25s + Vercel 處理 30s）。LUCY 504 從架構上消除（22+25+30≈77s 對 120s lambda，安全帶 43s）。
+
+**鏡子（這次 session 的提醒）**
+1. **劍法 = 從底層往上修（再驗一次）**：上層症狀（手動觸發無反應）→ 中層假象（+2h drift 自己腦補）→ 底層真因（bridge 沒套 effort low）。底層修了上層自動消，不要在中層繃帶。
+2. **「找問題 vs 根源優化」答案是「先找問題，但範圍鎖死」**：根因是猜的（bridge double-burn 是假設）→ 先驗（bridge log + Firestore dedupe timestamp 兩塊底磚）→ 才動。10 分鐘換掉 30 分鐘的繃帶。
+3. **memory-can-lie 反向版**：除了「越具體的記憶越會說謊」（過去事實腐爛），還有「越急著下結論的我越會說謊」（從現在事實生假記憶）。劍法第一步是看現場不是寫劇本。
+
+**驗證**
+- `gcloud compute ssh zhu-dev ... sudo systemctl status claude-bridge` → active (running) since 12:06:43 UTC
+- smoke test 7.5s（`curl https://bridge.soul-polaroid.work/v1/messages` with "hello"）
+- reflect 6jE3 → HTTP 200 / 15.0s
+- post 6jE3 → HTTP 200 / 77.1s, savedId=`akt8XyS9H5giEFXvbxN2`
+
+**副作用 / 殘留**
+- 跑了 1 筆 reflect insight + 1 筆 post draft（王彩雲, 6jE3, savedId=`akt8XyS9H5giEFXvbxN2`），Adam 未決定保留/刪
+- testAiliveScheduler endpoint 啟動失敗（`ANTHROPIC_API_KEY` v1 destroyed）— 獨立小坑沒處理
+- bridge fallback 機制：bridge 超時仍會 fallback SDK 雙燒，沒動，等 Adam 決策
+
+**檔案異動**
+- VM：`~/claude-bridge/index.js`（line 48 + 949 兩處 spawn args 加 --effort low）— VM 那份是 source，不在 git
+- memory：`reference_sonnet46_effort_low.md`（production 套點校正 + A/B 數字）
+- LESSONS：`docs/LESSONS/LESSONS_20260513.md`（晚段全文）
+
+---
+
+## 上一段完成（2026-05-13 早段 — molowe vendor 升 0.1.2 + 8 caller purpose 細分 + LESSONS 5b 校正）
 
 **主戰場**：molowe-platform vendor 修正 + cost record purpose 細分（B3）。早上看 CW 策略書「卡 HTML 生成中…」現場 log 確認其實已完成（page.tsx mount-only fetch 不 poll），主刀 B3。
 
@@ -746,7 +785,15 @@ cd ~/.ailive/molowe-platform && npx vercel inspect --logs https://molowe-platfor
 ~/.ailive/zhu-core/zhu-self/bin/zhu self-check
 ```
 
-**5 件事按順序**（5/11 更新後重排）：
+**5 件事按順序**（5/13 晚段更新後重排）：
+
+- **(★★) ailive scheduler effort low prod 驗證**（5/13 晚段主戰場接棒、最高優先）：明早 Taipei ~12:00 一輪是 post 高峰，看 Firebase Functions log：
+  ```bash
+  gcloud --project=moumou-os functions logs read ailiveScheduler --region=asia-east1 --limit=80 | grep -E "(🕐|🚀|✅|❌|📊)"
+  ```
+  期待：所有角色 post 完成、沒有 504、Vercel lambda 每個 task <60s。若仍見 504 → bridge 端要進一步切短 max_tokens 或 Cloud Run 遷移。對賬 bridge log：`gcloud compute ssh zhu-dev --zone=asia-east1-b --command="journalctl -u claude-bridge --since '2026-05-14 03:55:00' --no-pager | grep req=claude-sonnet"` — 期待 sonnet req 都 <30s。
+
+- **(★) bridge fallback 雙燒收口（等 Adam 決策）**：今天驗到 bridge 完成後 Vercel 仍可能 504，但更大的雷在 `AnthropicBridge` constructor 的 fallback 邏輯 — bridge 超時若 apiKey 存在會 fallback SDK 再燒一次 API key（真 double-burn）。`src/lib/anthropic-via-bridge.ts:71-86` 的 try/catch 是雙燒源頭。三選一：(A) 移除 apiKey fallback（壞 = 失去保險）、(B) 限制 fallback 只發生在「bridge 連線失敗」而非「bridge timeout」、(C) 留著但加 monitor 警報。傾向 (B)。
 
 - **(★) 策略書 HTML Step 1 撞牆 — 等 Adam 拍 ABC**（5/11 主戰場、最高優先）：上一段「最新完成」三選一表，A=Cloud Run / B=串流分段 / C=接受短 output。**動手前必先問 Adam**，不擅自選。傾向 A，理由寫在最新完成段。
 
