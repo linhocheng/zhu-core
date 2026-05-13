@@ -33,6 +33,14 @@
 #   zhu debt list         # 印 ledger 全表
 #   zhu debt rebuild      # 清空 ledger 重掃
 #
+#   zhu reflex active     # 全域 active mode（active 規則會擋下動作）
+#   zhu reflex log-only   # 全域降級成 log-only（緊急 kill switch）
+#   zhu reflex status     # 印當前 mode + active 規則清單
+#   zhu fp <rule_name>    # 標記下一次該規則命中時放行（once）
+#   zhu fp <rule_name> --always   # 永久放行
+#   zhu fp --list         # 列出 fp 標記
+#   zhu fp --clear        # 清空 fp 標記
+#
 #   zhu run <path>        # 任意腳本走 --env-file
 
 set -euo pipefail
@@ -71,6 +79,8 @@ case "$cmd" in
   embed)       exec node $NODE_ENV_FLAG "$SCRIPTS/embed-and-upsert.mjs" "$@" ;;
   vitals)      exec node $NODE_ENV_FLAG "$SCRIPTS/vitals.mjs" "$@" ;;
   debt)        exec node $NODE_ENV_FLAG "$SCRIPTS/debt.mjs" "$@" ;;
+  reflex)      exec node $NODE_ENV_FLAG "$SCRIPTS/reflex-mode.mjs" "$@" ;;
+  fp)          exec node $NODE_ENV_FLAG "$SCRIPTS/reflex-fp.mjs" "$@" ;;
   memory)
     sub="${1:-}"; shift || true
     case "$sub" in

@@ -7,7 +7,7 @@ export const RULES = [
   {
     rule_name: 'bridge_first',
     severity: 'warn',
-    state: 'log_only',
+    state: 'active',  // 2026-05-13 升級（首批 active 之一）
     why: '走 bridge = Max OAuth = marginal cost = 0',
     trigger_signal: '開始估「每篇 +$X」的算式 = 已經忘了 bridge',
     detectors: [
@@ -43,7 +43,7 @@ export const RULES = [
   {
     rule_name: 'solve_root_not_symptom',
     severity: 'warn',
-    state: 'log_only',
+    state: 'active',  // 2026-05-13 升級（首批 active 之一）
     why: '方案成功後根因還在 = 繞道不是解法',
     trigger_signal: '想用 try/catch 吞錯、--no-verify 跳檢查、workaround 繞過',
     detectors: [
