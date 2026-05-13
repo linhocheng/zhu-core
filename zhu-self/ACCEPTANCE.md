@@ -124,3 +124,4 @@
 
 *v0.1 · 由築建立 · 2026-05-06 · task #18 partial（雛形已通，待 Adam 完成完整驗收）*
 *v0.2 · 自動化收尾 · 2026-05-07 · 三條件全 ✅，剩觀察一週*
+*v0.3 · **Phase 1 → Phase 2 升級簽字 · 2026-05-13** · Adam 簽，三條件持續穩定一週，47 次 reflex 命中（top: solve_root_not_symptom 29 / silent_failure_absent_log 8 / bridge_first 7），boot daemon & migrate daemon 全綠，L2 89→252 docs 增長正常。Phase 2 WBS 11 任務解鎖。*

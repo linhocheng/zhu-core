@@ -34,7 +34,7 @@
 | 15 | Learning daemon ingestion pipeline 雛形 | — | ✅ done |
 | 16 | Adam dashboard 雛形 | #14 | ✅ done |
 | 17 | Kill switch 機制 — 每 daemon 一鍵停 | — | ✅ done |
-| 18 | Phase 1 驗收三件套 | #10, #11, #12 | 🟡 partial（雛形已通，待 Adam 完整驗收 — 見 ACCEPTANCE.md） |
+| 18 | Phase 1 驗收三件套 | #10, #11, #12 | ✅ done（2026-05-13 Adam 簽字升 Phase 2，見 ACCEPTANCE.md v0.3） |
 
 ---
 
@@ -130,11 +130,12 @@ Adam 看築自己做了什麼：daemon 跑況、reflex hit 分佈、L2/L3 寫入
 
 ---
 
-### Phase 2 — 技能工業化（Industrialization）
+### Phase 2 — 技能工業化（Industrialization）— 🟢 in_progress（2026-05-13 解鎖）
 
 **目標**：每個技能有 manifest，可被觸發、可被觀測、可被淘汰。
-**前提**：Phase 1 ACCEPTANCE 三條件齊備 + 一週穩定運轉 + Adam 簽字。
+**前提**：Phase 1 ACCEPTANCE 三條件齊備 + 一週穩定運轉 + Adam 簽字。✅ 全達成
 **時程**：2-3 週。
+**起點**：task #20（reflex 升 active，先 solve_root_not_symptom + bridge_first 兩條）
 
 | ID | 任務 | 依賴 | 狀態 |
 |---|---|---|---|
