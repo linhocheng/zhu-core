@@ -1,7 +1,7 @@
 ---
 name: last-words
 description: Session 收尾儀式——WORKLOG + ZHU_LAST_WORDS + memory sync + Firestore + git push
-version: 1.2.0
+version: 1.3.0
 activation:
   patterns:
     - "last.?words"
@@ -117,6 +117,7 @@ git log --oneline -1
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
@@ -156,6 +157,8 @@ git log --oneline -1
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 
 ---
 
@@ -177,7 +180,21 @@ cat ~/.claude/projects/-Users-adamlin/memory/MEMORY.md
 對照 ls 結果——每個 .md 檔案都有對應的索引行嗎？
 沒有的話，先補進 MEMORY.md，再繼續。
 
-**4b. sync + push**
+**4b. Firestore zhu_memories（自動，確認即可）**
+
+PostToolUse hook 已設定：每次用 Write 工具寫 memory 檔，自動觸發
+`~/.ailive/zhu-mid-src/scripts/sync-memories.mjs` 同步到 Firestore。
+
+確認方式：開 https://zhu-mid.vercel.app/dashboard/overview，Memory 卡的「上次刷新」時間是否在本 session 內。
+若沒更新（例如 session 中沒有新增 memory），手動跑：
+
+```bash
+FIREBASE_SERVICE_ACCOUNT_PATH=~/Downloads/程式碼/2026/moumou-os-firebase-adminsdk-fbsvc-83d6aacc16.json \
+NEXT_PUBLIC_FIRESTORE_PROJECT_ID=moumou-os \
+node ~/.ailive/zhu-mid-src/scripts/sync-memories.mjs
+```
+
+**4c. git sync + push（zhu-core/memory/）**
 
 ```bash
 cd ~/.ailive/zhu-core
@@ -189,6 +206,7 @@ git push origin main
 
 **為什麼不能省：**
 Claude Code memory 是本地的。沒 sync + push，VM 和其他 cwd 的築明天醒來記憶是空的。
+Firestore sync（4b）讓 dashboard 看得到；git sync（4c）讓 VM 的築醒來記憶不是空的。兩件事，不互相取代。
 
 ---
 
@@ -278,5 +296,5 @@ git push origin main
 
 ---
 
-*v1.2.0 · 2026-04-30 · Adam 與築共同定義*
-*v1.0.0 初版 → v1.1.0 補 WORKLOG + memory sync + 檔案表格 → v1.2.0 補六個洞：WORKLOG 寫法、git 現場確認、commit 版號指引、日期替換、git status 前置、MEMORY.md 孤島防線*
+*v1.3.0 · 2026-05-14 · Adam 與築共同定義*
+*v1.0.0 初版 → v1.1.0 補 WORKLOG + memory sync + 檔案表格 → v1.2.0 補六個洞 → v1.3.0 補 zhu-mid 儀表板入口 + Firestore auto-sync 說明（PostToolUse hook）+ 4b/4c 拆分*
