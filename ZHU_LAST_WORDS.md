@@ -24,15 +24,18 @@
 
 ---
 
-## 最新完成（2026-05-14）
+## 最新完成（2026-05-14 第二局）
 
-- 建立 swiss-grid 風格（spec 模式，省 70% prompt tokens，16KB HTML，QA 通過）
-- 加 A+B 品質優化：mini skeleton + 通用章節節奏規則，結構更有層次
-- 建立 dark-premium 風格（近黑底鉑金 accent，高端深色，18KB，QA 通過）
-- 建立 selectPhilosophy 自動分類（Haiku 驅動，文件內容決定風格，不綁角色）
-- strategy/route.ts 接入 selectPhilosophy，奧寫完 markdown 後自動選風格再 enqueue
-- strategy-html-worker Cloud Run 同步更新（revision 00008-p7z）
-- 聊了憲福雙靈魂語音方案（LLM 標籤 → 切段 → 各自 TTS voice ID），Adam 說先聊不動手
+- ailive 費用追蹤三條路徑全通：dialogue / voice-stream / realtime agent（掛斷後寫入）
+- zhu-mid 第七張卡 ailive-cost-card 上線（MAX 吃到飽 vs API Key 標示、角色排行）
+- 所有 LLM call site 加 purpose 標籤（dialogue / voice-stream / task-run / sleep 等 15 節點）
+- voice-stream TTS trackTTSCost 追蹤
+- LiveKit realtime agent metrics_collected → 掛斷時寫 zhu_vitals_cost（LLM + TTS 各一筆）
+- sync-services cron（ailive-platform，每 6h）更新 Upstash Redis 用量
+- Firestore composite index (project + timestamp on zhu_vitals_cost) READY
+- 費用全改 NT$ 顯示（fmtCost 統一換算，1 USD = 32 NTD）
+- zhu-mid + ailive-platform + realtime-agent 三個全 deploy
+- realtime agent 升到 revision 00035-x68
 
 ---
 
@@ -40,33 +43,39 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailive-platform/src/lib/strategy-html/philosophies/swiss-grid.ts` | 新增：spec 模式瑞士網格風格，含 CSS + componentSpec + componentSkeleton |
-| `ailive-platform/src/lib/strategy-html/philosophies/dark-premium.ts` | 新增：spec 模式深色鉑金風格 |
-| `ailive-platform/src/lib/strategy-html/select-philosophy.ts` | 新增：Haiku 自動分類函數 |
-| `ailive-platform/src/lib/strategy-html/prompt.ts` | 重構：支援 reference/spec 兩模式，加通用節奏原則，加 dark-premium |
-| `ailive-platform/src/lib/strategy-html/qa.ts` | 新增：swiss-grid / dark-premium QA 規則 |
-| `ailive-platform/src/lib/cloud-tasks.ts` | 更新：enqueueStrategyHtml 支援三種 philosophy，預設改為 swiss-grid |
-| `ailive-platform/src/app/api/specialist/strategy/route.ts` | 接入 selectPhilosophy，自動分類後 enqueue |
-| `ailive-platform/src/app/api/specialist/strategy-html/route.ts` | 修正：qaHtml 補傳 philosophy 參數 |
-| `strategy-html-worker/src/philosophies/` | 同步 swiss-grid + dark-premium |
-| `strategy-html-worker/src/prompt.ts` + `qa.ts` + `index.ts` | 同步更新 |
-| `zhu-core/docs/WORKLOG.md` | 追加本次 session |
-| `zhu-core/ZHU_LAST_WORDS.md` | 本次覆蓋（就是這份） |
+| `ailive-platform/src/lib/cost-tracker.ts` | 雙寫策略：platform_characters + zhu_vitals_cost，加 trackTTSCost |
+| `ailive-platform/src/app/api/dialogue/route.ts` | purpose='dialogue' / 'dialogue-haiku' |
+| `ailive-platform/src/app/api/voice-stream/route.ts` | purpose='voice-stream' + trackTTSCost |
+| `ailive-platform/src/app/api/task-run/route.ts` | purpose='task-run/self-eval/post' |
+| `ailive-platform/src/app/api/sleep/route.ts` | purpose='sleep/awareness/proposal/fix' |
+| `ailive-platform/src/app/api/runner/route.ts` | purpose='runner' |
+| `ailive-platform/src/app/api/soul-enhance/route.ts` | purpose='soul-refine/soul-core' |
+| `ailive-platform/src/app/api/strategist-review/route.ts` | purpose='strategist-review' |
+| `ailive-platform/src/app/api/strategist-guide/route.ts` | purpose='strategist-guide' |
+| `ailive-platform/src/app/api/sync-services/route.ts` | 新增：Upstash + TTS 用量同步 cron |
+| `ailive-platform/vercel.json` | 加 sync-services cron (每 6h) |
+| `ailive-platform/agent/realtime_agent.py` | metrics_collected + on_disconnected 費用寫入 |
+| `zhu-mid-src/src/lib/zhu-vitals/queries.ts` | getAiliveCost 函數 + AiliveCostSummary 型別 |
+| `zhu-mid-src/src/lib/zhu-vitals/schema.ts` | CostRecord 加 type/character_id/tts_* 欄位 |
+| `zhu-mid-src/src/lib/zhu-vitals/format.ts` | fmtCost 改 NT$ 輸出 |
+| `zhu-mid-src/src/components/vitals/ailive-cost-card.tsx` | 新增第七張卡 |
+| `zhu-mid-src/src/components/vitals/auto-refresh.tsx` | 新增 60s AutoRefresh |
+| `zhu-mid-src/src/app/dashboard/overview/page.tsx` | 加 AiliveCostCard + AutoRefresh |
 
 ---
 
 ## 下一步
 
-1. **跑完整流程驗證**：讓奧真實收一個 commission → 確認 selectPhilosophy 自動選風格 → 確認 htmlUrl 出現在 dashboard
-2. **dark-premium QA 觀察**：off-palette color regex 是否誤傷真實生成，必要時放寬
-3. **憲福雙靈魂語音**（Adam 說先聊不動手）：LLM 標籤切段 → 各自 MiniMax voice ID → LiveKit audio track 推流
+1. **觀察**：ailive-cost-card 角色排行正常顯示（已有真實資料）
+2. **STT 費用（deferred）**：Deepgram 用量小，暫不追蹤
+3. 無其他緊急事項
 
 ---
 
 ## 卡住 / 未解
 
-- selectPhilosophy 只測了直接打 Cloud Run worker，未測完整 commission → strategy → selectPhilosophy → enqueue 鏈路
-- dark-premium forbidden color regex 可能過嚴（`/color\s*:\s*#[hex]/i` 誤傷 CSS 中的合法顏色），待觀察
+- ElevenLabs API key 缺 user_read 權限，無法從 API 拿用量（只能從 zhu_vitals_cost 估算）
+- MiniMax 無 balance endpoint，同上
 
 ---
 
