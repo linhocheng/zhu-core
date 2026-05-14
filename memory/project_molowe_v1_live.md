@@ -18,10 +18,12 @@ molowe-platform v1.0 上線 — 三層 AI 編輯部架構落地。
 **How to apply:**
 - 建議下次接棒任務：(1) 第二個 KOL 上線驗證多例 (2) `/api/persona/calibrate` 端點補超我 baseline (3) Threads 通路
 - midoufu 是唯一 active KOL，所有 path 跑過但**未驗多例硬寫假設**（quota cache / prime time / insights 欄位相容）
-- Editorial 儀表板網址：https://molowe-platform.vercel.app/dashboard/editorial
+- Production：https://molowe-platform.vercel.app
+- Editorial 儀表板：https://molowe-platform.vercel.app/dashboard/editorial
+- GitHub repo：https://github.com/linhocheng/molowe-platform
 - Admin Key：`molowe_a9bd8770aa44c271f571b10584ba0732`
 - 完整指南：`~/.ailive/molowe-platform/MOLOWE_GUIDE.md`
-- 5 條 cron 排程在 `vercel.json`：pipeline `*/5` / insights `0 *` / kairos `0 1 * * 1` / jda `30 22 *` / superego `0 5 * * 1`
+- cron 排程：見 `vercel.json`（5/12 已有 6 條：含 auto-publish）
 
 **注意（partial-truth，5/6 收尾後補）：**
 - 「上線」目前只證實了操作層 `*/5`（midoufu 真發文）

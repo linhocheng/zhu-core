@@ -8,6 +8,8 @@ originSessionId: 68bd6c54-6b9b-4e51-a956-90e82bb13b99
 
 **Why:** 2026-04-25 jianbin-v2 部署後 STT/LLM 全掛。根因是 `deepgram-api-key` 與 `anthropic-api-key` v1 用 `echo` 寫入，結尾帶 `\n`。aiohttp `_serialize_headers` 偵測到 header 含 `\n` → 視為 header injection attack → 拒絕送出 → WebSocket/HTTPS 連線全斷。症狀是「左腦右腦永遠等待中」「APIConnectionError 4 attempts」，但 log 直到深挖才看到 `ValueError: Newline, carriage return, or null byte detected in headers`。
 
+**心態:** 嚴謹姿態，對「echo 應該也行吧」的反射起疑。寫 secret 的命令決定 secret 內容 — echo 的 `\n` 會讓 aiohttp 拒絕送 header，沒有「應該不會影響」這種事。寫前停一秒問「這個值會被怎麼讀」。
+
 **How to apply:**
 - 任何 `gcloud secrets versions add` 一律用 `printf '%s'` pipe 進去
 - handoff doc 若寫「-n prefix 問題」是誤導，真因是 `\n` 在 secret 尾端

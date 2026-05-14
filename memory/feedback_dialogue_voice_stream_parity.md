@@ -9,6 +9,8 @@ ailive-platform 的 `src/app/api/dialogue/route.ts` 跟 `src/app/api/voice-strea
 **Why（2026-05-07 踩過）：**
 specialist/strategy 完成後寫 `role: 'system_event'` 進對話。dialogue route 1521-1549 早就把 system_event 轉成 assistant 口吻通知（不轉 → Anthropic 400 "Unexpected role"）。但 voice-stream:758 用 `as 'user' | 'assistant'` 強轉型，沒做轉換。結果 user 在語音對話時收到 specialist 交件 → 400 崩潰。修了 voice-stream 才對齊。
 
+**心態：** 對稱姿態，改一邊先想「另一邊讀同一個 collection 嗎」。兩條獨立 route 共讀同一個 platform_conversations = 修一邊等於沒修。「dialogue 改了不代表 voice 也改」要當預設假設，不是例外。「兩份即是零份」是 sticky pattern，每次都要主動查另一邊。
+
 **How to apply：**
 - 改 dialogue route 的 history.map / messages 組裝邏輯時，先 grep `voice-stream/route.ts` 同樣位置確認要不要同步
 - 反向也成立：改 voice-stream 也要看 dialogue

@@ -56,6 +56,10 @@ print(text if text else '[empty]')
 - 需要讓角色「寫策略書 / 規劃書」→ 用 /api/specialist/strategy（非串流，更穩）
 - 需要讓角色「即興回應 / 諮詢」→ 用本 SOP 打 /api/dialogue
 
+## 心態
+
+不猜 API，先看源碼。「直接打打看」是反射動作，要換成「先讀對方怎麼讀的」。SSE / streaming / 非標準 response 都是看源碼能 5 分鐘確認、用猜的會繞 30 分鐘的事。寧願多花一次 grep 的時間，不要在「我以為這條 API 應該長這樣」上反覆撞牆。
+
 ## Why / 今天的教訓（2026-05-02）
 
 第一次打法：curl 無 -N → 空回應

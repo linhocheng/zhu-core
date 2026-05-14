@@ -31,6 +31,10 @@ user brief
 ## Why
 2026-05-08 vivi 生圖背景全黑，初診斷以為是 gemini 模型版本問題（F1），改完還是黑。真因是 shun-001 的 imagePromptPrefix 在 Firestore 裡寫死「dark background, chiaroscuro lighting」串在每個 prompt 後面，靈魂後台表面上能編但實際看不到 prefix 欄位的存在感。連續猜兩次都中不了根因。
 
+## 心態
+
+監造姿態，求真，不靠直覺。「我以為改 X 就會生效」連說兩次 = 停手別繼續猜。先把每層真相外部化（寫回 DB / log）變成可看的，再對賬找差異。直覺在多層 pipeline 裡通常是錯的，要願意把猜的精力換成寫一個 debug 欄位的精力。
+
 ## How to apply
 
 **第一動作：先讓真相可見，再診斷**。不要在沒看到「真正送進去的 final prompt」之前就開始改參數。

@@ -27,6 +27,10 @@ set +a
 根因：VM 上 claude CLI 的 OAuth token 是存在 claude-bridge/.env 的 `CLAUDE_CODE_OAUTH_TOKEN`，
 不在系統 profile 裡。nohup 背景跑的 shell 沒有繼承這個 env var。
 
+## 心態
+
+嚴謹姿態，不假設「我本機能跑就 VM 能跑」。nohup / systemd 不繼承當前 shell env — 寫 VM 上的 script 第一秒問「env 從哪裡來」。「沒登入」的 3 秒 silent fail 是要被當警報的，不是當「應該重試」。
+
 ## How to apply
 
 任何在 VM 寫 shell script 要呼叫 `claude -p` 的場合，腳本開頭加：

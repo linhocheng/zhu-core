@@ -2,6 +2,33 @@
 
 ## 自主迴圈驗證 - 工自己讀到、自己做、自己回報，全程不問 Adam。
 
+---
+
+## 2026-05-14 — 即時語音 commission_specialist + research 交付根因修復
+
+### 背景 / WHY
+Adam 測試即時語音時發現兩個問題：
+1. 角色查到網路資料（三燈全亮）但說不出來
+2. 即時語音沒有 commission_specialist 工具（文字/voice-stream 有，realtime 沒有）
+
+### 產出
+- `agent/realtime_agent.py` v0.4.1.001 — 新增 `_sync_enqueue_strategy()` + `commission_specialist` function_tool
+- `agent/realtime_agent.py` v0.4.1.002 — 修正 research 交付：移除 pre-write history，改 `session.say(absorbed)`
+- Secret Manager `STRATEGY_ENQUEUER_KEY_JSON`：寫入 ailive-realtime-2026，grant compute SA，注入 Cloud Run
+- Cloud Run revision `00033-gdh`（commission_specialist）→ `00034-jc2`（research 修復）
+
+### 已解決
+- **research 說不出來根因**：pre-write `history.add_message(role="assistant", content=absorbed)` → LLM 以為「已說過」→ `generate_reply` 生別的話。修法：移除 pre-write，直接 `asyncio.ensure_future(session.say(absorbed, allow_interruptions=True))`。`absorbed` 已由 `_sync_absorb` 轉成角色語氣，不需再過 LLM。Adam 實測菲爾說出美中峰會新聞。
+- **commission_specialist 未接通**：新增完整工具鏈，Adam 測試派出成功。
+
+### ⚠️ 尚未解決
+- 菲爾耐特記憶飄移根因未查（Adam 說先停）
+- 菲爾 `voice_minimax=(empty, fallback)`：沒設 MiniMax voice，用預設聲音
+
+### 待執行
+- [ ] 確認 commission_specialist 策略書出現在 dashboard「策略書」頁面
+- [ ] 菲爾耐特設定 MiniMax voice（如需要）
+
 ## 歷史精華（已壓縮存 zhu-memory module=root tag=worklog-digest）
 
 ---

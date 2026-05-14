@@ -11,6 +11,8 @@ originSessionId: 68bd6c54-6b9b-4e51-a956-90e82bb13b99
 - ELEVENLABS_API_KEY 同樣模式 → agent TTS connection closed
 最後是用 `~/.ailive/jianbin-v2-keys/jianbin_v2_keys_20260425.json` 的江彬上線快照才拿到真有效的 key。違反「動手前驗證假設」三必白跑了三輪 deploy。
 
+**心態:** 核實姿態，不信「Vercel production 在用 = 一定有效」。任何 key 灌進新環境前，先 curl 200 驗證才動手 — 一條 key 是不是有效 curl 5 秒能告訴你，灌進去 deploy 三輪才發現是純浪費。「應該還有效」是要被打斷的假設。
+
 **How to apply:** 灌任何 API key 進新環境（GCP Secret Manager / Vercel env / Cloud Run secret）前，先 curl 直打對應 API，確認 HTTP 200 才動手。範例：
 
 ```bash

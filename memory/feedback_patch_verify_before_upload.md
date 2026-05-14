@@ -13,6 +13,8 @@ originSessionId: 3b96bb42-5604-4efe-8f30-17f33cd4f9e4
 
 **Why:** 分多輪 patch、來源檔案不確定是否包含前輪修改，任何一輪漏掉都會炸。
 
+**心態:** 嚴謹姿態，多輪 patch 後不假設「上一輪還在」。本機 edit 是 source of truth，VM inline patch（heredoc / Python script）是靜默失敗的雷區 — shell 跳脫一個字元壞掉就無聲過去。上傳前 grep 驗證所有新增 + 所有呼叫的函數都存在，少一個就 crash。
+
 **How to apply:** VM bridge 改動的正確流程：
 ```
 1. 一開始就先下載：gcloud compute scp zhu-dev:~/claude-bridge/index.js /tmp/bridge_index.js

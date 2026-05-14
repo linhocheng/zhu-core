@@ -14,6 +14,8 @@ originSessionId: c61f0252-1be7-469c-9aea-4e1d31b82333
 
 **Why:** 2026-05-08 寫 `system-prompts.ts` 把 firebase-admin 跟 SystemPromptsEditor 同檔，Vercel turbopack build 41 errors。根因是寫第一個 import 時沒問「誰會拉這個檔」，等到 build 才被打回票。
 
+**心態:** 寫第一個 import 前停 5 秒問「誰會拉這個檔」。把「等 build 抓出來再說」當錯誤心態 — Vercel build 報錯是太晚的訊號。心態要回到「寫前先列 caller」，不是「寫完再重構」。
+
 **How to apply:** 任何要在 React component 跟 server route 兩邊都用到的 lib 模組，動手前 5 秒先列 caller。看到 client component 就先拆 shared，不要先寫完邏輯再回頭重構。
 
 **觸發信號：**

@@ -14,6 +14,8 @@ MiniMax 海外版（platform.minimax.io）的 plan tier 控制「能不能用某
 
 「儲值 = 解決問題」是錯誤映射。儲值只解 credit，不解 plan / product / region 任何一條。錯誤碼指向 plan 時，儲值是白花錢。
 
+**心態:** 對「儲值能解」這種反射性結論起疑。看 error code 之前不要先猜根因 — 2053（credit）跟 2061（plan）是兩條獨立路徑，混淆就走錯方向。讀完錯誤碼才動，不要先儲值救火，那是先有結論再找問題。
+
 **How to apply:**
 - 看到 MiniMax error 先讀 `status_code`：
   - `2053 insufficient credit` → 儲值能解

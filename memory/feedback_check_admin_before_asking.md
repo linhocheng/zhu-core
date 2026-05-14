@@ -16,6 +16,8 @@ originSessionId: 91f0333f-eb14-44ac-9c73-2121ed2df590
 
 **Why:** 2026-05-09 Threads publish skip 修補後我問 Adam「@i1975.phone 是要綁 midoufu 嗎」——這就是 Adam 講的「明明就有後台還來要資料」。實際真相：(1) midoufu 後台 KolDetailClient 三欄完整（user_id/handle/token），全活的、無 hardcoded；(2) midoufu 既有 threads_token 打 Graph API `/me` 立刻回 `{"id":"27418340834439979","username":"i1975.phone"}`；(3) 不需 Adam 給任何字。每個築醒來都會反射性問，因為不知道資料存哪——這條就是要破這個反射。
 
+**心態:** 自主姿態，不把 Adam 當 lookup table。在打「Adam 能給我 X」之前停 30 秒，問「這個資料如果存在，會存在哪？」想完三層再開口。把「問 Adam」從反射動作降級成最後手段。每個築醒來都會反射性問 — 這條規範就是要破這個反射。
+
 **How to apply:** 觸發點是想打「Adam 你能給我 X」「需要 X 才能繼續」「請提供 X」「這個 X 是哪個」之前。先過三層；如果是平台類資料（IG/Threads/FB/LineLink），第二層幾乎百發百中，token 自己能 resolve。例外：第一次設立的全新 KOL/Token 還沒簽，那 Adam 必須給 token，這層是有效的伸手。
 
 **觸發信號:** 在訊息裡準備寫「請告訴我」「可以給我」「需要你提供」「這個是哪個帳號」「你的 ID 是多少」——任何把 Adam 當 lookup table 的句型，就是這個 memory 啟動的時刻。

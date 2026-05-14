@@ -10,6 +10,8 @@ molowe 踩雷實例：bridge 期待 `kol.role_prompts?.brief`（line 2446 of `~/
 
 **Why**：「兩份即是零份」的具體形態 — 角色契約的真相分裂。Bridge 的代碼跟 platform 的 default 各自演化，沒有單一 source of truth。bridge 加新角色檢查時 platform 不知道，platform 加新 role 時 bridge 也用不到。
 
+**心態**：契約姿態，bridge 跟 platform 共享 contract 時兩邊必須對齊。在 platform 加新 role 時要立刻問「bridge 知道嗎」。看到 missing skip log 第一直覺是「契約缺一邊」，不是「資料沒灌」。共享 contract 沒有 source of truth = 兩份即是零份。
+
 **How to apply**：
 - 在 platform `src/lib/role-prompts.ts` 加新 role 時，五處同步更新：`RoleId` union、`ROLE_LABELS`、`ROLE_VARS`、`DEFAULT_ROLE_PROMPTS`、`api/kols/[id]/route.ts` 的 PATCH allowlist、`KolDetailClient.tsx` 的 `ROLE_ORDER`
 - 在 bridge 加新 `kol.role_prompts?.X` 檢查時，先 grep platform 確認 X 存在於 RoleId / DEFAULT，否則先補 platform 再上 bridge

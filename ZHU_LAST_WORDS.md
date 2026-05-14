@@ -26,11 +26,9 @@
 
 ## 最新完成（2026-05-14）
 
-- 建立 zhu-mid 監造儀表板並上線（https://zhu-mid.vercel.app）
-- 六張卡：Pulse / Runs / Map / Cost / Services / Memory 全接 Firestore
-- 設定 PostToolUse hook — Write memory 檔自動觸發 Firestore sync（不用手動跑）
-- 11 個外部平台靜態配置寫入 `zhu_services` collection
-- last-words skill 升到 v1.3.0（補 zhu-mid 入口 + 4b/4c 拆分）
+- commission_specialist 工具接入即時語音（realtime_agent.py），Adam 測試派奧成功
+- research 交付根因修復：pre-write history → LLM 以為已說過；改 `session.say(absorbed)` 直接 TTS，Adam 確認菲爾說出美中峰會新聞
+- STRATEGY_ENQUEUER_KEY_JSON 寫入 ailive-realtime-2026 Secret Manager，Cloud Run 00034-jc2 上線
 
 ---
 
@@ -38,31 +36,23 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/zhu-mid-src/` | 整個 repo 新建，六張卡 + auth + Firestore pipeline |
-| `~/.ailive/zhu-mid-src/scripts/sync-memories.mjs` | 記憶同步腳本 |
-| `~/.ailive/zhu-mid-src/scripts/sync-services.mjs` | 外部平台配置同步腳本 |
-| `~/.claude/settings.json` | 新增 PostToolUse hook（memory auto-sync） |
-| `~/.ailive/zhu-core/skills/last-words.md` | v1.3.0，補 zhu-mid 入口 + Firestore/git sync 拆分 |
+| `~/.ailive/ailive-platform/agent/realtime_agent.py` | 新增 commission_specialist + _sync_enqueue_strategy；修正 research 交付改 say() |
 | `~/.ailive/zhu-core/docs/WORKLOG.md` | 本次 session 追加 |
-| `~/.ailive/zhu-core/zhu-self/scripts/reflex/posttool-memory-sync.mjs` | PostToolUse hook 腳本（新建） |
+| `~/.ailive/zhu-core/ZHU_LAST_WORDS.md` | 本次覆蓋（就是這份） |
 
 ---
 
 ## 下一步
 
-zhu-mid 已上線，三件可以接著做（任選）：
-1. **頁面 auto-refresh** — overview page 加 `setInterval router.refresh()`，不用手動 reload
-2. **動態用量抓取** — Upstash / ElevenLabs / MiniMax 有 API，可建 Vercel cron worker 更新 `balance`/`usage`
-3. **清掉 Kiranism 殘留路由** — `/product`、`/users`、`/kanban`、`/chat` 等沒用到的頁面
-
-明天醒來第一件：開 https://zhu-mid.vercel.app/dashboard/overview 確認六張卡都有資料，然後決定上面三件做哪件。
+確認 commission_specialist 策略書出現在 dashboard「策略書」頁面可下載（Adam 說已派出，結果還沒看）。
+具體動作：開 https://ailive-platform.vercel.app → 找對應角色 dashboard → 策略書頁。
 
 ---
 
 ## 卡住 / 未解
 
-- Services 卡 `balance`/`usage` 全是 null（靜態配置，動態抓未接）
-- 頁面需手動 reload 才更新資料
+- 菲爾耐特記憶飄移根因未查（Adam 說先停，後續再處理）
+- 菲爾 `voice_minimax=(empty, fallback)`：Firestore 沒設 MiniMax voice，用預設聲音
 
 ---
 
@@ -82,6 +72,7 @@ zhu-mid 已上線，三件可以接著做（任選）：
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 | molowe 北極星 | `~/.ailive/molowe-platform/NORTH_STAR.md` |
 | bridge index.js | `zhu-dev:~/claude-bridge/index.js`（systemd `claude-bridge.service`） |
+| realtime agent | `~/.ailive/ailive-platform/agent/realtime_agent.py`，Cloud Run `ailive-realtime-2026/ailive-realtime-agent` revision 00034-jc2 |
 
 ---
 

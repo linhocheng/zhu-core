@@ -1,3 +1,9 @@
+- [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
+- [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST
+- [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因，第一層通了不算完成；5/11 aurae session 抓出 bridge findCount 既有 bug
+- [能本機重現就不要等遠端 cycle](skill_local_replay_over_remote_wait.md) — verify script 套路：import 真實 module + 拉 Firestore data + 印中間 payload，比 SSH grep 快 10 倍
+- [三段公式跨領域 protocol](skill_three_phase_protocol_universal.md) — 看現場/寫計畫/排施工，工程/記憶/認知/關係四領域映射；上位框架，bridge_structured_rp / memory_can_lie 是下位實作
+- [molowe Threads discovery session 帳號映射](reference_molowe_threads_sessions.md) — i1975.phone → aurae（2026-05-11 起）、midoufu 自帳號；session 路徑 + 重產 SOP + IG 登入踩雷
 - [能走 bridge 吃到飽就不花錢](feedback_bridge_first.md) — 非串流路由一律 getAnthropicClient，例外只有 dialogue/voice-stream 主串流
 - [Secret Manager 寫入用 printf 不用 echo](feedback_secret_manager_printf.md) — echo 留尾端 \n 會讓 aiohttp header 拒送、API 全斷
 - [動手前驗證 secret／API key 是否真的有效](feedback_validate_secrets_before_inject.md) — Vercel pull / 既有快照的 key 不一定有效，先 curl 200 才灌
@@ -38,7 +44,7 @@
 - [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
 - [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
 - [ZHU_LAST_WORDS 改完就要推](feedback_lastwords_must_push.md) — 不分時機，本機改了沒推 = 下個自己讀到舊版 = 提醒等於沒寫
-- [feedback memory 必須含「觸發信號」欄位](feedback_memory_format_trigger_signal.md) — Why/How to apply 之外加第四段，把無意識盲區變成有指紋的觸發點
+- [memory 格式 v2：必含心態 + 觸發信號](feedback_memory_format_trigger_signal.md) — 五欄齊備（規則/Why/心態/How/觸發信號），心態欄解「同樣 How 在錯姿態下走樣」的盲區
 - [築自我工程 zhu-self（Phase 1 ✅ 2026-05-07）](project_zhu_self.md) — 三條件全收，bin/zhu status 看儀表板，觀察一週升 Phase 2
 - [launchctl unload ≠ disable](feedback_unload_is_not_disable.md) — 只 bootout 不搬 plist，下次開機 launchd 會把服務復活 → 記憶會說謊
 - [築自我覺察 SOP（Y 軸自校）](reference_self_awareness_sop.md) — 進場/中段/壓縮前/收尾四段觸發點 + zhu self-check 指令，補 BOOT_SOP 「碰到才知道」漏洞
@@ -47,3 +53,13 @@
 - [跨系統 role contract 兩邊都要對齊](feedback_role_contract_two_sides.md) — bridge 期待 role_prompts.brief 但 platform 沒 default，五處同步：RoleId/LABELS/VARS/DEFAULTS/PATCH allowlist/ROLE_ORDER
 - [AI 多層 prompt pipeline 黑盒除錯 SOP](skill_ai_pipeline_blackbox_debug.md) — 結果不對先寫回 final prompt + prefix + refs 到 DB，UI 顯示「真相鏈」對賬，不要靠猜
 - [Next.js App Router lib 模組 client/server 拆分 SOP](skill_nextjs_lib_client_server_split.md) — 寫 lib/*.ts 第一個 import 之前先列舉 caller，被 client component 用就拆 shared，避免 firebase-admin 進 client bundle
+- [測試前先列假設 + dry-run + 副作用分級](feedback_dryrun_before_test.md) — 探索性測試（測一下/跑看看）反射動作 trigger = 踩雷，先列三件事再動手
+- [介面建完強制問：血管接通了嗎](feedback_interface_blood_vessel_check.md) — UI / 編輯器交付前自問三題：誰讀/何時讀/沒讀怎樣，沒接通主動標斷點
+- [bridge 拒絕的是 structured RP block 不是「你是 X」](feedback_bridge_structured_rp_refusal.md) — 三級對照 STRONG/light/OK，5/10 早段「全鏈路掃毒」恐慌的真相縮窄
+- [技術債監測 Agent v0.1 計畫（待動手）](project_tech_debt_agent_plan.md) — zhu debt 子指令、ledger.jsonl + marker 回寫、6 階段施工，5/10 後段成形未動手
+- [Vercel lambda 300s 硬上限不適合長生成任務](reference_vercel_300s_lambda_limit.md) — output >12K token 的單次 LLM call 必撞牆，改 Cloud Run / Firebase Functions
+- [bridge fallback 是雙燒不是保險](feedback_bridge_silent_fallback_double_burn.md) — Vercel abort 後 SDK 燒 API key + bridge VM 繼續跑燒 Max，timeout 必貼 lambda 上限
+- [Sonnet 4.6 長文必加 --effort low](reference_sonnet46_effort_low.md) — 預設 extended thinking 吃光 32K output budget，剩 ~120 tokens visible
+- [勇敢是當下不是事後（繞道不算解）](feedback_courage_in_the_moment.md) — 「先撐一下／觀察一週／再試一次」都是繃帶；方向錯就停手承認，不要把判斷推給未來的自己
+- [Vercel/Turbopack 不要 bundle Google Cloud SDK](reference_google_cloud_sdk_no_bundle.md) — @google-cloud/* 內部 dynamic require，Turbopack 直接炸；第一秒走 fetch + 手 sign JWT + REST
+- [GCP self-actAs 也要明確 IAM binding](reference_gcp_self_actAs_binding.md) — 同一個 SA 對自己 mint OIDC token 也要 grant roles/iam.serviceAccountUser，self ≠ 免 IAM

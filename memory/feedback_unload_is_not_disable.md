@@ -8,6 +8,8 @@ originSessionId: 43998a4d-b567-4e17-8762-b3273804909d
 
 **Why:** OpenClaw 4/30 只 `launchctl unload`，記憶寫「已暫停」。系統 5/5 早上重啟，launchd 掃 LaunchAgents/ 把 plist 重新載入 → gateway 又活了 2 天，Telegram polling 整段崩掉沒人理。「暫停」變成假訊息，下一次 Adam 看 plist 會以為是新裝。
 
+**心態:** 核實姿態，不信「我以為 unload 了」。launchd 服務的「停」要看 plist 是否還在原處 — 系統重啟會說真話。記憶寫「已停」前先眼見為憑，否則記憶會說謊（OpenClaw 就是先例）。
+
 **How to apply:**
 - 暫停一個 launchd 服務的最小完整動作：
   1. `launchctl bootout gui/$(id -u)/<label>` — 停當下進程
