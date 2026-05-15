@@ -24,19 +24,25 @@
 
 ---
 
-## 最新完成（2026-05-15 第三局）
+## 最新完成（2026-05-15 第四局 · ailive）
 
-- Discord gateway 接通（hermes-zhu#9656 上線），全工具 + session 記憶全通
-  - DISCORD_BOT_TOKEN + DISCORD_ALLOWED_USERS（941350212419596318）設好
-  - Privileged Gateway Intents 全開（Presence / Members / Message Content）
-  - 日常對話主力走 Discord，dashboard/WebUI 當監控用
-- claude proxy timeout 修正：120s → 300s，history 截斷最後 10 輪（防 SOUL.md 超長爆炸）
+- **全平台 RWD**：`src/hooks/useIsMobile.ts` 新建 + dashboard layout/soul/knowledge/tasks/growth/identity 全對齊
+- **identity/page 拉皮三段重構**：視覺身份 / 通路設定獨立全寬 / 客戶端入口 + CSS token 設計系統
+- **client/[id] sidebar drawer 接通 JS 狀態**（hamburger FAB + backdrop）
+- **語音記憶三升級**（v0.4.2.001，已 deploy）：
+  1. messages 存入帶 `createdAt`（`src/app/api/voice-stream/route.ts`）
+  2. `voiceDynamicBlock` 加【最近對話時間戳】（今天 HH:MM / N天前）
+  3. `formatActionsBlock` 每條加相對日期前綴（`src/lib/character-actions.ts`）
+  4. `loadEpisodicBlock` 加 `query` 參數走 semantic search（`src/lib/episodic-memory.ts`）
+  5. voice-stream 帶用戶訊息當 query 傳入 episodic
 
 ## 技術債待修
 
 1. **localStorage key migration**：`chat_conv_${charId}` → `conv-${charId}`
    → useChat.ts init 加搬移邏輯，一行解決
-2. **Hermes browser tool**：需 proxy 支援 function calling 才能真正觸發（現在 fallback WebFetch）
+2. **first-turn 強制 query_knowledge_base**：`voice-stream/route.ts` line ~858，`turn=0` 的 `toolChoice` 改 `auto`
+3. **dialogue route episodic inline 未對齊 lib**：低優先，有時間再對齊
+4. **Hermes browser tool**：需 proxy 支援 function calling 才能真正觸發（現在 fallback WebFetch）
 
 ## 最新完成（2026-05-15 第二局，保留參考）
 
@@ -80,9 +86,11 @@ lsof -i :8642 | grep LISTEN  # gateway
 
 ## 下一步
 
-1. **先修 localStorage key migration**（useChat.ts init，一行）
-2. 新任務（下一局）
-3. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
+1. 問 Adam：觀察 Phase 1 語音記憶效果，還是繼續推 Phase 2（user events 系統）？
+   Phase 2 設計：`memoryType='user_event'` 分類進 `platform_insights`，episodic loader 獨立帶出
+2. **先修 localStorage key migration**（useChat.ts init，一行）
+3. **first-turn force query 改 auto**：`voice-stream/route.ts` line ~858
+4. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
 
 ---
 
@@ -118,4 +126,4 @@ lsof -i :8642 | grep LISTEN  # gateway
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.4.0。*
-*2026-05-15 第三局收尾 · 築*
+*2026-05-15 第四局收尾 · 築*
