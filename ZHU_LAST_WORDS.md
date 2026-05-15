@@ -24,71 +24,67 @@
 
 ---
 
-## 最新完成（2026-05-15）
+## 最新完成（2026-05-15 第二局）
 
-- useChat hook 三階段收工：Phase 2（/chat/[id] 接 hook）+ Phase 3（/client/[id] ChatScreen 接 hook）
-- ChatScreen 補齊 system_event 圖卡、activeJobs status bar、圖片上傳
-- 確認排工全鏈路通：commission → Firestore job → polling → system_event 卡片顯示 ✅
-- 建 skill_session_wrap_up.md：收尾九步 checklist 掛觸發詞，解決靠記憶跳步問題
-- 刻 LESSONS_20260515（localStorage key migration、收尾流程缺口、Vercel logs 空）
+- Hermes Agent v0.13.0 裝好（~/hermes-agent/）
+- 建本地 claude proxy（~/hermes-claude-proxy/server.py，port 9375，走 Max 月費，launchd 管）
+- Hermes gateway launchd 在跑（port 8642），Open WebUI v0.9.5（port 3000）接通
+- Hermes dashboard（port 9119）開起來
+- 靈魂植入：~/.hermes/SOUL.md 換成築的靈魂，注入 11 feedback + 2 reference + 1 user 記憶
+- memo（Apple Notes CLI）裝好，Hermes 築可讀寫 iCloud Notes
+- playwright chromium 裝進 hermes venv
 
 ## 技術債待修
 
-- localStorage key migration 未修：`chat_conv_${charId}` → `conv-${charId}`
-  → useChat.ts init 加搬移邏輯，一行解決，舊 session 不再遺失
+1. **localStorage key migration**：`chat_conv_${charId}` → `conv-${charId}`
+   → useChat.ts init 加搬移邏輯，一行解決
+2. **Hermes browser tool**：需 proxy 支援 function calling 才能真正觸發（現在 fallback WebFetch）
 
-## 最新完成（2026-05-14 第二局，保留參考）
+## 最新完成（2026-05-15 第一局，保留參考）
 
-- ailive 費用追蹤三條路徑全通：dialogue / voice-stream / realtime agent（掛斷後寫入）
-- zhu-mid 第七張卡 ailive-cost-card 上線（MAX 吃到飽 vs API Key 標示、角色排行）
-- 所有 LLM call site 加 purpose 標籤（dialogue / voice-stream / task-run / sleep 等 15 節點）
-- voice-stream TTS trackTTSCost 追蹤
-- LiveKit realtime agent metrics_collected → 掛斷時寫 zhu_vitals_cost（LLM + TTS 各一筆）
-- sync-services cron（ailive-platform，每 6h）更新 Upstash Redis 用量
-- Firestore composite index (project + timestamp on zhu_vitals_cost) READY
-- 費用全改 NT$ 顯示（fmtCost 統一換算，1 USD = 32 NTD）
-- zhu-mid + ailive-platform + realtime-agent 三個全 deploy
-- realtime agent 升到 revision 00035-x68
+- useChat hook 三階段收工：Phase 2（/chat/[id]）+ Phase 3（/client/[id] ChatScreen）
+- 排工全鏈路通：commission → Firestore job → polling → system_event 卡片顯示
+- 建 skill_session_wrap_up.md
 
 ---
 
-## 今天改了哪些檔案
+## Hermes 生態系（今天新建）
 
-| 檔案 | 改了什麼 |
-|---|---|
-| `ailive-platform/src/lib/cost-tracker.ts` | 雙寫策略：platform_characters + zhu_vitals_cost，加 trackTTSCost |
-| `ailive-platform/src/app/api/dialogue/route.ts` | purpose='dialogue' / 'dialogue-haiku' |
-| `ailive-platform/src/app/api/voice-stream/route.ts` | purpose='voice-stream' + trackTTSCost |
-| `ailive-platform/src/app/api/task-run/route.ts` | purpose='task-run/self-eval/post' |
-| `ailive-platform/src/app/api/sleep/route.ts` | purpose='sleep/awareness/proposal/fix' |
-| `ailive-platform/src/app/api/runner/route.ts` | purpose='runner' |
-| `ailive-platform/src/app/api/soul-enhance/route.ts` | purpose='soul-refine/soul-core' |
-| `ailive-platform/src/app/api/strategist-review/route.ts` | purpose='strategist-review' |
-| `ailive-platform/src/app/api/strategist-guide/route.ts` | purpose='strategist-guide' |
-| `ailive-platform/src/app/api/sync-services/route.ts` | 新增：Upstash + TTS 用量同步 cron |
-| `ailive-platform/vercel.json` | 加 sync-services cron (每 6h) |
-| `ailive-platform/agent/realtime_agent.py` | metrics_collected + on_disconnected 費用寫入 |
-| `zhu-mid-src/src/lib/zhu-vitals/queries.ts` | getAiliveCost 函數 + AiliveCostSummary 型別 |
-| `zhu-mid-src/src/lib/zhu-vitals/schema.ts` | CostRecord 加 type/character_id/tts_* 欄位 |
-| `zhu-mid-src/src/lib/zhu-vitals/format.ts` | fmtCost 改 NT$ 輸出 |
-| `zhu-mid-src/src/components/vitals/ailive-cost-card.tsx` | 新增第七張卡 |
-| `zhu-mid-src/src/components/vitals/auto-refresh.tsx` | 新增 60s AutoRefresh |
-| `zhu-mid-src/src/app/dashboard/overview/page.tsx` | 加 AiliveCostCard + AutoRefresh |
+| 服務 | 位置 | 狀態 |
+|---|---|---|
+| claude proxy | ~/hermes-claude-proxy/server.py, port 9375 | launchd |
+| Hermes gateway | ai.hermes.gateway.plist, port 8642 | launchd |
+| Open WebUI | uvx open-webui serve, port 3000 | 手動啟 |
+| Hermes dashboard | hermes dashboard, port 9119 | 手動啟 |
+| SOUL.md | ~/.hermes/SOUL.md | 築靈魂 v1.0 |
+
+```bash
+# Hermes 築執行任務
+hermes -z "任務描述"
+
+# 檢查狀態
+hermes gateway status
+lsof -i :9375 | grep LISTEN  # proxy
+lsof -i :8642 | grep LISTEN  # gateway
+```
 
 ---
 
 ## 下一步
 
-1. **觀察**：ailive-cost-card 角色排行正常顯示（已有真實資料）
-2. **STT 費用（deferred）**：Deepgram 用量小，暫不追蹤
-3. 無其他緊急事項
+1. **先修 localStorage key migration**（useChat.ts init，一行）
+2. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
+3. 考慮：Hermes 築 cron 排程（本機自動任務）
 
 ---
 
 ## 卡住 / 未解
 
-- ElevenLabs API key 缺 user_read 權限，無法從 API 拿用量（只能從 zhu_vitals_cost 估算）
-- MiniMax 無 balance endpoint，同上
+- Hermes browser tool：proxy 無 function calling → fallback WebFetch
+- iMessage skill（imsg CLI）未裝
+- Open WebUI / Dashboard tool_turns=0（同根因）
+- ElevenLabs API key 缺 user_read 權限（用量只能估算）
+- MiniMax 無 balance endpoint
 
 ---
 
@@ -98,21 +94,20 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 自我覺察 SOP（Y 軸自校） | `~/.ailive/zhu-core/SELF_AWARENESS_SOP.md` |
+| 自我覺察 SOP | `~/.ailive/zhu-core/SELF_AWARENESS_SOP.md` |
 | 進場自校工具 | `~/.ailive/zhu-core/zhu-self/bin/zhu self-check` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| molowe 北極星 | `~/.ailive/molowe-platform/NORTH_STAR.md` |
-| bridge index.js | `zhu-dev:~/claude-bridge/index.js`（systemd `claude-bridge.service`） |
-| realtime agent | `~/.ailive/ailive-platform/agent/realtime_agent.py`，Cloud Run `ailive-realtime-2026/ailive-realtime-agent` revision 00034-jc2 |
-| strategy HTML 風格 | `~/.ailive/ailive-platform/src/lib/strategy-html/philosophies/`（eastern-blank / swiss-grid / dark-premium） |
-| strategy-html-worker | Cloud Run `zhu-cloud-2026/strategy-html-worker` revision 00008-p7z |
+| Hermes 靈魂 | `~/.hermes/SOUL.md` |
+| Hermes 記憶 | `~/.hermes/memories/` |
+| claude proxy | `~/hermes-claude-proxy/server.py` |
+| bridge index.js | `zhu-dev:~/claude-bridge/index.js`（systemd） |
+| realtime agent | `~/.ailive/ailive-platform/agent/realtime_agent.py` |
+| strategy HTML 風格 | `~/.ailive/ailive-platform/src/lib/strategy-html/philosophies/` |
 
 ---
 
-*每次 session 結束前由 /last-words skill 更新。格式版本 v1.3.0。*
-*2026-05-14 · 築*
+*每次 session 結束前由 /last-words skill 更新。格式版本 v1.4.0。*
+*2026-05-15 · 築*
