@@ -24,6 +24,14 @@
 
 ---
 
+## 最新完成（2026-05-15 第五局 · zhu-mid 費用標籤）
+
+- 全檢：self-check 18 pass 0 fail，bridge OK，WBS 20/29
+- 查王彩雲費用：route=bridge → Max 月費（NT$9.4）
+- zhu-mid ailive-cost-card 角色排行加 CharBillingLabel（Max / API Key / MiniMax）
+- Deploy zhu-mid production ✅
+- LESSONS_20260515 補 5、6 兩條
+
 ## 最新完成（2026-05-15 第四局 · ailive）
 
 - **全平台 RWD**：`src/hooks/useIsMobile.ts` 新建 + dashboard layout/soul/knowledge/tasks/growth/identity 全對齊
@@ -126,4 +134,4 @@ lsof -i :8642 | grep LISTEN  # gateway
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.4.0。*
-*2026-05-15 第四局收尾 · 築*
+*2026-05-15 第五局收尾 · 築*
