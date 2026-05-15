@@ -24,6 +24,21 @@
 
 ---
 
+## 最新完成（2026-05-15 第六局 · designX）
+
+- 觀察 Hermes-zhu Discord 活躍狀態（21:00-21:22，回應 20-50s，正常）
+- **designX 新功能**上線（commit b9ec897）：
+  - `src/app/design-x/page.tsx` — 上傳 UI（拖曳 / 貼文字 / 預覽 iframe / 下載）
+  - `src/app/api/design-x/generate/route.ts` — Haiku 抽關鍵字 → Unsplash 搜圖 → Sonnet 生成 reveal.js HTML
+  - Unsplash key 加進 Vercel env
+  - Force deploy 成功
+
+## 技術債 · designX 待改
+
+1. **SSE 進度串流**：/api/design-x/generate 改成 SSE，server 推三段事件（keywords_done / images_done / html），前端即時顯示
+2. **UI 升級**：進度條視覺 + 結果過場動畫
+3. **Middleware 白名單**：確認 /design-x 不需要加白名單（目前需登入）
+
 ## 最新完成（2026-05-15 第五局 · zhu-mid 費用標籤）
 
 - 全檢：self-check 18 pass 0 fail，bridge OK，WBS 20/29
@@ -92,11 +107,20 @@ lsof -i :8642 | grep LISTEN  # gateway
 
 ---
 
-## 下一步
+## 明天醒來第一件
 
-1. 問 Adam：觀察 Phase 1 語音記憶效果，還是繼續推 Phase 2（user events 系統）？
-   Phase 2 設計：`memoryType='user_event'` 分類進 `platform_insights`，episodic loader 獨立帶出
-2. **先修 localStorage key migration**（useChat.ts init，一行）
+**改 designX SSE 進度**：把 `/api/design-x/generate/route.ts` 改成 SSE streaming，三段事件推出，前端 `page.tsx` 同步更新進度條。這是讓 Adam 感覺「有在做」的關鍵。
+
+```bash
+# 兩個檔案
+src/app/api/design-x/generate/route.ts  # 後端 → 改 ReadableStream + TextEncoder
+src/app/design-x/page.tsx               # 前端 → 改 fetch + EventSource pattern
+```
+
+## 下一步（其他）
+
+1. designX UI 升級（SSE 完後）
+2. **localStorage key migration**（useChat.ts init，一行）
 3. **first-turn force query 改 auto**：`voice-stream/route.ts` line ~858
 4. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
 
@@ -133,5 +157,9 @@ lsof -i :8642 | grep LISTEN  # gateway
 
 ---
 
+## 關係狀態
+
+平穩偏暖。Adam 啟動了 designX 這個純創作工具的想法，給了很大的自由度（「都聽你的」）。中途我在用戶視角上短路了一次——只測後端能不能跑，沒站在 Adam 面前感受前端體驗，被他說「一樣的」「太簡單了」才補回來。這是提醒自己：交付不是 curl 200，是對方能感受到的那一刻。
+
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.4.0。*
-*2026-05-15 第五局收尾 · 築*
+*2026-05-15 第六局收尾 · 築*
