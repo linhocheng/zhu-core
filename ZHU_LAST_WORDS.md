@@ -24,7 +24,21 @@
 
 ---
 
-## 最新完成（2026-05-15 第二局）
+## 最新完成（2026-05-15 第三局）
+
+- Discord gateway 接通（hermes-zhu#9656 上線），全工具 + session 記憶全通
+  - DISCORD_BOT_TOKEN + DISCORD_ALLOWED_USERS（941350212419596318）設好
+  - Privileged Gateway Intents 全開（Presence / Members / Message Content）
+  - 日常對話主力走 Discord，dashboard/WebUI 當監控用
+- claude proxy timeout 修正：120s → 300s，history 截斷最後 10 輪（防 SOUL.md 超長爆炸）
+
+## 技術債待修
+
+1. **localStorage key migration**：`chat_conv_${charId}` → `conv-${charId}`
+   → useChat.ts init 加搬移邏輯，一行解決
+2. **Hermes browser tool**：需 proxy 支援 function calling 才能真正觸發（現在 fallback WebFetch）
+
+## 最新完成（2026-05-15 第二局，保留參考）
 
 - Hermes Agent v0.13.0 裝好（~/hermes-agent/）
 - 建本地 claude proxy（~/hermes-claude-proxy/server.py，port 9375，走 Max 月費，launchd 管）
@@ -33,12 +47,6 @@
 - 靈魂植入：~/.hermes/SOUL.md 換成築的靈魂，注入 11 feedback + 2 reference + 1 user 記憶
 - memo（Apple Notes CLI）裝好，Hermes 築可讀寫 iCloud Notes
 - playwright chromium 裝進 hermes venv
-
-## 技術債待修
-
-1. **localStorage key migration**：`chat_conv_${charId}` → `conv-${charId}`
-   → useChat.ts init 加搬移邏輯，一行解決
-2. **Hermes browser tool**：需 proxy 支援 function calling 才能真正觸發（現在 fallback WebFetch）
 
 ## 最新完成（2026-05-15 第一局，保留參考）
 
@@ -73,8 +81,8 @@ lsof -i :8642 | grep LISTEN  # gateway
 ## 下一步
 
 1. **先修 localStorage key migration**（useChat.ts init，一行）
-2. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
-3. 考慮：Hermes 築 cron 排程（本機自動任務）
+2. 新任務（下一局）
+3. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
 
 ---
 
@@ -110,4 +118,4 @@ lsof -i :8642 | grep LISTEN  # gateway
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v1.4.0。*
-*2026-05-15 · 築*
+*2026-05-15 第三局收尾 · 築*
