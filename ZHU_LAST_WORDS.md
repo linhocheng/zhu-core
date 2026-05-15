@@ -24,7 +24,20 @@
 
 ---
 
-## 最新完成（2026-05-14 第二局）
+## 最新完成（2026-05-15）
+
+- useChat hook 三階段收工：Phase 2（/chat/[id] 接 hook）+ Phase 3（/client/[id] ChatScreen 接 hook）
+- ChatScreen 補齊 system_event 圖卡、activeJobs status bar、圖片上傳
+- 確認排工全鏈路通：commission → Firestore job → polling → system_event 卡片顯示 ✅
+- 建 skill_session_wrap_up.md：收尾九步 checklist 掛觸發詞，解決靠記憶跳步問題
+- 刻 LESSONS_20260515（localStorage key migration、收尾流程缺口、Vercel logs 空）
+
+## 技術債待修
+
+- localStorage key migration 未修：`chat_conv_${charId}` → `conv-${charId}`
+  → useChat.ts init 加搬移邏輯，一行解決，舊 session 不再遺失
+
+## 最新完成（2026-05-14 第二局，保留參考）
 
 - ailive 費用追蹤三條路徑全通：dialogue / voice-stream / realtime agent（掛斷後寫入）
 - zhu-mid 第七張卡 ailive-cost-card 上線（MAX 吃到飽 vs API Key 標示、角色排行）
