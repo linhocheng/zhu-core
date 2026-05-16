@@ -24,20 +24,22 @@
 
 ---
 
-## 最新完成（2026-05-15 第六局 · designX）
+## 最新完成（2026-05-16 · design-x 診斷 + 暫停）
 
-- 觀察 Hermes-zhu Discord 活躍狀態（21:00-21:22，回應 20-50s，正常）
-- **designX 新功能**上線（commit b9ec897）：
-  - `src/app/design-x/page.tsx` — 上傳 UI（拖曳 / 貼文字 / 預覽 iframe / 下載）
-  - `src/app/api/design-x/generate/route.ts` — Haiku 抽關鍵字 → Unsplash 搜圖 → Sonnet 生成 reveal.js HTML
-  - Unsplash key 加進 Vercel env
-  - Force deploy 成功
+- **全診斷**：找出 design-x 四層問題（CSS 無 Tailwind、auth 擋路、SSE 步驟假的、Cloudflare 524 timeout）
+- **已修**：middleware 白名單、page.css 深色 UI、page.tsx 真實 SSE、route.ts premium prompt
+- **暫停原因**：bridge.soul-polaroid.work 前有 Cloudflare，proxy timeout ~100s，Sonnet 長生成被斷
+- **現況**：max_tokens:6000（走 bridge），輸出質感未驗證
 
-## 技術債 · designX 待改
+## ⏸ design-x 暫停 · 待決策
 
-1. **SSE 進度串流**：/api/design-x/generate 改成 SSE，server 推三段事件（keywords_done / images_done / html），前端即時顯示
-2. **UI 升級**：進度條視覺 + 結果過場動畫
-3. **Middleware 白名單**：確認 /design-x 不需要加白名單（目前需登入）
+根本解選一：
+- **A（Adam 做）**：Cloudflare dashboard → soul-polaroid.work → Network → Proxy Read Timeout → 300s
+- **B（築做）**：bridge VM index.js 加 streaming 支援，Cloudflare 看到第一個 byte 就不斷
+
+關鍵檔案：
+- `~/.ailive/ailive-platform/src/app/api/design-x/generate/route.ts` — 有 TODO comment
+- `~/.ailive/ailive-platform/src/app/design-x/page.tsx` + `page.css`
 
 ## 最新完成（2026-05-15 第五局 · zhu-mid 費用標籤）
 
@@ -109,17 +111,13 @@ lsof -i :8642 | grep LISTEN  # gateway
 
 ## 明天醒來第一件
 
-**改 designX SSE 進度**：把 `/api/design-x/generate/route.ts` 改成 SSE streaming，三段事件推出，前端 `page.tsx` 同步更新進度條。這是讓 Adam 感覺「有在做」的關鍵。
+**問 Adam 選哪條**：design-x 根本解 A（Cloudflare timeout 設定，Adam 做）或 B（bridge 加 streaming，築做）。選完馬上動。
 
-```bash
-# 兩個檔案
-src/app/api/design-x/generate/route.ts  # 後端 → 改 ReadableStream + TextEncoder
-src/app/design-x/page.tsx               # 前端 → 改 fetch + EventSource pattern
-```
+如果 Adam 開別的戰場，照常全檢後問他今天要打哪裡。
 
-## 下一步（其他）
+## 下一步（其他待辦）
 
-1. designX UI 升級（SSE 完後）
+1. **design-x 根本解**（暫停，等 Adam 選 A/B）
 2. **localStorage key migration**（useChat.ts init，一行）
 3. **first-turn force query 改 auto**：`voice-stream/route.ts` line ~858
 4. 探索：proxy 支援 function calling → 解鎖 Hermes browser tool
