@@ -1,4 +1,6 @@
 {
-  "once": [],
+  "once": [
+    "solve_root_not_symptom"
+  ],
   "always": []
 }
