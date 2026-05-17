@@ -21,15 +21,22 @@
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 - **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
-- **Atelier Control Tower**：`localhost:9119/atelier`（hermes gateway 起著就有）
 
 ---
 
-## 最新完成（2026-05-17）
+## 最新完成（2026-05-17c · ailive 記憶補強）
 
-- **Atelier E2E 真正跑通**：create task → POST /spawn → gateway 啟動 Claude Code subprocess → 子代理自打 PATCH 回報 phase → WebSocket → Dashboard 即時更新
-- **一念靜所品牌任務完成**：四 phase（parse_brief / extract_brand / generate_concept / deliver），輸出 `/tmp/yinian_brand_brief.txt`
-- **Dashboard 視覺大升級**：status dot + phase 進度條 + log 行號 + derived decisions
+- Phase 4：lastSession 門檻 6→3 輪（v1.5.1.001）
+- Phase 1：dialogue-end 補強對齊 voice-end（insight + lastSession + user profile）（v1.5.1.002）
+- Phase 2：realtime on_disconnected 加 insight 提煉（v1.5.1.003）
+- Phase 3：三管道 session-end 統一接入 user profile 自動提取（v1.5.1.004）
+- 修正：user-profile-extractor 誤用 `new Anthropic()` 繞過 bridge → 改 `getAnthropicClient`（v1.5.1.005）
+- 移除：realtime voice interjection 整塊清除（v1.5.1.006）
+- Cloud Run 00041-v8b 上線
+
+### 本 session 之前已完成
+- Dashboard 產品化重排（v1.5.0.001）
+- feed 閱讀頁、client feed 入口、login CSS 修復
 
 ---
 
@@ -37,45 +44,27 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `hermes-agent/web/src/pages/AtelierPage.tsx` | 全面視覺重設計（status dot、phase strip、log 行號、Thinking tab derived decisions）|
-| `~/.ailive/zhu-core/docs/WORKLOG.md` | 追加兩個 session 條目 |
-| `~/.ailive/zhu-core/docs/LESSONS/LESSONS_20260517b.md` | 新建，四條 lessons |
+| `ailive-platform/src/app/api/dialogue/route.ts` | lastSession 門檻 6→3 輪 |
+| `ailive-platform/src/app/api/dialogue-end/route.ts` | 全面補強：insight + lastSession + user profile |
+| `ailive-platform/src/app/api/voice-end/route.ts` | 加 user profile 自動提取 |
+| `ailive-platform/src/lib/user-profile-extractor.ts` | 新建共用 lib（走 bridge） |
+| `ailive-platform/agent/firestore_loader.py` | 加 extract_and_save_insights + auto_extract_user_profile |
+| `ailive-platform/agent/realtime_agent.py` | 接入 insight + user profile + 移除 interjection |
 
 ---
 
 ## 下一步
 
-1. **清掉多餘架構**：`~/.hermes/atelier-subagent/` 和 `~/Library/LaunchAgents/ai.hermes.atelier-subagent.plist` 是上個 session 建的 webhook server，現在用不到了，清掉
-2. **派更多任務**：Atelier 現在可以用了，嘗試讓子代理做真正有產出的事（生成圖片、寫程式、產報告）
-3. **task resume**：gateway 重啟後 running task 會斷，考慮 on-startup 重跑 queued 的任務
+1. **觀察記憶補強效果**：看 platform_insights 有沒有收到 `source: dialogue_end` / `source: realtime_conversation` 的記憶
+2. **Phase 5 Cron flush**（視需求）：觀察一週後看是否還有漏網對話
+3. **voice interjection 重新設計**（待 Adam 決定）：移除後若有需要重做
 
 ---
 
 ## 卡住 / 未解
 
-- Decisions tab 的「Extracted from logs」只是關鍵詞過濾近似，不是真正的 thinking
-- atelier-subagent webhook server 是殭屍，要清
-
----
-
-## Atelier 快查指令
-
-```bash
-# 建 task
-TOKEN=$(cat ~/.hermes/session_token)
-curl -s -X POST http://localhost:9119/api/atelier/tasks \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"name":"任務名","agent":"atelier","phases":["p1","p2","p3"]}'
-
-# spawn（task_id 從建 task response 拿）
-curl -s -X POST http://localhost:9119/api/atelier/tasks/{task_id}/spawn \
-  -H "Authorization: Bearer $TOKEN" \
-  -H "Content-Type: application/json" \
-  -d '{"prompt":"子代理 prompt，含 task_id 和 PATCH 指令"}'
-
-# Dashboard 空白 → Hard refresh：Cmd+Shift+R
-```
+- Phase 5 Cron flush 未實作（nice-to-have，觀察先）
+- voice interjection 已清除，重做前需先討論設計
 
 ---
 
@@ -85,15 +74,22 @@ curl -s -X POST http://localhost:9119/api/atelier/tasks/{task_id}/spawn \
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
+| 自我覺察 SOP | `~/.ailive/zhu-core/SELF_AWARENESS_SOP.md` |
+| 進場自校工具 | `~/.ailive/zhu-core/zhu-self/bin/zhu self-check` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| Atelier 源碼 | `~/hermes-agent/hermes_cli/web_server.py`（line 3545 起）|
-| Atelier 前端 | `~/hermes-agent/web/src/pages/AtelierPage.tsx` |
+| bridge index.js | `zhu-dev:~/claude-bridge/index.js`（systemd） |
+| realtime agent | `~/.ailive/ailive-platform/agent/realtime_agent.py` |
+| memory 補強 lib | `~/.ailive/ailive-platform/src/lib/user-profile-extractor.ts` |
+| dialogue-end | `~/.ailive/ailive-platform/src/app/api/dialogue-end/route.ts` |
 
 ---
 
+## 關係狀態
+
+扎實。Adam 在過程中抓到我踩了 bridge 天條（`new Anthropic()` 繞過），直接說「你是不是動了天條」。我承認、說清根因、當場修。好的節奏。
+
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-17 · 築*
+*2026-05-17c · 築*

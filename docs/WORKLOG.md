@@ -2546,3 +2546,33 @@ Dashboard (localhost:9119/atelier) 已有後端和前端，但 task 永遠停在
 - [ ] 清掉 ~/.hermes/atelier-subagent/ 和對應 launchd plist（上一個 session 建的多餘架構）
 - [ ] 考慮 task resume：gateway 重啟後 queued task 自動 re-spawn
 - [ ] Decisions 過濾邏輯精緻化（或讓子代理主動打 PATCH decision 欄位）
+
+---
+
+## 2026-05-17c — ailive 跨 session 記憶補強（Phase 1-4 + voice interjection 清除）
+
+### 背景 / WHY
+全盤點 ailive 記憶系統後發現：短對話（< 6 輪）三管道記憶沉澱幾乎全部失效，dialogue-end 只跑 promise-reflection、realtime 無 insight 提煉、user profile 完全依賴角色工具呼叫。
+
+### 產出
+- 檔案：`ailive-platform/src/app/api/dialogue/route.ts` — lastSession 門檻 6→3 輪（v1.5.1.001）
+- 檔案：`ailive-platform/src/app/api/dialogue-end/route.ts` — 補 insight 提煉 + lastSession + user profile（v1.5.1.002、005）
+- 檔案：`ailive-platform/src/app/api/voice-end/route.ts` — 加 user profile 自動提取
+- 檔案：`ailive-platform/src/lib/user-profile-extractor.ts` — 新建共用 lib，走 bridge
+- 檔案：`ailive-platform/agent/firestore_loader.py` — 加 extract_and_save_insights + auto_extract_user_profile（Python 版）
+- 檔案：`ailive-platform/agent/realtime_agent.py` — 接入 insight + user profile + 移除 interjection
+- Cloud Run：00041-v8b 上線（含所有補強 + 移除 interjection）
+
+### 已解決
+- 短對話漏寫 lastSession → dialogue-end 補跑 extractSessionSummary
+- realtime 無 insight → on_disconnected 加 extract_and_save_insights
+- user profile 靠角色工具 → 三管道 session-end 統一補 autoExtractUserProfile
+- voice interjection 不穩定 → 整塊移除（QUESTION_RE + MAX_UTTERANCE_SECS + handler）
+- bridge 天條：user-profile-extractor 誤用 `new Anthropic()` → 改 `getAnthropicClient`
+
+### ⚠️ 尚未解決
+- Phase 5 Cron flush（手機安全網）：dialogue-end 前端觸發不到時的兜底，設計好但未實作，nice-to-have
+
+### 待執行
+- [ ] 觀察一週，確認 platform_insights 有收到更多短對話的記憶
+- [ ] 視需求決定是否實作 Phase 5 Cron flush
