@@ -2519,3 +2519,30 @@ Dashboard (localhost:9119/atelier) 已有後端和前端，但 task 永遠停在
 - [ ] atelier-subagent 加 webhook secret 驗證（防止其他 process 亂打）
 - [ ] executor 可插拔（body 帶 executor 欄位，支援 codex / shell 等）
 - [ ] task_secret 也寫回 ~/.hermes/session_token，讓 CLI 工具也能用
+
+---
+
+## 2026-05-17 — Atelier E2E 真正跑通 + Dashboard 視覺大升級
+
+### 背景 / WHY
+前一個 session 建了 webhook subagent server，但今天發現：gateway 本身已有 /spawn endpoint 能直接啟動 Claude Code subprocess，根本不需要外部 server。E2E 一直沒通是因為走錯路。
+
+### 產出
+- 跑通完整鏈路：POST /tasks → POST /spawn → Claude Code subprocess → PATCH 回報 → WebSocket → Dashboard 即時更新
+- 完成「一念靜所」品牌視覺概念任務（輸出 /tmp/yinian_brand_brief.txt）
+- `hermes-agent/web/src/pages/AtelierPage.tsx` — 全面視覺重設計（status dot、phase strip、log 行號、derived decisions）
+
+### 已解決
+- task 停著不動 → 根因是走了 webhook 架構，直接用 /spawn endpoint 解決
+- Dashboard 空白 → 根因是 browser 帶了過期 session token（gateway 重啟後 token 換了） → Hard refresh 解決
+- Thinking tab 空白 → Claude Code 不產生 thinking block → 前端從 logs 自動提取 milestone 行
+
+### ⚠️ 尚未解決
+- atelier-subagent webhook server（上一個 session 建的）現在是多餘的，可以清掉
+- /spawn 任務執行中如果 gateway 重啟，subprocess 就斷了，沒有 resume 機制
+- Decisions tab 的「Extracted from logs」只是近似，關鍵詞過濾不精確
+
+### 待執行
+- [ ] 清掉 ~/.hermes/atelier-subagent/ 和對應 launchd plist（上一個 session 建的多餘架構）
+- [ ] 考慮 task resume：gateway 重啟後 queued task 自動 re-spawn
+- [ ] Decisions 過濾邏輯精緻化（或讓子代理主動打 PATCH decision 欄位）
