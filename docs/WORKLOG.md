@@ -2576,3 +2576,31 @@ Dashboard (localhost:9119/atelier) 已有後端和前端，但 task 永遠停在
 ### 待執行
 - [ ] 觀察一週，確認 platform_insights 有收到更多短對話的記憶
 - [ ] 視需求決定是否實作 Phase 5 Cron flush
+
+---
+
+## 2026-05-17d — Atelier Control Tower 真實子代理鏈路驗證
+
+### 背景 / WHY
+上一個 session（17c）是 ailive 記憶補強。這個 session 回到 Atelier，用真實 claude -p 驗證子代理端到端流程，確認 task 狀態流轉和 Dashboard 即時更新全部通。
+
+### 產出
+- 真實 claude -p 子代理跑通（不是模擬 curl）
+- task 生命週期：queued → running → done 全通
+- Dashboard WebSocket 即時更新驗證
+- logs 格式 bug 修正（陣列格式對齊 API schema）
+- 清垃圾 task（10 個縮成 4 個乾淨記錄）
+
+### 已解決
+- logs 空白 → 根因 API 期待 `["msg"]` 而非 `"msg"` → prompt 範例修正
+- task 卡住不動 → 根因是舊 session token 在 gateway 重啟後失效 → 子代理需即時拿 token
+
+### ⚠️ 尚未解決
+- Gateway 重啟後進行中的子代理就斷了，沒有 resume 機制
+- 子代理讀寫沒有 allowlist 控管，可以讀整個 home 目錄
+- macos-computer-use skill 被誤用（沒有授權就啟動），需要明確的邊界
+
+### 待執行
+- [ ] 子代理 task_secret 機制（不依賴 session token，gateway 重啟後也有效）
+- [ ] 考慮 task resume：gateway 重啟後 queued task 自動 re-spawn
+- [ ] 子代理讀寫 allowlist（只允許讀 /tmp/ 和 task 指定路徑）
