@@ -4,6 +4,48 @@
 
 ---
 
+## 2026-05-17 — 聲紋識別功能上線（platform_voice_prints）
+
+### 背景 / WHY
+Adam 想讓角色在即時語音通話時能認出用戶聲音，不用每次都說「我是誰」。
+目的：角色記得聲音 → 主動歡迎 → 更自然的關係感。
+
+### 產出
+- `agent/voice_identifier.py`（新建）— VoiceIdentifier 類，librosa MFCC 52-d 特徵向量 + cosine similarity + Firestore 雙向讀寫
+- `agent/realtime_agent.py` — 三處新增：
+  1. `track_subscribed` hook 捕捉前 3 秒音訊
+  2. 第一句話觸發 `_run_voice_identification()`
+  3. userId 已知→儲存聲紋；未知→比對後問名
+- `agent/requirements.txt` — 新增 librosa>=0.10.0, numpy>=1.24.0
+- STT 加 `diarize=True`
+- Git tag 備份：`v1.5.1.006-pre-voice-id`
+- Commit：`v1.5.2.001`，已 push + deploy
+
+### 技術選型
+- Resemblyzer（PyTorch）棄用 → librosa MFCC（scipy 系）
+- Docker image 增加 ~80MB（vs. PyTorch ~500MB）
+- 構建時間：2m43s（含 librosa 安裝）
+
+### 部署驗證
+- Cloud Run revision：`ailive-realtime-agent-00042-7fh`（v1.5.2.001）
+- Traffic：100% on new revision ✅
+- Firestore collection：`platform_voice_prints` —（無須事先建立，第一次 store 自動建立）
+
+### Firestore schema（platform_voice_prints）
+- Doc ID：`{characterId}_{userId}`
+- Fields：character_id, user_id, display_name, embedding[52], created_at, last_seen
+
+### ⚠️ 尚未解決
+- 第一次通話只儲存聲紋，識別需第二次通話才生效（預期行為）
+- 如果 librosa 在某些音訊格式下提取失敗，識別靜默跳過（log: `[voice-id] embedding extraction failed`）
+- `userId` 未知場景（kiosk 模式）尚未在生產環境驗證
+
+### 待執行
+- [ ] Adam 明天驗收：跟某角色通話兩次，看第二次是否有 [voice-id] stored/match log
+- [ ] 觀察 Firestore platform_voice_prints collection 是否有資料寫入
+
+---
+
 ## 2026-05-14 — 即時語音 commission_specialist + research 交付根因修復
 
 ### 背景 / WHY
@@ -2681,3 +2723,27 @@ AAM（Adam 的代理）接手，要確認今天的子代理真的跑通，並問
 - [ ] Atelier × molowe 整合方向（等 Adam/AAM 整理思路）
 - [ ] DELETE task API
 - [ ] Approval Queue backend（WebSocket 推 approval_needed 事件）
+
+---
+
+## 2026-05-17h — Atelier 分工模式完整驗證
+
+### 背景 / WHY
+Adam 問：有沒有辦法讓我（築）專注陪他聊，子代理在背景跑，不用切視窗。
+
+### 產出
+- 檔案：`/Users/adamlin/hermes-agent/hermes_cli/web_server.py` — 加 brief + monitor_notes 欄位、/api/atelier/dashboard 三欄頁面
+- timer.html、todo.html — 子代理真實建出來，不是我假裝的
+
+### 已解決
+- 問題：加了新欄位但 API 一直回舊結構 → 根因：port 9119 是 ai.hermes.web（PID 41296）不是 gateway，一直重啟錯進程 → 修法：kill -9 41296，launchd 重啟 hermes web
+- 問題：dashboard 路由被 SPA catch-all 攔截 → 修法：改為 /api/atelier/dashboard（在 catch-all 前就 match）
+
+### ⚠️ 尚未解決
+- todo.html 第一個子代理靜默結束根因不明（可能 Claude Code session 超時或被 OOM kill）
+- B 模式行為還未完全到位：子代理完成時應主動報，今天最後一次還是 Adam 問的
+
+### 待執行
+- [ ] 確認子代理靜默失敗的根因（看 stderr log）
+- [ ] 練習 B 模式：子代理跑完主動說，不等被問
+- [ ] A 模式（Discord 推送）評估：任務 PATCH 時 web server 通知 gateway 發 Discord 訊息
