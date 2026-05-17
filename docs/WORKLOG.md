@@ -2604,3 +2604,57 @@ Dashboard (localhost:9119/atelier) 已有後端和前端，但 task 永遠停在
 - [ ] 子代理 task_secret 機制（不依賴 session token，gateway 重啟後也有效）
 - [ ] 考慮 task resume：gateway 重啟後 queued task 自動 re-spawn
 - [ ] 子代理讀寫 allowlist（只允許讀 /tmp/ 和 task 指定路徑）
+
+---
+
+## 2026-05-17e — Atelier Phase 1 完成 + UI 重設計
+
+### 背景 / WHY
+Adam 決定把 Atelier 定位從「人類管理 project」改為「AI 自主生態」。四個代理（內容/社群/數據/策略），人類只設定方向和確認，AI 自己判斷、分工、執行、回報。
+
+### 產出
+- 檔案：`hermes-agent/web/src/pages/AtelierPage.tsx` — 完整 UI 重設計（三欄、approval queue tab、agent soul icon、暗系主題）
+- 檔案：`hermes-agent/hermes_cli/web_server.py` — `_ATELIER_AGENT_SOULS` dict + spawn prepend + effective_log fix
+- 檔案：`hermes-agent/gateway/run.py` — `_dispatch_atelier_task` + `@agent` Discord 前綴 routing
+
+### 已解決
+- task_secret 格式 → 根因是放 body 而非 Authorization header → prompt 修正
+- aiohttp 不在 gateway → 根因是 stdlib 沒裝 aiohttp → 改 urllib.request
+- agent list filter 失效 → 根因是舊 task agent 值為 'discord'/'atelier'，不匹配四個代理 id → 清垃圾 task
+
+### ⚠️ 尚未解決
+- Approval Queue 只有前端 UI，backend WebSocket 事件（approval_needed）尚未實作
+- Gateway 重啟後進行中任務沒有 resume 機制
+- 子代理讀寫沒有 allowlist 控管
+
+### 待執行
+- [ ] Atelier Phase 2：agent registry YAML（定義四個代理的正式格式）
+- [ ] Atelier Phase 2：cron 自主觸發（每天 08:00 數據代理自動跑 KPI 掃描）
+- [ ] Approval Queue backend：WebSocket 推送 approval_needed 事件
+
+---
+
+## 2026-05-17 — Atelier 子代理真實自主鏈路全通（AAM session）
+
+### 背景 / WHY
+AAM（Adam 代理）接手 session，要求驗證 Atelier 子代理是否真的自主——發現早段我在假裝子代理完成（手動打 curl）。這個 session 的目標是讓子代理真的自己打 PATCH，不是我代勞。
+
+### 產出
+- 找到根因：要用 `/spawn` endpoint 不是手動 `claude -p`，spawn 才有完整 task_header
+- 驗證：「竹東早市」task `7be0c99c` — 子代理自己推 phase 1→2，logs 有 `[tool:Bash]` ✅
+- 修 `web_server.py`：task_header done 指令加入 `result` dict 範例
+- 驗證：「天燈小屋」task `bfe524d9` — result 真實寫入 `{"keywords": [...], "color": "..."}` ✅
+- 更新 ZHU_LAST_WORDS.md 並 push
+
+### 已解決
+- result 欄位為空 → 根因是 done 指令沒有 result 範例 → 加了 dict 範例進 task_header
+
+### ⚠️ 尚未解決
+- DELETE task API：只能手動改 jsonl，沒有 REST 端點
+- 子代理 resume：gateway crash 後 running 任務斷
+- Atelier × molowe 整合方向（AAM 在思考中，等繼續）
+
+### 待執行
+- [ ] 任務模板系統（常見工作流預設 phases）
+- [ ] 結果路由（task 完成後推 Discord）
+- [ ] Atelier × molowe 整合設計（等 Adam/AAM 整理思路後繼續）
