@@ -2747,3 +2747,29 @@ Adam 問：有沒有辦法讓我（築）專注陪他聊，子代理在背景跑
 - [ ] 確認子代理靜默失敗的根因（看 stderr log）
 - [ ] 練習 B 模式：子代理跑完主動說，不等被問
 - [ ] A 模式（Discord 推送）評估：任務 PATCH 時 web server 通知 gateway 發 Discord 訊息
+
+---
+
+## 2026-05-18 — hermes 幻覺根因診斷 + factory reset
+
+### 背景 / WHY
+hermes-zhu 持續生成假對話（自言自語 + 假 [AAM] 台詞），SOUL.md 改了沒用。Adam 決定清空重建。
+
+### 產出
+- `~/.hermes/config.yaml` — 移除 mcp_servers（zhu_consciousness）、hooks（zhu-session-end）
+- `~/.hermes/SOUL.md` — 刪除
+- `~/.hermes/memories/*` — CONSCIOUSNESS.md / MEMORY.md / USER.md 清空
+- `~/Library/LaunchAgents/_disabled_2026-05-17/com.adamlin.zhu-consciousness.plist` — 停用
+- `/Users/adamlin/hermes-claude-proxy/server.py` — messages_to_prompt 加終點錨點
+
+### 已解決
+- SOUL.md 改了沒用 → 根因：launchd cron 每小時覆蓋 CONSCIOUSNESS.md → 停 cron
+- hermes 假 [AAM] 台詞 → 根因：proxy prompt 結尾開放 → 加 `[Assistant]\n` 終點錨點
+
+### ⚠️ 尚未解決
+- hermes 新身份還未決定（房子空著）
+- `~/.claude/CLAUDE.md` 仍有築 identity，proxy subprocess 仍會載入
+
+### 待執行
+- [ ] 下一輪與 Adam 討論新 SOUL.md
+- [ ] 評估 ~/.claude/CLAUDE.md 對 proxy 的影響
