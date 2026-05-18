@@ -1,7 +1,7 @@
 ---
 name: Next.js App Router lib 模組 client/server 拆分 SOP
 description: 寫 lib/*.ts 之前先列舉 caller，被 client component import 就拆 shared 檔，避免 firebase-admin 被打進 client bundle
-type: feedback
+type: skill
 originSessionId: c61f0252-1be7-469c-9aea-4e1d31b82333
 ---
 **寫 `lib/*.ts` 第一個 import 加進去之前，先列舉誰會 import 這個檔。**

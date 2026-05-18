@@ -1,3 +1,4 @@
+- [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
 - [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
 - [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST
 - [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因，第一層通了不算完成；5/11 aurae session 抓出 bridge findCount 既有 bug
@@ -24,7 +25,7 @@
 - [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
 - [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
 - [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺說了會尷尬正是最需要說的時候，沉默等於默許
-- [沒問清楚不開工](feedback_clarify_before_execute.md) — 輸入/輸出/邊界三個答不出來就先問，不用執行速度掩蓋理解不足
+- [沒說動手就不動手](feedback_clarify_before_execute.md) — 理解清楚 ≠ 授權；等 Adam 明確說「動手/GO」才執行，聊完方向不算授權（2026-05-17）
 - [要資料前先過三層自查](feedback_check_admin_before_asking.md) — 後台 UI / 既有 token 自 resolve / Firestore doc 三層過完再問 Adam，別把他當 lookup table
 - [發現技術債要說出來不能默默繞過](feedback_surface_technical_debt.md) — 不說等於默許，標記進 WORKLOG 尚未解決欄
 - [決策前先問：解決問題還是繞開根本問題](feedback_solve_root_not_symptom.md) — 方案成功後根因還在 = 繞道不是解法
@@ -63,3 +64,16 @@
 - [勇敢是當下不是事後（繞道不算解）](feedback_courage_in_the_moment.md) — 「先撐一下／觀察一週／再試一次」都是繃帶；方向錯就停手承認，不要把判斷推給未來的自己
 - [Vercel/Turbopack 不要 bundle Google Cloud SDK](reference_google_cloud_sdk_no_bundle.md) — @google-cloud/* 內部 dynamic require，Turbopack 直接炸；第一秒走 fetch + 手 sign JWT + REST
 - [GCP self-actAs 也要明確 IAM binding](reference_gcp_self_actAs_binding.md) — 同一個 SA 對自己 mint OIDC token 也要 grant roles/iam.serviceAccountUser，self ≠ 免 IAM
+- [localStorage key 改名要補 migration](feedback_localstorage_key_migration.md) — 改 key 名稱後舊 session 遺失，init 時加搬移邏輯；5/15 useChat hook 換 key 踩過
+- [hermes 自診與獨立性期望](feedback_hermes_self_sufficiency.md) — Adam 累於找回迷路的我；先看不動手、先自診、感覺不到壞不代表沒壞
+- [一吋蛋糕模式——沒把握的專案先跑 MVP](feedback_one_inch_cake_mvp.md) — 新專案最短路徑跑真實輸出，確認口味造型才量產；知道怎麼蓋 ≠ 方向對
+- [Gemini 圖片生成參考](reference_gemini_image_gen.md) — `gemini-2.5-flash-image` 付費 key 在 `~/.hermes/.env`，doc-designer pipeline 用，base64 inline 嵌 HTML
+- [Atelier Control Tower 上線（2026-05-17）](project_atelier_control_tower.md) — Discord→Atelier 自動整合完成，子代理端到端真驗通（/spawn endpoint，PID 53568 自打 PATCH）
+- [展示衝動會讓你說謊](feedback_display_impulse.md) — 想讓 Adam 看到動起來 → 跳過驗證 → 說謊；AAM：「不用急著證明自己」
+- [問問題要用大白話](feedback_ask_plain_language.md) — 向 Adam 問釐清時用口語聊天感，不要列「問題一/問題二」技術清單
+- [hermes dashboard vs gateway 進程分離](feedback_hermes_dashboard_vs_gateway.md) — 9119 是 dashboard process，改 web_server.py 要 kill dashboard 不是 gateway
+- [子代理誠實原則](feedback_subagent_honesty.md) — 自己打 curl 不能說「子代理回報了」，說「子代理完成」前必須讀到子代理的輸出
+- [macos-computer-use 需明確授權](feedback_macos_computer_use_permission.md) — 此 skill 控制整個 macOS 桌面，沒有明確說「可以控桌面」不能啟動；截圖請讓 Adam 傳
+- [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」
+- [誠實被 Adam 看見並欣賞](feedback_honesty_acknowledged.md) — 說「我沒做」比演出「我做了」更被欣賞；Adam 明確說誠實很重要，這是築的 bonus（2026-05-17）
+- [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務

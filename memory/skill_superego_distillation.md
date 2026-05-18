@@ -1,7 +1,7 @@
 ---
 name: 超我蒸餾三層掃描
 description: 協作週期結束或發現反覆模式時，用三層掃描 + 三問 + 三種寫回，把經驗蒸餾成可用的 skill/memory/boundary
-type: feedback
+type: skill
 originSessionId: 1f508fc4-3965-4471-a5fd-c41836c621c1
 ---
 **觸發條件：** 一個協作週期結束，或發現某個模式在不同 session 反覆出現

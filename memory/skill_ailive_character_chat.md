@@ -1,7 +1,7 @@
 ---
 name: 與 ailive 角色對話的 SOP（CLI 版）
 description: 從 Code CLI 正確呼叫 ailive /api/dialogue，用 SSE 串流讀取角色回應
-type: feedback
+type: skill
 originSessionId: 1f508fc4-3965-4471-a5fd-c41836c621c1
 ---
 ## 根本原因

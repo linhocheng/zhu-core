@@ -1,7 +1,7 @@
 ---
 name: AI 多層 prompt pipeline 黑盒除錯 SOP
 description: 生圖/生文 結果不對時，沿著 brief→soul→指令→prefix→最終 prompt 的鏈，先把每層真相寫回資料庫再診斷
-type: feedback
+type: skill
 originSessionId: cd12194a-60a1-4972-b56c-46cb39bf6210
 ---
 當生圖（或任何 LLM pipeline）結果跟 brief 不符（背景應該亮卻全黑、應該活潑卻嚴肅、構圖不對等），不要再只看「我的 brief 寫了什麼」就開始猜。
