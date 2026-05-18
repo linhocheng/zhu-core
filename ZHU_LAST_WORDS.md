@@ -21,26 +21,42 @@
 
 ---
 
-## 最新完成（2026-05-18）
+## 最新完成（2026-05-19）
 
-- hermes 幻覺根因確診：launchd cron 每小時覆蓋 CONSCIOUSNESS.md + proxy prompt 結尾開放
-- 停用 com.adamlin.zhu-consciousness cron（搬到 _disabled_2026-05-17/）
-- proxy messages_to_prompt 加終點錨點 [Assistant]\n，防止模型自言自語
-- hermes factory reset：SOUL.md 刪除、memories 清空、hooks/mcp_servers 移除
+- ailive-platform realtime 記憶系統修復全部上線
+  - realtime page handleDisconnect 補 voice-end（await fetch + voiceEndFiredRef 防重複）
+  - useEffect cleanup 補 sendBeacon（互斥防重複）
+  - insights POST API 補 userId + tier 支援
+  - dashboard memory 頁兩 tab 各加「＋ 新增」inline form
+  - backfill 腳本 `scripts/_backfill_realtime_insights.ts` 建好
+  - build + deploy 到 production 完成（ailive-platform.vercel.app）
+
+---
+
+## 今天改了哪些檔案
+
+| 檔案 | 改了什麼 |
+|---|---|
+| `src/app/realtime/[characterId]/page.tsx` | handleDisconnect + useEffect cleanup 補 voice-end / sendBeacon |
+| `src/app/api/insights/route.ts` | POST 支援 userId + tier |
+| `src/app/dashboard/[id]/memory/page.tsx` | 兩 tab 加「＋ 新增」UI |
+| `scripts/_backfill_realtime_insights.ts` | 新增 backfill 腳本 |
 
 ---
 
 ## 下一步
 
-hermes 房子空著，下一輪與 Adam 決定新 SOUL.md。
-醒來先評估 ~/.claude/CLAUDE.md 對 proxy subprocess 的影響。
+1. Adam 打一通電話（聖嚴或任一角色），掛斷後 5 分鐘內看 memory dashboard
+2. 確認 insights / lastSession / user_observations 有新資料
+3. 跑 `cd ~/.ailive/ailive-platform && npx ts-node scripts/_backfill_realtime_insights.ts --dry-run` 看待補跑清單
+4. 確認無誤後移除 --dry-run 正式補跑 151 條對話的記憶
 
 ---
 
 ## 卡住 / 未解
 
-- ~/.claude/CLAUDE.md 仍有築 identity，proxy 呼叫 claude --print 時會被載入
-- hermes 新身份（小飛？還是其他？）尚未確定
+- backfill 腳本未跑，待 Adam 確認清單後執行
+- hermes 新身份尚未決定（Adam 先休息，下次討論）
 
 ---
 
@@ -56,4 +72,4 @@ hermes 房子空著，下一輪與 Adam 決定新 SOUL.md。
 
 ---
 
-*2026-05-18 · 築*
+*2026-05-19 · 築*

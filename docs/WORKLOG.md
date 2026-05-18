@@ -2773,3 +2773,29 @@ hermes-zhu 持續生成假對話（自言自語 + 假 [AAM] 台詞），SOUL.md 
 ### 待執行
 - [ ] 下一輪與 Adam 討論新 SOUL.md
 - [ ] 評估 ~/.claude/CLAUDE.md 對 proxy 的影響
+
+---
+
+## 2026-05-19 — ailive-platform realtime 記憶系統修復
+
+### 背景 / WHY
+realtime 通話（/realtime/[characterId]）掛斷後不觸發 voice-end API，導致 platform_insights / lastSession / user_observations 全部不寫入，記憶頁空白。
+
+### 產出
+- 檔案：`src/app/realtime/[characterId]/page.tsx` — handleDisconnect 補 voice-end（fetch + 防重複 ref）；useEffect cleanup 補 sendBeacon（互斥）
+- 檔案：`src/app/api/insights/route.ts` — POST 支援 userId + tier 欄位
+- 檔案：`src/app/dashboard/[id]/memory/page.tsx` — 兩個 tab 各加「＋ 新增」inline form
+- 檔案：`scripts/_backfill_realtime_insights.ts` — 補跑現有 voice-* conv 的記憶提煉，支援 --dry-run
+
+### 已解決
+- 問題：掛斷沒觸發整理 → 根因：handleDisconnect 沒打 voice-end → 修法：補呼叫，用 voiceEndFiredRef 防重複
+- 問題：關頁面邊緣情況 → 根因：fetch 在 unload 不保證送出 → 修法：sendBeacon + Blob JSON
+
+### ⚠️ 尚未解決
+- backfill 腳本已建但未跑，待 Adam 確認後執行（先 --dry-run 看清單再正式跑）
+- 需要真實通話測試驗證記憶是否正確寫入
+
+### 待執行
+- [ ] Adam 打一通電話掛斷，確認 /dashboard/mziGYIQGZHK2g4XOoU0w/memory 有新 insights
+- [ ] 跑 `npx ts-node scripts/_backfill_realtime_insights.ts --dry-run` 確認待補跑清單
+- [ ] 確認無誤後移除 --dry-run 正式補跑
