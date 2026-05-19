@@ -24,13 +24,14 @@
 
 ---
 
-## 最新完成（2026-05-19）
+## 最新完成（2026-05-20）
 
-- /client/ middleware 修好，客戶端不再跳主站登入（v1.5.4.005）
-- commission_specialist 加佐格哲學路由 Phase 1（v1.5.4.004）
-- 新建 /api/longform 長文場域（v1.5.4.006）
-- Bridge streaming 現場勘查完成，確認 streaming 路徑壞掉（Not logged in）
-- 確認 bridge non-streaming 走 Max OAuth，990s + 47K tokens 能跑完
+- realtime agent commission_specialist 加佐格路由（v1.5.4.007，Cloud Run revision 00048）
+- commission_specialist 三入口全對齊：dialogue / voice-stream / realtime_agent.py（v1.5.4.008）
+- 新增 `specialist="self"`：角色本人親自執筆，strategy-worker 動態載角色靈魂
+- strategy-worker 自派跳 Stage 1（isSelfCommission，省 token + 語意正確）
+- git tag `pre-self-commission` 打好，一鍵回滾錨點在此
+- Cloud Run revision 00049 上線
 
 ---
 
@@ -38,31 +39,35 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailive-platform/src/middleware.ts` | /client/ 加入 PUBLIC_PREFIXES |
-| `ailive-platform/src/app/api/dialogue/route.ts` | 加佐格路由 Phase 1 |
-| `ailive-platform/src/app/api/longform/route.ts` | 新建，長文場域 |
-| `zhu-core/skills/strategy-commission-flow.md` | 佐格計畫寫入（untracked，待 commit）|
+| `agent/realtime_agent.py` | 加佐格 + self 路由（REALTIME_SPECIALIST_MAP + self 動態 id） |
+| `src/app/api/dialogue/route.ts` | self 加入 enum + system prompt + handler（動態讀 Firestore 角色名） |
+| `src/app/api/voice-stream/route.ts` | 加佐格 + self（此前兩者皆缺） |
+| `src/app/api/specialist/strategy/route.ts` | isSelfCommission → 自派跳 Stage 1 |
 
 ---
 
 ## 下一步
 
-**修 bridge streaming auth**：
+**測試 self-commission**：
+1. 開文字對話找李敖（x3dEzt2Wyc2tCvwKjevM）
+2. 說「你來寫一篇關於台灣的文章」
+3. 去 Firestore `platform_jobs` 確認：`requesterId == assigneeId == x3dEzt2Wyc2tCvwKjevM`
+4. dashboard 等 3-5 分鐘，下載 docx 確認是李敖筆法而非奧
+
+**bridge streaming 待修（上次遺留）**：
 ```bash
-gcloud compute ssh zhu-dev --zone=asia-east1-b --project=zhu-cloud-2026
-# 調查：為何 streaming 模式 claude CLI 顯示 Not logged in
+gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b
 echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
-# 如果還是 Not logged in，看 ~/.claude/oauth_token 是否存在
-# 試 export ANTHROPIC_CLAUDE_CODE_OAUTH_TOKEN=$(cat ~/.claude/oauth_token)
 ```
-修好後 → /api/longform 改走 bridge streaming → 壓力測試吳導 15000 字
+修好後 → /api/longform 改走 bridge streaming → D-work 吳導 15000 字壓力測試
 
 ---
 
 ## 卡住 / 未解
 
-- **Bridge streaming 壞**：`--output-format stream-json` 模式 claude 顯示 Not logged in，non-streaming 正常。兩條 auth 路徑不同，待查機制
-- **D-work 架構待定**：Max + streaming 解法等 bridge 修好才能確認
+- **Bridge streaming 壞**：`--output-format stream-json` 模式 Not logged in，non-streaming 正常
+- **self-commission 尚未真實測試**：code 寫好，還沒跑過一次端到端
+- **voice-stream 佐格尚未測試**：加進去了，沒驗過
 
 ---
 
@@ -75,11 +80,11 @@ echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| commission_specialist 全鏈路地圖 | `~/.ailive/zhu-core/skills/strategy-commission-flow.md` |
+| 回滾錨點 | `git checkout pre-self-commission -- <檔案>` |
 | Bridge streaming 踩雷 | `docs/LESSONS/LESSONS_2026-05-19b.md` |
-| D-work 長文場域 | `ailive-platform/src/app/api/longform/route.ts` |
-| 佐格路由計畫 | `skills/strategy-commission-flow.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-19b · 築*
+*2026-05-20 · 築*
