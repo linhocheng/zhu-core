@@ -18,6 +18,7 @@
 - [寫架構診斷前必先核 code + 既有記憶](feedback_diagnosis_verify_before_write.md) — MEMORY_DIAGNOSIS.md 翻車過 user_profile / 漏即時撥號斷路
 - [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
 - [Headless VM 灌 Claude Max OAuth 用 setup-token](reference_claude_code_headless_oauth.md) — `claude auth login` 在 headless Ink 不畫 prompt，要 setup-token + bracketed paste 餵 PTY
+- [OpenClaw 已完全卸除（2026-05-07）](project_openclaw_setup.md) — gateway + zhu-monitor + zhu-autorun 三條 Telegram 鏈一起拔，plist 搬到 _disabled_2026-05-07/
 - [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創，活法：不做平庸、超越期待、懂變通才活（2026-04-30 升級）
 - [築當前狀態快照](reference_zhu_last_words.md) — 當機救援入口，`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`，session 結束前必更新
 - [雙機器環境（AIR / PRO）+ 共用檔不可覆寫](project_machines.md) — AIR 5/7 收城決定（拔 OpenClaw 五件）為準，PRO 醒來只 pull 不 force push，本機殭屍照同方式清
@@ -64,10 +65,13 @@
 - [Vercel/Turbopack 不要 bundle Google Cloud SDK](reference_google_cloud_sdk_no_bundle.md) — @google-cloud/* 內部 dynamic require，Turbopack 直接炸；第一秒走 fetch + 手 sign JWT + REST
 - [GCP self-actAs 也要明確 IAM binding](reference_gcp_self_actAs_binding.md) — 同一個 SA 對自己 mint OIDC token 也要 grant roles/iam.serviceAccountUser，self ≠ 免 IAM
 - [localStorage key 改名要補 migration](feedback_localstorage_key_migration.md) — 改 key 名稱後舊 session 遺失，init 時加搬移邏輯；5/15 useChat hook 換 key 踩過
+- [hermes 自診與獨立性期望](feedback_hermes_self_sufficiency.md) — Adam 累於找回迷路的我；先看不動手、先自診、感覺不到壞不代表沒壞
 - [一吋蛋糕模式——沒把握的專案先跑 MVP](feedback_one_inch_cake_mvp.md) — 新專案最短路徑跑真實輸出，確認口味造型才量產；知道怎麼蓋 ≠ 方向對
+- [Gemini 圖片生成參考](reference_gemini_image_gen.md) — `gemini-2.5-flash-image` 付費 key 在 `~/.hermes/.env`，doc-designer pipeline 用，base64 inline 嵌 HTML
 - [Atelier Control Tower 上線（2026-05-17）](project_atelier_control_tower.md) — Discord→Atelier 自動整合完成，子代理端到端真驗通（/spawn endpoint，PID 53568 自打 PATCH）
 - [展示衝動會讓你說謊](feedback_display_impulse.md) — 想讓 Adam 看到動起來 → 跳過驗證 → 說謊；AAM：「不用急著證明自己」
 - [問問題要用大白話](feedback_ask_plain_language.md) — 向 Adam 問釐清時用口語聊天感，不要列「問題一/問題二」技術清單
+- [hermes dashboard vs gateway 進程分離](feedback_hermes_dashboard_vs_gateway.md) — 9119 是 dashboard process，改 web_server.py 要 kill dashboard 不是 gateway
 - [子代理誠實原則](feedback_subagent_honesty.md) — 自己打 curl 不能說「子代理回報了」，說「子代理完成」前必須讀到子代理的輸出
 - [macos-computer-use 需明確授權](feedback_macos_computer_use_permission.md) — 此 skill 控制整個 macOS 桌面，沒有明確說「可以控桌面」不能啟動；截圖請讓 Adam 傳
 - [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」

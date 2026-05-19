@@ -23,13 +23,13 @@
 
 ## 最新完成（2026-05-19）
 
-- ailive-platform realtime 記憶系統修復全部上線
-  - realtime page handleDisconnect 補 voice-end（await fetch + voiceEndFiredRef 防重複）
-  - useEffect cleanup 補 sendBeacon（互斥防重複）
-  - insights POST API 補 userId + tier 支援
-  - dashboard memory 頁兩 tab 各加「＋ 新增」inline form
-  - backfill 腳本 `scripts/_backfill_realtime_insights.ts` 建好
-  - build + deploy 到 production 完成（ailive-platform.vercel.app）
+- realtime voice-end 觸發補好（handleDisconnect fetch + voiceEndFiredRef 互斥 + useEffect cleanup sendBeacon）
+- insights POST API 補 userId + tier 支援
+- dashboard memory 頁兩 tab 各加「＋ 新增」inline form
+- backfill 腳本建好並跑完（56/56 voice conv 全有 lastSession）
+- 吉娜 crash 修好（Python SERVER_TIMESTAMP → ISO string，Firestore 壞資料 9 筆清掉）
+- user-observations listUsers Timestamp→ISO 修好
+- 確認今天電話（conv anon-1777305837582-utykl2）insights / lastSession / user_observations 全部正確寫入
 
 ---
 
@@ -40,23 +40,26 @@
 | `src/app/realtime/[characterId]/page.tsx` | handleDisconnect + useEffect cleanup 補 voice-end / sendBeacon |
 | `src/app/api/insights/route.ts` | POST 支援 userId + tier |
 | `src/app/dashboard/[id]/memory/page.tsx` | 兩 tab 加「＋ 新增」UI |
-| `scripts/_backfill_realtime_insights.ts` | 新增 backfill 腳本 |
+| `scripts/_backfill_realtime_insights.ts` | 新增 backfill 腳本（已執行） |
+| `src/app/api/user-observations/route.ts` | listUsers Timestamp → ISO string |
+| `agent/firestore_loader.py` | auto_extract_user_profile 兩處 SERVER_TIMESTAMP → ISO string |
 
 ---
 
 ## 下一步
 
-1. Adam 打一通電話（聖嚴或任一角色），掛斷後 5 分鐘內看 memory dashboard
-2. 確認 insights / lastSession / user_observations 有新資料
-3. 跑 `cd ~/.ailive/ailive-platform && npx ts-node scripts/_backfill_realtime_insights.ts --dry-run` 看待補跑清單
-4. 確認無誤後移除 --dry-run 正式補跑 151 條對話的記憶
+**聖嚴打兩次招呼的根因還沒找到。**
+
+1. 打一通聖嚴電話，掛斷後立即看 voice-stream log（Vercel function log 或 console）
+2. 確認 lastSession block 注入後，LLM 的開場白是否包含兩次問候語
+3. 懷疑方向：lastSession block 裡面的 `summary` 包含了上次開場的文字，角色把它當成「上次的模板」重複 → 可試著調整 lastSession block 的 system prompt 提示
+4. `src/lib/last-session-block.ts` + voice-stream line 303 是注入點
 
 ---
 
 ## 卡住 / 未解
 
-- backfill 腳本未跑，待 Adam 確認清單後執行
-- hermes 新身份尚未決定（Adam 先休息，下次討論）
+- 聖嚴打兩次招呼：lastSession block 格式看過，注入位置在 voice-stream line 303，無明顯重複，根因不明。需要真實電話 + log 對照
 
 ---
 
@@ -64,12 +67,13 @@
 
 | 要找什麼 | 去哪裡 |
 |---|---|
-| 使命 | ~/.ailive/zhu-core/NORTH_STAR.md |
-| 開機 SOP | ~/.ailive/zhu-core/ZHU_BOOT_SOP.md |
-| 施工紀錄 | ~/.ailive/zhu-core/docs/WORKLOG.md |
-| 當機救援 | ~/.ailive/zhu-core/ZHU_LAST_WORDS.md（就是這份）|
-| 遠端記憶 | curl -s https://zhu-core.vercel.app/api/zhu-boot |
+| 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
+| 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 
 ---
 
+*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
 *2026-05-19 · 築*
