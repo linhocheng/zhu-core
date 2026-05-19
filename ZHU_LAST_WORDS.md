@@ -15,21 +15,22 @@
 ## 當前環境
 
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **zhu-core**：`~/.ailive/zhu-core/`（git repo）
+- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
+  - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
+  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
-- **監造儀表板**：https://zhu-mid.vercel.app
+- **zhu-core**：`~/.ailive/zhu-core/`（git repo）
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
 ## 最新完成（2026-05-19）
 
-- realtime voice-end 觸發補好（handleDisconnect fetch + voiceEndFiredRef 互斥 + useEffect cleanup sendBeacon）
-- insights POST API 補 userId + tier 支援
-- dashboard memory 頁兩 tab 各加「＋ 新增」inline form
-- backfill 腳本建好並跑完（56/56 voice conv 全有 lastSession）
-- 吉娜 crash 修好（Python SERVER_TIMESTAMP → ISO string，Firestore 壞資料 9 筆清掉）
-- user-observations listUsers Timestamp→ISO 修好
-- 確認今天電話（conv anon-1777305837582-utykl2）insights / lastSession / user_observations 全部正確寫入
+- /client/ middleware 修好，客戶端不再跳主站登入（v1.5.4.005）
+- commission_specialist 加佐格哲學路由 Phase 1（v1.5.4.004）
+- 新建 /api/longform 長文場域（v1.5.4.006）
+- Bridge streaming 現場勘查完成，確認 streaming 路徑壞掉（Not logged in）
+- 確認 bridge non-streaming 走 Max OAuth，990s + 47K tokens 能跑完
 
 ---
 
@@ -37,29 +38,31 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/app/realtime/[characterId]/page.tsx` | handleDisconnect + useEffect cleanup 補 voice-end / sendBeacon |
-| `src/app/api/insights/route.ts` | POST 支援 userId + tier |
-| `src/app/dashboard/[id]/memory/page.tsx` | 兩 tab 加「＋ 新增」UI |
-| `scripts/_backfill_realtime_insights.ts` | 新增 backfill 腳本（已執行） |
-| `src/app/api/user-observations/route.ts` | listUsers Timestamp → ISO string |
-| `agent/firestore_loader.py` | auto_extract_user_profile 兩處 SERVER_TIMESTAMP → ISO string |
+| `ailive-platform/src/middleware.ts` | /client/ 加入 PUBLIC_PREFIXES |
+| `ailive-platform/src/app/api/dialogue/route.ts` | 加佐格路由 Phase 1 |
+| `ailive-platform/src/app/api/longform/route.ts` | 新建，長文場域 |
+| `zhu-core/skills/strategy-commission-flow.md` | 佐格計畫寫入（untracked，待 commit）|
 
 ---
 
 ## 下一步
 
-**聖嚴打兩次招呼的根因還沒找到。**
-
-1. 打一通聖嚴電話，掛斷後立即看 voice-stream log（Vercel function log 或 console）
-2. 確認 lastSession block 注入後，LLM 的開場白是否包含兩次問候語
-3. 懷疑方向：lastSession block 裡面的 `summary` 包含了上次開場的文字，角色把它當成「上次的模板」重複 → 可試著調整 lastSession block 的 system prompt 提示
-4. `src/lib/last-session-block.ts` + voice-stream line 303 是注入點
+**修 bridge streaming auth**：
+```bash
+gcloud compute ssh zhu-dev --zone=asia-east1-b --project=zhu-cloud-2026
+# 調查：為何 streaming 模式 claude CLI 顯示 Not logged in
+echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
+# 如果還是 Not logged in，看 ~/.claude/oauth_token 是否存在
+# 試 export ANTHROPIC_CLAUDE_CODE_OAUTH_TOKEN=$(cat ~/.claude/oauth_token)
+```
+修好後 → /api/longform 改走 bridge streaming → 壓力測試吳導 15000 字
 
 ---
 
 ## 卡住 / 未解
 
-- 聖嚴打兩次招呼：lastSession block 格式看過，注入位置在 voice-stream line 303，無明顯重複，根因不明。需要真實電話 + log 對照
+- **Bridge streaming 壞**：`--output-format stream-json` 模式 claude 顯示 Not logged in，non-streaming 正常。兩條 auth 路徑不同，待查機制
+- **D-work 架構待定**：Max + streaming 解法等 bridge 修好才能確認
 
 ---
 
@@ -72,8 +75,11 @@
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| Bridge streaming 踩雷 | `docs/LESSONS/LESSONS_2026-05-19b.md` |
+| D-work 長文場域 | `ailive-platform/src/app/api/longform/route.ts` |
+| 佐格路由計畫 | `skills/strategy-commission-flow.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-19 · 築*
+*2026-05-19b · 築*
