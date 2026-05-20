@@ -65,9 +65,9 @@ echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
 
 ## 卡住 / 未解
 
-- **Bridge streaming 壞**：`--output-format stream-json` 模式 Not logged in，non-streaming 正常
-- **self-commission 尚未真實測試**：code 寫好，還沒跑過一次端到端
-- **voice-stream 佐格尚未測試**：加進去了，沒驗過
+- **Bridge streaming**：non-streaming 正常，streaming 路線待規劃（不是壞，是功能待決）
+- **self-commission**：✅ 驗證通過（2026-05-20 Adam 確認）
+- **voice-stream 佐格**：✅ 驗證通過（2026-05-20 Adam 確認）
 
 ---
 
