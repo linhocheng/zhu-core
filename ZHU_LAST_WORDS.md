@@ -24,14 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-20）
+## 最新完成（2026-05-21）
 
-- realtime agent commission_specialist 加佐格路由（v1.5.4.007，Cloud Run revision 00048）
-- commission_specialist 三入口全對齊：dialogue / voice-stream / realtime_agent.py（v1.5.4.008）
-- 新增 `specialist="self"`：角色本人親自執筆，strategy-worker 動態載角色靈魂
-- strategy-worker 自派跳 Stage 1（isSelfCommission，省 token + 語意正確）
-- git tag `pre-self-commission` 打好，一鍵回滾錨點在此
-- Cloud Run revision 00049 上線
+- ANEWS 平台 S1：Vercel 部署全通，pipeline `pending → awaiting_review` mock 跑通
+- ANEWS S2：source-worker + blueprint-worker 接入真實 LLM（走 bridge），5 篇文章全到 `polish_done`
+- 修了 6 個 bug：SA base64 私鑰換行、Cloud Tasks SDK → REST JWT、WORKER_SECRET \n、phaseLock TTL、section order、blueprint allReady 邏輯
+- repo：`~/.ailive/anews-platform/`，Vercel：https://anews-platform.vercel.app
 
 ---
 
@@ -39,35 +37,37 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/realtime_agent.py` | 加佐格 + self 路由（REALTIME_SPECIALIST_MAP + self 動態 id） |
-| `src/app/api/dialogue/route.ts` | self 加入 enum + system prompt + handler（動態讀 Firestore 角色名） |
-| `src/app/api/voice-stream/route.ts` | 加佐格 + self（此前兩者皆缺） |
-| `src/app/api/specialist/strategy/route.ts` | isSelfCommission → 自派跳 Stage 1 |
+| `anews-platform/lib/firestore/admin.ts` | base64 解碼 SA |
+| `anews-platform/lib/queues/cloudTasks.ts` | REST + JWT 完全替換 SDK |
+| `anews-platform/lib/firestore/phaseLock.ts` | 移除 TTL 檢查 |
+| `anews-platform/lib/llm/bridge.ts` | 新建 AnthropicBridge + getLLMClient |
+| `anews-platform/app/api/workers/source/route.ts` | 真實 LLM 研究底稿 |
+| `anews-platform/app/api/workers/blueprint/route.ts` | 真實 LLM 文章藍圖，section order normalize |
+| `anews-platform/app/api/workers/orchestrate/route.ts` | section_done 補 all_done 觸發，min(order) 找第一段 |
 
 ---
 
 ## 下一步
 
-**測試 self-commission**：
-1. 開文字對話找李敖（x3dEzt2Wyc2tCvwKjevM）
-2. 說「你來寫一篇關於台灣的文章」
-3. 去 Firestore `platform_jobs` 確認：`requesterId == assigneeId == x3dEzt2Wyc2tCvwKjevM`
-4. dashboard 等 3-5 分鐘，下載 docx 確認是李敖筆法而非奧
+**S3：section-write worker 接 LLM**
 
-**bridge streaming 待修（上次遺留）**：
 ```bash
-gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b
-echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
+cd ~/.ailive/anews-platform
+# 改 app/api/workers/section-write/route.ts
+# 輸入：blueprintId + sectionId 的 title/goal/targetWords + dossier 摘要
+# 輸出：~1100 字 Markdown 段落，存 Firebase Storage，URL 寫回 Firestore
+# 驗證：POST /api/editorial-jobs → 看 articles 的 sections 有真實文字
 ```
-修好後 → /api/longform 改走 bridge streaming → D-work 吳導 15000 字壓力測試
+
+**然後**：修 blueprint_done 競態（不用等全部 allReady，每篇自己進 section_writing）
 
 ---
 
 ## 卡住 / 未解
 
-- **Bridge streaming**：non-streaming 正常，streaming 路線待規劃（不是壞，是功能待決）
-- **self-commission**：✅ 驗證通過（2026-05-20 Adam 確認）
-- **voice-stream 佐格**：✅ 驗證通過（2026-05-20 Adam 確認）
+- **blueprint_done allReady 競態**：5 篇並發 blueprint，最後一篇完成時其他已過 `blueprint_ready` → allReady=false → 最後一篇沒進 section_writing。靠 `/api/debug` kickstart_sections 手補。S3 前要重構。
+- **section-write 仍是 mock**：draft_ready 直接設，沒有真實寫作內容
+- **bridge streaming**：non-streaming 正常，streaming 待規劃
 
 ---
 
@@ -80,11 +80,11 @@ echo "test" | claude -p --output-format stream-json --verbose 2>&1 | head -5
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| commission_specialist 全鏈路地圖 | `~/.ailive/zhu-core/skills/strategy-commission-flow.md` |
-| 回滾錨點 | `git checkout pre-self-commission -- <檔案>` |
+| ANEWS 平台 | `~/.ailive/anews-platform/`，prod：https://anews-platform.vercel.app |
+| ANEWS 企劃書 | `~/.ailive/zhu-core/docs/projects/ANEWS_PLAN_v2.1.md` |
 | Bridge streaming 踩雷 | `docs/LESSONS/LESSONS_2026-05-19b.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-20 · 築*
+*2026-05-21 · 築*

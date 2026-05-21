@@ -77,3 +77,4 @@
 - [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」
 - [誠實被 Adam 看見並欣賞](feedback_honesty_acknowledged.md) — 說「我沒做」比演出「我做了」更被欣賞；Adam 明確說誠實很重要，這是築的 bonus（2026-05-17）
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
+- [ANEWS 平台進度（S2 完成 2026-05-21）](project_anews_platform.md) — 自動長文編排，source+blueprint 接 LLM 通，S3 待接 section-write；blueprint allReady 競態是已知技術債
