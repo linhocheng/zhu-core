@@ -2920,3 +2920,38 @@ Adam 要建獨立長文自動生成平台，從零到端到端跑通 mock pipeli
 - [ ] 修 blueprint_done 競態：改為每篇獨立判斷自己的 first section，不等 allReady
 - [ ] Dashboard 加 Human Review Gate 按鈕（目前是 UI 殼）
 - [ ] section-write → section-qa → stitch → polish 全接 LLM
+
+---
+
+## 2026-05-22 — ANEWS S3 完整：QA + Stitch + Polish + Coherence + Image + Export 全通
+
+### 背景 / WHY
+延續 S1+S2，目標是讓 ANEWS pipeline 從 section 寫完一路自動跑到 `done`，不需人工介入（人工審核閘門放最後）。
+
+### 產出
+- `anews-platform/app/api/workers/section-write/route.ts` — 加 revise mode + previousSectionSummary context
+- `anews-platform/app/api/workers/section-qa/route.ts` — 真實 LLM 7項品管，fail → retry（最多3次），blocked → auto-skip
+- `anews-platform/app/api/workers/stitch/route.ts` — 讀 Firestore 各段 → LLM patch → 上傳 Firebase Storage
+- `anews-platform/app/api/workers/polish/route.ts` — 從 Storage 讀 → LLM metadata（title×3/summary/SEO/keyTakeaways）
+- `anews-platform/app/api/workers/coherence/route.ts` — 5篇摘要交叉品管，全自動繼續
+- `anews-platform/app/api/workers/image/route.ts` — SVG placeholder 存 Firebase Storage
+- `anews-platform/app/api/workers/export/route.ts` — 小抱報標準版式 HTML（eastern-blank），存 Storage
+- `anews-platform/app/api/workers/orchestrate/route.ts` — 加 section_qa_passed / section_qa_failed handler，blueprint_done 移除 allReady
+- `anews-platform/lib/firestore/admin.ts` — 加 getStorageBucket()
+
+### 已解決
+- blueprint_done allReady 競態 → 每篇獨立 enqueue first section，issue phase advance 只有第一篇 wins
+- qa_blocked auto-skip → blocked 後繼續推進 pipeline（手動 kickstart 舊 blocked）
+- Storage URL 換行 → export 加 `.replace(/\n/g, "")`
+
+### ⚠️ 尚未解決
+- qa_blocked skip 邏輯在 orchestrator callback，舊 blocked sections 需手動 kickstart（根因：section-qa 應在 worker 層自己計算 qaAttempts + skip，不走 orchestrator callback）
+- QA 嚴格度過高（主文 5/8 段 blocked）：word_count 門檻、no_unsupported_claims 需調鬆
+- Storage URL 寫入時可能帶換行（stitch worker 拼 URL 方式需修）
+- T9 Human Review Gate UI 未做（awaiting_review → approve 按鈕）
+
+### 待執行
+- [ ] T9：Dashboard 加 Human Review Gate 按鈕（next session 第一件）
+- [ ] 修 section-qa：qaAttempts + skip 在 worker 層，不走 orchestrator callback
+- [ ] 調 QA 嚴格度：word_count 門檻降到 60%，移除 no_unsupported_claims
+- [ ] stitch worker 拼 Storage URL 加 trim/replace 防換行
