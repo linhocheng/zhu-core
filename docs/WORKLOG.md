@@ -2955,3 +2955,34 @@ Adam 要建獨立長文自動生成平台，從零到端到端跑通 mock pipeli
 - [ ] 修 section-qa：qaAttempts + skip 在 worker 層，不走 orchestrator callback
 - [ ] 調 QA 嚴格度：word_count 門檻降到 60%，移除 no_unsupported_claims
 - [ ] stitch worker 拼 Storage URL 加 trim/replace 防換行
+
+---
+
+## 2026-05-22b — ailive 平台：知識庫圖片修復 + 即時語音雙語 STT
+
+### 背景 / WHY
+Vivi 客戶端知識庫圖片不顯示、上傳卡住；馬雲即時語音無法聽英文；API key 超額無聲音
+
+### 產出
+- `src/app/client/[id]/page.tsx` — 加 catFilter、filteredItems、uploadImage()、imgInputRef 等，圖片 tab + 分類篩選可用
+- `src/app/client/[id]/client-v2.css` — 加 .k-thumb CSS
+- `src/app/api/knowledge/route.ts` — 移除 Gemini summary call（改 title.slice(0,30)），解決 120s 卡死
+- `src/app/api/knowledge-image/route.ts` — 新建，上傳圖片到 Firebase Storage + 建知識庫條目
+- `src/app/dashboard/[id]/knowledge/page.tsx` — 同步加 catFilter、filteredItems、uploadImage()、圖片上傳 UI
+- `agent/realtime_agent.py` — STT `language="zh"` → `detect_language=True`（commit c778556）
+
+### 已解決
+- 圖片不顯示 → k-row 缺 img render，加 .k-thumb 條件渲染
+- 上傳卡住 → Gemini summary 每筆 1-3s × 14+ 筆 > 120s，改 slice(0,30)
+- 分類 pill 點不到 → onClick 是空的，加 catFilter state
+- dashboard 沒更新 → 補同樣修改
+- 即時語音無聲音 → Anthropic API key 月費 cap 到頂，換新 key 進 Secret Manager
+- 馬雲不懂英文 → STT language="zh" 從第一個 commit 就存在，改 detect_language=True
+
+### ⚠️ 尚未解決
+- STT detect_language 改動需 Cloud Run rebuild + deploy 才生效（ailive-realtime-2026）
+  - 指令：`gcloud builds submit --config=agent/cloudbuild.yaml --project=ailive-realtime-2026 --region=asia-east1`
+  - 然後：`gcloud run services update ailive-realtime-agent --image=asia-east1-docker.pkg.dev/ailive-realtime-2026/ailive-agents/realtime-agent:latest --region=asia-east1 --project=ailive-realtime-2026`
+
+### 待執行
+- [ ] Adam 跑 Cloud Run build + deploy，測試馬雲是否能聽英文

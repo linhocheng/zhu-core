@@ -26,16 +26,19 @@
 
 ## 最新完成（2026-05-22）
 
-- ANEWS S3：section-write revise mode + previousSectionSummary context
-- section-qa：真實 LLM 7項品管，fail→retry（最多3次），blocked→auto-skip 繼續 pipeline
-- stitch：各段 Firestore 讀取 → LLM JSON patch → 上傳 Firebase Storage
-- polish：從 Storage 讀 stitchedMarkdown → LLM 生 title×3/summary/SEO/keyTakeaways
-- coherence：5篇摘要交叉品管，全自動繼續
-- image：SVG placeholder 存 Firebase Storage
-- export：小抱報標準版式 HTML（eastern-blank）存 Storage
-- Pipeline `pending → done` 全通（含 coherence + image + export）
-- 修 blueprint_done allReady 競態：每篇獨立 enqueue
-- 修 qa_blocked auto-skip（手動 kickstart 舊 blocked）
+### ANEWS S3（前半段，其他 session）
+- section-write revise mode + previousSectionSummary context
+- section-qa 7項品管 + qa_blocked auto-skip
+- stitch / polish / coherence / image / export 全通
+- Pipeline pending → done 全通
+
+### ailive 平台（本 session）
+- Vivi 知識庫圖片顯示修復（.k-thumb 條件渲染）
+- 知識庫上傳卡住修復（移除 Gemini summary，改 slice(0,30)）
+- 新建 `/api/knowledge-image` 端點（Firebase Storage + makePublic）
+- 客戶端 + Dashboard 加圖片上傳 UI + 分類 pill 篩選
+- 即時語音 Anthropic API key 超額換新 key（Secret Manager）
+- STT `language="zh"` → `detect_language=True`（commit c778556，ailive-platform）
 
 ---
 
@@ -43,41 +46,43 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/api/workers/section-write/route.ts` | revise mode + previousSectionSummary |
-| `anews-platform/app/api/workers/section-qa/route.ts` | 真實 LLM 7項品管 |
-| `anews-platform/app/api/workers/stitch/route.ts` | Firestore讀段→LLM patch→Storage |
-| `anews-platform/app/api/workers/polish/route.ts` | LLM metadata → Storage |
-| `anews-platform/app/api/workers/coherence/route.ts` | LLM 5篇摘要品管 |
-| `anews-platform/app/api/workers/image/route.ts` | SVG placeholder → Storage |
-| `anews-platform/app/api/workers/export/route.ts` | 小抱報 HTML 版式 eastern-blank |
-| `anews-platform/app/api/workers/orchestrate/route.ts` | QA 事件 handler + blueprint_done fix |
-| `anews-platform/lib/firestore/admin.ts` | getStorageBucket() |
+| `ailive-platform/src/app/client/[id]/page.tsx` | catFilter、uploadImage()、圖片 tab |
+| `ailive-platform/src/app/client/[id]/client-v2.css` | .k-thumb CSS |
+| `ailive-platform/src/app/api/knowledge/route.ts` | 移除 Gemini summary call |
+| `ailive-platform/src/app/api/knowledge-image/route.ts` | 新建圖片上傳 API |
+| `ailive-platform/src/app/dashboard/[id]/knowledge/page.tsx` | 同步加圖片上傳 UI |
+| `ailive-platform/agent/realtime_agent.py` | STT detect_language=True |
 
 ---
 
 ## 下一步
 
-**T9：Dashboard 加 Human Review Gate**
+**馬雲雙語 STT — Cloud Run 重部署**（最急，Adam 測試前要先跑）
 
 ```bash
-cd ~/.ailive/anews-platform
-# 找 dashboard/[issueId] 頁面，加「核准此期」按鈕
-# 按鈕 POST /api/workers/orchestrate { event: "review_approved", issueId }
-# issue status = awaiting_review 才顯示按鈕
+# 在 ~/.ailive/ailive-platform 跑
+gcloud builds submit \
+  --config=agent/cloudbuild.yaml \
+  --project=ailive-realtime-2026 \
+  --region=asia-east1
+
+gcloud run services update ailive-realtime-agent \
+  --image=asia-east1-docker.pkg.dev/ailive-realtime-2026/ailive-agents/realtime-agent:latest \
+  --region=asia-east1 \
+  --project=ailive-realtime-2026
 ```
 
-做完 T9 後：
-1. 調 section-qa 嚴格度（word_count 60%，移除 no_unsupported_claims）
-2. 修 qa_blocked skip 邏輯移到 worker 層（不依賴 orchestrator callback）
-3. 修 stitch worker Storage URL 拼接防換行
+做完後接：
+1. T9：ANEWS Dashboard 加 Human Review Gate 按鈕
+2. 調 section-qa 嚴格度（word_count 60%，移除 no_unsupported_claims）
 
 ---
 
 ## 卡住 / 未解
 
-- **qa_blocked skip 需手動 kickstart**：舊 blocked section 沒有 callback，要手動 POST `section_qa_passed`。修法：qaAttempts + skip 全在 section-qa worker 算，直接 enqueue 下一段
-- **QA 過嚴（5/8 段 blocked）**：word_count 門檻太高、no_unsupported_claims 難過。調鬆前先做 T9
-- **Storage URL 換行**：stitch 拼 URL 時混入 `\n`，export 已加 `.replace(/\n/g, "")` 防護，但根源在 stitch 要修
+- **STT detect_language 未 deploy**：改動在 git 但 Cloud Run 還跑舊版；Adam 要手動跑 build+deploy
+- **ANEWS qa_blocked skip**：需移到 worker 層，不依賴 orchestrator callback
+- **QA 過嚴**：5/8 段 blocked；調鬆前先做 T9
 
 ---
 
@@ -90,11 +95,11 @@ cd ~/.ailive/anews-platform
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| ailive 平台 | `~/.ailive/ailive-platform/`，prod：https://ailive-platform.vercel.app |
 | ANEWS 平台 | `~/.ailive/anews-platform/`，prod：https://anews-platform.vercel.app |
-| ANEWS 企劃書 | `~/.ailive/zhu-core/docs/projects/ANEWS_PLAN_v2.1.md` |
 | Bridge streaming 踩雷 | `docs/LESSONS/LESSONS_2026-05-19b.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-22 · 築*
+*2026-05-22b · 築*
