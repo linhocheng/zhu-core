@@ -24,21 +24,14 @@
 
 ---
 
-## 最新完成（2026-05-22）
+## 最新完成（2026-05-22c）
 
-### ANEWS S3（前半段，其他 session）
-- section-write revise mode + previousSectionSummary context
-- section-qa 7項品管 + qa_blocked auto-skip
-- stitch / polish / coherence / image / export 全通
-- Pipeline pending → done 全通
-
-### ailive 平台（本 session）
-- Vivi 知識庫圖片顯示修復（.k-thumb 條件渲染）
-- 知識庫上傳卡住修復（移除 Gemini summary，改 slice(0,30)）
-- 新建 `/api/knowledge-image` 端點（Firebase Storage + makePublic）
-- 客戶端 + Dashboard 加圖片上傳 UI + 分類 pill 篩選
-- 即時語音 Anthropic API key 超額換新 key（Secret Manager）
-- STT `language="zh"` → `detect_language=True`（commit c778556，ailive-platform）
+- 建文章平台前台三頁面（首頁 / 期號頁 / 文章閱讀頁），前衛雜誌設計 + RWD
+- 全站設計重寫：editorial red accent + 黑色 masthead + Claude design 後台
+- 後台加刪除功能（cascade DELETE）+ 一期鎖（API 層）+ 校對入口
+- Dashboard 大白話改版：大白話狀態 + Pipeline 進度條 + 段落色塊
+- Kick endpoint：自動偵測卡死段落，打對應事件重啟 pipeline
+- 全站角色設定頁（/dashboard/settings）：四個 role prompt 存 Firestore，workers 讀取
 
 ---
 
@@ -46,43 +39,45 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailive-platform/src/app/client/[id]/page.tsx` | catFilter、uploadImage()、圖片 tab |
-| `ailive-platform/src/app/client/[id]/client-v2.css` | .k-thumb CSS |
-| `ailive-platform/src/app/api/knowledge/route.ts` | 移除 Gemini summary call |
-| `ailive-platform/src/app/api/knowledge-image/route.ts` | 新建圖片上傳 API |
-| `ailive-platform/src/app/dashboard/[id]/knowledge/page.tsx` | 同步加圖片上傳 UI |
-| `ailive-platform/agent/realtime_agent.py` | STT detect_language=True |
+| `anews-platform/app/page.tsx` | 小抱報首頁，前衛雜誌設計 |
+| `anews-platform/app/issues/[issueId]/page.tsx` | 期號頁 |
+| `anews-platform/app/articles/[articleId]/page.tsx` | 文章閱讀頁 + 進度條 |
+| `anews-platform/app/dashboard/page.tsx` | 編輯台總覽，stats + 一期鎖 + 刪除 |
+| `anews-platform/app/dashboard/[issueId]/page.tsx` | 大白話 + Pipeline bar + Kick 按鈕 |
+| `anews-platform/app/dashboard/settings/page.tsx` | 四角色 prompt 設定頁（新建） |
+| `anews-platform/app/api/editorial-jobs/[issueId]/approve/route.ts` | T9 核准 endpoint（新建） |
+| `anews-platform/app/api/editorial-jobs/[issueId]/kick/route.ts` | Kick 重啟 endpoint（新建） |
+| `anews-platform/app/api/editorial-jobs/[issueId]/route.ts` | 加 DELETE cascade |
+| `anews-platform/app/api/editorial-jobs/route.ts` | POST 加一期鎖 |
+| `anews-platform/app/api/settings/roles/route.ts` | GET/PUT role prompt（新建） |
+| `anews-platform/lib/settings/rolePrompts.ts` | Firestore prompt helper，TTL cache（新建） |
+| `anews-platform/app/globals.css` | 設計 token 系統 |
+| `anews-platform/app/api/articles/[articleId]/route.ts` | 文章內容 API（新建） |
+| 4 個 workers | 改讀 Firestore role prompt |
 
 ---
 
 ## 下一步
 
-**馬雲雙語 STT — Cloud Run 重部署**（最急，Adam 測試前要先跑）
+**第一件：測試 Kick 能否重啟卡住的 pipeline**
 
-```bash
-# 在 ~/.ailive/ailive-platform 跑
-gcloud builds submit \
-  --config=agent/cloudbuild.yaml \
-  --project=ailive-realtime-2026 \
-  --region=asia-east1
+1. 開 https://anews-platform.vercel.app/dashboard/F9u8lHZCief2bTN6ztAO
+2. 按「▶ 繼續生成」
+3. 確認 kickResult 有輸出（sec# draft_ready→QA 等）
+4. 等 10 秒，確認段落狀態從 planned 往前推進
 
-gcloud run services update ailive-realtime-agent \
-  --image=asia-east1-docker.pkg.dev/ailive-realtime-2026/ailive-agents/realtime-agent:latest \
-  --region=asia-east1 \
-  --project=ailive-realtime-2026
-```
-
-做完後接：
-1. T9：ANEWS Dashboard 加 Human Review Gate 按鈕
-2. 調 section-qa 嚴格度（word_count 60%，移除 no_unsupported_claims）
+**Kick 成功後接著做：**
+- 調 section-qa 嚴格度：`anews-platform/app/api/workers/section-qa/route.ts`，word_count 改 60%，移除 no_unsupported_claims
+- 決定圖片生成方向（Gemini image gen vs 繼續用 SVG）
 
 ---
 
 ## 卡住 / 未解
 
-- **STT detect_language 未 deploy**：改動在 git 但 Cloud Run 還跑舊版；Adam 要手動跑 build+deploy
-- **ANEWS qa_blocked skip**：需移到 worker 層，不依賴 orchestrator callback
-- **QA 過嚴**：5/8 段 blocked；調鬆前先做 T9
+- **AI 下的設計思考**（F9u8lHZCief2bTN6ztAO）：pipeline 卡死，kick endpoint 已建，未實測
+- **QA 過嚴**：word_count 80% + no_unsupported_claims 造成 ~50% 段落 blocked
+- **stitch URL 換行**：export 有防護但根源在 stitch worker
+- **圖片生成**：SVG placeholder，真實圖片方向未決
 
 ---
 
@@ -95,11 +90,11 @@ gcloud run services update ailive-realtime-agent \
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ailive 平台 | `~/.ailive/ailive-platform/`，prod：https://ailive-platform.vercel.app |
 | ANEWS 平台 | `~/.ailive/anews-platform/`，prod：https://anews-platform.vercel.app |
-| Bridge streaming 踩雷 | `docs/LESSONS/LESSONS_2026-05-19b.md` |
+| ANEWS 後台 | https://anews-platform.vercel.app/dashboard |
+| 角色設定 | https://anews-platform.vercel.app/dashboard/settings |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-22b · 築*
+*2026-05-22c · 築*

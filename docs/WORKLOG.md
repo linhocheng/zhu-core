@@ -2986,3 +2986,49 @@ Vivi 客戶端知識庫圖片不顯示、上傳卡住；馬雲即時語音無法
 
 ### 待執行
 - [ ] Adam 跑 Cloud Run build + deploy，測試馬雲是否能聽英文
+
+---
+
+## 2026-05-22c — ANEWS 文章平台 + 後台大改版
+
+### 背景 / WHY
+S3 pipeline 完成後，平台沒有前台、後台也看不懂。Adam 要建「文章平台」（讀者前台）+ 後台要大白話能一眼看清狀態。
+
+### 產出
+- `app/page.tsx` — 小抱報首頁，已發布/製作中期刊列表，前衛雜誌設計
+- `app/issues/[issueId]/page.tsx` — 期號頁，5篇文章摘要，黑色 hero header
+- `app/articles/[articleId]/page.tsx` — 文章閱讀頁，閱讀進度條 + eastern-blank 設計
+- `app/dashboard/page.tsx` — 編輯台總覽，stats 卡片 + 一期鎖 + 刪除按鈕
+- `app/dashboard/[issueId]/page.tsx` — 期號後台，大白話狀態 + Pipeline 進度條 + 色塊段落 + ▶ 繼續生成按鈕
+- `app/dashboard/settings/page.tsx` — 四角色 prompt 設定頁
+- `app/api/articles/[articleId]/route.ts` — 文章內容 API
+- `app/api/editorial-jobs/[issueId]/approve/route.ts` — 主編核准 endpoint（T9）
+- `app/api/editorial-jobs/[issueId]/kick/route.ts` — 卡死偵測 + 重啟 endpoint
+- `app/api/editorial-jobs/[issueId]/route.ts` — 加 DELETE cascade
+- `app/api/editorial-jobs/route.ts` — POST 加一期鎖（not-in 查詢）
+- `app/api/settings/roles/route.ts` — GET/PUT 四角色 system prompt
+- `lib/settings/rolePrompts.ts` — Firestore prompt 讀取 helper，60s TTL cache
+- `app/globals.css` — 設計 token 系統（ink/rule/bg/red/adm-*）
+- source/blueprint/section-write/section-qa worker — 改讀 Firestore role prompt
+
+### 已解決
+- 首頁是 Next.js 預設模板 → 建完整前台三頁面
+- 後台看不懂技術狀態 → 大白話翻譯 + Pipeline 進度條視覺化
+- 沒有刪除功能 → DELETE cascade endpoint + UI 確認按鈕
+- 無法建立下一期 → 一期鎖（API 層）
+- 無法校對 → 每篇文章加「校對 →」按鈕
+- Pipeline 卡死沒有出口 → Kick endpoint 從 section 狀態反推卡點
+- System prompt hardcode 無法修改 → Firestore + 設定頁
+
+### ⚠️ 尚未解決
+- anews-platform pipeline 目前卡死（F9u8lHZCief2bTN6ztAO — AI 下的設計思考）：sections 有 draft_ready/planned，kick endpoint 已建但需測試
+- QA 嚴格度過高（word_count 80% + no_unsupported_claims）：tech debt
+- stitch URL 換行根源未修（export 有防護但 stitch 還是有問題）
+- 圖片生成：SVG placeholder，真實圖片需決定方向（Gemini / Replicate）
+
+### 待執行
+- [ ] 進 /dashboard/F9u8lHZCief2bTN6ztAO，按「▶ 繼續生成」測試 kick
+- [ ] 確認 kick 後 pipeline 繼續（sections 從 planned → drafting → qa_passed）
+- [ ] 調 QA 嚴格度：section-qa word_count 降到 60%，移除 no_unsupported_claims
+- [ ] stitch worker 拼 URL 加 .trim() 防換行
+- [ ] 決定圖片生成方向
