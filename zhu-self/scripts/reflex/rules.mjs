@@ -17,10 +17,10 @@ export const RULES = [
         pattern: /(每[篇條次].{0,5}\$|per[\s\-_]?token.{0,5}cost|\$[0-9.]+\s*(per|\/|per\s*token)|cost\s*=\s*\$|成本.{0,10}\$)/i,
         on: 'preceding_text',
       },
-      // 觸發語境：看到要灌 ANTHROPIC_API_KEY
+      // 觸發語境：看到要灌明文 ANTHROPIC_API_KEY（Secret Manager 引用除外）
       {
         kind: 'shell_pattern',
-        pattern: /ANTHROPIC_API_KEY\s*=|export\s+ANTHROPIC_API_KEY/,
+        pattern: /ANTHROPIC_API_KEY\s*=\s*sk-ant|export\s+ANTHROPIC_API_KEY\s*=\s*sk-ant/,
       },
     ],
   },

@@ -3118,3 +3118,34 @@ Deepgram streaming 不支援中英文雙語（L3 昨日）。Adam 申請了 Soni
 ### 待執行
 - [ ] Cloud Tasks 方案：on_disconnected 只 enqueue，insights/promise/profile/cost 在 job 裡跑
 - [ ] 實測 1 小時通話確認 Silero VAD 的 CPU spike 是偶發還是常態
+
+---
+
+## 2026-05-23 — ANEWS Harness Lite：五 worker 全遷移
+
+### 背景 / WHY
+ANEWS pipeline worker 只有基礎的 mockWorker 包裝，沒有 precondition / worldStateVerify / repairAttempts / needs_repair 機制，任何 LLM 或 parse 失敗都是靜默降級（fake dossier、fallback 藍圖），完全看不出哪個 article 壞了。Harness Lite 是補上這層可觀測性和自癒能力的基礎建設。
+
+### 產出
+- `lib/workers/errors.ts` — WorkerError + WorkerErrorType + classifyError
+- `lib/workers/trace.ts` — writeWorkerTrace（fire-and-forget 寫 worker_traces collection）
+- `lib/workers/harness.ts` — createHarnessWorker：auth → lock → precondition → handler → worldStateVerify → trace → repairAttempts → needs_repair 升級
+- `app/api/workers/source/route.ts` — 遷移至 createHarnessWorker，parse/schema 失敗拋 WorkerError
+- `app/api/workers/blueprint/route.ts` — 同上，新建 section 補 repairAttempts:0
+- `app/api/workers/section-write/route.ts` — 同上，空 LLM 回應拋 LLM_ERROR
+- `app/api/workers/section-qa/route.ts` — parse 失敗拋 PARSE_ERROR，QA fail 是 domain 路徑不觸發 repair
+- `app/api/workers/stitch/route.ts` — Storage 上傳失敗拋 STORAGE_ERROR
+- `app/api/workers/orchestrate/route.ts` — 加 needs_repair 事件，寫 issue.status=needs_repair
+
+### 已解決
+- 假底稿問題（source 失敗給 fake keyFacts）→ 改拋 WorkerError，讓 repairAttempts 累積
+- 無法定位壞掉的 article/section → worldStateVerify 三問確認副作用落地
+
+### ⚠️ 尚未解決
+- Cloud Run source worker（`cloud-run/source-worker/src/index.ts`）尚未 vendor harness 邏輯，仍是 express 直寫
+- `scripts/test-harness.mjs` destruction tests A-E 尚未寫
+
+### 待執行
+- [ ] 寫 scripts/test-harness.mjs（A.malformed JSON, B.valid JSON missing fields, C.missing precondition, D.Storage URL missing, E.QA fail 3 times）
+- [ ] deploy anews-platform Vercel，跑 small mode regression
+- [ ] Cloud Run source worker 補 harness/trace/errors vendor
