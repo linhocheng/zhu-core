@@ -3149,3 +3149,39 @@ ANEWS pipeline worker 只有基礎的 mockWorker 包裝，沒有 precondition / 
 - [ ] 寫 scripts/test-harness.mjs（A.malformed JSON, B.valid JSON missing fields, C.missing precondition, D.Storage URL missing, E.QA fail 3 times）
 - [ ] deploy anews-platform Vercel，跑 small mode regression
 - [ ] Cloud Run source worker 補 harness/trace/errors vendor
+
+---
+
+## 2026-05-23e — ailive on_disconnected 改 Cloud Tasks enqueue（全通驗證）
+
+### 背景 / WHY
+SIGUSR1 在 disconnect 後 ~10s kill process，所有 in-process cleanup（insights/promise-reflection/user-profile/cost）都被砍死。需要一個能活過 SIGUSR1 的架構。
+
+### 產出
+- `agent/realtime_agent.py`：`on_disconnected` 改寫為 `_enqueue_cleanup_job`，寫 Firestore staging doc + Cloud Tasks enqueue
+- `src/app/api/voice-cleanup/route.ts`（上個 session 已建）：Vercel worker 接收並跑全部 5 步 cleanup
+- GCP 資源：Secret `CLEANUP_SECRET`、Queue `ailive-cleanup`（asia-east1）、Cloud Run env vars
+- Cloud Run revision：`00065-r8g`（有 NameError）→ `00066-h4q`（修 import httpx，全通）
+
+### 已解決
+- `NameError: name 'httpx' is not defined`：在 `_enqueue_cleanup_job` function scope 內補 `import httpx`
+- Cloud Build 提交目錄錯誤：從 repo root 提交，不從 `agent/` 子目錄
+- Cloud Run 流量未自動切換：手動 `gcloud run services update-traffic --to-revisions=...=100`
+- Vercel CLEANUP_SECRET 雙寫：用 `printf` 不用 `echo`，`vercel env rm` 後重加
+
+### ✅ 端到端驗證
+- staging doc: GONE（worker 跑完刪掉）
+- conversation: messageCount=56, lastSession=YES, updatedAt=2026-05-23T12:02:11Z
+- Cloud Run log: `[cleanup] staging doc written` + `[cleanup] enqueued task` ✅
+
+### ⚠️ 尚未解決 / 可能要再檢查
+1. **staging doc 洩漏**：Cloud Tasks 最多 retry 3 次（每次 600s 超時），3 次全失敗後 staging doc 永遠留在 `platform_cleanup_queue`。目前沒有清理機制
+2. **anonymous user cleanup 不完整**：`userId` 為空時，`reflectAndMarkFulfilled` 和 `autoExtractUserProfile` 被跳過（code 有 `if (userId)` guard）。這是設計，但如果想對匿名用戶也做部分 cleanup 要另外處理
+3. **costLlm 準確性**：`_cost_llm` 是 LLM token 累加器，但 voice-stream 裡的 token 計費是否正確抓到需要抽樣驗證
+4. **Cloud Tasks retry 行為**：Vercel worker 回 non-200 時，Cloud Tasks 會 retry 但 staging doc 已被第一次讀到。`stagingRef.delete()` 在最後跑，若 worker 中途 crash 不會刪—應確認 retry 不會重做已完成的步驟（目前沒冪等保護）
+5. **insights 重複**：每次 Cloud Tasks retry 都會往 `platform_insights` 再寫一次，沒有 dedup 機制
+
+### 待執行
+- [ ] 觀察幾通正式通話確認 5 個 cleanup 步驟都有資料（insights count、promise reflection、user profile）
+- [ ] 可選：staging doc TTL 清理機制（Firestore TTL policy 或定期 cron）
+- [ ] 可選：voice-cleanup worker 加冪等保護（先查 conversation 是否已有 lastSession，有就跳過）

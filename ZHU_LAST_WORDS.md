@@ -20,16 +20,15 @@
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
+- **監造儀表板**：https://zhu-mid.vercel.app
 
 ---
 
-## 最新完成（2026-05-23）
+## 最新完成（2026-05-23e）
 
-- Harness Lite 五個 worker 全遷移：source / blueprint / section-write / section-qa / stitch
-- 建立 `lib/workers/errors.ts`、`trace.ts`、`harness.ts` 三個基礎設施檔案
-- `orchestrate/route.ts` 加入 `needs_repair` 事件——article 三次失敗後 issue 整個標為 needs_repair
-- TypeScript build clean（0 errors）
+- ailive `on_disconnected` 改 Cloud Tasks enqueue 架構上線，端到端全通
+- 修 `_enqueue_cleanup_job` 漏 `import httpx`（NameError）→ Cloud Run 00066-h4q 重建部署
+- 驗證：staging doc 刪除 + conversation saved（messageCount=56, lastSession=YES）
 
 ---
 
@@ -37,38 +36,30 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `lib/workers/errors.ts` | WorkerError class + WorkerErrorType union + classifyError |
-| `lib/workers/trace.ts` | writeWorkerTrace fire-and-forget |
-| `lib/workers/harness.ts` | createHarnessWorker 完整 harness：auth/lock/precondition/handler/verify/trace/repair |
-| `app/api/workers/source/route.ts` | createMockWorker → createHarnessWorker，parse 失敗拋 WorkerError |
-| `app/api/workers/blueprint/route.ts` | 同上，新 section 補 repairAttempts:0 |
-| `app/api/workers/section-write/route.ts` | 同上，空 LLM 回應拋 LLM_ERROR |
-| `app/api/workers/section-qa/route.ts` | parse 失敗拋 PARSE_ERROR；QA fail 是 domain 路徑不觸發 repair |
-| `app/api/workers/stitch/route.ts` | Storage 上傳失敗拋 STORAGE_ERROR |
-| `app/api/workers/orchestrate/route.ts` | needs_repair 事件，寫 issue.status=needs_repair |
+| `agent/realtime_agent.py` | `_enqueue_cleanup_job` 補 `import httpx`（第 691 行）|
+| `src/app/api/voice-cleanup/route.ts` | 上個 session 建的 Vercel worker（這 session 未改）|
 
 ---
 
 ## 下一步
 
-**寫 `scripts/test-harness.mjs`**——destruction tests A-E：
-
-```
-A. malformed JSON body → 400 + 不觸發 repairAttempts
-B. valid JSON missing schema fields → SCHEMA_VALIDATION WorkerError
-C. missing precondition（article 狀態不對）→ PRECONDITION WorkerError
-D. Storage URL missing（mock bucket fail）→ STORAGE_ERROR WorkerError
-E. QA fail 三次 → section.repairAttempts=3 → needs_repair 升級 + article 同步升級
+觀察幾通正式通話，確認 5 個 cleanup 步驟都有資料：
+```bash
+# 找最新一通 conv_id，查 insights
+# Firestore project: moumou-os
+# collections: platform_insights（where conversationId==convId）
+# platform_conversations（看 lastSession, messageCount）
 ```
 
-之後：`vercel --prod` deploy → 小模式 regression（2 articles）→ standard mode dry-run。
+可選但建議：替 `voice-cleanup` worker 加冪等保護，避免 Cloud Tasks retry 造成 insights 重複寫入。
 
 ---
 
 ## 卡住 / 未解
 
-- Cloud Run source worker（`cloud-run/source-worker/src/index.ts`）還是舊的 express 直寫，**尚未 vendor harness/trace/errors**。這個是獨立 service，要把三個 lib 手動 copy 進去再 rebuild deploy。
-- test-harness.mjs 尚未動手
+1. **staging doc 洩漏**：Cloud Tasks 3 次 retry 全失敗後，`platform_cleanup_queue` doc 留著沒人清。沒 TTL policy。
+2. **冪等問題**：`voice-cleanup` worker 沒有 dedup，Cloud Tasks retry 時 insights 會重複寫
+3. **costLlm 準確性**：`_cost_llm` 累加器需抽樣驗證是否正確
 
 ---
 
@@ -78,15 +69,13 @@ E. QA fail 三次 → section.repairAttempts=3 → needs_repair 升級 + article
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS platform | `~/.ailive/anews-platform/` |
-| ANEWS harness | `lib/workers/harness.ts` |
+| ailive-platform | `~/.ailive/ailive-platform/` |
+| voice-cleanup worker | `src/app/api/voice-cleanup/route.ts` |
+| Cloud Run agent | `agent/realtime_agent.py`（`_enqueue_cleanup_job` ~L664）|
 
 ---
 
-*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-23 · 築*
+*2026-05-23e · 築*
