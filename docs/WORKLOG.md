@@ -3185,3 +3185,36 @@ SIGUSR1 在 disconnect 後 ~10s kill process，所有 in-process cleanup（insig
 - [ ] 觀察幾通正式通話確認 5 個 cleanup 步驟都有資料（insights count、promise reflection、user profile）
 - [ ] 可選：staging doc TTL 清理機制（Firestore TTL policy 或定期 cron）
 - [ ] 可選：voice-cleanup worker 加冪等保護（先查 conversation 是否已有 lastSession，有就跳過）
+
+---
+
+## 2026-05-24 — ANEWS Alignment Gate + QA 品質閘門
+
+### 背景 / WHY
+standard mode dry-run 發現 QA retry 率偏高（3+ force-pass），根因是 source facts 太少（main 8 條供 8 段）+ QA 標準上下游不對齊。Adam 提出 Alignment Gate 架構：在 blueprint 之後、section-write 之前加一層 evidence verification，確保每段有足夠素材才能進入寫作。
+
+### 產出
+- 檔案：`~/.ailive/anews-platform/app/api/workers/alignment/route.ts` — 新 alignment worker（Phase 1.5）
+- 檔案：`app/api/workers/blueprint/route.ts` — sectionPlan 加 relatedKeywords/requiredClaims/neededEvidenceTypes
+- 檔案：`app/api/workers/orchestrate/route.ts` — blueprint_done→alignment_running；alignment_done→awaiting_blueprint_review
+- 檔案：`app/api/workers/section-write/route.ts` — writeReady=false 攔截；輸出 usedSourceIds
+- 檔案：`app/api/settings/qa-checks/route.ts` — no_repetition advisory；word_count threshold→0.7 required
+- 檔案：`app/api/workers/source/route.ts` — main 最少 15 facts，sub 最少 8 facts
+- 檔案：`scripts/clear-test-data.mjs` — 清除 Firestore 測試資料工具
+- 測試：small mode v2 regression PASSED（16 traces / 0 error / 1 retry / 0 force-pass）
+
+### 已解決
+- source facts 不足 → main 15+、sub 8+ 強制要求
+- QA 嚴格度上下游不對齊 → no_repetition advisory；word_count 70% required
+- section-writer 不知道用了哪些 source → 輸出 usedSourceIds
+- force-pass 無條件執行 → gated by TEST_MODE=true
+
+### ⚠️ 尚未解決
+- 中型測試尚未跑（3 articles，main 4 sections，sub×2 各 2 sections）
+- standard mode full run（5 articles，8+5 sections）未驗
+- 圖片生成仍是 SVG placeholder
+
+### 待執行
+- [ ] 跑中型測試：3 articles，IMAGE_DRY_RUN=true，force-pass disabled，觀察 QA retry rate
+- [ ] 確認中型測試 PASSED 後再考慮 standard mode
+- [ ] ARCHITECTURE.md 更新（本機 LLM bridge 已修那條）

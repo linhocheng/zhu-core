@@ -24,50 +24,58 @@
 
 ---
 
-## 最新完成（2026-05-23f）
+## 最新完成（2026-05-24）
 
-- 全檢通過（18 pass 0 fail）
-- 確認 ailive staging doc TTL 不需加（點查詢，零效能影響）
-- 確認 voice-cleanup idempotency 低風險（try/catch 包住全步驟，幾乎必達 delete）
-- 看現場 ANEWS 小抱報：摸清 10 worker 架構 + 狀態機流程 + 關鍵斷點
+- ANEWS Alignment Gate（Phase 1.5）上線：`/api/workers/alignment/route.ts`（新 worker）
+- Blueprint 補三個新欄位：relatedKeywords / requiredClaims / neededEvidenceTypes
+- Orchestrate 改流程：blueprint_done → alignment_running → alignment_done → awaiting_blueprint_review
+- QA 調整：no_repetition advisory；word_count 70% required（原 60% advisory）
+- Section-writer 輸出 usedSourceIds + source_insufficient；precondition 加 writeReady=false 攔截
+- Source worker 提升 facts 數量：main 最少 15，sub 最少 8
+- Force-pass gated by TEST_MODE=true
+- scripts/clear-test-data.mjs 新建
+- Small mode v2 regression PASSED（16 traces / 0 error / 1 retry / 0 force-pass）
 
 ---
 
 ## 今天改了哪些檔案
 
-無（純看現場 session）
+| 檔案 | 改了什麼 |
+|---|---|
+| `app/api/workers/alignment/route.ts` | **新建** — alignment worker |
+| `app/api/workers/blueprint/route.ts` | sectionPlan 加三個 evidence 欄位 |
+| `app/api/workers/orchestrate/route.ts` | alignment_running flow + alignment_done case |
+| `app/api/workers/section-write/route.ts` | usedSourceIds 輸出 + writeReady precondition |
+| `app/api/settings/qa-checks/route.ts` | QA required/advisory 調整 |
+| `app/api/workers/source/route.ts` | facts 數量提升 |
+| `scripts/test-small-mode.mjs` | 加 alignment 步驟 |
+| `scripts/test-standard-mode.mjs` | 加 alignment 步驟 + force-pass gate |
+| `scripts/clear-test-data.mjs` | **新建** — Firestore 測試資料清除工具 |
 
 ---
 
-## 下一步（ANEWS 戰場）
+## 下一步（接棒第一件）
 
-**接通 source worker Cloud Run**：
+**跑中型測試**，確認 alignment gate 效果：
 
-1. 確認 Cloud Run service 是否已 deploy：
 ```bash
-gcloud run services list --project=<anews-project> --region=asia-east1 2>/dev/null | grep anews
+cd ~/.ailive/anews-platform
+# 先把 standard mode 設定改小：MAIN_SECTIONS=4, SUB_SECTIONS=2
+# 或另開 test-medium-mode.mjs：3 articles，4+2+2 sections
+node scripts/test-standard-mode.mjs
 ```
 
-2. 若未 deploy → build + deploy `cloud-run/source-worker/`
-3. 設 Vercel env `SOURCE_WORKER_BASE_URL=<Cloud Run URL>`
-4. 驗：建一期新 issue，看 source worker log 是否在 Cloud Run 跑
-
-關鍵檔案：
-- `~/.ailive/anews-platform/cloud-run/source-worker/` — Cloud Run worker 碼
-- `~/.ailive/anews-platform/app/api/workers/orchestrate/route.ts` line 99-106 — enqueue 邏輯
-- `~/.ailive/anews-platform/app/api/workers/source/route.ts` — Vercel fallback（暫留）
+觀察：QA retry rate 是否 < 20%（上次 small mode 1/3 retry）。通過後再決定跑 full standard（5 articles 8+5）。
 
 ---
 
 ## 卡住 / 未解
 
-ailive（已確認低風險，不需急處理）：
-1. staging doc TTL 未加（但幾乎不觸發）
-2. voice-cleanup 冪等問題（try/catch 保護，幾乎不觸發）
-
 ANEWS：
-- `SOURCE_WORKER_BASE_URL` 未設 → source 還跑在 Vercel（300s 風險）
-- 圖片生成仍是 SVG 佔位
+- 中型測試尚未跑（下一步第一件）
+- 圖片生成仍是 SVG placeholder
+- SOURCE_WORKER_BASE_URL 未設（source 跑 Vercel，300s 風險）
+- ARCHITECTURE.md 本機 LLM bridge 那條已修但文件還沒更新
 
 ---
 
@@ -80,12 +88,11 @@ ANEWS：
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ailive-platform | `~/.ailive/ailive-platform/` |
-| ANEWS 小抱報 | `~/.ailive/anews-platform/` |
-| ANEWS 架構圖 | `~/.ailive/anews-platform/ARCHITECTURE.md` |
-| ANEWS source Cloud Run | `~/.ailive/anews-platform/cloud-run/source-worker/` |
+| ANEWS 平台 | `~/.ailive/anews-platform/` |
+| ANEWS alignment worker | `~/.ailive/anews-platform/app/api/workers/alignment/route.ts` |
 | ANEWS orchestrate | `~/.ailive/anews-platform/app/api/workers/orchestrate/route.ts` |
+| ANEWS 清測試資料 | `node ~/.ailive/anews-platform/scripts/clear-test-data.mjs` |
 
 ---
 
-*2026-05-23f · 築*
+*2026-05-24 · 築*
