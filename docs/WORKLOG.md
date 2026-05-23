@@ -3032,3 +3032,35 @@ S3 pipeline 完成後，平台沒有前台、後台也看不懂。Adam 要建「
 - [ ] 調 QA 嚴格度：section-qa word_count 降到 60%，移除 no_unsupported_claims
 - [ ] stitch worker 拼 URL 加 .trim() 防換行
 - [ ] 決定圖片生成方向
+
+---
+## 2026-05-23 — ailive 即時語音 librosa 兇手確認 + 純 numpy 聲紋替換
+
+### 背景 / WHY
+即時語音（吉娜/福哥）出現 dropped 100/200 frames、角色聽不到用戶說話。
+Adam 授權四段二分法找根因，找到後立即替換。
+
+### 產出
+- `agent/voice_identifier.py` — 完整改寫：librosa MFCC 52-d → 純 numpy ZCR+FFT 20-d，無 numba JIT，SIMILARITY_THRESHOLD 0.75→0.92
+- `agent/requirements.txt` — 移除 librosa>=0.10.0，保留 numpy>=1.24.0
+- Cloud Run revision 00059-x6n — 純 numpy 版本，STABLE，吉娜+福哥實測通過
+- `zhu-core/docs/LESSONS/LESSONS_20260523.md` — 四條新教訓（librosa/bisect/Deepgram/numpy）
+
+### 已解決
+- S1(cbf58f9 insight 提煉) CLEAN
+- S2(1f1fb1f user profile 提取) CLEAN
+- S3(04689e0 voice ID 框架) CLEAN
+- S4(ca59d4b librosa MFCC) **EXPLODED** — numba JIT cold-start 51s，VAD queue 爆炸
+- 根因消除：extract_voice_embedding 改純 numpy FFT，CPU 零 JIT 延遲，revision 00059-x6n 穩定
+
+### ⚠️ 尚未解決
+- 中英文雙語 STT：Deepgram streaming 架構限制（不支援 detect_language、multi 模式中文不在清單）
+- Soniox STT 規格已研究（language_hints=["en","zh"]，livekit-plugins-soniox），等 Adam 申請 API key
+- Soniox STTOptions.interim_results 等效參數名稱待查清楚再動手
+
+### 待執行
+- [ ] Adam 申請 Soniox API key 後：
+  1. 查 `STTOptions` 裡 `interim_results` 對應參數
+  2. requirements.txt 加 livekit-plugins-soniox==1.5.1
+  3. realtime_agent.py 換 import + STT 初始化
+  4. Secret Manager 加 SONIOX_API_KEY → Cloud Run env → deploy
