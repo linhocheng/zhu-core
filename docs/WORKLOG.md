@@ -3091,3 +3091,30 @@ Adam 授權四段二分法找根因，找到後立即替換。
 - [ ] 跑 Round 3：修 test script 讓它支援 5 articles full run
 - [ ] Deploy 到 Vercel，用真實 issue 跑一輪端對端
 - [ ] source worker 搬 Cloud Run（Vercel 300s 風險）
+
+---
+
+## 2026-05-23c — ailive 即時語音 Soniox 換裝 + on_disconnected cleanup 修法
+
+### 背景 / WHY
+Deepgram streaming 不支援中英文雙語（L3 昨日）。Adam 申請了 Soniox API key，換裝並修 process cleanup 問題。
+
+### 產出
+- `agent/requirements.txt` — deepgram==1.5.1 → soniox==1.5.1
+- `agent/realtime_agent.py` — Soniox STT init（model=stt-rt-v4, language_hints=["zh","en"]）+ voice_buffer.clear()（try/finally）+ on_disconnected 改 threading.Thread
+- Secret Manager `SONIOX_API_KEY`（ailive-realtime-2026，version 1）
+- Cloud Run revision `00063-tgh`（current stable）
+
+### 已解決
+- Soniox 402：加錢等 30s 即通
+- voice_buffer 從不釋放 → try/finally 包整個 voice-id body，任何路徑都 clear
+- on_disconnected sync blocking → threading.Thread(daemon=False)，save_conversation 22s 內完成 ✅
+
+### ⚠️ 尚未解決
+- insights / promise-reflection / user-profile / cost tracking 仍被 SIGUSR1 kill（timeout ~25s，這幾個來不及）
+- 根本修法：on_disconnected 只 enqueue Cloud Tasks job，實際執行搬到 job worker
+- 回滾點：revision `00059-x6n`（deepgram + numpy，穩定）
+
+### 待執行
+- [ ] Cloud Tasks 方案：on_disconnected 只 enqueue，insights/promise/profile/cost 在 job 裡跑
+- [ ] 實測 1 小時通話確認 Silero VAD 的 CPU spike 是偶發還是常態

@@ -24,12 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-23）
+## 最新完成（2026-05-23c）
 
-- ANEWS 狀態機測試驗收：Round 1 Happy Path + Round 2 Fault Paths，28 assertions 全 pass
-- 修 `approve/route.ts` 缺 taskId bug（orchestrate 400 靜默失敗，issue 卡在 awaiting_review）
-- 補測試腳本 images_all_done / export_done 手動觸發（Cloud Tasks 本機無效）
-- 早上另一 session：ailive librosa 兇手確認，純 numpy 替換，Cloud Run 00059-x6n 穩定
+- Soniox STT 換裝：requirements.txt + realtime_agent.py + Secret Manager + Cloud Run 00063-tgh，中英文雙語 ✅
+- `_voice_buffer.clear()`：try/finally 包整個 voice-id body，識別完立刻釋放音頻記憶體
+- `on_disconnected` 改 `threading.Thread(daemon=False)`：save_conversation 22s 內完成，主資料不丟
+- 踩坑：asyncio.ensure_future + to_thread 被 executor shutdown 打穿；threading.Thread 擋不住 SIGUSR1
 
 ---
 
@@ -37,31 +37,38 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/api/editorial-jobs/[issueId]/approve/route.ts` | 補 taskId 到 orchestrate 呼叫 |
-| `anews-platform/scripts/test-state-machine.mjs` | 補手動 images_all_done / export_done；Round 1+2 全通 |
+| `ailive-platform/agent/requirements.txt` | deepgram→soniox==1.5.1 |
+| `ailive-platform/agent/realtime_agent.py` | Soniox STT init + voice_buffer.clear() + on_disconnected threading.Thread |
+| GCP Secret Manager | SONIOX_API_KEY version 1 新增 |
 
 ---
 
 ## 下一步
 
-**ANEWS 主線**：跑 Round 3（全量壓測）
+**ailive 即時語音 — cleanup 根本修法**：
 ```
-cd ~/.ailive/anews-platform
-# 修 test script 支援 5 articles × 26 sections × 28 images full run
-# 或直接 deploy Vercel + 真實 issue 端對端
+問題：insights / promise-reflection / user-profile / cost 被 SIGUSR1 kill（在 ~25s timeout 外）
+修法：on_disconnected 只做一件事 → enqueue Cloud Tasks job
+     job 裡跑：extract_and_save_insights + reflect_and_mark_fulfilled
+               + auto_extract_user_profile + cost write
+步驟：
+  1. 建 Cloud Tasks queue（ailive-cleanup 或複用既有）
+  2. 建 Cloud Run job endpoint（或 Vercel route）接收 cleanup payload
+  3. on_disconnected 只 enqueue（< 1s），不做 LLM 呼叫
+  4. deploy + 測試：掛斷後看 job log insights/promise/profile 全通
 ```
 
-**ailive 主線**（等 Adam）：
-- Adam 申請 Soniox API key → 換 STT 中英文雙語
+**ailive 長通話觀察**：
+- Silero VAD 偶發 `inference is slower than realtime` → 觀察是否是常態還是 cold spike
+- 真的常態 → 考慮換 VAD 或提升 Cloud Run CPU tier
 
 ---
 
 ## 卡住 / 未解
 
-- Vercel 300s source worker 風險（記錄在 ARCHITECTURE.md，未動手搬 Cloud Run）
-- 圖片生成仍是 SVG placeholder（IMAGE_DRY_RUN=true）
-- LLM workers 真實輸出品質未驗（Round 1+2 全用 fake Firestore 寫入）
-- Soniox API key 等 Adam 申請
+- insights / promise-reflection / user-profile / cost 仍被 SIGUSR1 kill（cleanup Cloud Tasks 未做）
+- Silero VAD CPU spike 偶發（需長期觀察）
+- ANEWS：Round 3 壓測 + Vercel 300s source worker 搬 Cloud Run（上個 session 遺留）
 
 ---
 
@@ -75,13 +82,12 @@ cd ~/.ailive/anews-platform
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
-| ANEWS 架構圖 | `~/.ailive/anews-platform/ARCHITECTURE.md` |
-| ANEWS 測試腳本 | `~/.ailive/anews-platform/scripts/test-state-machine.mjs` |
-| ailive agent | `~/.ailive/ailive-platform/agent/` |
-| Cloud Run stable | revision `00059-x6n`（純 numpy，無 librosa） |
+| ailive agent | `~/.ailive/ailive-platform/agent/realtime_agent.py` |
+| Cloud Run stable | revision `00063-tgh`（Soniox + pure numpy） |
+| Cloud Run rollback | revision `00059-x6n`（deepgram + pure numpy） |
+| LESSONS 今日 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_20260523c.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-23b · 築*
+*2026-05-23c · 築*
