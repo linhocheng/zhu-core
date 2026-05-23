@@ -3064,3 +3064,30 @@ Adam 授權四段二分法找根因，找到後立即替換。
   2. requirements.txt 加 livekit-plugins-soniox==1.5.1
   3. realtime_agent.py 換 import + STT 初始化
   4. Secret Manager 加 SONIOX_API_KEY → Cloud Run env → deploy
+
+---
+
+## 2026-05-23b — ANEWS 狀態機測試驗收（28 pass 0 fail）
+
+### 背景 / WHY
+前一 session 已完成 6 點收斂 + 4 項補強，需要本機跑完整 state machine test 確認轉場正確。
+
+### 產出
+- `scripts/test-state-machine.mjs` — Round 1（Happy Path）+ Round 2（Fault Paths）全通，28 assertions pass
+- `app/api/editorial-jobs/[issueId]/approve/route.ts` — 修 orchestrate 呼叫缺 taskId 的 bug
+
+### 已解決
+- approve endpoint 呼叫 orchestrate 少帶 taskId → 400 missing_params → issue stuck at awaiting_review → 補 taskId 修正
+- images_all_done 本機不觸發（callbackOrchestrator 走 Cloud Tasks）→ 測試腳本手動補 orch 呼叫
+- export_done 同上 → 測試腳本手動補
+
+### ⚠️ 尚未解決
+- Round 3（5 articles × 26 sections × 28 image tasks）全量壓測尚未跑
+- LLM workers 真實輸出品質未驗（test 全用 fake Firestore 寫入）
+- Vercel 300s 硬限 source worker 高風險（已記錄 ARCHITECTURE.md，未搬 Cloud Run）
+- 圖片生成：仍是 SVG placeholder（IMAGE_DRY_RUN=true）
+
+### 待執行
+- [ ] 跑 Round 3：修 test script 讓它支援 5 articles full run
+- [ ] Deploy 到 Vercel，用真實 issue 跑一輪端對端
+- [ ] source worker 搬 Cloud Run（Vercel 300s 風險）

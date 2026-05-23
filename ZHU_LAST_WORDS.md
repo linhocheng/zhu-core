@@ -26,10 +26,10 @@
 
 ## 最新完成（2026-05-23）
 
-- 四段二分法確認 librosa numba JIT 是 ailive 即時語音 CPU 殺手（S1-S3 乾淨，S4 ca59d4b 爆炸）
-- 改寫 `agent/voice_identifier.py`：librosa MFCC 52-d → 純 numpy ZCR+FFT 20-d，無 JIT
-- Cloud Run revision 00059-x6n 穩定上線，吉娜 + 福哥實測通過
-- 研究 Soniox STT 中英文雙語方案（language_hints=["en","zh"]），等 API key
+- ANEWS 狀態機測試驗收：Round 1 Happy Path + Round 2 Fault Paths，28 assertions 全 pass
+- 修 `approve/route.ts` 缺 taskId bug（orchestrate 400 靜默失敗，issue 卡在 awaiting_review）
+- 補測試腳本 images_all_done / export_done 手動觸發（Cloud Tasks 本機無效）
+- 早上另一 session：ailive librosa 兇手確認，純 numpy 替換，Cloud Run 00059-x6n 穩定
 
 ---
 
@@ -37,30 +37,31 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/voice_identifier.py` | 完整改寫：librosa MFCC → 純 numpy FFT 20-d，閾值 0.75→0.92 |
-| `agent/requirements.txt` | 移除 librosa>=0.10.0 |
-| `zhu-core/docs/LESSONS/LESSONS_20260523.md` | 新建：4 條教訓（librosa/bisect/Deepgram/numpy） |
+| `anews-platform/app/api/editorial-jobs/[issueId]/approve/route.ts` | 補 taskId 到 orchestrate 呼叫 |
+| `anews-platform/scripts/test-state-machine.mjs` | 補手動 images_all_done / export_done；Round 1+2 全通 |
 
 ---
 
 ## 下一步
 
-**Soniox STT 中英文雙語（等 Adam 申請 API key）**
+**ANEWS 主線**：跑 Round 3（全量壓測）
+```
+cd ~/.ailive/anews-platform
+# 修 test script 支援 5 articles × 26 sections × 28 images full run
+# 或直接 deploy Vercel + 真實 issue 端對端
+```
 
-1. 確認 livekit-plugins-soniox STTOptions 裡 `interim_results` 等效參數名稱（先查源碼再動手）
-2. `agent/requirements.txt` 加 `livekit-plugins-soniox==1.5.1`，移除 `livekit-plugins-deepgram==1.5.1`
-3. `agent/realtime_agent.py` 換 import：`from livekit.plugins import soniox`
-4. STT 初始化改 `soniox.STT(model="stt-rt-v4", language_hints=["en","zh"])`
-5. Secret Manager 加 `SONIOX_API_KEY` → Cloud Run env → deploy
-6. 回滾快照：commit `5901180`，revision `00059-x6n`（一鍵可回）
+**ailive 主線**（等 Adam）：
+- Adam 申請 Soniox API key → 換 STT 中英文雙語
 
 ---
 
 ## 卡住 / 未解
 
-- **Soniox API key**：Adam 尚未申請，等到手才能動手換 STT
-- **ANEWS pipeline 卡死**（F9u8lHZCief2bTN6ztAO）：kick endpoint 已建，但今天沒測試
-- **QA 嚴格度**：section-qa word_count 80% + no_unsupported_claims 過高
+- Vercel 300s source worker 風險（記錄在 ARCHITECTURE.md，未動手搬 Cloud Run）
+- 圖片生成仍是 SVG placeholder（IMAGE_DRY_RUN=true）
+- LLM workers 真實輸出品質未驗（Round 1+2 全用 fake Firestore 寫入）
+- Soniox API key 等 Adam 申請
 
 ---
 
@@ -70,15 +71,17 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
+| ANEWS 架構圖 | `~/.ailive/anews-platform/ARCHITECTURE.md` |
+| ANEWS 測試腳本 | `~/.ailive/anews-platform/scripts/test-state-machine.mjs` |
 | ailive agent | `~/.ailive/ailive-platform/agent/` |
-| 聲紋識別 | `~/.ailive/ailive-platform/agent/voice_identifier.py` |
 | Cloud Run stable | revision `00059-x6n`（純 numpy，無 librosa） |
-| Soniox 研究結論 | `zhu-core/docs/LESSONS/LESSONS_20260523.md` L3+L4 |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-23 · 築*
+*2026-05-23b · 築*
