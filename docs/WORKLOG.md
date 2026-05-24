@@ -3254,3 +3254,28 @@ Batch A+B 改動昨日寫完但未驗收；今日跑 medium mode 驗收並修了
 - [ ] 診斷 image queue stuck（看 worker_traces 裡 image worker 的 errorType）
 - [ ] v8 medium mode：驗 evidence-pass 有沒有真的減少 retry
 - [ ] Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI
+
+---
+
+## 2026-05-24b — ANEWS v9 prod test script 除錯
+
+### 背景 / WHY
+v8 測試誤跑 localhost，evidence-pass 無法驗證（Cloud Tasks 無法回調 localhost）。
+Adam 選 option 2：改跑 prod，用 poll-based 模式等 Cloud Tasks auto-drive。
+
+### 產出
+- 檔案：`~/.ailive/anews-platform/scripts/test-medium-mode.mjs` — 多輪除錯，加 IS_PROD poll-based alignment 三層恢復路徑
+
+### 已解決
+- `parseErrIds` 永遠空 Set → 根因：trace 欄位是 `targetId` 不是 `articleId`，改掉
+- alignment_running 卡死無診斷 → 加每 4 polls 印 article 層級狀態
+- 只有 PARSE_ERROR 一種恢復路徑 → 補 Recovery A（callback lost）+ Recovery C（needs_repair）
+
+### ⚠️ 尚未解決
+- v9 最新 run（PID 31484）剛啟動，尚未有結果 — 接棒要先看這個跑完
+- alignment PARSE_ERROR 根因（blueprint malformed）是 prod LLM 不穩定，不是 code bug，尚未解決
+
+### 待執行
+- [ ] 確認 v9 run 結果（wait PID 31484 或看 process output）
+- [ ] commit test-medium-mode.mjs 改動（`v1.7.0.004 — 修正：alignment 三層恢復 + targetId bug`）
+- [ ] Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI

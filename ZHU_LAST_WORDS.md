@@ -26,13 +26,11 @@
 
 ## 最新完成（2026-05-24）
 
-- Batch A 驗收通過：article.title / section.heading+wordCount / article.stitchedWordCount 全有值
-- Batch B 驗收通過：QA retry rate 12.5%（目標 <20%）
-- 修 workerCall retry idempotency bug：每次 attempt 產生新 taskId，不再被 already_running 擋住
-- 修 stitch precondition：從「全段 qa_passed」改為「無 in-progress 段落」，qa_blocked 可通過
-- 修 test script：writeReady=false 跳過的 section 直接寫 Firestore 設 qa_blocked
-- v7 手動完整跑完：3 篇 articles 全 done，真實標題 + stitch + export 全驗證
-- 讀懂另一個築寫的 G1-G4（evidence-pass 架構）：blocks schema + worker + orchestrate + qaMode
+- 部署 anews-platform v1.7.0.003（evidence-pass worker + G1-G4 全套）到 prod
+- 建立 GCP queue `anews-evidence-pass`（asia-east1）
+- 診斷並修復 image queue stuck（PRECONDITION race condition）
+- v9 prod test script：修 IS_PROD poll-based source/blueprint/alignment 模式
+- 修 alignment 三層恢復路徑：Recovery A（callback lost）+ B（PARSE_ERROR targetId bug 修正）+ C（needs_repair skip）
 
 ---
 
@@ -40,47 +38,33 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `app/api/workers/stitch/route.ts` | precondition 改為允許 qa_blocked/qa_failed |
-| `scripts/test-medium-mode.mjs` | workerCall fresh taskId retry + skip→qa_blocked + wordTarget 600 |
-| `app/api/workers/source/route.ts` | max_tokens: 8192（原 8000，避免截斷）|
-| `app/api/workers/section-write/route.ts` | G1 blocks 拆解 + heading/wordCount 寫回 + source 引用規則 |
-| `app/api/workers/section-qa/route.ts` | G4 qaMode tracking + qaPassedMarkdownUrl |
-| `app/api/workers/orchestrate/route.ts` | G3 evidence_pass_done handler + section_qa_failed 分流 |
-| `app/api/workers/evidence-pass/route.ts` | G2 全新 worker（未 commit）|
-| `lib/queues/cloudTasks.ts` | 加 anews-evidence-pass queue 名稱 |
-| `ISSUES_AND_FIXES.md` | G1-G4 設計稿 + 接棒說明 |
-
-**注意：以上 8 個改動 + evidence-pass 新目錄全部未 commit、未 deploy。**
+| `~/.ailive/anews-platform/scripts/test-medium-mode.mjs` | IS_PROD 全 poll-based；alignment 三層恢復；targetId bug 修正；diagnostic log |
 
 ---
 
 ## 下一步
 
-**第一件事（直接動手）**：
+**接棒第一件：確認 v9 run 是否跑完，或直接重跑**
+
 ```bash
-cd ~/.ailive/anews-platform
-git add -A
-git commit -m "v1.7.0.003 — 新增：G1-G4 evidence-pass + retry idempotency fix + stitch precondition fix"
-npx vercel --prod --yes
+# 查 PID 是否還活著（PID 31484 是最後一次啟動）
+ps aux | grep test-medium-mode
+
+# 直接重跑（會自動 cancel 上一個 issue）
+cd ~/.ailive/anews-platform && ANEWS_BASE=https://anews-platform.vercel.app node scripts/test-medium-mode.mjs
 ```
 
-**第二件事**（需 Adam GCP 權限）：
-```bash
-gcloud tasks queues create anews-evidence-pass --location=asia-east1
-```
-
-**第三件事**：診斷 image queue stuck（看 worker_traces 的 image worker errorType）
-
-**第四件事**：v8 medium mode 驗 evidence-pass
+看 `[alignment diag]` 行確認 article 層級狀態。如果 alignment 正常通過：
+1. commit：`git add scripts/test-medium-mode.mjs && git commit -m "v1.7.0.004 — 修正：alignment 三層恢復 + targetId bug"`
+2. 繼續 Batch C：coherence gate（orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI，~90 min）
 
 ---
 
 ## 卡住 / 未解
 
-- **image queue stuck**：image tasks 全部卡在 `planned` 或 queue 裡沒跑，v8 跑完整流程前要先解
-- **GCP queue 未建**：anews-evidence-pass 需要 Adam 有 GCP 權限才能建，築建不了
-- **Batch C 未做**：coherence 閘門（orchestrate 3 路分流 + approve-coherence endpoint + dashboard UI），估 90 min
-- **ISSUES_AND_FIXES.md 勾選框**：Batch A/B 的 checkbox 還是空的，下次進來補打勾
+- alignment PARSE_ERROR 根因是 prod LLM blueprint 品質不穩，非 code bug，只能 skip 繞過
+- source_thin 問題（LLM web_search 結果不穩），script 已有 bypass
+- v9 最新 run（PID 31484）Adam 換手時剛啟動，結果未知
 
 ---
 
@@ -92,11 +76,11 @@ gcloud tasks queues create anews-evidence-pass --location=asia-east1
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS 問題清單 | `~/.ailive/anews-platform/ISSUES_AND_FIXES.md` |
-| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
+| ANEWS prod | https://anews-platform.vercel.app |
+| ANEWS 源碼 | `~/.ailive/anews-platform/` |
 
 ---
 
