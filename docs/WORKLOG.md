@@ -3218,3 +3218,39 @@ standard mode dry-run 發現 QA retry 率偏高（3+ force-pass），根因是 s
 - [ ] 跑中型測試：3 articles，IMAGE_DRY_RUN=true，force-pass disabled，觀察 QA retry rate
 - [ ] 確認中型測試 PASSED 後再考慮 standard mode
 - [ ] ARCHITECTURE.md 更新（本機 LLM bridge 已修那條）
+
+---
+
+## 2026-05-24 — ANEWS Batch A+B 驗收 + evidence-pass 接棒讀懂
+
+### 背景 / WHY
+Batch A+B 改動昨日寫完但未驗收；今日跑 medium mode 驗收並修了測試腳本的 idempotency bug 和 stitch precondition bug。另一個築在同一天寫了 G1-G4（evidence-pass 架構），session 結束前讀懂現場。
+
+### 產出
+- 驗收：Batch A（C1 title/C2 heading+wordCount/C3 stitchedWordCount）✅
+- 驗收：Batch B（QA retry rate 12.5% < 20%）✅
+- 修：`scripts/test-medium-mode.mjs` — workerCall retry 每次產生新 taskId
+- 修：`app/api/workers/stitch/route.ts` — precondition 改為允許 terminal 狀態
+- 修：`scripts/test-medium-mode.mjs` — skip section (writeReady=false) 直接寫 Firestore 設 qa_blocked
+- 讀懂：G1-G4 evidence-pass 架構（blocks schema + worker + orchestrate + qaMode）
+- v7 手動完整跑完：3 篇 articles 全 done，標題/字數/stitch 全驗證
+
+### 已解決
+- workerCall 同 taskId retry → 改為每次 attempt fresh taskId
+- stitch 不接受 qa_blocked → precondition 改為 "no in-progress sections"
+- skip section status 停在 planned 擋住 stitch → skip 時寫 Firestore qa_blocked
+
+### ⚠️ 尚未解決
+- anews-platform 8 個改動（含 G1-G4）未 commit、未 deploy
+- GCP 需建 `anews-evidence-pass` Cloud Tasks queue（需 Adam GCP 權限，同 anews-qa 區域）
+- image queue stuck 問題未診斷（image tasks 全卡著，v8 跑完整流程前要先解）
+- Batch C（coherence 閘門 3 個檔案）未做
+- ISSUES_AND_FIXES.md Batch A/B 勾選框未更新
+
+### 待執行
+- [ ] `cd ~/.ailive/anews-platform && git add -A && git commit -m "v1.7.0.003 — 新增：G1-G4 evidence-pass + retry idempotency + stitch fix"`
+- [ ] `npx vercel --prod --yes`
+- [ ] Adam 建 GCP queue `anews-evidence-pass`（gcloud tasks queues create anews-evidence-pass --location=asia-east1）
+- [ ] 診斷 image queue stuck（看 worker_traces 裡 image worker 的 errorType）
+- [ ] v8 medium mode：驗 evidence-pass 有沒有真的減少 retry
+- [ ] Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI

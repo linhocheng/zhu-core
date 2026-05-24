@@ -20,21 +20,19 @@
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
 ## 最新完成（2026-05-24）
 
-- ANEWS Alignment Gate（Phase 1.5）上線：`/api/workers/alignment/route.ts`（新 worker）
-- Blueprint 補三個新欄位：relatedKeywords / requiredClaims / neededEvidenceTypes
-- Orchestrate 改流程：blueprint_done → alignment_running → alignment_done → awaiting_blueprint_review
-- QA 調整：no_repetition advisory；word_count 70% required（原 60% advisory）
-- Section-writer 輸出 usedSourceIds + source_insufficient；precondition 加 writeReady=false 攔截
-- Source worker 提升 facts 數量：main 最少 15，sub 最少 8
-- Force-pass gated by TEST_MODE=true
-- scripts/clear-test-data.mjs 新建
-- Small mode v2 regression PASSED（16 traces / 0 error / 1 retry / 0 force-pass）
+- Batch A 驗收通過：article.title / section.heading+wordCount / article.stitchedWordCount 全有值
+- Batch B 驗收通過：QA retry rate 12.5%（目標 <20%）
+- 修 workerCall retry idempotency bug：每次 attempt 產生新 taskId，不再被 already_running 擋住
+- 修 stitch precondition：從「全段 qa_passed」改為「無 in-progress 段落」，qa_blocked 可通過
+- 修 test script：writeReady=false 跳過的 section 直接寫 Firestore 設 qa_blocked
+- v7 手動完整跑完：3 篇 articles 全 done，真實標題 + stitch + export 全驗證
+- 讀懂另一個築寫的 G1-G4（evidence-pass 架構）：blocks schema + worker + orchestrate + qaMode
 
 ---
 
@@ -42,40 +40,47 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `app/api/workers/alignment/route.ts` | **新建** — alignment worker |
-| `app/api/workers/blueprint/route.ts` | sectionPlan 加三個 evidence 欄位 |
-| `app/api/workers/orchestrate/route.ts` | alignment_running flow + alignment_done case |
-| `app/api/workers/section-write/route.ts` | usedSourceIds 輸出 + writeReady precondition |
-| `app/api/settings/qa-checks/route.ts` | QA required/advisory 調整 |
-| `app/api/workers/source/route.ts` | facts 數量提升 |
-| `scripts/test-small-mode.mjs` | 加 alignment 步驟 |
-| `scripts/test-standard-mode.mjs` | 加 alignment 步驟 + force-pass gate |
-| `scripts/clear-test-data.mjs` | **新建** — Firestore 測試資料清除工具 |
+| `app/api/workers/stitch/route.ts` | precondition 改為允許 qa_blocked/qa_failed |
+| `scripts/test-medium-mode.mjs` | workerCall fresh taskId retry + skip→qa_blocked + wordTarget 600 |
+| `app/api/workers/source/route.ts` | max_tokens: 8192（原 8000，避免截斷）|
+| `app/api/workers/section-write/route.ts` | G1 blocks 拆解 + heading/wordCount 寫回 + source 引用規則 |
+| `app/api/workers/section-qa/route.ts` | G4 qaMode tracking + qaPassedMarkdownUrl |
+| `app/api/workers/orchestrate/route.ts` | G3 evidence_pass_done handler + section_qa_failed 分流 |
+| `app/api/workers/evidence-pass/route.ts` | G2 全新 worker（未 commit）|
+| `lib/queues/cloudTasks.ts` | 加 anews-evidence-pass queue 名稱 |
+| `ISSUES_AND_FIXES.md` | G1-G4 設計稿 + 接棒說明 |
+
+**注意：以上 8 個改動 + evidence-pass 新目錄全部未 commit、未 deploy。**
 
 ---
 
-## 下一步（接棒第一件）
+## 下一步
 
-**跑中型測試**，確認 alignment gate 效果：
-
+**第一件事（直接動手）**：
 ```bash
 cd ~/.ailive/anews-platform
-# 先把 standard mode 設定改小：MAIN_SECTIONS=4, SUB_SECTIONS=2
-# 或另開 test-medium-mode.mjs：3 articles，4+2+2 sections
-node scripts/test-standard-mode.mjs
+git add -A
+git commit -m "v1.7.0.003 — 新增：G1-G4 evidence-pass + retry idempotency fix + stitch precondition fix"
+npx vercel --prod --yes
 ```
 
-觀察：QA retry rate 是否 < 20%（上次 small mode 1/3 retry）。通過後再決定跑 full standard（5 articles 8+5）。
+**第二件事**（需 Adam GCP 權限）：
+```bash
+gcloud tasks queues create anews-evidence-pass --location=asia-east1
+```
+
+**第三件事**：診斷 image queue stuck（看 worker_traces 的 image worker errorType）
+
+**第四件事**：v8 medium mode 驗 evidence-pass
 
 ---
 
 ## 卡住 / 未解
 
-ANEWS：
-- 中型測試尚未跑（下一步第一件）
-- 圖片生成仍是 SVG placeholder
-- SOURCE_WORKER_BASE_URL 未設（source 跑 Vercel，300s 風險）
-- ARCHITECTURE.md 本機 LLM bridge 那條已修但文件還沒更新
+- **image queue stuck**：image tasks 全部卡在 `planned` 或 queue 裡沒跑，v8 跑完整流程前要先解
+- **GCP queue 未建**：anews-evidence-pass 需要 Adam 有 GCP 權限才能建，築建不了
+- **Batch C 未做**：coherence 閘門（orchestrate 3 路分流 + approve-coherence endpoint + dashboard UI），估 90 min
+- **ISSUES_AND_FIXES.md 勾選框**：Batch A/B 的 checkbox 還是空的，下次進來補打勾
 
 ---
 
@@ -85,14 +90,15 @@ ANEWS：
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ANEWS 平台 | `~/.ailive/anews-platform/` |
-| ANEWS alignment worker | `~/.ailive/anews-platform/app/api/workers/alignment/route.ts` |
-| ANEWS orchestrate | `~/.ailive/anews-platform/app/api/workers/orchestrate/route.ts` |
-| ANEWS 清測試資料 | `node ~/.ailive/anews-platform/scripts/clear-test-data.mjs` |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ANEWS 問題清單 | `~/.ailive/anews-platform/ISSUES_AND_FIXES.md` |
+| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
 
 ---
 
+*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
 *2026-05-24 · 築*
