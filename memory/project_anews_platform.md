@@ -1,39 +1,36 @@
 ---
-name: ANEWS 平台進度（2026-05-24 Batch A+B 驗收 + G1-G4 evidence-pass）
+name: ANEWS 平台進度（2026-05-25 DAG dispatcher + shadow mode + T3）
 description: 自動化長文編排系統，Next.js + Vercel + Cloud Tasks + Firestore + bridge LLM
 type: project
-originSessionId: 2fe38ab3-33c4-43ef-b959-5b2fc251b350
+originSessionId: 3ae68557-a3db-468d-a4f5-764c4665d2be
 ---
 ANEWS 平台在 `~/.ailive/anews-platform/`，prod：https://anews-platform.vercel.app
 
 **Why:** Adam 要建獨立長文生成平台，多篇文章（1 主 + 多子），自動從研究→藍圖→段落→QA→發布。
 
-**How to apply:** 進 ANEWS 相關工作先讀 `~/.ailive/anews-platform/ISSUES_AND_FIXES.md` + `git diff --stat HEAD`。
+**How to apply:** 進 ANEWS 相關工作先讀 `git log --oneline -5` + `~/.ailive/zhu-core/docs/WORKLOG.md` 最後 80 行。
 
-## 當前 pipeline 流程（2026-05-24）
-source → blueprint → alignment → awaiting_blueprint_review → section-write → **evidence-pass**（新）→ section-qa → stitch → polish → awaiting_review → coherence → export
+## 當前 pipeline 流程（2026-05-25）
+source → blueprint → alignment → awaiting_blueprint_review → section-write →【dispatcher】→ section-qa → evidence-pass → stitch → polish → awaiting_review → coherence → export
 
-## 驗收狀態（2026-05-24 v7）
-- Batch A ✅：article.title / section.heading+wordCount / article.stitchedWordCount 全有值
-- Batch B ✅：QA retry rate 12.5%（目標 <20%）
-- v7 medium mode：3 篇 articles 全 done，標題真實，3 篇字數 897/1872/952
+## 驗收狀態（2026-05-25 v1.8.0.001）
+- Batch A ✅ / Batch B ✅ / evidence-pass ✅
+- DAG runtime ✅：lib/workflow/{manifest,schema,contracts,dispatcher}.ts
+- Shadow mode ✅：verify-shadow-mode.mjs diff=0，23 nodes / 41 traces 完全一致
+- T3 ✅：DISPATCHER_OWNS_SECTION_QA=true 已上線，pipeline PASSED
 
-## 未 commit 改動（8 個檔案 + evidence-pass/ 新目錄）
-- G1: section-write 拆 blocks 存 Firestore
-- G2: evidence-pass/ 新 worker（patch-based fact 插入）
-- G3: orchestrate evidence_pass_done handler + section_qa_failed 分流
-- G4: section-qa qaMode tracking + qaPassedMarkdownUrl
-- retry idempotency fix（workerCall fresh taskId）
-- stitch precondition fix（允許 qa_blocked）
-- test script skip→qa_blocked fix
+## 架構重點
+- `lib/workflow/dispatcher.ts`：pending→queued atomic Firestore transaction
+- `lib/workers/harness.ts`：worldStateVerify 後 fire-and-forget 寫 workflow_node（shadow mode）
+- `DISPATCHER_OWNS_SECTION_QA=true`：section_done → 建 section_qa pending node → await reconcileIssue
+- 60s cron：`app/api/cron/workflow-reconcile/route.ts`（GCP schedule 未設，靠 orchestrate poke 撐）
 
 ## 下一步（醒來第一件）
-1. `git add -A && git commit -m "v1.7.0.003 ..."` + `npx vercel --prod --yes`
-2. Adam 建 GCP queue `anews-evidence-pass`（`gcloud tasks queues create anews-evidence-pass --location=asia-east1`）
-3. 診斷 image queue stuck
-4. v8 medium mode 驗 evidence-pass 效果
+1. 診斷 image queue stuck：查 Firestore `image_tasks` collection status 分布，或 `worker_traces` where workerType=image-worker
+2. Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint
 
 ## 卡住
-- image tasks 全 stuck（v8 前要先診斷）
+- image tasks 卡過（最新 run 通過但歷史有 stuck，需根因確認）
 - Batch C coherence 閘門未做
-- GCP queue 需 Adam 建
+- mock workers（polish/coherence/export/image）未升 harness，shadow mode 無法覆蓋這幾條
+- 60s cron GCP schedule 未設

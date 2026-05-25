@@ -24,13 +24,13 @@
 
 ---
 
-## 最新完成（2026-05-24）
+## 最新完成（2026-05-25）
 
-- 部署 anews-platform v1.7.0.003（evidence-pass worker + G1-G4 全套）到 prod
-- 建立 GCP queue `anews-evidence-pass`（asia-east1）
-- 診斷並修復 image queue stuck（PRECONDITION race condition）
-- v9 prod test script：修 IS_PROD poll-based source/blueprint/alignment 模式
-- 修 alignment 三層恢復路徑：Recovery A（callback lost）+ B（PARSE_ERROR targetId bug 修正）+ C（needs_repair skip）
+- 修 `idempotency.ts` cold-start crash：getFirestore() 改用 lazy db Proxy（orchestrate 500 empty body 根治）
+- 建完整 DAG runtime：`lib/workflow/{manifest,schema,contracts,dispatcher}.ts`
+- Shadow mode 全覆蓋：harness 寫 workflow_nodes，所有 harness worker 補 nodeType，verify-shadow-mode.mjs diff=0
+- Dispatcher 接管第一條邊：`DISPATCHER_OWNS_SECTION_QA=true`，section_write→section_qa 由 dispatcher 路由
+- Commit v1.8.0.001（18 files, 1151 insertions）
 
 ---
 
@@ -38,33 +38,40 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/anews-platform/scripts/test-medium-mode.mjs` | IS_PROD 全 poll-based；alignment 三層恢復；targetId bug 修正；diagnostic log |
+| `lib/workflow/manifest.ts` | DAG 靜態規格 + nodeId scheme |
+| `lib/workflow/schema.ts` | workflow_nodes Firestore schema |
+| `lib/workflow/contracts.ts` | 每個 nodeType 的 succeeded contract |
+| `lib/workflow/dispatcher.ts` | pending→queued atomic + lease reconciler |
+| `lib/workers/harness.ts` | shadow mode：worldStateVerify 後寫 workflow_node |
+| `lib/workers/idempotency.ts` | getFirestore() → db Proxy（cold-start fix） |
+| `app/api/workers/orchestrate/route.ts` | DISPATCHER_OWNS_SECTION_QA + enqueueNextWritableSection |
+| `app/api/workers/dispatcher/route.ts` | poke endpoint（新建） |
+| `app/api/cron/workflow-reconcile/route.ts` | 60s cron safety net（新建） |
+| `scripts/verify-shadow-mode.mjs` | shadow mode 驗證腳本（新建） |
+| 7 個 worker routes | 補 nodeType: alignment/blueprint/source/stitch/section_write/section_qa/evidence_pass |
 
 ---
 
 ## 下一步
 
-**接棒第一件：確認 v9 run 是否跑完，或直接重跑**
+**第一件事（30 分鐘）：診斷 image queue stuck**
 
-```bash
-# 查 PID 是否還活著（PID 31484 是最後一次啟動）
-ps aux | grep test-medium-mode
+在 Firestore console 或 script 查：`image_tasks` collection，看 status 分布。
+或查 `worker_traces` where workerType contains "image"，看 errorType。
+按錯誤類型決定修法方向。
 
-# 直接重跑（會自動 cancel 上一個 issue）
-cd ~/.ailive/anews-platform && ANEWS_BASE=https://anews-platform.vercel.app node scripts/test-medium-mode.mjs
-```
-
-看 `[alignment diag]` 行確認 article 層級狀態。如果 alignment 正常通過：
-1. commit：`git add scripts/test-medium-mode.mjs && git commit -m "v1.7.0.004 — 修正：alignment 三層恢復 + targetId bug"`
-2. 繼續 Batch C：coherence gate（orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI，~90 min）
+**第二件事：Batch C — coherence 閘門**
+- `app/api/workers/orchestrate/route.ts`：coherence_done 三路分流
+- 新增 `approve-coherence` endpoint
+- 完成後 pipeline end-to-end 有審核節點
 
 ---
 
 ## 卡住 / 未解
 
-- alignment PARSE_ERROR 根因是 prod LLM blueprint 品質不穩，非 code bug，只能 skip 繞過
-- source_thin 問題（LLM web_search 結果不穩），script 已有 bypass
-- v9 最新 run（PID 31484）Adam 換手時剛啟動，結果未知
+- image queue：前幾次 medium mode image tasks 全卡，未診斷根因（本次 run 有通過但要確認）
+- mock workers（polish/coherence/export/image）用 createMockWorker，沒有 shadow mode 覆蓋
+- 60s cron reconcile 部署了但 GCP schedule 未設（目前靠 orchestrate 的 await reconcileIssue 撐）
 
 ---
 
@@ -74,15 +81,14 @@ cd ~/.ailive/anews-platform && ANEWS_BASE=https://anews-platform.vercel.app node
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
+| DAG runtime | `~/.ailive/anews-platform/lib/workflow/` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS prod | https://anews-platform.vercel.app |
-| ANEWS 源碼 | `~/.ailive/anews-platform/` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-24 · 築*
+*2026-05-25 · 築*

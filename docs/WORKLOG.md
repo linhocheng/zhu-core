@@ -3279,3 +3279,42 @@ Adam 選 option 2：改跑 prod，用 poll-based 模式等 Cloud Tasks auto-driv
 - [ ] 確認 v9 run 結果（wait PID 31484 或看 process output）
 - [ ] commit test-medium-mode.mjs 改動（`v1.7.0.004 — 修正：alignment 三層恢復 + targetId bug`）
 - [ ] Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint + dashboard UI
+
+---
+
+## 2026-05-25 — ANEWS DAG dispatcher + shadow mode + T3 dispatcher 接管第一條邊
+
+### 背景 / WHY
+ANEWS pipeline 最大結構問題：worker completion 和 workflow advancement 綁在 callbackOrchestrator，DB 寫完但 callback 掉了 = 管道靜悄悄死掉。用 DAG + dispatcher 架構解耦。
+
+### 產出
+- 檔案：`lib/workflow/manifest.ts` — 11 nodeType 靜態規格 + deterministic nodeId scheme
+- 檔案：`lib/workflow/schema.ts` — workflow_nodes Firestore schema
+- 檔案：`lib/workflow/contracts.ts` — 每個 nodeType 的 succeeded contract
+- 檔案：`lib/workflow/dispatcher.ts` — pending→queued atomic transaction + lease reconciler
+- 檔案：`lib/workers/harness.ts` — shadow mode：worldStateVerify 後寫 workflow_node
+- 檔案：`lib/workers/idempotency.ts` — 修：getFirestore() 改用 lazy db Proxy
+- 檔案：`app/api/workers/orchestrate/route.ts` — DISPATCHER_OWNS_SECTION_QA 旗標 + enqueueNextWritableSection helper
+- 檔案：`app/api/workers/dispatcher/route.ts` — poke endpoint
+- 檔案：`app/api/cron/workflow-reconcile/route.ts` — 60s cron safety net
+- 檔案：`scripts/verify-shadow-mode.mjs` — shadow mode 驗證腳本
+- 全 harness workers 補 nodeType：alignment, blueprint, source, stitch, section_write, section_qa, evidence_pass
+- Commit：v1.8.0.001（18 files, 1151 insertions）
+
+### 已解決
+- orchestrate cold-start 500 empty body → idempotency.ts getFirestore() 改 db Proxy
+- shadow mode diff=9 → blueprint/alignment/stitch 補 nodeType
+- source_thin recovery 設 alignment_done → 改 source_ready 才能通過 source_done 閘門
+- section_write → section_qa 邊改由 dispatcher 控制（DISPATCHER_OWNS_SECTION_QA=true）
+- 驗證：pipeline PASSED，verify-shadow-mode diff = 0
+
+### ⚠️ 尚未解決
+- image queue stuck 未診斷（image tasks 卡著，需查 worker_traces errorType）
+- Batch C（coherence 閘門三路分流）未做
+- mock workers（polish/coherence/export/image）還沒升級為 harness worker，shadow mode 無法覆蓋
+- 60s cron reconcile（workflow-reconcile）部署了但未實際驗過（cron job 要手動設 GCP Cloud Tasks schedule）
+
+### 待執行
+- [ ] 診斷 image queue stuck：查 Firestore worker_traces where workerType=image-worker，看 errorType
+- [ ] Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint
+- [ ] 設定 GCP 60s cron 打 workflow-reconcile（或先靠 dispatcher poke 撐著）
