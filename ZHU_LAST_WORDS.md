@@ -20,17 +20,23 @@
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env ZHU_MID_PASSWORD）
 
 ---
 
 ## 最新完成（2026-05-25）
 
-- 修 `idempotency.ts` cold-start crash：getFirestore() 改用 lazy db Proxy（orchestrate 500 empty body 根治）
-- 建完整 DAG runtime：`lib/workflow/{manifest,schema,contracts,dispatcher}.ts`
-- Shadow mode 全覆蓋：harness 寫 workflow_nodes，所有 harness worker 補 nodeType，verify-shadow-mode.mjs diff=0
-- Dispatcher 接管第一條邊：`DISPATCHER_OWNS_SECTION_QA=true`，section_write→section_qa 由 dispatcher 路由
-- Commit v1.8.0.001（18 files, 1151 insertions）
+- P3 Intel Officer worker 實作上線（intelReport 全局地圖，3 articleAngles）
+- Sequential pipeline：main 寫完才啟動 sub_a，sub_a 完才啟動 sub_b
+- P3 medium mode 驗收通過（issue=done，3/3 articles）
+- 挖出 source worker 靜默救場根因：catch fallback 存假 dossier，pipeline 繼續，空殼 article=done
+- 三層防護補強 v1.10.1.001：
+  - Cloud Run source worker：parse 失敗改 throw，firstBrace/lastBrace 抓 JSON 本體
+  - sourceContract：加 sufficient === true 判斷
+  - orchestrate：0-section guard → needs_repair，不再空殼 stitch
+- max_tokens 全面拉高：section-write/stitch/polish→8192，blueprint/alignment→4096，qa/coherence→2048
+- Cloud Run source worker deploy（00006-49r，100% 流量）
+- Vercel deploy 完成
 
 ---
 
@@ -38,40 +44,27 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `lib/workflow/manifest.ts` | DAG 靜態規格 + nodeId scheme |
-| `lib/workflow/schema.ts` | workflow_nodes Firestore schema |
-| `lib/workflow/contracts.ts` | 每個 nodeType 的 succeeded contract |
-| `lib/workflow/dispatcher.ts` | pending→queued atomic + lease reconciler |
-| `lib/workers/harness.ts` | shadow mode：worldStateVerify 後寫 workflow_node |
-| `lib/workers/idempotency.ts` | getFirestore() → db Proxy（cold-start fix） |
-| `app/api/workers/orchestrate/route.ts` | DISPATCHER_OWNS_SECTION_QA + enqueueNextWritableSection |
-| `app/api/workers/dispatcher/route.ts` | poke endpoint（新建） |
-| `app/api/cron/workflow-reconcile/route.ts` | 60s cron safety net（新建） |
-| `scripts/verify-shadow-mode.mjs` | shadow mode 驗證腳本（新建） |
-| 7 個 worker routes | 補 nodeType: alignment/blueprint/source/stitch/section_write/section_qa/evidence_pass |
+| cloud-run/source-worker/src/index.ts | parse 失敗 throw，移除 catch fallback |
+| lib/workflow/contracts.ts | sourceContract 加 sufficient === true |
+| app/api/workers/orchestrate/route.ts | intel_done handler、sequential pipeline、0-section guard |
+| app/api/workers/intel-officer/route.ts | 情報官 worker（新建） |
+| app/api/workers/{blueprint,alignment,...}/route.ts | max_tokens 拉高 |
 
 ---
 
 ## 下一步
 
-**第一件事（30 分鐘）：診斷 image queue stuck**
+驗證 source worker fix：開一個新的 medium mode issue，看 Cloud Run logs 確認 parse 失敗時 throw 而非存垃圾：
+  cd ~/.ailive/anews-platform && node scripts/test-medium-mode.mjs
 
-在 Firestore console 或 script 查：`image_tasks` collection，看 status 分布。
-或查 `worker_traces` where workerType contains "image"，看 errorType。
-按錯誤類型決定修法方向。
-
-**第二件事：Batch C — coherence 閘門**
-- `app/api/workers/orchestrate/route.ts`：coherence_done 三路分流
-- 新增 `approve-coherence` endpoint
-- 完成後 pipeline end-to-end 有審核節點
+然後 P4：coherence gate three-way split（pass/warning → continue，fail → human gate）
 
 ---
 
 ## 卡住 / 未解
 
-- image queue：前幾次 medium mode image tasks 全卡，未診斷根因（本次 run 有通過但要確認）
-- mock workers（polish/coherence/export/image）用 createMockWorker，沒有 shadow mode 覆蓋
-- 60s cron reconcile 部署了但 GCP schedule 未設（目前靠 orchestrate 的 await reconcileIssue 撐）
+- Cloud Tasks 在 dev 環境呼叫 localhost 不通：images_all_done / coherence_done / export_done 需手動 fire
+- 舊 run 的 main article 有垃圾 dossier（id: Fy4dgo9m8JbAwdoCNkLW），不影響新 run
 
 ---
 
@@ -79,14 +72,14 @@
 
 | 要找什麼 | 去哪裡 |
 |---|---|
-| 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
-| 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
-| 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ANEWS 主戰場 | `~/.ailive/anews-platform/` |
-| DAG runtime | `~/.ailive/anews-platform/lib/workflow/` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| 使命 | ~/.ailive/zhu-core/NORTH_STAR.md |
+| 開機 SOP | ~/.ailive/zhu-core/ZHU_BOOT_SOP.md |
+| 施工紀錄 | ~/.ailive/zhu-core/docs/WORKLOG.md |
+| 當機救援 | ~/.ailive/zhu-core/ZHU_LAST_WORDS.md（就是這份） |
+| 遠端記憶 | curl -s https://zhu-core.vercel.app/api/zhu-boot |
+| ANEWS platform | ~/.ailive/anews-platform/ |
+| ANEWS Vercel | https://anews-platform.vercel.app |
+| ANEWS Cloud Run | anews-source-worker，asia-east1，revision 00006-49r |
 
 ---
 
