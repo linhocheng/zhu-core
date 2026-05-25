@@ -20,54 +20,17 @@
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env ZHU_MID_PASSWORD）
-
----
-
-## ★ 本 session 最重要的架構改動：情報官（Intel Officer）
-
-**這不是 bug fix，這是 ANEWS 的靈魂升級。**
-
-### Before（P2）
-每篇文章各自從自己的 source dossier 生 blueprint。
-三篇文章（main/sub_a/sub_b）彼此不知道對方在說什麼。
-結果：三篇各講各的，沒有統一的敘事框架。
-
-### After（P3，本 session 落地）
-情報官（`/api/workers/intel-officer`）在所有 source 收齊後 **先跑一遍全局綜合**，輸出：
-- `globalPerspective`：整個議題的全球視角
-- `editorialNarrative`：統一的編輯敘事角度
-- `articleAngles`：每篇文章的專屬切入角（用 topicSuffix 對應：main / sub_a / sub_b）
-- `sharedContext`：三文章共享的背景知識
-
-這份 `intelReport` 寫進 `issues` doc。之後每個 blueprint worker 讀取它，找出 `articleAngles.find(a => a.topicSuffix === topicType)` 拿自己的角度。
-
-### 為什麼重要
-這一步把 ANEWS 從「各自為政的內容生成機」變成「有統一世界觀的編輯團隊」。
-情報官是整個 pipeline 的大腦，其他 worker 是執行大腦指令的手。
-沒有情報官，即使每篇文章個別寫得很好，整期也是拼盤，不是雜誌。
-
-### 實作細節
-- Pipeline 位置：source 全收齊 → `intel_done` event → blueprint（main）→ blueprint（sub_a）→ blueprint（sub_b）
-- Sequential order 由 `articleOrder()` helper 控制，確保 main 寫完才 sub_a
-- `intelOfficerContract`：檢查 `issues.intelReport` 存在才放行
-- 檔案：`app/api/workers/intel-officer/route.ts`（新建），`app/api/workers/blueprint/route.ts`（讀 intelReport）
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
 ## 最新完成（2026-05-25）
 
-- **★ P3 Intel Officer 情報官上線**（見上方詳細說明）
-- Sequential pipeline：main 寫完才啟動 sub_a，sub_a 完才啟動 sub_b
-- P3 medium mode 驗收通過（issue=done，3/3 articles）
-- 挖出 source worker 靜默救場根因：catch fallback 存假 dossier，pipeline 繼續，空殼 article=done
-- 三層防護補強 v1.10.1.001：
-  - Cloud Run source worker：parse 失敗改 throw，firstBrace/lastBrace 抓 JSON 本體
-  - sourceContract：加 sufficient === true 判斷
-  - orchestrate：0-section guard → needs_repair，不再空殼 stitch
-- max_tokens 全面拉高：section-write/stitch/polish→8192，blueprint/alignment→4096，qa/coherence→2048
-- Cloud Run source worker deploy（00006-49r，100% 流量）
-- Vercel deploy 完成
+- section-qa precondition 幂等化：terminal status 早期 return，停止 babysit double-fire 消耗 repairAttempts
+- needs_repair propagation fix：main article 已 stitching_done+ 時 sub 失敗不 kill issue
+- image worker transaction fix：Admin SDK reads-before-writes 硬規則，改 Promise.all 先讀
+- babysit 節制：5 分鐘 cooldown + 2 分鐘 node age，讓 Cloud Tasks 優先配信
+- ANEWS pipeline 端到端跑通：source→intel→blueprint→alignment→section_writing→stitch→polish→image_generating→coherence→export→**done** ✅
 
 ---
 
@@ -75,27 +38,26 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| cloud-run/source-worker/src/index.ts | parse 失敗 throw，移除 catch fallback |
-| lib/workflow/contracts.ts | sourceContract 加 sufficient === true |
-| app/api/workers/orchestrate/route.ts | intel_done handler、sequential pipeline、0-section guard |
-| app/api/workers/intel-officer/route.ts | 情報官 worker（新建） |
-| app/api/workers/{blueprint,alignment,...}/route.ts | max_tokens 拉高 |
+| `app/api/workers/section-qa/route.ts` | precondition: terminal status 早期 return |
+| `app/api/workers/orchestrate/route.ts` | needs_repair handler: 查 failing art 狀態 + 查 main art 狀態，兩層防護 |
+| `app/api/workers/image/route.ts` | transaction reads-before-writes（Admin SDK 規則）|
+| `scripts/babysit.mjs` | 5min cooldown + 2min node age，防止 Cloud Tasks concurrent fire |
 
 ---
 
 ## 下一步
 
-驗證 source worker fix：開一個新的 medium mode issue，看 Cloud Run logs 確認 parse 失敗時 throw 而非存垃圾：
-  cd ~/.ailive/anews-platform && node scripts/test-medium-mode.mjs
+**優先**：把 `IMAGE_DRY_RUN=true` 加進 Vercel prod env（Vercel dashboard → anews-platform → Settings → Environment Variables）。這樣 Cloud Tasks 才能自動配信 image workers，不需手動 fire。
 
-然後 P4：coherence gate three-way split（pass/warning → continue，fail → human gate）
+**次優先**：討論 needs_repair design — sub article section 一直 QA 失敗時，pipeline 要繼續（目前行為）還是 human gate？
 
 ---
 
 ## 卡住 / 未解
 
-- Cloud Tasks 在 dev 環境呼叫 localhost 不通：images_all_done / coherence_done / export_done 需手動 fire
-- 舊 run 的 main article 有垃圾 dossier（id: Fy4dgo9m8JbAwdoCNkLW），不影響新 run
+- Cloud Tasks image 自動配信：IMAGE_DRY_RUN 未在 Vercel prod env → 手動 fire 才能跑
+- GCP 60s cron（workflow-reconcile）未設定：靠 babysit.mjs 人工補，長期要換掉
+- needs_repair design 未討論（Adam 明確說「回頭再看」）
 
 ---
 
@@ -103,14 +65,14 @@
 
 | 要找什麼 | 去哪裡 |
 |---|---|
-| 使命 | ~/.ailive/zhu-core/NORTH_STAR.md |
-| 開機 SOP | ~/.ailive/zhu-core/ZHU_BOOT_SOP.md |
-| 施工紀錄 | ~/.ailive/zhu-core/docs/WORKLOG.md |
-| 當機救援 | ~/.ailive/zhu-core/ZHU_LAST_WORDS.md（就是這份） |
-| 遠端記憶 | curl -s https://zhu-core.vercel.app/api/zhu-boot |
-| ANEWS platform | ~/.ailive/anews-platform/ |
-| ANEWS Vercel | https://anews-platform.vercel.app |
-| ANEWS Cloud Run | anews-source-worker，asia-east1，revision 00006-49r |
+| 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
+| 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
+| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ANEWS platform | `~/.ailive/anews-platform/` |
 
 ---
 

@@ -1,36 +1,37 @@
 ---
-name: ANEWS 平台進度（2026-05-25 DAG dispatcher + shadow mode + T3）
-description: 自動化長文編排系統，Next.js + Vercel + Cloud Tasks + Firestore + bridge LLM
+name: ANEWS 平台進度
+description: 長文自動編排平台當前施工狀態與已知問題
 type: project
-originSessionId: 3ae68557-a3db-468d-a4f5-764c4665d2be
+originSessionId: cb4006f6-1b44-47b5-98d0-199f061785f4
 ---
-ANEWS 平台在 `~/.ailive/anews-platform/`，prod：https://anews-platform.vercel.app
+P1+P2+P3+P4 施工完成（2026-05-25）。Pipeline 端到端跑通 issue=done。
 
-**Why:** Adam 要建獨立長文生成平台，多篇文章（1 主 + 多子），自動從研究→藍圖→段落→QA→發布。
+**已完成：**
+- P3 Intel Officer + sequential pipeline（main→sub_a→sub_b）
+- P4 coherence gate three-way split（pass/warning→continue, fail→coherence_failed→human gate）
+- Bug fixes（2026-05-25c session）：
+  - section-qa precondition 幂等：terminal status 早期 return
+  - needs_repair propagation：main 已 stitching_done+ 時 sub 失敗不 kill issue
+  - image worker transaction：Admin SDK reads-before-writes（Promise.all 先讀）
+  - babysit.mjs：5min cooldown + 2min node age，不與 Cloud Tasks 搶
 
-**How to apply:** 進 ANEWS 相關工作先讀 `git log --oneline -5` + `~/.ailive/zhu-core/docs/WORKLOG.md` 最後 80 行。
+**P4 end-to-end 驗收結果（2026-05-25c）：**
+- issue=done ✅ / main+sub_b 全 done ✅
+- image race condition fix 驗證：6 task 全 done → images_all_done 自動發火 ✅
+- coherence → export → done 自動流過 ✅
+- main 4 節全以 repairAttempts=0 通過 QA ✅
 
-## 當前 pipeline 流程（2026-05-25）
-source → blueprint → alignment → awaiting_blueprint_review → section-write →【dispatcher】→ section-qa → evidence-pass → stitch → polish → awaiting_review → coherence → export
+**已知問題 / 技術債：**
+- IMAGE_DRY_RUN 只在 .env.local，Vercel prod env 沒有 → Cloud Tasks 無法自動 fire image workers（手動補）
+- GCP 60s cron（workflow-reconcile）未設定，靠 babysit.mjs 人工補
+- needs_repair design 未討論（sub article 持續 QA 失敗的 recovery path）
+- babysit.mjs 是暫時 hack，長期靠 reconcile cron 取代
 
-## 驗收狀態（2026-05-25 v1.8.0.001）
-- Batch A ✅ / Batch B ✅ / evidence-pass ✅
-- DAG runtime ✅：lib/workflow/{manifest,schema,contracts,dispatcher}.ts
-- Shadow mode ✅：verify-shadow-mode.mjs diff=0，23 nodes / 41 traces 完全一致
-- T3 ✅：DISPATCHER_OWNS_SECTION_QA=true 已上線，pipeline PASSED
+**下一步：**
+- 把 IMAGE_DRY_RUN=true 加進 Vercel prod env
+- 討論 needs_repair design
+- 設定 GCP Cloud Scheduler 60s cron
+- 考慮 P5：evidence-pass prod 驗證 / 技術債清理
 
-## 架構重點
-- `lib/workflow/dispatcher.ts`：pending→queued atomic Firestore transaction
-- `lib/workers/harness.ts`：worldStateVerify 後 fire-and-forget 寫 workflow_node（shadow mode）
-- `DISPATCHER_OWNS_SECTION_QA=true`：section_done → 建 section_qa pending node → await reconcileIssue
-- 60s cron：`app/api/cron/workflow-reconcile/route.ts`（GCP schedule 未設，靠 orchestrate poke 撐）
-
-## 下一步（醒來第一件）
-1. 診斷 image queue stuck：查 Firestore `image_tasks` collection status 分布，或 `worker_traces` where workerType=image-worker
-2. Batch C：orchestrate coherence_done 三路分流 + approve-coherence endpoint
-
-## 卡住
-- image tasks 卡過（最新 run 通過但歷史有 stuck，需根因確認）
-- Batch C coherence 閘門未做
-- mock workers（polish/coherence/export/image）未升 harness，shadow mode 無法覆蓋這幾條
-- 60s cron GCP schedule 未設
+**Why:** 每期有靈魂 = 值得花 5x 時間
+**How to apply:** 下次 session 先補 IMAGE_DRY_RUN prod env，再討論 needs_repair

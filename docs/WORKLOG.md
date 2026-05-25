@@ -3348,3 +3348,35 @@ P3 Intel Officer + sequential pipeline 實作，medium mode 驗收，挖到 sour
 - [ ] 跑新一輪 medium mode 驗證 source worker fix（parse 失敗 → retry，不再存垃圾）
 - [ ] P4：coherence_done 三路分流（pass/warning → continue, fail → human gate）
 - [ ] 考慮 dev 環境 Cloud Tasks mock（讓 images_all_done 等 callbacks 自動跑）
+
+---
+
+## 2026-05-25c — ANEWS image pipeline 打通（Bug 1+2+transaction fix + babysit 節制）
+
+### 背景 / WHY
+前次 session 遺留兩個 bug 讓 pipeline 卡在 section_writing 前就 needs_repair，無法到達 image 步驟驗收 race condition fix。本 session 目標：修通 → 跑到 `issue=done`。
+
+### 產出
+- `app/api/workers/section-qa/route.ts` — precondition: terminal status (qa_passed/qa_blocked/needs_repair) 早期 return，避免 babysit 重複 fire 消耗 repairAttempts
+- `app/api/workers/orchestrate/route.ts` — needs_repair handler: (1) failing article 已 past sections 則 skip，(2) main article 已 stitching_done+ 則 skip
+- `app/api/workers/image/route.ts` — transaction: `Promise.all([tx.get(taskRef), tx.get(query)])` 先讀再寫（Admin SDK 硬規則）
+- `scripts/babysit.mjs` — 5 分鐘 cooldown + 2 分鐘 node age 雙重防護，避免與 Cloud Tasks 競爭
+
+### 已解決
+- section-qa PRECONDITION 幂等：terminal section 不再 throw，harness repairAttempts 不再累積
+- needs_repair 傳播過積極：main=polish_done 時 sub_b 失敗不 kill issue
+- image transaction read-after-write：Admin SDK 限制，改 Promise.all 先讀
+- babysit concurrent fire：5min cooldown + 2min node age，main 4 節全以 repairAttempts=0 通過
+- image pipeline end-to-end：6 image_tasks 全 done → images_all_done 自動發火 → coherence → export → issue=done ✅
+
+### ⚠️ 尚未解決
+- IMAGE_DRY_RUN 只在 .env.local，Vercel prod env 沒有 → Cloud Tasks 無法自動配信 image workers（需手動 fire）
+- GCP 60s cron（workflow-reconcile）仍未設定，Cloud Tasks 偶而不配信靠 babysit 人工補
+- needs_repair 設計議題（Adam 說「回頭再看」）：sub article section 真的失敗時如何 recovery，目前是讓 issue 繼續但 sub_b 沒完整 polish
+- babysit 本身是 hack（臨時腳本），長期應靠 workflow-reconcile cron 取代
+
+### 待執行
+- [ ] 把 IMAGE_DRY_RUN=true 加進 Vercel prod env，讓 Cloud Tasks 能自動執行 image worker
+- [ ] 設定 GCP Cloud Scheduler 每 60s 打 workflow-reconcile endpoint
+- [ ] 討論 needs_repair design：sub article 失敗的 recovery path（human gate? skip? retry?）
+- [ ] 長期：babysit.mjs 淘汰，由 reconcile cron 完全取代
