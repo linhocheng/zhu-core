@@ -24,9 +24,40 @@
 
 ---
 
+## ★ 本 session 最重要的架構改動：情報官（Intel Officer）
+
+**這不是 bug fix，這是 ANEWS 的靈魂升級。**
+
+### Before（P2）
+每篇文章各自從自己的 source dossier 生 blueprint。
+三篇文章（main/sub_a/sub_b）彼此不知道對方在說什麼。
+結果：三篇各講各的，沒有統一的敘事框架。
+
+### After（P3，本 session 落地）
+情報官（`/api/workers/intel-officer`）在所有 source 收齊後 **先跑一遍全局綜合**，輸出：
+- `globalPerspective`：整個議題的全球視角
+- `editorialNarrative`：統一的編輯敘事角度
+- `articleAngles`：每篇文章的專屬切入角（用 topicSuffix 對應：main / sub_a / sub_b）
+- `sharedContext`：三文章共享的背景知識
+
+這份 `intelReport` 寫進 `issues` doc。之後每個 blueprint worker 讀取它，找出 `articleAngles.find(a => a.topicSuffix === topicType)` 拿自己的角度。
+
+### 為什麼重要
+這一步把 ANEWS 從「各自為政的內容生成機」變成「有統一世界觀的編輯團隊」。
+情報官是整個 pipeline 的大腦，其他 worker 是執行大腦指令的手。
+沒有情報官，即使每篇文章個別寫得很好，整期也是拼盤，不是雜誌。
+
+### 實作細節
+- Pipeline 位置：source 全收齊 → `intel_done` event → blueprint（main）→ blueprint（sub_a）→ blueprint（sub_b）
+- Sequential order 由 `articleOrder()` helper 控制，確保 main 寫完才 sub_a
+- `intelOfficerContract`：檢查 `issues.intelReport` 存在才放行
+- 檔案：`app/api/workers/intel-officer/route.ts`（新建），`app/api/workers/blueprint/route.ts`（讀 intelReport）
+
+---
+
 ## 最新完成（2026-05-25）
 
-- P3 Intel Officer worker 實作上線（intelReport 全局地圖，3 articleAngles）
+- **★ P3 Intel Officer 情報官上線**（見上方詳細說明）
 - Sequential pipeline：main 寫完才啟動 sub_a，sub_a 完才啟動 sub_b
 - P3 medium mode 驗收通過（issue=done，3/3 articles）
 - 挖出 source worker 靜默救場根因：catch fallback 存假 dossier，pipeline 繼續，空殼 article=done
