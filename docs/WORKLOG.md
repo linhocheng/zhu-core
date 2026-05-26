@@ -3380,3 +3380,39 @@ P3 Intel Officer + sequential pipeline 實作，medium mode 驗收，挖到 sour
 - [ ] 設定 GCP Cloud Scheduler 每 60s 打 workflow-reconcile endpoint
 - [ ] 討論 needs_repair design：sub article 失敗的 recovery path（human gate? skip? retry?）
 - [ ] 長期：babysit.mjs 淘汰，由 reconcile cron 完全取代
+
+---
+
+## 2026-05-26 — ANEWS UI/UX 全改版 + 單篇直寫 MVP
+
+### 背景 / WHY
+(1) 後台 dashboard 視覺雜，「需要決策」的 issue 不顯眼，Adam 要求用 Steve Jobs 視角重設計。
+(2) 逐段寫 + stitch 流程太慢，測試想用「單篇直寫」一次 LLM call 生整篇文章，最小 MVP 先驗質量。
+
+### 產出
+- `app/dashboard/page.tsx` — 重寫：stats 卡頂色帶、issue rows 左色帶、進度條、nav 緊急徽章、singleWriteMode checkbox
+- `app/dashboard/[issueId]/page.tsx` — 重寫：PipelineBar 分段塊（active 段 flex:2）、Hero Card 左色帶、Action Zone、文章卡片
+- `app/dashboard/[issueId]/artifacts/page.tsx` — 重寫：40px 圓形徽章 timeline、中文 initials（情/官/藍/對/寫/QA/直/稿/潤/品/出）
+- `app/api/workers/article-write/route.ts` — NEW：單篇直寫 worker，max_tokens:8192，輸出存 stitchedMarkdownUrl
+- `app/api/workers/orchestrate/route.ts` — `blueprint_done` case 依 singleWriteMode 分岔
+- `app/api/editorial-jobs/route.ts` — 接受 singleWriteMode 參數
+- `lib/firestore/types.ts` — 補 `article_write` ArtifactWorkerType
+- `lib/workflow/manifest.ts` — 補 `article_write` NodeType + NODE_SPECS
+- `lib/workflow/contracts.ts` — 補 `article_write` 合約
+- `scripts/clear-all-issues.mjs` — 一次清除 10 個 collection 的腳本（已用過一次）
+- `npx tsc --noEmit` → 0 errors ✅
+
+### 已解決
+- TypeScript 四連爆（NodeType / ArtifactWorkerType / NODE_SPECS / CONTRACTS 缺登記）→ 四個地方補齊
+- singleWriteMode 最小侵入：只改 orchestrator `blueprint_done` case，source/blueprint/polish/export 不動
+
+### ⚠️ 尚未解決
+- **未部署到 Vercel**：code 在本機，`npx vercel --prod` 沒跑
+- **單篇直寫未實測**：singleWriteMode 流程端到端沒跑過，質量未知
+- sub article 5000 字 ≈ 3500 tokens（安全）；main article 12000 字需 extended output beta（後評估）
+
+### 待執行
+- [ ] `cd ~/.ailive/anews-platform && npx vercel --prod --yes` → 部署
+- [ ] 建新 issue 勾「單篇直寫模式」跑完整流程，驗 article-write worker 輸出質量
+- [ ] 質量確認後評估是否開 extended output beta（main article 12000 字）
+- [ ] 承接上次：IMAGE_DRY_RUN 加 Vercel prod env、GCP Cloud Scheduler 60s reconcile
