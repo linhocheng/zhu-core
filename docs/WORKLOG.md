@@ -4,6 +4,36 @@
 
 ---
 
+## 2026-05-27 — ANEWS alignment 三個 bug 修復 + 全鏈路首跑完成
+
+### 背景 / WHY
+Pipeline 卡在 alignment_running，manual curl 回 HTTP 500 empty body。需要找到 root cause 並讓全鏈路跑通驗收 text gen 功能。
+
+### 產出
+- 檔案：`app/api/workers/alignment/route.ts` — reasoning: undefined → conditional spread，Firestore 不再拒絕
+- 檔案：`lib/workers/harness.ts` — catch block update → set merge:true，防 NOT_FOUND 二次爆炸
+- 檔案：`app/api/workers/orchestrate/route.ts` — source_traceability → 同時接受 source_traceable
+- 檔案：`firestore.indexes.json` — 新增 worker_runs (targetId + lockedAt) composite index
+- 全鏈路首跑：issue `jyoDNn4Wj1atMuIaTRzO`（夜市攤位政治）→ status: done
+
+### 已解決
+- empty body 500 → harness catch block `docRef.update()` on non-existent doc → 改 set merge:true
+- Firestore 拒絕 undefined → `reasoning: undefined` → conditional spread `...(value && {key: value})`
+- evidence_pass gate 永遠不觸發 → qaFailedChecks 欄位名 `source_traceable` vs `source_traceability` 不符 → 擴大匹配
+
+### ⚠️ 尚未解決
+- polishedMarkdown 欄位是空的（內容在 finalMarkdownUrl, GCS），reader page 需要從 GCS 讀取，目前 UI 讀的是 sections.draftMarkdown
+- dashboard 進度條沒有 auto-poll（頁面刷新才更新）
+- auto-kick cron 回 401（需要確認 CRON_SECRET 設定）
+
+### 待執行
+- [ ] 確認 reader page 能從 GCS finalMarkdownUrl 拉到 polished content 顯示
+- [ ] Dashboard 加 auto-polling（每 5-10 秒刷新 pipeline 狀態）
+- [ ] 調查 auto-kick cron 401 原因（CRON_SECRET 是否正確）
+- [ ] 配圖大師真實 Gemini 接入（目前是 SVG placeholder）
+
+---
+
 ## 2026-05-17 — 聲紋識別功能上線（platform_voice_prints）
 
 ### 背景 / WHY

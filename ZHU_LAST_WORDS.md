@@ -24,13 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-26）
+## 最新完成（2026-05-27）
 
-- 清除所有 Firestore 測試資料（`scripts/clear-all-issues.mjs`，10 個 collection）
-- 重寫 dashboard UI/UX（Steve Jobs 視角：狀態驅動版面、3 語義色、Action Zone 不可錯過）
-- 重寫 artifacts timeline（40px 圓形徽章、中文 initials、決策 pill 顏色語義）
-- 新增 `article-write` worker：單篇直寫 MVP，bypasses alignment/section/QA/stitch
-- 補齊 TypeScript 型別登記（NodeType / ArtifactWorkerType / NODE_SPECS / CONTRACTS），0 errors
+- 修復 alignment worker HTTP 500 empty body（harness catch block NOT_FOUND + Firestore undefined 兩個 root cause）
+- 修復 orchestrator source_traceable 欄位名不符導致 evidence_pass gate 永遠不觸發
+- 新增 Firestore composite index（worker_runs targetId + lockedAt）修復 dashboard 500
+- ANEWS 全鏈路首跑完成：issue jyoDNn4Wj1atMuIaTRzO 夜市攤位政治 → status: done（兩篇文、三節、QA/revise/polish/images/coherence 全通）
 
 ---
 
@@ -38,43 +37,32 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `app/dashboard/page.tsx` | 重寫：stats 卡頂色帶、issue 左色帶卡片、緊急徽章 nav |
-| `app/dashboard/[issueId]/page.tsx` | 重寫：PipelineBar 分段塊、Action Zone、Hero Card |
-| `app/dashboard/[issueId]/artifacts/page.tsx` | 重寫：timeline 圓形徽章、中文 initials |
-| `app/api/workers/article-write/route.ts` | NEW：單篇直寫 worker |
-| `app/api/workers/orchestrate/route.ts` | blueprint_done 分岔 singleWriteMode |
-| `app/api/editorial-jobs/route.ts` | 接受 singleWriteMode 參數 |
-| `lib/firestore/types.ts` | 補 article_write ArtifactWorkerType |
-| `lib/workflow/manifest.ts` | 補 article_write NodeType + NODE_SPECS |
-| `lib/workflow/contracts.ts` | 補 article_write 合約 |
-| `scripts/clear-all-issues.mjs` | NEW：清空所有 issue 資料腳本 |
+| `app/api/workers/alignment/route.ts` | reasoning: undefined → conditional spread |
+| `lib/workers/harness.ts` | catch block docRef.update → set merge:true |
+| `app/api/workers/orchestrate/route.ts` | 擴大 source_traceable 判斷 |
+| `firestore.indexes.json` | 新增 worker_runs composite index |
+| anews-platform Vercel | 兩次 deploy，Firebase indexes deploy |
 
 ---
 
 ## 下一步
 
-**第一件**：部署 anews-platform
-```bash
-cd ~/.ailive/anews-platform
-git add -A
-git commit -m "v1.12.0.001 — 新增：單篇直寫 MVP + Dashboard UI/UX 全面升級"
-npx vercel --prod --yes
-```
+**確認 reader page 能顯示 polished content**：
+1. 開 https://anews-platform.vercel.app/articles/zjsVpS9RT1R0dLTniUT9
+2. 看有沒有文章內容顯示（sections.draftMarkdown 應該在 reader 上）
+3. 如果空白 → 找 reader page 如何讀 finalMarkdownUrl，決定是否需要從 GCS 拉
 
-**第二件**：測試 singleWriteMode
-- 開 https://anews-platform.vercel.app/dashboard
-- 勾「單篇直寫模式」+ 「小規模模式」建新 issue
-- 等 article-write worker 跑完，看 artifacts timeline 確認輸出質量
+**加 dashboard auto-polling**：
+- `app/dashboard/[issueId]/page.tsx` 加 useEffect + setInterval 5-10s 刷新
+- 讓進度條無需手動 F5
 
 ---
 
 ## 卡住 / 未解
 
-- `anews-platform` 有 10 個改過的檔案 + 2 個新增 → **未 commit、未部署**
-- singleWriteMode 流程未實測（handler 理論正確，未跑過）
-- main article 12000 字超出 max_tokens:8192 → 需 extended output beta（後評估）
-- IMAGE_DRY_RUN 只在 `.env.local`，Vercel prod 沒設 → Cloud Tasks 無法自動 fire image workers
-- GCP Cloud Scheduler 60s workflow-reconcile 未設定
+- `polishedMarkdown` 欄位是 empty（polish worker 寫到 `finalMarkdownUrl`，GCS 存儲）— reader 目前用 sections.draftMarkdown，不是最終 polished 版
+- auto-kick cron 回 401 — 需查 CRON_SECRET 設定是否在 Vercel env 裡
+- dashboard 進度條沒有 auto-update
 
 ---
 
@@ -89,11 +77,10 @@ npx vercel --prod --yes
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ANEWS 平台 | `~/.ailive/anews-platform/`（Next.js, Vercel） |
-| ANEWS dashboard | https://anews-platform.vercel.app/dashboard |
+| ANEWS platform | `~/.ailive/anews-platform/` |
+| ANEWS 生產 | https://anews-platform.vercel.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-26 · 築*
+*2026-05-27 · 築*
