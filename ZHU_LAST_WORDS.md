@@ -24,15 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-27b）
+## 最新完成（2026-05-27c）
 
-- ANEWS-B 全鏈路首次端到端驗收通過（電動車主題）
-  - source(80s) → intel(51s) → blueprint(46s) → article_write(87s, 5696字) → critic 一輪 79.7/100 ✅
-- 修復 blueprint worker Cloudflare 524（127s → 46s）：精簡 rubric schema，移除 pass_example/fail_example/scoring_guide，max_tokens 6000→2500，max dim 6→4
-- 修復 harness catch block empty 500（repairCollection 名稱錯誤 + nested try/catch）
-- 修復 source worker 524（→ Haiku + 減少搜尋次數）
-- 修復 callbackOrchestrator queue 名稱（anewsb-orchestration → anewsb-pipeline）
-- 建立 Vercel prod env vars（11個）、Cloud Tasks queues、Firestore composite indexes
+- Blueprint 覆蓋率約束：新增 `blueprint_constraints` Firestore 欄位，後台可編輯，worker 讀 settings 替換 `{sectionCount}`
+- Role prompt 全面整頓：write_intro/body/conclusion 各自分化任務框架，blueprint 行動指令去掉「入場表演」改「直接輸出 JSON」，polish/alignment/stitch 加個性
+- Image worker 換 gpt-image-2（OpenAI 最新），API 差異：`output_format` 非 `response_format`
+- 新 issue「全球網紅行銷案例解析」(buhrX9l8W6J6hEedJAEr) 完整跑完，3 張圖已生成 GCS
 
 ---
 
@@ -40,39 +37,36 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/anews-b-platform/app/api/workers/blueprint/route.ts` | rubric schema 精簡，max_tokens 2500 |
-| `~/.ailive/anews-b-platform/app/api/workers/source/route.ts` | Haiku 硬碼，搜尋次數 3→2 |
-| `~/.ailive/anews-b-platform/lib/workers/harness.ts` | catch block nested try/catch，update→set merge:true |
-| `~/.ailive/anews-b-platform/lib/workers/mockWorker.ts` | callbackOrchestrator queue 修正 |
-| `~/.ailive/anews-b-platform/vercel.json` | 新建，所有 worker maxDuration:300 |
-| `~/.ailive/anews-b-platform/firestore.indexes.json` | 新建複合 indexes |
+| `anews-platform/app/api/workers/blueprint/route.ts` | 覆蓋率約束改讀 `prompts.blueprint_constraints` |
+| `anews-platform/app/api/settings/roles/route.ts` | 新增 `blueprint_constraints` 欄位 |
+| `anews-platform/lib/settings/rolePrompts.ts` | 加入 `blueprint_constraints` 快取 |
+| `anews-platform/app/dashboard/settings/page.tsx` | UI 加「規劃師 — 指令約束」入口 |
+| `anews-platform/app/api/workers/image/route.ts` | Gemini → gpt-image-2，mapToDalleSize，output_format |
+| Firestore settings/roles（prod） | 六個角色 prompt 直接 PUT 更新 |
 
 ---
 
 ## 下一步
 
-**確認 polish → image → export → done 全通**：
-```bash
-curl -s "https://anews-b-platform.vercel.app/api/issues/Xq4PeS49ePNaibUGZ3rP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['issue']['status'], d['article']['status'], len(d['artifacts']))"
-```
-- 若 issue=done → 驗收完成
-- 若卡住 → 看最後一個 artifact 的 workerType 和 decision
+**接棒第一件事：設計「圖像策劃」worker**
 
-**補 git commit**：
-```bash
-cd ~/.ailive/anews-b-platform
-git add -A
-git commit -m "v0.1.0.001 — 新增：ANEWS-B 全鏈路（Dashboard + 8 workers + harness + pipeline）"
-git push origin main
-```
+現在 image_tasks.prompt 是 `${issue.title} ${keyTerm}`，太通用，生出來的圖和文章脫節。
+
+需要在 polish 完成後、image worker 觸發前，插入策劃步驟：
+1. 讀每個 article_section 的 `draftMarkdown`（節錄）+ `sectionGoal` + `articleTitle`
+2. LLM 生成有上下文的 editorial photo prompt（英文，新聞攝影感）
+3. 把 prompt 寫回 `image_tasks.prompt`
+4. 再觸發 image worker 鏈
+
+入口：`anews-platform/app/api/workers/image/route.ts` 的 `generateOpenAIImage` 已就緒，只差 prompt 品質。
+策劃 worker 可以是新路由 `/api/workers/image-plan`，或整合進 orchestrator 的 `images_scheduled` 事件。
 
 ---
 
 ## 卡住 / 未解
 
-- polish / image(dry_run) / export 三段未追蹤到完成（收工前 pipeline 在 critic→polish 過渡）
-- anews-b-platform 所有改動 untracked，需補 git commit
-- 追蹤腳本 API 路徑有 wrapper（`d['issue']['status']` 不是 `d['status']`）
+- OPENAI_API_KEY 在對話中暴露過，Adam 說先用，下次換 key 前提醒
+- anews-b-platform 兩 session 的改動還是 untracked（git 沒 commit）
 
 ---
 
@@ -87,10 +81,9 @@ git push origin main
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS-B platform | `~/.ailive/anews-b-platform/` |
-| ANEWS-B 生產 | https://anews-b-platform.vercel.app |
+| ANEWS 平台 | `~/.ailive/anews-platform/` → https://anews-platform.vercel.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-27b · 築*
+*2026-05-27c · 築*
