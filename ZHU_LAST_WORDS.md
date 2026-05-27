@@ -61,6 +61,14 @@
 入口：`anews-platform/app/api/workers/image/route.ts` 的 `generateOpenAIImage` 已就緒，只差 prompt 品質。
 策劃 worker 可以是新路由 `/api/workers/image-plan`，或整合進 orchestrator 的 `images_scheduled` 事件。
 
+**gpt-image-2 API 踩雷紀錄（必讀）：**
+- model: `gpt-image-2`
+- endpoint: `https://api.openai.com/v1/images/generations`
+- ❌ `response_format` → unknown parameter（DALL-E 3 的舊參數，gpt-image-2 不支援）
+- ✅ `output_format: "png"` 才是正確的
+- size 支援：`1024x1024`、`1792x1024`、`1024x1792`（目前用 `mapToDalleSize()` 自動映射）
+- 回傳：`data[0].b64_json`，一樣是 base64，接法不變
+
 ---
 
 ## 卡住 / 未解
