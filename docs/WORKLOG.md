@@ -3446,3 +3446,27 @@ P3 Intel Officer + sequential pipeline 實作，medium mode 驗收，挖到 sour
 - [ ] 建新 issue 勾「單篇直寫模式」跑完整流程，驗 article-write worker 輸出質量
 - [ ] 質量確認後評估是否開 extended output beta（main article 12000 字）
 - [ ] 承接上次：IMAGE_DRY_RUN 加 Vercel prod env、GCP Cloud Scheduler 60s reconcile
+
+---
+
+## 2026-05-27b — ANEWS-B 全鏈路打通
+
+### 背景 / WHY
+ANEWS-B 是從 ANEWS 複刻優化的長文 AI 新聞分析管線，這 session 承接上次的 blueprint 524 timeout 問題，完成全鏈路首次端到端驗收
+
+### 產出
+- 檔案：`~/.ailive/anews-b-platform/app/api/workers/blueprint/route.ts` — 精簡 rubric schema（移除 pass_example/fail_example/scoring_guide），max 4 維度，max_tokens 6000→2500
+- 部署：Vercel prod，新 deploy aliased
+
+### 已解決
+- blueprint 127s 524 → 根因：output token 量太大（含 pass/fail example × 6 dim）→ 精簡 schema → 46s ✅
+- 全鏈路驗收通過：source(80s) → intel(51s) → blueprint(46s) → article_write(87s) → critic 一輪過 79.7/100 ✅
+
+### ⚠️ 尚未解決
+- polish / image / export 三段還未追蹤到完成（收工前 pipeline 還在 critic_reviewing → polish 過渡中）
+- anews-b-platform 所有改動都是 untracked，需要 git commit（init commit 只有 Next.js boilerplate）
+
+### 待執行
+- [ ] 確認 polish → image(dry_run) → export → done 全通
+- [ ] `cd ~/.ailive/anews-b-platform && git add -A && git commit` 補上這兩 session 所有改動
+- [ ] 評估 article_write max_tokens 是否需要調整（目前 8000，輸出 5696 字）

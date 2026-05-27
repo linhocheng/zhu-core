@@ -24,12 +24,15 @@
 
 ---
 
-## 最新完成（2026-05-27）
+## 最新完成（2026-05-27b）
 
-- 修復 alignment worker HTTP 500 empty body（harness catch block NOT_FOUND + Firestore undefined 兩個 root cause）
-- 修復 orchestrator source_traceable 欄位名不符導致 evidence_pass gate 永遠不觸發
-- 新增 Firestore composite index（worker_runs targetId + lockedAt）修復 dashboard 500
-- ANEWS 全鏈路首跑完成：issue jyoDNn4Wj1atMuIaTRzO 夜市攤位政治 → status: done（兩篇文、三節、QA/revise/polish/images/coherence 全通）
+- ANEWS-B 全鏈路首次端到端驗收通過（電動車主題）
+  - source(80s) → intel(51s) → blueprint(46s) → article_write(87s, 5696字) → critic 一輪 79.7/100 ✅
+- 修復 blueprint worker Cloudflare 524（127s → 46s）：精簡 rubric schema，移除 pass_example/fail_example/scoring_guide，max_tokens 6000→2500，max dim 6→4
+- 修復 harness catch block empty 500（repairCollection 名稱錯誤 + nested try/catch）
+- 修復 source worker 524（→ Haiku + 減少搜尋次數）
+- 修復 callbackOrchestrator queue 名稱（anewsb-orchestration → anewsb-pipeline）
+- 建立 Vercel prod env vars（11個）、Cloud Tasks queues、Firestore composite indexes
 
 ---
 
@@ -37,32 +40,39 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `app/api/workers/alignment/route.ts` | reasoning: undefined → conditional spread |
-| `lib/workers/harness.ts` | catch block docRef.update → set merge:true |
-| `app/api/workers/orchestrate/route.ts` | 擴大 source_traceable 判斷 |
-| `firestore.indexes.json` | 新增 worker_runs composite index |
-| anews-platform Vercel | 兩次 deploy，Firebase indexes deploy |
+| `~/.ailive/anews-b-platform/app/api/workers/blueprint/route.ts` | rubric schema 精簡，max_tokens 2500 |
+| `~/.ailive/anews-b-platform/app/api/workers/source/route.ts` | Haiku 硬碼，搜尋次數 3→2 |
+| `~/.ailive/anews-b-platform/lib/workers/harness.ts` | catch block nested try/catch，update→set merge:true |
+| `~/.ailive/anews-b-platform/lib/workers/mockWorker.ts` | callbackOrchestrator queue 修正 |
+| `~/.ailive/anews-b-platform/vercel.json` | 新建，所有 worker maxDuration:300 |
+| `~/.ailive/anews-b-platform/firestore.indexes.json` | 新建複合 indexes |
 
 ---
 
 ## 下一步
 
-**確認 reader page 能顯示 polished content**：
-1. 開 https://anews-platform.vercel.app/articles/zjsVpS9RT1R0dLTniUT9
-2. 看有沒有文章內容顯示（sections.draftMarkdown 應該在 reader 上）
-3. 如果空白 → 找 reader page 如何讀 finalMarkdownUrl，決定是否需要從 GCS 拉
+**確認 polish → image → export → done 全通**：
+```bash
+curl -s "https://anews-b-platform.vercel.app/api/issues/Xq4PeS49ePNaibUGZ3rP" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['issue']['status'], d['article']['status'], len(d['artifacts']))"
+```
+- 若 issue=done → 驗收完成
+- 若卡住 → 看最後一個 artifact 的 workerType 和 decision
 
-**加 dashboard auto-polling**：
-- `app/dashboard/[issueId]/page.tsx` 加 useEffect + setInterval 5-10s 刷新
-- 讓進度條無需手動 F5
+**補 git commit**：
+```bash
+cd ~/.ailive/anews-b-platform
+git add -A
+git commit -m "v0.1.0.001 — 新增：ANEWS-B 全鏈路（Dashboard + 8 workers + harness + pipeline）"
+git push origin main
+```
 
 ---
 
 ## 卡住 / 未解
 
-- `polishedMarkdown` 欄位是 empty（polish worker 寫到 `finalMarkdownUrl`，GCS 存儲）— reader 目前用 sections.draftMarkdown，不是最終 polished 版
-- auto-kick cron 回 401 — 需查 CRON_SECRET 設定是否在 Vercel env 裡
-- dashboard 進度條沒有 auto-update
+- polish / image(dry_run) / export 三段未追蹤到完成（收工前 pipeline 在 critic→polish 過渡）
+- anews-b-platform 所有改動 untracked，需補 git commit
+- 追蹤腳本 API 路徑有 wrapper（`d['issue']['status']` 不是 `d['status']`）
 
 ---
 
@@ -77,10 +87,10 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS platform | `~/.ailive/anews-platform/` |
-| ANEWS 生產 | https://anews-platform.vercel.app |
+| ANEWS-B platform | `~/.ailive/anews-b-platform/` |
+| ANEWS-B 生產 | https://anews-b-platform.vercel.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-27 · 築*
+*2026-05-27b · 築*
