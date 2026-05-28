@@ -20,16 +20,17 @@
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
+- **監造儀表板**：https://zhu-mid.vercel.app
 
 ---
 
-## 最新完成（2026-05-27c）
+## 最新完成（2026-05-28）
 
-- Blueprint 覆蓋率約束：新增 `blueprint_constraints` Firestore 欄位，後台可編輯，worker 讀 settings 替換 `{sectionCount}`
-- Role prompt 全面整頓：write_intro/body/conclusion 各自分化任務框架，blueprint 行動指令去掉「入場表演」改「直接輸出 JSON」，polish/alignment/stitch 加個性
-- Image worker 換 gpt-image-2（OpenAI 最新），API 差異：`output_format` 非 `response_format`
-- 新 issue「全球網紅行銷案例解析」(buhrX9l8W6J6hEedJAEr) 完整跑完，3 張圖已生成 GCS
+- issue `QUMGwUcScSYusMbSAS9G`「2026 網紅行銷趨勢（全球 vs 台灣）」12/12 圖全部完成，pipeline done
+- image worker Cloud Run 部署完成（timeout 300s，chain recovery 已修）
+- 修 image chain 斷鏈根因：lock.skip 路徑未呼叫 chainNext，已補 task.status===done 判斷 + redeploy
+- 修 image_prompt 攝影師角色寫入格式：PUT body 要直接送 `{image_prompt:"..."}` 不是 `{key, value}`
+- NYT Magazine photographer 角色已正確寫入 Firestore settings（length 865）
 
 ---
 
@@ -37,44 +38,26 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/api/workers/blueprint/route.ts` | 覆蓋率約束改讀 `prompts.blueprint_constraints` |
-| `anews-platform/app/api/settings/roles/route.ts` | 新增 `blueprint_constraints` 欄位 |
-| `anews-platform/lib/settings/rolePrompts.ts` | 加入 `blueprint_constraints` 快取 |
-| `anews-platform/app/dashboard/settings/page.tsx` | UI 加「規劃師 — 指令約束」入口 |
-| `anews-platform/app/api/workers/image/route.ts` | Gemini → gpt-image-2，mapToDalleSize，output_format |
-| Firestore settings/roles（prod） | 六個角色 prompt 直接 PUT 更新 |
+| `cloud-run/image-worker/src/index.ts` | lock.skip 路徑加 chainNext recovery，避免 chain 斷死 |
+| Firestore `settings/roles.image_prompt` | NYT 攝影師人格，正確格式寫入 |
 
 ---
 
 ## 下一步
 
-**接棒第一件事：設計「圖像策劃」worker**
+Adam 正在後台建新題材，等他建好後跑新 pipeline，觀察：
+1. article-write Cloud Run 串行是否全自動（主文→子文依序完成）
+2. image-plan → image Cloud Run chain 是否不需手動介入
+3. 最終 `/dashboard/{issueId}` 看稿
 
-現在 image_tasks.prompt 是 `${issue.title} ${keyTerm}`，太通用，生出來的圖和文章脫節。
-
-需要在 polish 完成後、image worker 觸發前，插入策劃步驟：
-1. 讀每個 article_section 的 `draftMarkdown`（節錄）+ `sectionGoal` + `articleTitle`
-2. LLM 生成有上下文的 editorial photo prompt（英文，新聞攝影感）
-3. 把 prompt 寫回 `image_tasks.prompt`
-4. 再觸發 image worker 鏈
-
-入口：`anews-platform/app/api/workers/image/route.ts` 的 `generateOpenAIImage` 已就緒，只差 prompt 品質。
-策劃 worker 可以是新路由 `/api/workers/image-plan`，或整合進 orchestrator 的 `images_scheduled` 事件。
-
-**gpt-image-2 API 踩雷紀錄（必讀）：**
-- model: `gpt-image-2`
-- endpoint: `https://api.openai.com/v1/images/generations`
-- ❌ `response_format` → unknown parameter（DALL-E 3 的舊參數，gpt-image-2 不支援）
-- ✅ `output_format: "png"` 才是正確的
-- size 支援：`1024x1024`、`1792x1024`、`1024x1792`（目前用 `mapToDalleSize()` 自動映射）
-- 回傳：`data[0].b64_json`，一樣是 base64，接法不變
+進場先確認：`article-write-worker` 的 idempotency skip 路徑是否也有 chainNext 死角（還沒查）。
 
 ---
 
 ## 卡住 / 未解
 
-- OPENAI_API_KEY 在對話中暴露過，Adam 說先用，下次換 key 前提醒
-- anews-b-platform 兩 session 的改動還是 untracked（git 沒 commit）
+- article-write-worker 的 idempotency skip 路徑未確認是否也有 chainNext 死角（下次進場先查）
+- OPENAI_API_KEY 曾在 session 中暴露，Adam 說先用，之後記得換 key
 
 ---
 
@@ -84,14 +67,14 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| ANEWS 平台 | `~/.ailive/anews-platform/`，prod: https://anews-platform.vercel.app |
+| image worker | `~/.ailive/anews-platform/cloud-run/image-worker/` → Cloud Run `anews-image-worker` asia-east1 |
+| article-write worker | `~/.ailive/anews-platform/cloud-run/article-write-worker/` |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ANEWS 平台 | `~/.ailive/anews-platform/` → https://anews-platform.vercel.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-27c · 築*
+*2026-05-28 · 築*
