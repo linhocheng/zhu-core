@@ -3584,3 +3584,30 @@ article-write Cloud Run 生成主文（~127-163s）被 Cloudflare 的 100s proxy
 ### 待執行
 - [ ] 開新 issue 觀察 polish/coherence 是否還 timeout（首次有 maxDuration 後的觀察）
 - [ ] 修 #19 blueprint write order
+
+---
+
+## 2026-05-28d — ANEWS 讀者頁 RWD + Hero 重設計
+
+### 背景 / WHY
+讀者頁在手機上多欄 grid 不倒、字體溢出。同時 issue 頁 hero 封面圖和主文縮圖重複，需要設計重構。
+
+### 產出
+- 檔案：`anews-platform/app/globals.css` — 新增 reader RWD 區段，`@media (max-width: 768px)` + `!important` 覆蓋 inline style
+- 檔案：`anews-platform/app/issues/[issueId]/page.tsx` — 加 RWD className；Hero 改全幅背景圖 + gradient overlay；MainArticleBlock 移除縮圖
+- 檔案：`anews-platform/app/articles/[articleId]/page.tsx` — 加 RWD className（sidebar 隱藏、title/colophon 倒欄、header 簡化）
+
+### 已解決
+- 讀者頁手機爆版 → 用 CSS class + !important 覆蓋 inline style，無 JS hydration 問題
+- 子題數字 80px 溢出 44px 欄 → r-sub-num 在 mobile 縮 40px
+- hero 封面圖與主文縮圖重複 → 改全幅背景圖壓底，feature block 拿掉縮圖
+- `inset: 0` React 不認（靜默失敗）→ 改 top/left/right/bottom 四件
+
+### ⚠️ 尚未解決
+- #9 #16 #19 同前，未動
+- gpt-image-2 偶發 >120s 造成 Vercel timeout，Cloud Tasks retry 兜底但慢
+- Vercel article-write route 仍是死碼（未移除）
+
+### 待執行
+- [ ] 開新 issue 跑全鏈路確認 pipeline 穩定
+- [ ] 修 #19 blueprint write order（set with merge 或先 cleanup）

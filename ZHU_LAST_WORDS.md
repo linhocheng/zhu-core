@@ -18,19 +18,20 @@
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
   - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
+  - **BRIDGE_URL（article-write Cloud Run）**：`http://35.236.185.222:3001`（直連 VM，繞 CF）
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 - **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
-## 最新完成（2026-05-28）
+## 最新完成（2026-05-28d）
 
-- watchdog image kick 改 enqueueTask（修 sync fetch → Cloud Run timeout 死循環）
-- vercel.json 補 LLM workers maxDuration 120s（intel/polish/coherence/stitch/export 等）
-- /dashboard Basic Auth 上線（帳 adam，密碼已設 Vercel ADMIN_PASSWORD）
-- 讀者頁（/articles/*, /issues/*, /）不鎖，後台才鎖
-- ANEWS 4 個 issue 全部 done，pipeline 穩定跑
+- 讀者頁全面 RWD（768px breakpoint，CSS !important 覆蓋 inline style）
+- 子題列表手機爆版修復（數字 80px → 40px）
+- Issue Hero 重設計：封面大圖壓底 + gradient overlay，消除重複縮圖
+- 修 `inset: 0` React 不認的靜默 bug（改 top/left/right/bottom）
+- 稍早：CF 524 根治（BRIDGE_URL 直連 VM IP）、GCP firewall tag 修正、牙齒保健趨勢全鏈路驗證通過
 
 ---
 
@@ -38,23 +39,33 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/api/cron/auto-kick/route.ts` | image kick 改 enqueueTask，移除 IMAGE_WORKER_URL 直接 fetch |
-| `anews-platform/vercel.json` | 補 7 個 LLM workers maxDuration 120s |
-| `anews-platform/middleware.ts` | 新建，/dashboard Basic Auth |
+| `anews-platform/app/globals.css` | 新增 reader RWD 區段，media query + !important |
+| `anews-platform/app/issues/[issueId]/page.tsx` | Hero 全幅背景圖、拿掉縮圖、RWD className |
+| `anews-platform/app/articles/[articleId]/page.tsx` | RWD className（sidebar/header/grid） |
+| `cloud-run/article-write-worker/src/index.ts` | BRIDGE_URL → 35.236.185.222:3001 直連 |
+| `anews-platform/app/api/cron/auto-kick/route.ts` | watchdog image 改 enqueueTask |
+| `anews-platform/vercel.json` | LLM workers maxDuration 120s |
+| `anews-platform/middleware.ts` | /dashboard Basic Auth |
 
 ---
 
 ## 下一步
 
-`cd ~/.ailive/anews-platform` → 開新 issue 跑一次全鏈路，觀察 polish/coherence 是否在 120s 內完成（maxDuration 補完後首次觀察）。若通過，再評估修 #19 blueprint write order。
+`cd ~/.ailive/anews-platform` → 開新 issue 跑一次全鏈路，確認：
+1. polish/coherence 在 120s 內完成（maxDuration 修完後首次觀察）
+2. RWD 在真實手機上 OK（已在 Android 驗過子題，其他頁待確認）
+
+有空修 **#19 blueprint write order**（重試產生重複 image_tasks，根因：先寫資料再 commit status）。
 
 ---
 
 ## 卡住 / 未解
 
-- #9 startNextSubArticle 在 singleWriteMode 是死路（Vercel fallback 失效，Cloud Run chain 正常，暫不影響）
-- #16 callbackOrchestrator Date.now() taskId（冪等鎖失效，advancePhase 有保護，低優先）
-- #19 blueprint 先寫資料再 commit status（重試產生重複 image_tasks，中優先）
+- **#9** `startNextSubArticle` status 條件是 `alignment_done`，singleWriteMode 不走（Cloud Run chain 正常，影響低）
+- **#16** `callbackOrchestrator` taskId = `Date.now()`，冪等鎖失效（`advancePhase` 有保護，低優先）
+- **#19** blueprint 先寫資料再 commit status，重試產生重複 image_tasks（中優先）
+- **gpt-image-2** 偶發 >120s，Vercel timeout；Cloud Tasks retry 兜底但慢（可接受）
+- **Vercel article-write route** 仍是死碼，移除前需確認 orchestrate fallback
 
 ---
 
@@ -74,4 +85,4 @@
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-28 · 築*
+*2026-05-28d · 築*
