@@ -3558,3 +3558,29 @@ article-write Cloud Run 生成主文（~127-163s）被 Cloudflare 的 100s proxy
 ### 待執行
 - [ ] 確認 article-write-worker 的 idempotency skip 路徑是否也要加 chain recovery
 - [ ] 跑新題材（Adam 正在後台建題材）觀察整條 pipeline 是否全自動通過
+
+---
+
+## 2026-05-28c — ANEWS 穩定性修復 + 後台 auth
+
+### 背景 / WHY
+全鏈路跑通後，watchdog 設計缺陷導致 image 卡住無法自救。同時補強 Vercel maxDuration 和後台 auth。
+
+### 產出
+- 檔案：`anews-platform/app/api/cron/auto-kick/route.ts` — watchdog image kick 改 enqueueTask
+- 檔案：`anews-platform/vercel.json` — 補 intel/polish/coherence/stitch/export/section-write/section-qa maxDuration 120s
+- 檔案：`anews-platform/middleware.ts` — /dashboard Basic Auth（ADMIN_USERNAME/ADMIN_PASSWORD）
+
+### 已解決
+- watchdog image 卡住 → 根因：sync fetch Cloud Run + 失敗靜默循環 → 改 enqueueTask 非同步
+- polish/coherence 可能靜默 timeout → 補 maxDuration 120s
+- /dashboard 無 auth → middleware Basic Auth
+
+### ⚠️ 尚未解決
+- #9 startNextSubArticle alignment_done 條件在 singleWriteMode 是死路（Cloud Run chain 正常運作，影響低）
+- #16 callbackOrchestrator Date.now() taskId，冪等鎖失效（advancePhase 有保護）
+- #19 blueprint 先寫資料再 commit status，重試產生重複 docs
+
+### 待執行
+- [ ] 開新 issue 觀察 polish/coherence 是否還 timeout（首次有 maxDuration 後的觀察）
+- [ ] 修 #19 blueprint write order
