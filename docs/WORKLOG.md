@@ -3611,3 +3611,30 @@ article-write Cloud Run 生成主文（~127-163s）被 Cloudflare 的 100s proxy
 ### 待執行
 - [ ] 開新 issue 跑全鏈路確認 pipeline 穩定
 - [ ] 修 #19 blueprint write order（set with merge 或先 cleanup）
+
+---
+
+## 2026-05-28e — ANEWS pipeline 問題驗證 + 三項修正 + 兩篇全鏈路驗收
+
+### 背景 / WHY
+上個 session 留下查點：auto-kick Section 1 sync fetch 死路、blueprint 重複 image_tasks（#19）、callbackOrchestrator #16、export→done 穩定性。本次先看現場驗證後再動手修。
+
+### 產出
+- 檔案：`anews-platform/app/api/cron/auto-kick/route.ts` — Section 1 改 enqueueTask，拔掉 sync fetch Cloud Run（最長 163s 會讓 cron 先 timeout）
+- 檔案：`anews-platform/app/api/workers/blueprint/route.ts` — image_tasks 改 delete-then-recreate 防重試產生重複 docs（#19 正確 fix）；同時拔掉 blueprint_running status flip 的後患（harness catch 會把 PRECONDITION 算失敗 → needs_repair）
+- 檔案：`anews-platform/app/api/editorial-jobs/route.ts` — 支援 skipGates 參數（測試全自動跑完不需人工審核）
+
+### 已解決
+- auto-kick Section 1 sync fetch → enqueueTask：cron 不再 timeout，watchdog 真正有效
+- blueprint #19 重複 image_tasks → delete-then-recreate 讓重試路保持暢通
+- blueprint_running 後患 → 拔掉，precondition 不需改
+- 兩篇全鏈路（薑黃保健品市場 + 2026年網紅行銷）跑到 done，無卡點
+
+### ⚠️ 尚未解決
+- #16 callbackOrchestrator Date.now() taskId（冪等鎖仍不完整，advancePhase 部分保護，advancePhase 不覆蓋的 case 仍有重複風險）
+- export → done 無 watchdog：若 export 靜默失敗，issue 永遠卡 coherence_passed
+- 圖生成串列偏慢：12 張約 25 分鐘，每張 ~2 分鐘（Cloud Run 一張一張跑）
+
+### 待執行
+- [ ] 觀察 #16 在高頻 issue 場景是否實際觸發（建兩個 issue 同時進入 polish_done）
+- [ ] 評估加 export watchdog（卡 coherence_passed 超 10 分鐘 → kick export）

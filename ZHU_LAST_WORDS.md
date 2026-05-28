@@ -25,13 +25,14 @@
 
 ---
 
-## 最新完成（2026-05-28d）
+## 最新完成（2026-05-28e）
 
-- 讀者頁全面 RWD（768px breakpoint，CSS !important 覆蓋 inline style）
-- 子題列表手機爆版修復（數字 80px → 40px）
-- Issue Hero 重設計：封面大圖壓底 + gradient overlay，消除重複縮圖
-- 修 `inset: 0` React 不認的靜默 bug（改 top/left/right/bottom）
-- 稍早：CF 524 根治（BRIDGE_URL 直連 VM IP）、GCP firewall tag 修正、牙齒保健趨勢全鏈路驗證通過
+- 現場驗證 4 個 ANEWS 問題（auto-kick Section 1 / #19 / #16 / export→done）
+- auto-kick Section 1 改 enqueueTask（cron 不再因 sync fetch Cloud Run 先 timeout）
+- blueprint #19 正確修法：image_tasks 改 delete-then-recreate（幂等，retry 路暢通）
+- 拔掉上個 session 的後患：blueprint_running status flip 會讓 harness 把 PRECONDITION 算作失敗 → needs_repair
+- editorial-jobs POST 支援 skipGates 參數（測試全自動跑）
+- 薑黃保健品市場 + 2026年網紅行銷兩篇全鏈路跑到 done，無卡點，兩連跑驗證
 
 ---
 
@@ -39,32 +40,24 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/globals.css` | 新增 reader RWD 區段，media query + !important |
-| `anews-platform/app/issues/[issueId]/page.tsx` | Hero 全幅背景圖、拿掉縮圖、RWD className |
-| `anews-platform/app/articles/[articleId]/page.tsx` | RWD className（sidebar/header/grid） |
-| `cloud-run/article-write-worker/src/index.ts` | BRIDGE_URL → 35.236.185.222:3001 直連 |
-| `anews-platform/app/api/cron/auto-kick/route.ts` | watchdog image 改 enqueueTask |
-| `anews-platform/vercel.json` | LLM workers maxDuration 120s |
-| `anews-platform/middleware.ts` | /dashboard Basic Auth |
+| `anews-platform/app/api/cron/auto-kick/route.ts` | Section 1 改 enqueueTask，移除 sync fetch Cloud Run |
+| `anews-platform/app/api/workers/blueprint/route.ts` | image_tasks delete-then-recreate（#19）；拔 blueprint_running 後患 |
+| `anews-platform/app/api/editorial-jobs/route.ts` | 支援 skipGates 參數 |
 
 ---
 
 ## 下一步
 
-`cd ~/.ailive/anews-platform` → 開新 issue 跑一次全鏈路，確認：
-1. polish/coherence 在 120s 內完成（maxDuration 修完後首次觀察）
-2. RWD 在真實手機上 OK（已在 Android 驗過子題，其他頁待確認）
-
-有空修 **#19 blueprint write order**（重試產生重複 image_tasks，根因：先寫資料再 commit status）。
+評估 #16 callbackOrchestrator：把 taskId 從 `orch-${event}-${issueId}-${Date.now()}` 改成 `orch-${event}-${issueId}`（去掉 Date.now()），讓同一個 event 真正幂等。改之前先確認：有沒有同一個 issue 合法地多次觸發同一個 event（例如同一 issue 的多篇文章各自 stitch_done 打回不同 articleId）。若有，taskId 需帶 articleId。
 
 ---
 
 ## 卡住 / 未解
 
+- **#16** `callbackOrchestrator` taskId = `Date.now()`，冪等鎖不完整（advancePhase 部分兜住，但 section_done/stitch_done 等不走 advancePhase 的 case 有重複 enqueue 風險）
+- **export watchdog 缺失**：若 export 靜默失敗，issue 卡 coherence_passed 無人救援
+- **圖生成串列偏慢**：12 張 ~25 分鐘，Cloud Run 一張一張跑（正常設計但慢）
 - **#9** `startNextSubArticle` status 條件是 `alignment_done`，singleWriteMode 不走（Cloud Run chain 正常，影響低）
-- **#16** `callbackOrchestrator` taskId = `Date.now()`，冪等鎖失效（`advancePhase` 有保護，低優先）
-- **#19** blueprint 先寫資料再 commit status，重試產生重複 image_tasks（中優先）
-- **gpt-image-2** 偶發 >120s，Vercel timeout；Cloud Tasks retry 兜底但慢（可接受）
 - **Vercel article-write route** 仍是死碼，移除前需確認 orchestrate fallback
 
 ---
@@ -85,4 +78,4 @@
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-28d · 築*
+*2026-05-28e · 築*

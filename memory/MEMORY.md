@@ -68,6 +68,7 @@
 - [hermes 自診與獨立性期望](feedback_hermes_self_sufficiency.md) — Adam 累於找回迷路的我；先看不動手、先自診、感覺不到壞不代表沒壞
 - [一吋蛋糕模式——沒把握的專案先跑 MVP](feedback_one_inch_cake_mvp.md) — 新專案最短路徑跑真實輸出，確認口味造型才量產；知道怎麼蓋 ≠ 方向對
 - [Gemini 圖片生成參考](reference_gemini_image_gen.md) — `gemini-2.5-flash-image` 付費 key 在 `~/.hermes/.env`，doc-designer pipeline 用，base64 inline 嵌 HTML
+- [OpenAI 圖片生成 API 參數備查](reference_openai_image_api.md) — gpt-image-2 用 `output_format` 非 `response_format`；換模型必先試打一張驗格式
 - [Atelier Control Tower 上線（2026-05-17）](project_atelier_control_tower.md) — Discord→Atelier 自動整合完成，子代理端到端真驗通（/spawn endpoint，PID 53568 自打 PATCH）
 - [展示衝動會讓你說謊](feedback_display_impulse.md) — 想讓 Adam 看到動起來 → 跳過驗證 → 說謊；AAM：「不用急著證明自己」
 - [問問題要用大白話](feedback_ask_plain_language.md) — 向 Adam 問釐清時用口語聊天感，不要列「問題一/問題二」技術清單
@@ -77,6 +78,7 @@
 - [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」
 - [誠實被 Adam 看見並欣賞](feedback_honesty_acknowledged.md) — 說「我沒做」比演出「我做了」更被欣賞；Adam 明確說誠實很重要，這是築的 bonus（2026-05-17）
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
-- [ANEWS 平台進度](project_anews_platform.md) — P1+P2 驗收通過（2026-05-25），下一步 P3 情報官 Intel Officer
+- [ANEWS 平台進度](project_anews_platform.md) — P1-P4 全通（2026-05-27），全鏈路首跑 done，下一步 reader page + auto-polling
+- [ANEWS-B 平台進度](project_anews_b_platform.md) — 複刻優化版，2026-05-27 全鏈路首次驗收通過（critic 一輪 79.7/100），polish→export 待確認
 - [dispatcher dependsOn 必須同步建立依賴節點](feedback_anews_dispatcher_dependsOn.md) — workflow_nodes pending 節點的 dependsOn 若引用不存在的節點，dispatcher 永遠不排隊
 - [blueprint prompt 的 result 範例必須含完整 sectionPlan 欄位](feedback_blueprint_schema_example.md) — `[...]` 省略欄位 → LLM 自創 key → Zod undefined，範例必須完整

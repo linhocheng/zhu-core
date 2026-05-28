@@ -13,7 +13,7 @@ originSessionId: 68bd6c54-6b9b-4e51-a956-90e82bb13b99
 
 **心態:** 核實姿態，不信「Vercel production 在用 = 一定有效」。任何 key 灌進新環境前，先 curl 200 驗證才動手 — 一條 key 是不是有效 curl 5 秒能告訴你，灌進去 deploy 三輪才發現是純浪費。「應該還有效」是要被打斷的假設。
 
-**How to apply:** 灌任何 API key 進新環境（GCP Secret Manager / Vercel env / Cloud Run secret）前，先 curl 直打對應 API，確認 HTTP 200 才動手。範例：
+**How to apply:** 灌任何 API key 進新環境（GCP Secret Manager / Vercel env / Cloud Run secret）前，先 curl 直打對應 API，確認 HTTP 200 才動手。**延伸：換新模型版本時，API 參數格式也可能不同（例如 gpt-image-2 的 `output_format` ≠ dall-e-3 的 `response_format`）——新模型先試打一張，確認格式對了再改 code。** 範例：
 
 ```bash
 # Anthropic
