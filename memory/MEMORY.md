@@ -1,3 +1,4 @@
+- [Async Worker 五問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease 不看時間、taskId 確定性
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
 - [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
 - [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST

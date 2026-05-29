@@ -3638,3 +3638,30 @@ article-write Cloud Run 生成主文（~127-163s）被 Cloudflare 的 100s proxy
 ### 待執行
 - [ ] 觀察 #16 在高頻 issue 場景是否實際觸發（建兩個 issue 同時進入 polish_done）
 - [ ] 評估加 export watchdog（卡 coherence_passed 超 10 分鐘 → kick export）
+
+---
+
+## 2026-05-29 — Queue 契約修正 + Async Worker 五問心法 Skill
+
+### 背景 / WHY
+養生花草茶昨晚卡了 7 小時。手動救回後，Adam 問：「這個用三問法概念問自己如何修」。
+根因是 `failed` 在 TTL 內被誤判為 `already_running`，caller 回 200，Cloud Tasks 永久放棄。
+
+### 產出
+- 檔案：`anews-platform/lib/workers/idempotency.ts` — TTL 鎖加 `status !== "failed"` 條件
+- 檔案：`anews-platform/lib/workers/harness.ts` — `already_running → 409`，`already_done → 200`
+- 檔案：`anews-platform/lib/workers/mockWorker.ts` — 同上
+- 檔案：`zhu-core/skills/async-worker-checklist.md` — 五問心法 skill（有心有法）
+- 記憶：`memory/skill_async_worker_checklist.md` + MEMORY.md 索引
+
+### 已解決
+- failed + within TTL → already_running → 200：根因已消除（idempotency.ts）
+- already_running 回 200 對 queue 說謊：改為 409（harness + mockWorker）
+- 養生花草茶：確認 12/12 張 done，issue status = done
+
+### ⚠️ 尚未解決
+- 無（本次修的三個問題根因均已消除）
+
+### 待執行
+- [ ] 觀察下一批 issue 的 image 生成流程，確認 409 沒有造成非預期重試行為
+- [ ] async-worker-checklist 觸發詞考慮加進 CLAUDE.md（Adam 選擇手動召喚，暫不加）
