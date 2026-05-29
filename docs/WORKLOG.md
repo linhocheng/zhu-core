@@ -3665,3 +3665,56 @@ article-write Cloud Run 生成主文（~127-163s）被 Cloudflare 的 100s proxy
 ### 待執行
 - [ ] 觀察下一批 issue 的 image 生成流程，確認 409 沒有造成非預期重試行為
 - [ ] async-worker-checklist 觸發詞考慮加進 CLAUDE.md（Adam 選擇手動召喚，暫不加）
+
+---
+
+## 2026-05-29 — ailive 角色身份照上線：角度辨識管道 + 客戶端 auth + UI 去補丁
+
+### 背景 / WHY
+延續上個 session 的客戶端身份照上傳。三件事：(1) angle 欄位有顯示沒產生器（假中台 micro 版）；(2) `/api/image/upload` + `PATCH /api/characters/[id]` 無 auth 舊債；(3) 我加的 IdentityScreen 是 inline-style 補丁，跟其他分頁兩套樣式。
+
+### 產出
+- 檔案：`src/lib/gemini-client.ts` — 新增 `classifyRefImage()` vision 辨識 angle/framing/expression，token 對齊 generate-image 評分表
+- 檔案：`src/app/api/image/detect-angle/route.ts` — 新建：看圖回填 `visualIdentity.refs[].angle`，先驗權限再燒 Gemini，寫完 del redis cache
+- 檔案：`src/lib/generate-image.ts` — refs 加 referenceImages fallback
+- 檔案：`src/lib/char-access.ts` — 新建：`hasOperatorAccess` / `assertCharAccess` / `timingSafeEqual`，選一 policy（無密碼角色開放）
+- 檔案：`src/app/api/client-auth/[id]/route.ts` — 新建：client 密碼驗證 → 發 httpOnly `cli_{id}` cookie
+- 檔案：`src/app/api/characters/[id]/route.ts` — `sanitizeForViewer`（非 operator 不洩 clientPassword）+ PATCH 欄位分級（client 只能改 visualIdentity）
+- 檔案：`src/app/api/image/upload/route.ts` — 加 assertCharAccess guard
+- 檔案：`src/app/client/[id]/page.tsx` + `client-v2.css` — IdentityScreen refactor 成設計系統（topbar/content/page-head/dropzone/empty/gallery-cell + `.ident-badge` CSS）
+- 檔案：`src/app/feed/[id]/page.tsx`、`dashboard/[id]/identity/page.tsx` — clientPassword→clientPasswordRequired，上傳走 detect-angle
+- 記憶：`feedback_ui_conform_no_patch.md`（新建）+ MEMORY.md 索引；`reference_reflex_hook_scans_whole_file.md`（上 session 建）
+
+### 已解決
+- angle 假中台斷點 → 上傳即 vision 辨識回填，selectBestRef 真能選多角度（根因消除）
+- client/upload 無 auth → server 端密碼驗證 + cli cookie + operator/client 欄位分級，clientPassword 不再外洩（production pentest 4/4 過）
+- IdentityScreen 補丁 → 套既有設計系統，npm build 過，已 vercel --prod deploy（aliased ailive-platform.vercel.app）
+
+### ⚠️ 尚未解決
+- ailive-platform 的 git **尚未 commit**：13 個 M 檔 + 多個 untracked（含本 session 的 char-access/client-auth/detect-angle）。production 靠 vercel deploy 已上線，但 git 歷史沒記。另有跨 session 的 scratch script（`scripts/_tmp_*`、`_check_*`、`_backfill_*`）混在 untracked，不能盲 add -A。
+- dialogue/voice-stream/knowledge-image/specialist/image 也在 M 清單，來源跨 session 不確定，commit 前要逐檔確認。
+
+### 待執行
+- [ ] ailive-platform git：分批 commit（先本 session 身份照+auth 相關源檔，scratch script 排除/清掉），確認 dialogue/voice-stream 改動歸屬後再 push
+- [ ] 用真實 client cookie（非 operator）端到端跑一次身份照上傳，確認欄位分級沒擋到正常上傳
+
+## 2026-05-29 — ANEWS 三斷點修復 + 線上 soul 標記指令 + 絡 infographic 改中文
+
+### 背景 / WHY
+Adam 看不到 /articles/gb4tk1hVHqqRKH6pAGFo 的 infographic 與 pull/stat 標記。診斷出三斷點：
+A 讀者頁無 infographic 欄位、C 讀者頁與 export worker 兩條獨立 render path（真相分裂）、B 線上 soul 完全沒有標記指令（saved ?? DEFAULT，soul override 蓋掉 code default）。
+
+### 產出（已 commit/deploy，v0.3.0.017）
+- `lib/render/articleBody.ts`（新）— 共用 render：transformCalloutMarkers + infographic 插入，export worker 與讀者頁共用
+- `app/api/workers/export/route.ts` — 改用共用 helper
+- `app/articles/[articleId]/page.tsx` — 改用共用 helper + 補 infographic 欄位
+- `app/globals.css` — 補 .reader-prose 的 pull-quote/stat-callout/infographic CSS
+
+### 已解決（runtime Firestore，不在 git！）
+- 線上 article_write soul（時代的刺客/Soul Evoker V4）尾端 append 標記指令塊（:::stat/:::pull 必用各至少 1 次）。soul 本體保留。
+- visual_brief（絡）改為 infographic 圖上文字繁體中文（指令仍英文，標籤/標題/節點繁中），gpt-image-2 能吃中文。
+- 經 PUT /api/settings/roles (merge:true) 套用，GET 回驗通過。
+
+### ⚠️ 注意
+- B 兩項是 Firestore runtime settings，**git 看不到**。未來改 article_write/visual_brief 要記得線上有 override。
+- 只影響「新文章」；既有 done 文章 markdown 已無標記、infographic 已是英文。

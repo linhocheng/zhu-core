@@ -24,13 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-29）
+## 最新完成（2026-05-29 · ailive 身份照場）
 
-- 修正 `idempotency.ts`：`failed` 在 TTL 內不再誤判為 `already_running`
-- 修正 `harness.ts` + `mockWorker.ts`：`already_running → 409`，`already_done → 200`
-- 建立 `skills/async-worker-checklist.md`：五問心法 + 具體 code pattern
-- 確認養生花草茶 12/12 張圖全 done，issue status = done
-- ANEWS 平台 v0.3.0.013 commit 完成
+- 補上 angle 辨識管道：`gemini-client.classifyRefImage` + `/api/image/detect-angle`，上傳即 vision 回填 `visualIdentity.refs[].angle`，selectBestRef 真能選多角度（假中台斷點消除）
+- 補 client 端 auth：`char-access.ts` + `/api/client-auth/[id]`，server 端密碼驗證 + httpOnly `cli_{id}` cookie + operator/client 欄位分級，clientPassword 不再外洩（production pentest 4/4 過）
+- IdentityScreen 去補丁：refactor 成設計系統（topbar/content/page-head/dropzone/empty/gallery-cell + `.ident-badge`），已 vercel --prod deploy
+- 新建 feedback memory：`feedback_ui_conform_no_patch.md`（加新畫面要套既有設計系統）
 
 ---
 
@@ -38,27 +37,33 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/lib/workers/idempotency.ts` | TTL 鎖加 `status !== "failed"` 條件，failed 允許重入 |
-| `anews-platform/lib/workers/harness.ts` | already_running → 409，already_done → 200 |
-| `anews-platform/lib/workers/mockWorker.ts` | 同上 |
-| `zhu-core/skills/async-worker-checklist.md` | 新建：五問心法 skill |
-| `memory/skill_async_worker_checklist.md` | 新建：memory 記憶指針 |
-| `memory/MEMORY.md` | 補 async-worker-checklist 索引行 |
+| `ailive/src/lib/gemini-client.ts` | 新增 classifyRefImage vision 辨識 |
+| `ailive/src/app/api/image/detect-angle/route.ts` | 新建：回填 refs[].angle |
+| `ailive/src/lib/char-access.ts` | 新建：operator/client 權限 helper |
+| `ailive/src/app/api/client-auth/[id]/route.ts` | 新建：client 密碼驗證發 cli cookie |
+| `ailive/src/app/api/characters/[id]/route.ts` | sanitizeForViewer + PATCH 欄位分級 |
+| `ailive/src/app/api/image/upload/route.ts` | 加 assertCharAccess |
+| `ailive/src/app/client/[id]/page.tsx` + `client-v2.css` | IdentityScreen 套設計系統 |
+| `ailive/src/app/feed/[id]/page.tsx`、`dashboard/[id]/identity/page.tsx` | clientPasswordRequired + detect-angle |
+| `zhu-core/memory/feedback_ui_conform_no_patch.md` | 新建 + MEMORY.md 索引 |
 
 ---
 
 ## 下一步
 
-ANEWS 觀察期：
-1. 跑一個新 issue，看 image chain 的 409 有沒有造成非預期重試
-2. 若穩定，考慮 reader page（issue 閱讀頁）
-3. `async-worker-checklist` 觸發詞是否要加進 CLAUDE.md（Adam 暫選手動召喚）
+**明天醒來第一件**：ailive-platform 的 git 收乾淨。
+- production 已靠 `vercel --prod` 上線（aliased），但 git 歷史沒記這批改動。
+- `cd ~/.ailive/ailive-platform && git status` → 13 M 檔 + untracked。
+- 分批 commit：本 session 身份照+auth 源檔（char-access / client-auth / detect-angle / characters route / client page / feed / dashboard identity / gemini-client / generate-image / image upload / client-v2.css）為一組。
+- **scratch script 不要進 git**：`scripts/_tmp_*`、`_check_*`、`_backfill_*` 是臨時驗證檔，commit 前清掉或 .gitignore。
+- dialogue/voice-stream/knowledge-image/specialist/image 也在 M 清單，來源跨 session，逐檔 `git diff` 確認歸屬再決定。
 
 ---
 
 ## 卡住 / 未解
 
-無。本次修的三個問題根因均已消除。
+- ailive-platform git 未 commit（見上「下一步」）。production 不受影響（vercel 已部署），只是歷史落後。
+- 身份照上傳尚未用真實 client cookie（非 operator）端到端實測過欄位分級，可能擋到正常 client 上傳——要驗。
 
 ---
 
@@ -74,6 +79,7 @@ ANEWS 觀察期：
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ailive 主戰場 | `~/.ailive/ailive-platform/`（Next.js，prod=ailive-platform.vercel.app） |
 | ANEWS 平台 | `~/.ailive/anews-platform/` |
 
 ---
