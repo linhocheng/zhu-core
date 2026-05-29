@@ -3718,3 +3718,28 @@ A 讀者頁無 infographic 欄位、C 讀者頁與 export worker 兩條獨立 re
 ### ⚠️ 注意
 - B 兩項是 Firestore runtime settings，**git 看不到**。未來改 article_write/visual_brief 要記得線上有 override。
 - 只影響「新文章」；既有 done 文章 markdown 已無標記、infographic 已是英文。
+
+---
+
+## 2026-05-29（晚）— ailive 角色 self 委託：解開「奧的形狀」+ 修真相分裂
+
+### 背景 / WHY
+馬雲委託自己寫策略書時，文體是馬雲的、但「形狀」（6-10 章節、~5000 字）是奧的——因為 stage-2 共用同一份 `STRUCTURE_GUIDE`。Adam 要求 self 路徑解開字數/章節框，把形狀還給角色靈魂；奧/佐格不動。
+
+### 產出
+- 檔案：`~/.ailive/strategy-worker/src/index.ts`（Cloud Run，**真 live**）— 加 `FORM_SELF_GUIDE` 常數 + `isSelfCommission = requesterId===assigneeId`；stage-2 依 self 選 form guide；creator/docTitle self 時走角色自己（去掉「via AILIVE Strategist」署名殘留）
+- Deploy：`gcloud run deploy strategy-worker --source . --region=asia-east1 --project=zhu-cloud-2026` → revision `strategy-worker-00005-frn`，100% 流量
+- 刪除：`ailive-platform/src/app/api/specialist/strategy/route.ts`（Vercel 死副本，無人呼叫）
+
+### 已解決
+- 真相分裂：上 session 改到 Vercel 死副本，這 session 循 `cloud-tasks.ts` STRATEGY_WORKER_URL 確認 live 是 Cloud Run，修正重套到對的檔（見 LESSONS L5）
+- self 形狀鬆綁：端到端真跑馬雲 self job 驗過——932 字宣言（vs 舊框 ~5000 字）、標題「給那些還沒死的人」、`<dc:creator>馬雲</dc:creator>` 署名乾淨、stop=end_turn
+- 入口覆蓋確認：dialogue（文字）+ voice-stream（SSE 語音）都 `requesterId===assigneeId` + enqueueStrategy → 同一 worker → 修正入口無關（見 LESSONS L6）
+
+### ⚠️ 尚未解決
+- LiveKit 真即時 agent（`agent_name='ailive-realtime'`，main.py 在遠端 VM/Cloud Run，**不在本機**）能否發策略委託**未驗**。Vercel `/api/livekit/token` 只發 token + dispatch，工具邏輯在那支 agent。要驗需 SSH zhu-dev。
+- `ailive-platform/src/app/api/specialist/strategy-html/route.ts` 疑似也是死副本（live 是 strategy-html-worker Cloud Run），本 session 未動。
+
+### 待執行
+- [ ] （要的話）SSH zhu-dev 查 ailive-realtime agent 有無 commission 工具
+- [ ] （要的話）查刪 specialist/strategy-html Vercel 死副本

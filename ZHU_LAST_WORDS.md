@@ -24,12 +24,13 @@
 
 ---
 
-## 最新完成（2026-05-29 · ailive 身份照場）
+## 最新完成（2026-05-29 · ailive self 委託形狀鬆綁）
 
-- 補上 angle 辨識管道：`gemini-client.classifyRefImage` + `/api/image/detect-angle`，上傳即 vision 回填 `visualIdentity.refs[].angle`，selectBestRef 真能選多角度（假中台斷點消除）
-- 補 client 端 auth：`char-access.ts` + `/api/client-auth/[id]`，server 端密碼驗證 + httpOnly `cli_{id}` cookie + operator/client 欄位分級，clientPassword 不再外洩（production pentest 4/4 過）
-- IdentityScreen 去補丁：refactor 成設計系統（topbar/content/page-head/dropzone/empty/gallery-cell + `.ident-badge`），已 vercel --prod deploy
-- 新建 feedback memory：`feedback_ui_conform_no_patch.md`（加新畫面要套既有設計系統）
+- 修 ailive 角色 self 委託策略書的「形狀」：self 解開字數/章節框（FORM_SELF_GUIDE），把形狀還給角色靈魂；奧/佐格不動
+- 改的是 live Cloud Run worker `~/.ailive/strategy-worker/src/index.ts`（非 Vercel route），deploy revision `strategy-worker-00005-frn` 100% 流量
+- 端到端真跑馬雲 self 驗過：932 字宣言「給那些還沒死的人」，creator=馬雲 署名乾淨，stop=end_turn
+- 修真相分裂：刪掉 `ailive-platform/src/app/api/specialist/strategy/route.ts`（Vercel 死副本，確認無人呼叫）
+- 確認文字（dialogue）+ voice-stream（SSE 語音）兩入口都吃到修正（同一 worker 匯流點）
 
 ---
 
@@ -37,33 +38,28 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailive/src/lib/gemini-client.ts` | 新增 classifyRefImage vision 辨識 |
-| `ailive/src/app/api/image/detect-angle/route.ts` | 新建：回填 refs[].angle |
-| `ailive/src/lib/char-access.ts` | 新建：operator/client 權限 helper |
-| `ailive/src/app/api/client-auth/[id]/route.ts` | 新建：client 密碼驗證發 cli cookie |
-| `ailive/src/app/api/characters/[id]/route.ts` | sanitizeForViewer + PATCH 欄位分級 |
-| `ailive/src/app/api/image/upload/route.ts` | 加 assertCharAccess |
-| `ailive/src/app/client/[id]/page.tsx` + `client-v2.css` | IdentityScreen 套設計系統 |
-| `ailive/src/app/feed/[id]/page.tsx`、`dashboard/[id]/identity/page.tsx` | clientPasswordRequired + detect-angle |
-| `zhu-core/memory/feedback_ui_conform_no_patch.md` | 新建 + MEMORY.md 索引 |
+| `~/.ailive/strategy-worker/src/index.ts` | 加 FORM_SELF_GUIDE + isSelfCommission；self 自由文體 + 乾淨署名（**Cloud Run，非 git，deploy 即生效**） |
+| `ailive-platform/src/app/api/specialist/strategy/route.ts` | **刪除**（Vercel 死副本） |
+| `zhu-core/docs/LESSONS/LESSONS_2026-05-29.md` | 追加 L5（真相分裂改 live 前先確認哪份）、L6（修正放匯流點入口無關） |
+| `zhu-core/docs/WORKLOG.md` | 追加本 session 紀錄 |
 
 ---
 
 ## 下一步
 
-**明天醒來第一件**：ailive-platform 的 git 收乾淨。
-- production 已靠 `vercel --prod` 上線（aliased），但 git 歷史沒記這批改動。
-- `cd ~/.ailive/ailive-platform && git status` → 13 M 檔 + untracked。
-- 分批 commit：本 session 身份照+auth 源檔（char-access / client-auth / detect-angle / characters route / client page / feed / dashboard identity / gemini-client / generate-image / image upload / client-v2.css）為一組。
-- **scratch script 不要進 git**：`scripts/_tmp_*`、`_check_*`、`_backfill_*` 是臨時驗證檔，commit 前清掉或 .gitignore。
-- dialogue/voice-stream/knowledge-image/specialist/image 也在 M 清單，來源跨 session，逐檔 `git diff` 確認歸屬再決定。
+self 形狀這條已收乾淨上線。沒有「明天醒來必做的第一件」硬性接棒——以下是**選做**尾巴：
+
+1. **要的話**：SSH zhu-dev 查 LiveKit 真即時 agent（`agent_name='ailive-realtime'`，main.py 在遠端）有沒有 commission 工具——這是「即時語音能不能發策略」唯一還沒驗的入口。文字 + voice-stream 都驗過成立了。
+2. **要的話**：查刪 `ailive-platform/src/app/api/specialist/strategy-html/route.ts`（疑似也是死副本，live 是 strategy-html-worker Cloud Run）。
+
+醒來先 `cd ~/.ailive/ailive-platform && git log --oneline -3` 確認收尾 commit 有推。
 
 ---
 
 ## 卡住 / 未解
 
-- ailive-platform git 未 commit（見上「下一步」）。production 不受影響（vercel 已部署），只是歷史落後。
-- 身份照上傳尚未用真實 client cookie（非 operator）端到端實測過欄位分級，可能擋到正常 client 上傳——要驗。
+- LiveKit 真即時 agent 能否發策略委託**未驗**（源碼在遠端 VM，不在本機）。修正本身入口無關，只剩「那支 agent 有無 commission 工具」這一問。
+- strategy-html 疑似第二個 Vercel 死副本，未查。
 
 ---
 
@@ -74,13 +70,13 @@
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
-| Async Worker 五問 | `~/.ailive/zhu-core/skills/async-worker-checklist.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ailive 策略 live worker | `~/.ailive/strategy-worker/`（Cloud Run，**非 git**，gcloud run deploy 直上） |
+| ailive 策略管道參考 | `reference_ailive_strategy_pipeline.md`（memory） |
 | ailive 主戰場 | `~/.ailive/ailive-platform/`（Next.js，prod=ailive-platform.vercel.app） |
-| ANEWS 平台 | `~/.ailive/anews-platform/` |
 
 ---
 

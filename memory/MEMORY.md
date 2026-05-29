@@ -2,6 +2,7 @@
 - [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 含 try/catch 的檔在 active 模式下所有 Edit 都被擋；誤觸請 Adam 跑 zhu reflex log-only 且確認真的執行
 - [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 API schema/新增欄位必同步確認客戶端介面，不能只改後端就算完成
 - [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例套同套 class，別自創不存在的 class + inline style 拼補丁
+- [ailive 策略書 live 在 Cloud Run 不在 Vercel](reference_ailive_strategy_pipeline.md) — 改策略邏輯改 ~/.ailive/strategy-worker（Cloud Run），specialist/strategy Vercel route 是死副本；self=requesterId===assigneeId
 - [心法天條：後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場；管道必活通；假中台必修（ANEWS 圖片/articlesDone 教訓）
 - [Async Worker 五問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease 不看時間、taskId 確定性
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
