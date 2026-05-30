@@ -4,7 +4,7 @@
 - [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例套同套 class，別自創不存在的 class + inline style 拼補丁
 - [ailive 策略書 live 在 Cloud Run 不在 Vercel](reference_ailive_strategy_pipeline.md) — 改策略邏輯改 ~/.ailive/strategy-worker（Cloud Run），specialist/strategy Vercel route 是死副本；self=requesterId===assigneeId
 - [心法天條：後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場；管道必活通；假中台必修（ANEWS 圖片/articlesDone 教訓）
-- [Async Worker 五問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease 不看時間、taskId 確定性
+- [Async Worker 六問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease、taskId 確定性、父 doc 被刪回 200 不 throw
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
 - [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
 - [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST

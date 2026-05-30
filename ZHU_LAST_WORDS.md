@@ -24,13 +24,14 @@
 
 ---
 
-## 最新完成（2026-05-29 · ailive self 委託形狀鬆綁）
+## 最新完成（2026-05-30）
 
-- 修 ailive 角色 self 委託策略書的「形狀」：self 解開字數/章節框（FORM_SELF_GUIDE），把形狀還給角色靈魂；奧/佐格不動
-- 改的是 live Cloud Run worker `~/.ailive/strategy-worker/src/index.ts`（非 Vercel route），deploy revision `strategy-worker-00005-frn` 100% 流量
-- 端到端真跑馬雲 self 驗過：932 字宣言「給那些還沒死的人」，creator=馬雲 署名乾淨，stop=end_turn
-- 修真相分裂：刪掉 `ailive-platform/src/app/api/specialist/strategy/route.ts`（Vercel 死副本，確認無人呼叫）
-- 確認文字（dialogue）+ voice-stream（SSE 語音）兩入口都吃到修正（同一 worker 匯流點）
+- 收乾淨 ANEWS 兩類結構債，達成「乾淨、沒技術債的 ANEWS」目標。
+- 建 `lib/workers/articleStages.ts`（ARTICLE_STAGE_ORDER 唯一真相 + isAtOrPast helper），殺手枚舉 stage 清單。
+- 建 `WorkerSkip` 機制（errors/harness/trace），讓「已往後走」的重送變良性 no-op，不 revert、不升 needs_repair。
+- 所有寫 article.status 的 worker 全套冪等 guard（source/blueprint/alignment/stitch 走 precondition WorkerSkip；polish/visual-brief 走 isAtOrPast 早 return）。
+- 修 orchestrator 孤兒風暴：被刪 issue XDcxU3 害 Cloud Tasks 重送 701 次，根因是對不存在 doc 跑 update()→NOT_FOUND→500→無限重送。加 `if(!issue.exists) return` 回 200。
+- 端到端驗過：POST needs_repair 給不存在 issue → HTTP 200（修前 500）。風暴已靜默。
 
 ---
 
@@ -38,28 +39,34 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/strategy-worker/src/index.ts` | 加 FORM_SELF_GUIDE + isSelfCommission；self 自由文體 + 乾淨署名（**Cloud Run，非 git，deploy 即生效**） |
-| `ailive-platform/src/app/api/specialist/strategy/route.ts` | **刪除**（Vercel 死副本） |
-| `zhu-core/docs/LESSONS/LESSONS_2026-05-29.md` | 追加 L5（真相分裂改 live 前先確認哪份）、L6（修正放匯流點入口無關） |
-| `zhu-core/docs/WORKLOG.md` | 追加本 session 紀錄 |
+| `anews-platform/lib/workers/articleStages.ts` | 新：ARTICLE_STAGE_ORDER + stageIndex + isAtOrPast |
+| `anews-platform/lib/workers/errors.ts` | 新增 WorkerSkip 類（良性 no-op 信號） |
+| `anews-platform/lib/workers/harness.ts` | catch 先攔 WorkerSkip → 200 + trace skip，不 escalate |
+| `anews-platform/lib/workers/trace.ts` | TraceData.status 加 "skip" |
+| `anews-platform/lib/firestore/types.ts` | ArticleStatus union 補齊全 linear stage，對齊 ORDER |
+| `anews-platform/app/api/workers/{source,blueprint,alignment,stitch}/route.ts` | precondition 加 isAtOrPast→WorkerSkip |
+| `anews-platform/app/api/workers/{polish,visual-brief}/route.ts` | handler 開頭 isAtOrPast→return |
+| `anews-platform/app/api/workers/orchestrate/route.ts` | handleEvent 開頭加孤兒防護 if(!issue.exists) return |
+| `zhu-core/docs/WORKLOG.md` | 追加 GO session 除債紀錄 |
+| `zhu-core/docs/LESSONS/LESSONS_2026-05-30.md` | 新：L1-L3（一類債/孤兒 500 陷阱/secret 換行） |
+| `~/.claude/.../memory/skill_async_worker_checklist.md` | 五問→六問（父 doc 被刪回 200 不 throw） |
+
+> ANEWS 改動全在本機 + Vercel，**anews-platform 不是 git repo**，無 commit 留痕，靠 WORKLOG + code 註解。
 
 ---
 
 ## 下一步
 
-self 形狀這條已收乾淨上線。沒有「明天醒來必做的第一件」硬性接棒——以下是**選做**尾巴：
-
-1. **要的話**：SSH zhu-dev 查 LiveKit 真即時 agent（`agent_name='ailive-realtime'`，main.py 在遠端）有沒有 commission 工具——這是「即時語音能不能發策略」唯一還沒驗的入口。文字 + voice-stream 都驗過成立了。
-2. **要的話**：查刪 `ailive-platform/src/app/api/specialist/strategy-html/route.ts`（疑似也是死副本，live 是 strategy-html-worker Cloud Run）。
-
-醒來先 `cd ~/.ailive/ailive-platform && git log --oneline -3` 確認收尾 commit 有推。
+ANEWS 結構債已清乾淨，無 pending 施工。若要再動：
+- 讀者頁 PLATE 01/HERO 標籤是設計取捨（刻意保留），Adam 若要去印刷術語再處理 `app/articles/[articleId]/page.tsx:180-191`。
+- 可重用唯讀掃描：`anews-platform/scripts/scan-reentry.mjs`（跑法：`cd anews-platform; set -a; source .env.local; set +a; node scripts/scan-reentry.mjs`）找 article/issue 狀態錯位。
+- 新媒體多租戶 + 念叔/鐵幕 personas 仍 PARKED 在 `drafts/publications/draft-media-02.md`，等 Adam 出設計。
 
 ---
 
 ## 卡住 / 未解
 
-- LiveKit 真即時 agent 能否發策略委託**未驗**（源碼在遠端 VM，不在本機）。修正本身入口無關，只剩「那支 agent 有無 commission 工具」這一問。
-- strategy-html 疑似第二個 Vercel 死副本，未查。
+無。本 session 兩件債都端到端驗證關閉。
 
 ---
 
@@ -74,11 +81,10 @@ self 形狀這條已收乾淨上線。沒有「明天醒來必做的第一件」
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailive 策略 live worker | `~/.ailive/strategy-worker/`（Cloud Run，**非 git**，gcloud run deploy 直上） |
-| ailive 策略管道參考 | `reference_ailive_strategy_pipeline.md`（memory） |
-| ailive 主戰場 | `~/.ailive/ailive-platform/`（Next.js，prod=ailive-platform.vercel.app） |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ANEWS 平台 | `~/.ailive/anews-platform/`（非 git，deploy: `npx vercel --prod --yes`） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-29 · 築*
+*2026-05-30 · 築*

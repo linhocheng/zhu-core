@@ -4,6 +4,43 @@
 
 ---
 
+## 2026-05-30 — ANEWS 讀者端去術語 + worker 重入掃瞄（visual-brief bug 第二受害者）
+
+### 背景 / WHY
+承上一輪：visual-brief 重入 bug（Cloud Tasks 晚送把 done 文章打回 visual_brief_done）已修 guard + 修 B8pSka4。Adam 要求(1)讀者端去印刷術語(2)排了新任務讓我做 worker 重入掃瞄。
+
+### 產出
+- `app/articles/[articleId]/page.tsx` — 去術語：FIG.01 假 caption→「AI 生成主視覺」、COLOPHON→本文資訊、目錄/編按/讀完了 去掉英文後綴；PLATE 01/HERO 保留待 Adam 設計裁示
+- `app/issues/[issueId]/page.tsx` — 主文·FEATURE→主文、子題·SUBTOPIC→子題
+- `scripts/scan-reentry.mjs` — 唯讀重入觀測（保留為診斷工具）
+- 已 build + deploy prod，issues reader 200 驗過
+
+### 已解決
+- 讀者端印刷術語 → 去除（英文裝飾後綴 / 假佔位 caption / COLOPHON）
+- **visual-brief bug 第二受害者**：issue 25fd1Ly6k5fHylJDjU0m done，但 art VIcWSjlfcuLtLO82OfsM 被重送（attempts=7）打回 visual_brief_done。export 已 done(htmlUrl 在)、articlesDone=5 已正確，只 status 壞 → flip→done 修復
+- 確認 Adam 排的 live task IrRzooth 全鏈路跑完 done 5/5、無 revert → 證明無 guard 也不擋正常流
+
+### 重入 guard 真相（審計過度標紅，逐檔核完才對）
+審計說「5 個 worker 同 bug class」是錯的。逐檔讀 code 後分類：
+- **source / blueprint / alignment**（createHarnessWorker）：precondition 已要求**精確的前段 status**（planned/pending、source_ready、blueprint_ready）。晚送 → precondition fail → handler 不跑 → **不會 revert**。已受保護，**不需改**。
+- **polish**（createMockWorker，無 precondition）：跟 visual-brief 一模一樣的 revert bug。**已修**：handler 頂端加 `DONE_OR_LATER=["polish_done","visual_brief_done","coherence_passed","exporting","done"]` guard。build+deploy 過。
+- **stitch**（createHarnessWorker）：precondition 只 gate **section** status，不 gate article status；且 worldStateVerify 硬性要求 `status==="stitching_done"`。**已修**（Adam greenlight 收乾淨）：handler 頂端加 `STITCH_OR_LATER` skip guard（已往後走 → 回 no-op HandlerResult，不寫 status、不 callback）；worldStateVerify 放寬為「stitching_done 或更後面都算通過」，避免 skip 路徑誤爆 WORLD_STATE→500→needs_repair。兩處同檔內收，未動 harness。build+deploy 過。
+
+### harness 錯誤模型的潛在粗邊（非緊急）
+harness.ts:146-196 對「任何」precondition/worldState 失敗都回 500 + repairAttempts++，滿 3 次把文章打成 needs_repair。良性晚送重複若觸發 precondition fail，理論上會被當錯誤累加。觀測到 blueprint attempts=10 storm 疑似相關（但那兩篇 article 不在現存 issue，可能是真失敗，無確證良性誤殺）。乾淨解：加 benign WorkerError type（如 ALREADY_DONE）→ harness catch 回 200 no-op、不累加。待 Adam 決定值不值得。
+
+### ⚠️ 尚未解決
+- **XDcxU3 retry storm**：orchestrator target XDcxU3(已非 issue doc) attempts=306 failed — 疑似已刪/取消 issue 的 Cloud Tasks 對不存在 doc 狂重試。待確認要不要清佇列。
+
+### 待執行
+- [ ] Adam 決定 harness benign-error model 要不要做（潛在粗邊，非緊急）
+- [ ] 確認 XDcxU3 retry storm 是否該清 Cloud Tasks 佇列
+
+### 本輪 revert-bug 收口總結
+visual-brief / polish / stitch 三支會 revert article.status 的 worker 全部補上冪等 guard（stitch 另放寬 worldStateVerify）。source/blueprint/alignment 本就有 precondition 保護。兩個資料受害者（B8pSka4 主文、25fd1Ly 的 VIcWS）已修回 done。
+
+---
+
 ## 2026-05-27 — ANEWS alignment 三個 bug 修復 + 全鏈路首跑完成
 
 ### 背景 / WHY
@@ -3743,3 +3780,56 @@ A 讀者頁無 infographic 欄位、C 讀者頁與 export worker 兩條獨立 re
 ### 待執行
 - [ ] （要的話）SSH zhu-dev 查 ailive-realtime agent 有無 commission 工具
 - [ ] （要的話）查刪 specialist/strategy-html Vercel 死副本
+
+## 2026-05-30 — ANEWS visual-brief worker 重入 bug（issue B8pSka4 主文卡死）
+
+### 症狀
+issue 顯示 done，但主文卡片顯示「校對」而非「閱讀」，且無任何閘門可推進。Adam 無法操作。
+
+### 根因（worker_runs 時間軸鐵證）
+- 18:47 visual-brief 跑主文 → 18:48 coherence → 18:49 全 5 篇 export 成功 → issue done ✓（正確）
+- **19:01 visual-brief 第二次跑同一主文（Cloud Tasks 重送，12 分鐘後）→ 把主文 status 從 done 回寫 visual_brief_done**
+- 真凶：`app/api/workers/visual-brief/route.ts:186` 無條件 `updateArticleStatus(..., "visual_brief_done")`，沒有冪等 guard。export worker 有（status==="done" return），這支沒有。
+- 附帶：重跑還重新 generateInfographic + actualCost 又加一次 → 重複燒 gpt-image-2 錢。
+- UI 連鎖：issue=done → 無審核按鈕；main≠done → 顯示「校對」。卡死在中間。
+
+### 修法（已上線 anews-platform.vercel.app）
+1. code：visual-brief 開頭加 `DONE_OR_LATER=["coherence_passed","exporting","done"]` guard，已往後走就 return；另加 `if(article.infographicUrl)` 重用既有圖、不重燒。build+deploy 過。
+2. data：驗證 export 產物存在後，把主文 `8Qusctapm137GCRmRs7Q` 改回 done，articlesDone 重算 5/5。
+
+### ⚠️ 注意
+- anews-platform **不是 git repo**（env 確認 false），改動只在本機 + Vercel，無 commit 留痕——靠這份 WORKLOG + code 內註解。
+- 同類風險：任何會寫 article.status 的 worker 都該比照 export/visual-brief 加重入 guard（image/coherence 待查）。
+
+## 2026-05-30（GO）— ANEWS 結構性除債：WorkerSkip 機制 + orchestrator 孤兒風暴
+
+### 背景 / WHY
+visual-brief 重入 bug 暴露的是「一類」結構債，不是單點。Adam GO：目標乾淨、沒技術債的 ANEWS。兩件根因：(A) 多支 worker 缺冪等 guard，重送會 revert 已往後走的 article；(B) orchestrator 對被刪 issue 跑 update() → 500 → Cloud Tasks 無限重送。
+
+### 產出（已 build + deploy，anews-platform.vercel.app aliased）
+- `lib/workers/articleStages.ts`（新）— 唯一真相：`ARTICLE_STAGE_ORDER` + `stageIndex()` + `isAtOrPast()`。off-ramp 狀態（failed/needs_repair/source_thin/coherence_failed/cancelled）刻意不列入 → index -1 → isAtOrPast 永 false。殺掉手枚舉 stage 清單。
+- `lib/workers/errors.ts` — 新增 `WorkerSkip`（良性 no-op 信號，非 error）。harness 收到 → completeWorkerRun + 200 + trace status=skip，**不** repairAttempts++、不升 needs_repair。
+- `lib/workers/harness.ts` — catch 區先攔 WorkerSkip 再 classifyError。
+- `lib/workers/trace.ts` — TraceData.status 加 "skip"。
+- `lib/firestore/types.ts` — ArticleStatus union 補齊全部 linear stage（之前缺 alignment_done/visual_brief_done/coherence_passed 等），對齊 ARTICLE_STAGE_ORDER。
+- worker guard 全面套用：
+  - source/blueprint/alignment/stitch（createHarnessWorker）→ precondition 內 `isAtOrPast → throw WorkerSkip`，已往後走良性跳過不 revert。
+  - polish/visual-brief（createMockWorker，無 precondition）→ handler 開頭 `if(isAtOrPast(...)) return`。
+  - export 本來就有自己的 done-guard。
+- `app/api/workers/orchestrate/route.ts` — handleEvent 開頭加孤兒防護：`if(!(await issueRef.get()).exists) return`。被刪 issue 的任何事件都良性 no-op，**絕不 throw**（throw→500→無限重送）。
+
+### 已解決
+- **重入 revert 一類債根除**：所有寫 article.status 的 worker 都有 guard（精準狀態 gate 或 isAtOrPast）。
+- **orchestrator 孤兒風暴根除（XDcxU3）**：issue XDcxU3TDjHaR7S6PXDqM 被刪後，in-flight `orch-needs_repair-XDcxU3...` 兩個 task 對不存在 doc 跑 update() → NOT_FOUND → 500 → Cloud Tasks 重送 **701 次**。修法讓缺席 issue 回 200。
+  - **端到端驗證**：deploy 後直接 POST `needs_repair` event 給不存在 issue（NONEXISTENT_ISSUE_PROOF_TEST）→ **HTTP 200 `{"status":"ok"}`**（修前同請求是 500）。Cloud Tasks 之後任何重送都會被 ack 排空。
+  - 風暴本身在 attempts=701 後靜默（3+ 分鐘無新 fire，原本 20-60s 一次）。
+- 第二個 data victim 修復：issue 25fd1Ly6k5fHylJDjU0m done 但 article VIcWSjlfcuLtLO82OfsM 回退 visual_brief_done（export 已 done、htmlUrl 在、articlesDone 已 5）→ 翻回 done。
+- live 驗證：新排任務 IrRzooth 5/5 乾淨完成，guard 不干擾正常流。
+
+### 踩雷紀錄
+- WORKER_SECRET 在 Vercel 存成 `anews-dev-secret-2026\n`（值內含尾端換行），route 靠 `.trim()` 救。`vercel env pull` 會把含換行的值跨行寫進 .env → source/grep 都讀歪。測 prod 直接用 `anews-dev-secret-2026`（已 trim）才對。→ 印證舊記憶「Secret 用 printf 不用 echo」。
+- audit/Explore agent 報「5 支 worker 同 bug 無 guard」是**錯的**：實讀 code 發現 source/blueprint/alignment 是 harness + precondition 卡死精準前狀態（本就防 revert），只有 polish 是明確裸的、stitch 是條件性。靠逐支讀真 code 抓出，沒盲套 5 個 guard。
+
+### ⚠️ 注意
+- anews-platform **不是 git repo**，改動只在本機 + Vercel，無 commit 留痕，靠這份 WORKLOG + code 註解。
+- diag-xdcxu3.mjs（一次性）已刪；scan-reentry.mjs（可重用唯讀掃描）保留。
