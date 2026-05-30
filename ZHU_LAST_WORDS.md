@@ -24,14 +24,12 @@
 
 ---
 
-## 最新完成（2026-05-30）
+## 最新完成（2026-05-31）
 
-- 收乾淨 ANEWS 兩類結構債，達成「乾淨、沒技術債的 ANEWS」目標。
-- 建 `lib/workers/articleStages.ts`（ARTICLE_STAGE_ORDER 唯一真相 + isAtOrPast helper），殺手枚舉 stage 清單。
-- 建 `WorkerSkip` 機制（errors/harness/trace），讓「已往後走」的重送變良性 no-op，不 revert、不升 needs_repair。
-- 所有寫 article.status 的 worker 全套冪等 guard（source/blueprint/alignment/stitch 走 precondition WorkerSkip；polish/visual-brief 走 isAtOrPast 早 return）。
-- 修 orchestrator 孤兒風暴：被刪 issue XDcxU3 害 Cloud Tasks 重送 701 次，根因是對不存在 doc 跑 update()→NOT_FOUND→500→無限重送。加 `if(!issue.exists) return` 回 200。
-- 端到端驗過：POST needs_repair 給不存在 issue → HTTP 200（修前 500）。風暴已靜默。
+- 建了全新專案 **MACS 平台**（麥肯錫式 AI 顧問公司）從零到端到端骨架，8 階段一夜走完。
+- repo `~/.ailive/macs-platform`（git 本地 8 commit），複用 ANEWS 80% 基建，只有 orchestration 是新寫的。
+- 兩塊最高風險先燒先驗：synthesis 質感 go/no-go = **GO**；orchestration 正確性 **21/21**。全程走 bridge/Max **沒燒 API key**。
+- 前段/analysis/converge/報告四段各跑 eval 真驗；partner-review「OK 直接過/不OK 直接改稿」機制驗出 verdict=revised 真的抓洞改稿。
 
 ---
 
@@ -39,34 +37,34 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/lib/workers/articleStages.ts` | 新：ARTICLE_STAGE_ORDER + stageIndex + isAtOrPast |
-| `anews-platform/lib/workers/errors.ts` | 新增 WorkerSkip 類（良性 no-op 信號） |
-| `anews-platform/lib/workers/harness.ts` | catch 先攔 WorkerSkip → 200 + trace skip，不 escalate |
-| `anews-platform/lib/workers/trace.ts` | TraceData.status 加 "skip" |
-| `anews-platform/lib/firestore/types.ts` | ArticleStatus union 補齊全 linear stage，對齊 ORDER |
-| `anews-platform/app/api/workers/{source,blueprint,alignment,stitch}/route.ts` | precondition 加 isAtOrPast→WorkerSkip |
-| `anews-platform/app/api/workers/{polish,visual-brief}/route.ts` | handler 開頭 isAtOrPast→return |
-| `anews-platform/app/api/workers/orchestrate/route.ts` | handleEvent 開頭加孤兒防護 if(!issue.exists) return |
-| `zhu-core/docs/WORKLOG.md` | 追加 GO session 除債紀錄 |
-| `zhu-core/docs/LESSONS/LESSONS_2026-05-30.md` | 新：L1-L3（一類債/孤兒 500 陷阱/secret 換行） |
-| `~/.claude/.../memory/skill_async_worker_checklist.md` | 五問→六問（父 doc 被刪回 200 不 throw） |
+| `~/.ailive/macs-platform/`（整個新 repo） | 全新建。lib/orchestration（barrier fan-in，唯一全新）、lib/llm（bridge/synthesis/structured）、lib/pipeline（11 個 worker 邏輯）、app/api/workers（11 route）+ cases/resume/reconcile + 6 個 eval/test 腳本 |
+| `zhu-core/docs/LESSONS/LESSONS_2026-05-31.md` | 新：L1 bridge 無 tool_use→<result> JSON / L2 動態 fan-out=barrier / L3 一吋蛋糕先燒風險 / L4 記憶說謊靠現場核 |
+| `zhu-core/docs/WORKLOG.md` | 追加 MACS 建置紀錄（含尚未解決 + 待執行） |
+| `~/.claude/.../memory/` | 新增 reference_bridge_no_tool_use、project_macs_platform 兩條 memory |
 
-> ANEWS 改動全在本機 + Vercel，**anews-platform 不是 git repo**，無 commit 留痕，靠 WORKLOG + code 註解。
+> MACS 改動全在本機 git，**尚未推遠端**（Adam 決定 repo 放哪）。
 
 ---
 
 ## 下一步
 
-ANEWS 結構債已清乾淨，無 pending 施工。若要再動：
-- 讀者頁 PLATE 01/HERO 標籤是設計取捨（刻意保留），Adam 若要去印刷術語再處理 `app/articles/[articleId]/page.tsx:180-191`。
-- 可重用唯讀掃描：`anews-platform/scripts/scan-reentry.mjs`（跑法：`cd anews-platform; set -a; source .env.local; set +a; node scripts/scan-reentry.mjs`）找 article/issue 狀態錯位。
-- 新媒體多租戶 + 念叔/鐵幕 personas 仍 PARKED 在 `drafts/publications/draft-media-02.md`，等 Adam 出設計。
+接棒第一件：**先問 Adam 兩件決策有沒有定**（審核 UI 的 UIUX、要不要接 zhu-vitals），再決定動哪邊。可直接動手的選項：
+
+1. **部署 MACS 上線**（Adam 點頭後）：
+   - 建 6 個 Cloud Tasks 佇列：`macs-orchestration / macs-framing / macs-research / macs-analysis / macs-synthesis / macs-report`（複用同 GCP project，`gcloud tasks queues create`）。
+   - 設 `WORKER_BASE_URL` 指向 Vercel 部署；`macs-platform` 推遠端；`npx vercel --prod`。
+   - wire reconcile cron（Vercel cron 打 `GET /api/cron/reconcile` 帶 `x-worker-secret`）。
+2. **跑第一個真 case 端到端**（fullAuto ON），含放行 research worker——**這會燒 API key（web_search），要 Adam 明確同意才跑**。
+3. **修真相分裂-lite**：`app/api/workers/export/route.ts` 的 Why now 欄改讀修正後 storyline，或讓 partner-review 也能改 recommendation。
+
+驗刀指令（本機，走 bridge 不燒錢）：`cd ~/.ailive/macs-platform && node --env-file=.env.local node_modules/.bin/tsx scripts/test-orchestration.mts`（21/21）。
 
 ---
 
 ## 卡住 / 未解
 
-無。本 session 兩件債都端到端驗證關閉。
+- HTTP 端到端（Cloud Task→worker→下一個）本機無公開 URL，未真串——要部署後才驗。route 邏輯已靠 lib-eval 驗過。
+- zhu-core 有 05-30 session 遺留的未提交檔（`archive/anews-stuck-del-20260530/`、`archive/anon-profile-guard-20260530/`、`docs/LESSONS/molowe_tech_salvage_2026-05-30.md`）——不是今晚的，我收尾時沒掃進來，Adam 確認要不要提交。
 
 ---
 
@@ -82,9 +80,9 @@ ANEWS 結構債已清乾淨，無 pending 施工。若要再動：
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ANEWS 平台 | `~/.ailive/anews-platform/`（非 git，deploy: `npx vercel --prod --yes`） |
+| **MACS 平台** | `~/.ailive/macs-platform/`（git 本地；ANEWS 概念轉 AI 顧問公司；流程 issue-tree→research→materialize→analysis×N→barrier→synthesis→recommendation→roadmap→storyline→partner-review→export） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-30 · 築*
+*2026-05-31 · 築*

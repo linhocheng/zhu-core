@@ -1,3 +1,4 @@
+- [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
 - [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 含 try/catch 的檔在 active 模式下所有 Edit 都被擋；誤觸請 Adam 跑 zhu reflex log-only 且確認真的執行
 - [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 API schema/新增欄位必同步確認客戶端介面，不能只改後端就算完成
@@ -87,5 +88,8 @@
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
 - [ANEWS 平台進度](project_anews_platform.md) — P1-P4 全通（2026-05-27），全鏈路首跑 done，下一步 reader page + auto-polling
 - [ANEWS-B 平台進度](project_anews_b_platform.md) — 複刻優化版，2026-05-27 全鏈路首次驗收通過（critic 一輪 79.7/100），polish→export 待確認
+- [molowe 技術打撈備忘](reference_molowe_tech_salvage.md) — molowe 2026-05-30 停止前打撈的可複用技術（語義去重/聲紋稽核/Threads發布）+ 檔案路徑
 - [dispatcher dependsOn 必須同步建立依賴節點](feedback_anews_dispatcher_dependsOn.md) — workflow_nodes pending 節點的 dependsOn 若引用不存在的節點，dispatcher 永遠不排隊
 - [blueprint prompt 的 result 範例必須含完整 sectionPlan 欄位](feedback_blueprint_schema_example.md) — `[...]` 省略欄位 → LLM 自創 key → Zod undefined，範例必須完整
+- [bridge（Max）不支援 tool_use](reference_bridge_no_tool_use.md) — 走 bridge 的結構化輸出要 <result> JSON + Zod，不能用 tool_choice；只有 web_search 走直連 API key
+- [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21

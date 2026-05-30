@@ -4,6 +4,52 @@
 
 ---
 
+## 2026-05-30 — ANEWS settings 以 live 為準砍雜訊 + skipGates 開關化
+
+### 背景 / WHY
+Adam：「settings 對齊真現場——哪些硬編、哪些雜訊」。假中台審計發現根因：`singleWriteMode=true` + `skipGates=true` 把整條 sectioned/QA 管線變裝飾品。settings 頁列了一堆接不通的旋鈕（QA tab、段落寫作 role、alignment/stitch 等）。決議：以 live（single-write）為準，刪 singleWriteMode 概念、停派死 worker、settings 頁只留接通的；skipGates 升為 UI 開關存進 settings doc。
+
+### 產出
+- `app/api/workers/orchestrate/route.ts` — 885→473 行。event union 收斂為 live-only（14 個）；移 `reconcileIssue`/`WORKFLOW_NODES_COLLECTION`/`articleOrder`/`startNextSubArticle`/`enqueueNextWritableSection`；`blueprint_done` 改無條件 single-write（刪 singleWriteMode 讀取 + 整段 sectioned else 分支）；刪掉 alignment_done…sections_all_done 整塊 case，直接接到 `stitch_done`。孤兒防護保留。
+- `app/api/editorial-jobs/route.ts` — 去 `singleWriteMode`；`effectiveSkipGates = skipGates ?? cfg.skipGates`（body 可覆寫 settings 預設）。
+- `app/api/workers/article-write/route.ts` — commit transaction 去 `singleWriteMode: true`。
+- `app/api/cron/auto-kick/route.ts` — 刪「舊管線 kick（段落模式）」整塊。
+- `app/api/settings/pipeline/route.ts` + `lib/settings/pipeline.ts` — DEFAULT_PIPELINE 加 `skipGates: true`（預設自動通過不人工審）；merge/cache 都補 skipGates 讀取。
+- `app/dashboard/settings/page.tsx` — 全改寫：RoleKey 8 個 live role；移除 QA tab + 全部 QA 型別/state/fetch；Pipeline tab 加「審核關卡」skipGates toggle 卡 + 只留 live 旋鈕（單篇直寫字數/段落數/來源搜尋/品質門檻）。後端 settings 型別/DEFAULT 全保留，死 worker 檔仍可編譯。
+
+### 已解決
+- **假中台根除**：settings UI 現在只顯示真正驅動行為的旋鈕，skipGates 從硬編變成存 settings doc 的開關（editorial-jobs 讀它當預設）。
+- **死管線停派**：orchestrator 不再派 alignment/section-write/section-qa/evidence-pass/stitch；死 worker route 檔留著（option A：停派不刪檔）。
+- **端到端驗證**：`npx next build` ✓ Compiled successfully；`npx vercel --prod --yes` 已 alias 到 anews-platform.vercel.app；`curl /api/settings/pipeline` → 頂層 `"skipGates": true` 回得出來。
+
+### ⚠️ 注意
+- anews-platform **不是 git repo**，改動只在本機 + Vercel，靠這份 WORKLOG 留痕。
+- 死 worker route 檔（section-write/section-qa/evidence-pass/stitch/alignment）+ 後端 QA settings route/lib **刻意保留**，只是不再被 page/orchestrator 引用——別誤刪，會破 build。
+- roles API 仍回完整 15 個 key（後端 DEFAULT_PROMPTS 沒動），page 只 filter 顯示 8 個——這是設計，不是 bug。
+
+---
+
+## 2026-05-30（續）— 字數三份分裂收斂為「找料／寫作」兩旋鈕
+
+### 背景 / WHY
+Adam 問「改數值未來會直接動到系統嗎，含字數 5000」。審計發現字數分三份各看各的：source/blueprint 讀 `mainArticle.wordTarget`，article-write 讀 `singleWrite.mainWordTarget`（建議題時快照進 article.wordTarget）。我重寫 settings 頁時 `mainArticle.wordTarget` 沒渲染→UI 改不到。共識：找料一個旋鈕（可自由）、**大綱+下筆綁同一旋鈕**（避免大綱按 A 字數鋪段、下筆被要 B 字數而內鬨）。
+
+### 產出
+- `app/api/workers/blueprint/route.ts:76` — 大綱字數從 `baseCfg.wordTarget`(mainArticle) 改讀 `pipelineCfg.singleWrite.main/subWordTarget`，與 article-write 下筆同源。`baseCfg` 仍用於 sectionCount。
+- `app/dashboard/settings/page.tsx` — 「單篇直寫字數」→「寫作字數」（大綱與成文共用）；新增「找料字數」卡（mainArticle/subArticle.wordTarget，只給 source）。
+- `cloud-run/source-worker/src/index.ts:81-82` — hardcoded default 12000/8 對齊 Vercel DEFAULT_PIPELINE 5000/4，消兩份 default 分裂。**已 redeploy**：`gcloud run deploy anews-source-worker --source . --region asia-east1`，revision `anews-source-worker-00008-jxg` 100% 流量，`/health` 200。
+
+### 字數真相鏈（定案）
+- **找料**（source / cloud-run source-worker，即時讀 doc）= `mainArticle/subArticle.wordTarget`
+- **寫作**（blueprint 大綱 + article-write 下筆）= `singleWrite.main/subWordTarget`
+- 生效時機分裂仍在（誠實記）：段落數＋找料＝執行時即時讀；寫作字數＝建議題瞬間快照進 article.wordTarget，**改了只對新建議題生效，不回溯**。
+
+### 已驗證
+- `npx next build` ✓；`vercel --prod` 已 alias；curl `/api/settings/pipeline` 兩條字數都回得出。
+- 現況提醒 Adam：doc 現存 找料 main=1500/sub=600、寫作 5000/5000 → 找料比寫作低（找 1500 字料寫 5000 字），是反的，等他用新 UI 調。
+
+---
+
 ## 2026-05-30 — ANEWS 讀者端去術語 + worker 重入掃瞄（visual-brief bug 第二受害者）
 
 ### 背景 / WHY
@@ -3833,3 +3879,85 @@ visual-brief 重入 bug 暴露的是「一類」結構債，不是單點。Adam 
 ### ⚠️ 注意
 - anews-platform **不是 git repo**，改動只在本機 + Vercel，無 commit 留痕，靠這份 WORKLOG + code 註解。
 - diag-xdcxu3.mjs（一次性）已刪；scan-reentry.mjs（可重用唯讀掃描）保留。
+
+---
+
+## 2026-05-30 — anews-b + molowe + moumou-dashboard 三專案下線
+
+### 背景 / WHY
+Adam 清理舊專案。anews-b（B 版複刻）已閒置、molowe（三層 AI 編輯部）仍在跑但決定先停、moumou-dashboard（ailive 前身）功德圓滿可歇下。
+
+### 產出 / 已解決
+- **anews-b-platform 下線**：`vercel remove` 移除整個專案，舊 prod URL → 404。code 仍在本機 `~/.ailive/anews-b-platform`（注意：真正 app code 從沒 commit，git 只有 Create Next App 初始 commit）。Firebase 接 moumou-os。
+- **molowe-platform 下線**：停止前先打撈技術 → `~/.ailive/zhu-core/docs/LESSONS/molowe_tech_salvage_2026-05-30.md`（語義去重/聲紋稽核/Threads發布等 6 項 + 路徑），auto-memory 加 `reference_molowe_tech_salvage`。`vercel remove` 後 URL → 404，6 個 cron 全停。
+- 停止時 molowe 真實狀態（查 Firestore moumou-os）：KOL `aurae` enabled、`midoufu` 已關；content `failed:217 / published:6 / pending:3 / visualized:4`（九成失敗，主嫌角度去重 0.20 閾值太嚴）；`molowe_system_prompts/v1` 從不存在 → 三層 prompt 全跑 code 預設。
+- **moumou-dashboard 下線**：謀謀是 ailive 的前身，功德圓滿。Adam 明確授權覆蓋紅線（「saas-runner 那個每小時 cron、LINE 也沒通…一切都功德圓滿可以停下來」）。`vercel remove moumou-dashboard` 後 URL → 404。code 留在 `~/.ailive/AILIVE/moumou-dashboard`（+ Desktop 副本），git 完整（last commit: MiniMax TTS 多音字詞典），Firestore 在 moumou-os。謀謀沒被抹掉，只是把對外的燈關掉。
+
+### ⚠️ 注意
+- 三專案 code + git 都還在本機，`vercel --prod` 可復活（projectId 會換新）。
+- molowe Firestore 資料留在 moumou-os 沒清；`aurae` enabled 仍 true（但無 deployment 無 cron 觸發，等於停）。要徹底可再 flip enabled=false。
+- `vercel remove <name>` 是移除**整個專案**（非只 deployment），與字面「移 deployment」有出入但結果＝離線。
+- moumou-dashboard 原列 CLAUDE.md 紅線（不動 moumou-dashboard）；此次下線是 Adam 在 session 內逐字授權的一次性覆蓋，紅線本身保留。
+
+---
+
+## 2026-05-30 — ailive 即時對話開場誤叫「金星」根因清除（anon profile 污染）
+
+### 背景 / WHY
+Adam 回報：ailive 即時聊天開場，多個角色都叫他「金星」。Adam 是 Adam 合政，金星是別人。
+
+### 診斷（看現場推翻盲猜）
+- Explore agent 純讀 code 推「displayName / voice_print fallback」→ **全錯**。
+- 寫唯讀 script 撈真 Firestore：`platform_users`(0 金星) / `platform_voice_prints`(35 筆 0 金星) → 兩理論破。
+- 真兇：`platform_user_profiles/anon-1777366988768-eteb3l` 的 `name:"金星"`，開場即時注入 prompt。Adam 是**匿名登入**，根本沒走 displayName 那條。
+- 殘留：`platform_insights` 856 筆中 7 筆含金星（6 筆是 Adam 反覆糾正「我不是金星」、1 筆幻覺業務記憶），`userId` 全 `(none)` → 洩漏給所有 user，且自我強化（糾正本身把「金星」二字餵回 prompt）。
+- 根因鏈：當天 2-3 人同一 anon session 聊天 → 萃取無說話者邊界 → name/interests 全寫進同一筆 → 污染。且 `user-profile-extractor.ts:82` 是「first-writer 鎖死、不覆蓋已有值」→ Adam 5/29 糾正寫不進去（不是漏寫，是設計擋掉）。
+
+### 產出 / 已解決
+- **資料**：刪污染 profile + 7 筆金星 insights（`scripts/_zhu_reset_jinxing.ts` 重掃刪，驗證歸零）。
+- **根因 guard（A 方案）**：兩個 chokepoint 加 `userId.startsWith('anon') → skip`，一處擋全 caller（破刀）：
+  - `src/lib/user-profile.ts:58-60`（upsertUserProfile）
+  - `agent/user_profile.py:50-53`（upsert_user_profile）
+- **Deploy**：Vercel（`ailive-platform.vercel.app`）+ Cloud Run agent（revision `ailive-realtime-agent-00066-h4q`，100% 流量）。
+- **Checkpoint**：`~/.ailive/zhu-core/archive/anon-profile-guard-20260530/` 兩個 .bak（非 git，靠這個 rollback）。
+
+### 端到端驗證 ✅
+- 2026-05-30 Adam 與大維新對話，開場不再叫金星，順利 → 根因確認斷除。
+
+### ⚠️ 尚未解決 / 待
+- 匿名用戶現在完全無跨 session profile（本就是假連續性）；若日後要匿名輕量記憶要另設計。
+- B 方案（允許明確糾正覆寫 name）未做——現場發現原「防覆寫」反而是幫兇，B 改義版列著等真有登入用戶被借手機污染再說。
+
+### 診斷工具（保留，唯讀）
+- `scripts/_zhu_check_jinxing.ts`、`scripts/_zhu_check_profiles.ts`：掃三 collection 含特定字串。
+
+---
+
+## 2026-05-31 — MACS 平台從零建置（ANEWS 概念轉 AI 顧問公司）
+
+### 背景 / WHY
+Adam 要新專案：用 ANEWS 多 worker 流水線概念轉麥肯錫式 AI 顧問公司——客戶提問 → 問題定義 → 議題樹 → 研究 → 多條分析 workstream → 收斂成洞察 → 策略建議 → 執行路線 → executive 報告。核心差異：ANEWS 是「五篇協奏」（fan-out 後各走），MACS 是「多條分析線收斂成一個決策」（fan-out 後 barrier 收斂）。設計定案 12 worker + 3 人工關卡（fullAuto 開關 default ON，管全部三關）+ 1 資料不足暫停點。issue-tree 用固定選單（只挑不發明）、partner-review 高階分析 OK 直接過/不OK 直接改稿。
+
+### 產出（repo：`~/.ailive/macs-platform`，git 本地 8 commit）
+- 複用 ANEWS 80% 基建（harness 砍 shadow + case-centric / bridge / idempotency / errors / trace / cloudTasks 改 macs-* / firestore admin）。
+- `lib/orchestration/`（唯一全新）：ids（deterministic）、materialize（動態 fan-out）、barrier recordCompletion（交易 + commit 後 enqueue + fire-once）、reconcile（兜遺失 enqueue）、planVersion 雙層守衛。
+- `lib/llm/`：bridge（MACS_MODEL=sonnet-4-6）、synthesis（靈魂）、structured（<result> JSON+Zod helper）。
+- `lib/pipeline/`：briefIntake / problemFraming / issueTree（固定選單 registry）/ analysis（三角色）/ research（web_search，API key）/ recommendation / roadmap / storyline / partnerReview / exportReport / flow（gateOrAdvance + fullAuto）。
+- routes：cases 入口 + 11 worker route + cases 讀取/detail/resume + cron/reconcile。
+
+### 已解決（每塊都真驗，全走 bridge/Max 沒燒 API key）
+- synthesis 質感 go/no-go = **GO**（假 memo 只放原始訊號，自己 derive 出「安全感市場」reframe + 跨流連出「停購=錯誤宣稱」反直覺結論）。
+- orchestration **21/21**（觸發一次/重送冪等/失敗進關卡/reconciler 兜回，對真 Firestore、enqueue spy、零 LLM）。
+- 前段/analysis/converge/報告四段各跑 eval 真驗；partner-review verdict=revised 抓出窗口懸空/商業模式缺席/護城河鬆三洞並直接改稿。
+
+### ⚠️ 尚未解決
+- HTTP 端到端（Cloud Task→worker→下一個）未驗——本機無公開 URL，route 邏輯靠 lib-eval 驗過，要部署後才真串。
+- 真相分裂-lite：partner-review 改 storyline 沒改 recommendation artifact，export 的「Why now」欄殘留舊 recommendation 數字、跟修正後摘要不一致。
+- research worker（唯一燒 API key/web_search）建好【沒跑】——天條，等 Adam 同意。
+
+### 待執行
+- [ ] 部署：建 6 個 `macs-*` Cloud Tasks 佇列、設 `WORKER_BASE_URL`、wire reconcile cron、`macs-platform` 推遠端（目前只有本地 git）。
+- [ ] 跑第一個真 case（fullAuto ON）端到端，含放行 research（需 Adam 同意燒 API key）。
+- [ ] 審核 UI——等 Adam 提供新版 UIUX 再套（後端 list/detail/resume 已備）。
+- [ ] 決策：MACS 要不要接 zhu-vitals（manifest+withVitals）進監造儀表板？目前靠 worker_traces。
+- [ ] 修真相分裂-lite：partner-review 也能改 recommendation，或 export 的 Why now 改讀 storyline。
