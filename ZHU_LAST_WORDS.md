@@ -24,49 +24,47 @@
 
 ---
 
-## 最新完成（2026-05-31 深夜場）
+## 最新完成（2026-05-31 收尾場 · 第二次端到端）
 
-- **MACS 端到端首次跑通**：臻品植萃案 case-mpt5ki7f-zjc4jo 跑到 `status=done`，全鏈路產出顧問報告（reportMarkdown/Html/slide outline/onePage summary/partnerVerdict + 5 artifacts）。
-- **錢 bug 修好**：research(web_search) 搬上 Cloud Run（鏡 anews source-worker），跑 532s（遠超 Vercel 300s 上限，證明非搬不可）、單 dispatch、零重試燒 key。
-- **抓到真因不是 research**：所有 LLM 階段早就 ok，卡關是 `lib/workers/trace.ts` 觀察層遇 undefined 欄位同步拋錯、把健康 case 誤打成 needs_repair。修了根因（剝除 undefined + 同步防護層）。
-- **清死 code**：刪 Vercel 的 research route + lib/pipeline/research.ts（真相分裂風險），研究單一真相來源現在只剩 Cloud Run worker。
+- **第二個真實案跑通**：青田茶業 RTD 機能茶 case-mptmphf0-ff3k7z 跑到 `status=done`，用新報告模板產出 `~/Downloads/MACS/青田茶業_report.html`（134KB；13 dividers / 14 callouts / 3 tables / 5 md blocks，XSS escaped，partnerVerdict=revised，背景+風險章齊）。
+- **跨專案 research 修復**：青田茶業 research 卡「plan v1 superseded」→ 真因是 worker SA 指錯專案讀錯 Firestore（真相分裂）+ `--update-secrets` 重用舊 image（讀 default DB 非 named macs）。建 `macs-firebase-sa`（moumou-os SA）+ grant + **從 source 重 build**（revision `00003-lqh`）才生效。本機 replay 先證 source 會 PASS，沒白燒遠端 cycle（L9）。
+- **兩根韌性修（已上 prod，未 commit）**：synthesis bridge 524 → 快取 evidence-alignment pass 成單一 call、122.6s 過；synthesis Zod `drawsFrom` 偶爾漏填炸整份 → `.default([])`（L10）。
+- **後台設定頁比對**：MACS settings 只有魂/prompt 編輯；ANEWS 多一塊「Pipeline 參數」tab（fullAuto 開關 + 字數/段落/門檻可調 + qa-checks API）。已回報 Adam，**未動手**（他說「先問」）。
 
 ---
 
-## 今天改了哪些檔案（全在 ~/.ailive/macs-platform，git 本地，無遠端）
+## 今天改了哪些檔案（~/.ailive/macs-platform，git 本地）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `cloud-run/research-worker/*` | 新建整個 Cloud Run worker（express+tsx，vendored firestore/cloudTasks/idempotency + 直連 API key 跑 web_search；idempotency 用 MACS failed-可重入語意，不抄 ANEWS 舊 bug）|
-| `lib/orchestration/enqueue.ts` | productionEnqueue 加 overrideBaseUrl 參數 |
-| `app/api/workers/issue-tree/route.ts` | research enqueue 帶 RESEARCH_WORKER_BASE_URL（空→fallback Vercel，dev 大聲壞）|
-| `vercel.json` | functions.maxDuration=300 |
-| `lib/workers/trace.ts` | 修根因：writeWorkerTrace 剝 undefined + 同步防護 |
-| 刪 `app/api/workers/research/route.ts` + `lib/pipeline/research.ts` | 死副本，端到端證明走 Cloud Run 後清掉 |
+| `lib/llm/synthesis.ts` | `drawsFrom: z.array(z.string()).default([])`（一個缺 tag 不毀整份）|
+| `app/api/workers/synthesis/route.ts` | evidence-alignment pass 快取（readArtifact/writeArtifact `evidence_qa`），retry 減半 bridge call |
+| GCP secret `macs-firebase-sa` | 新建 moumou-os SA secret + grant secretAccessor，rebind research worker |
+| research worker | 從 source 重 build → `macs-research-worker-00003-lqh` |
+| memory `feedback_framework_vs_reflex.md` | 追加 2026-05-31「猜在先、replay 在後」第二案例 |
 
-> Cloud Run worker URL：`https://macs-research-worker-754631848156.asia-east1.run.app`。6 個 macs-* 佇列 maxAttempts 已全設 3。
-> zhu-core：LESSONS_2026-05-31.md 追加 L7/L8、WORKLOG 追加深夜場段。
+> ⚠️ synthesis.ts + route.ts 兩根韌性修**已部署 prod 但尚未 git commit**——接棒記得 commit。scratch `scripts/_*.mjs` + `cloud-run/research-worker/inspect-db.mjs` 待清。
 
 ---
 
 ## 下一步（接棒第一件）
 
-1. **跑第二個全新 case 從 brief 進場**，驗證完整鏈路（這次只是重跑卡住的舊案，還沒驗過從頭 brief-intake 進場的全流程）。後台開新案：https://macs-platform.vercel.app（密碼見 Vercel env `ADMIN_PASSWORD`）。
-2. **追 export schema-invalid blip 根因**（見卡住欄）。
-3. **補 reference memory**：`reference_firestore_add_sync_throws_undefined`（Firestore .add 同步驗證拋錯陷阱，跨專案可複用）—— 被 reflex `solve_root_not_symptom` 規則誤觸擋下，Adam 跑 `zhu fp solve_root_not_symptom` 後我再寫。核心知識已進 project_macs_platform.md + LESSONS L7。
-4. **Adam 待決**：macs-platform repo 遠端放哪（決定後才能 push）。
+1. **Adam 待決：MACS 後台補「Pipeline 參數」tab** —— 把寫死在 code 的 fullAuto/門檻搬上後台。參照 `~/.ailive/anews-platform/app/dashboard/settings/page.tsx` + `app/api/settings/{pipeline,qa-checks}/route.ts`。Adam 說「先問」，**沒說動手前不要建**。
+2. **macs-platform housekeeping**：commit synthesis.ts + route.ts 兩根修；清 scratch scripts/_*.mjs + inspect-db.mjs。
+3. **（待決）bridge 524 根因**：synthesis 級大 prompt 撞 Cloudflare ~130s。要動共用 bridge VM（Sonnet --effort low 或拉高 timeout）——勿自行動 bridge，先問 Adam。
 
 驗刀（本機走 bridge 不燒錢）：`cd ~/.ailive/macs-platform && node --env-file=.env.local node_modules/.bin/tsx scripts/test-orchestration.mts`（21/21）。
-讀現場（ADC 讀 Firestore，不碰 SA secret）：node 腳本放 `cloud-run/research-worker/` 內跑，`admin.credential.applicationDefault()` + projectId `moumou-os`。
+讀現場（ADC 讀 Firestore，不碰 SA secret）：node 腳本放 `cloud-run/research-worker/` 內跑，`admin.credential.applicationDefault()` + projectId `moumou-os`，named DB `macs`。
 
 ---
 
 ## 卡住 / 未解
 
-- **export schema-invalid blip**：重跑 export 時 05:02 出現一次 `schema invalid（expected string）`，maxAttempts=3 重試一次自己過了、case→done，但根因未查，可能偶發重現。
-- **bridge usage inputTokens=3**：bridge（Max）回的 usage 是 placeholder，非真實 input token 計數（成本對賬時要知道）。
-- **macs-platform git 無遠端**：本機 commit 推不出去，待 Adam 定 repo。
-- 05-30 session 遺留未提交檔（archive/anews-stuck-del-20260530/ 等）仍在 zhu-core，非今晚的，Adam 確認要不要提交。
+- **bridge(Max) 524 天花板**：synthesis 級大 prompt 撞 Cloudflare edge timeout ~130s。本次靠快取減 call 壓下，根因未除（共用 bridge VM 改動，待 Adam 決策）。
+- **needs_repair 無自動回復**：靠 Cloud Tasks maxAttempts=3 韌性接，缺 ANEWS 式 watchdog。
+- **macs-platform .env.local WORKER_SECRET 過期**：本機 len 23，prod len 21；本機驅動 worker 要先 `vercel env pull`。
+- **bridge usage inputTokens=3**：bridge（Max）usage 是 placeholder，非真實計數（成本對賬要知道）。
+- 05-30 session 遺留未提交檔（archive/anews-stuck-del-20260530/ 等）仍在 zhu-core，Adam 確認要不要提交。
 
 ---
 
@@ -89,4 +87,4 @@
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-31 深夜場 · 築*
+*2026-05-31 收尾場 · 築*
