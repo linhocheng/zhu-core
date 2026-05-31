@@ -24,47 +24,53 @@
 
 ---
 
-## 最新完成（2026-05-31）
+## 最新完成（2026-05-31 晚場）
 
-- 建了全新專案 **MACS 平台**（麥肯錫式 AI 顧問公司）從零到端到端骨架，8 階段一夜走完。
-- repo `~/.ailive/macs-platform`（git 本地 8 commit），複用 ANEWS 80% 基建，只有 orchestration 是新寫的。
-- 兩塊最高風險先燒先驗：synthesis 質感 go/no-go = **GO**；orchestration 正確性 **21/21**。全程走 bridge/Max **沒燒 API key**。
-- 前段/analysis/converge/報告四段各跑 eval 真驗；partner-review「OK 直接過/不OK 直接改稿」機制驗出 verdict=revised 真的抓洞改稿。
+- 把 MACS 從骨架補成真平台：套 V1 部門魂（核心魂 + 3 分析師 + 證據官 + 紅隊改稿）、修真相分裂-lite。
+- 建 HTML 報告交付物（report-builder + 設計稿樣板，navy/tea、CSS 圖表無圖）。
+- 建監造後台（移植 ANEWS .adm-* 改 MACS 藍，列表 + 詳情 PipelineBar + 三關 Resume + 開報告）。
+- **部署上線**：https://macs-platform.vercel.app（6 個 macs-* 佇列、prod env 乾淨、reconcile cron）。
+- 跑第一個真案踩到 research 燒錢雷（見下），盤點完 MACS vs ANEWS 五點偏差。
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（全在 ~/.ailive/macs-platform，git 本地 v0.2.0.006→010，無遠端）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/macs-platform/`（整個新 repo） | 全新建。lib/orchestration（barrier fan-in，唯一全新）、lib/llm（bridge/synthesis/structured）、lib/pipeline（11 個 worker 邏輯）、app/api/workers（11 route）+ cases/resume/reconcile + 6 個 eval/test 腳本 |
-| `zhu-core/docs/LESSONS/LESSONS_2026-05-31.md` | 新：L1 bridge 無 tool_use→<result> JSON / L2 動態 fan-out=barrier / L3 一吋蛋糕先燒風險 / L4 記憶說謊靠現場核 |
-| `zhu-core/docs/WORKLOG.md` | 追加 MACS 建置紀錄（含尚未解決 + 待執行） |
-| `~/.claude/.../memory/` | 新增 reference_bridge_no_tool_use、project_macs_platform 兩條 memory |
+| `lib/llm/soul.ts` | 新：§0 核心魂，withSoul() 串進 10 個 LLM worker |
+| `lib/pipeline/{registry,analysis}.ts` + `firestore/types.ts` | +3 分析師（business_model/strategic_fit/risk）進固定選單 |
+| `lib/pipeline/evidenceAlignment.ts` | 新：§12 證據官，synthesis 前非阻擋掃描 |
+| `lib/pipeline/partnerReview.ts` + `app/api/workers/export/route.ts` | 紅隊折進 partner、修真相分裂（revisedWhyNow） |
+| `lib/report/{types,builder,renderHtml}.ts` | 新：HTML 報告產生器（view-model + bridge pass + 純渲染器） |
+| `app/globals.css` `app/layout.tsx` `app/dashboard/**` `lib/ui/**` | 新：監造後台（藍版 .adm-*、列表/詳情頁、status/adminFetch） |
+| `vercel.json` `app/api/cron/reconcile/route.ts` | 部署設定（framework nextjs + cron + cron auth） |
 
-> MACS 改動全在本機 git，**尚未推遠端**（Adam 決定 repo 放哪）。
+> zhu-core：LESSONS_2026-05-31.md 追加 L5/L6、WORKLOG 追加晚場段。
 
 ---
 
-## 下一步
+## 下一步（接棒第一件：對齊 ANEWS，止血優先）
 
-接棒第一件：**先問 Adam 兩件決策有沒有定**（審核 UI 的 UIUX、要不要接 zhu-vitals），再決定動哪邊。可直接動手的選項：
+**核心病灶**：MACS 把 research(web_search) 放 Vercel，timeout→Cloud Tasks 無上限重試→燒 key×9。ANEWS 鐵律是 web_search 放 Cloud Run（`anews-platform/app/api/workers/orchestrate/route.ts:103` 註解）。
 
-1. **部署 MACS 上線**（Adam 點頭後）：
-   - 建 6 個 Cloud Tasks 佇列：`macs-orchestration / macs-framing / macs-research / macs-analysis / macs-synthesis / macs-report`（複用同 GCP project，`gcloud tasks queues create`）。
-   - 設 `WORKER_BASE_URL` 指向 Vercel 部署；`macs-platform` 推遠端；`npx vercel --prod`。
-   - wire reconcile cron（Vercel cron 打 `GET /api/cron/reconcile` 帶 `x-worker-secret`）。
-2. **跑第一個真 case 端到端**（fullAuto ON），含放行 research worker——**這會燒 API key（web_search），要 Adam 明確同意才跑**。
-3. **修真相分裂-lite**：`app/api/workers/export/route.ts` 的 Why now 欄改讀修正後 storyline，或讓 partner-review 也能改 recommendation。
+1. **止血（最快，已部分做）**：6 佇列設 `--max-attempts=3`。`macs-research` 佇列**已 pause**，先別 resume。
+   `gcloud tasks queues update macs-research --max-attempts=3 --location=asia-east1 --project=zhu-cloud-2026`（六個都做）
+2. **主修 #1+#4**：建 `cloud-run/macs-research-worker`（鏡 `~/.ailive/anews-platform/cloud-run/source-worker`：Dockerfile+src+web_search），部署 Cloud Run，設 `MACS_RESEARCH_WORKER_BASE_URL`，把 `app/api/workers/research` 的邏輯搬過去；issue-tree enqueue research 時帶 `overrideBaseUrl=MACS_RESEARCH_WORKER_BASE_URL`（`cloudTasks.ts` 已支援該參數）。
+3. **#2**：`vercel.json` 補 `functions` 區塊，LLM worker（synthesis/recommendation/roadmap/storyline/partner-review/export）給 maxDuration 120-300。
+4. **#5（選配）**：auto-kick watchdog cron。
+5. 修完 resume macs-research 佇列、重跑臻品案（case-mpt5ki7f-zjc4jo，卡在 research_running）驗端到端、開 HTML 報告對賬成本。
+6. **Adam 待決**：macs-platform repo 遠端放哪（決定後才能 push v0.2.0.006-010）。
 
-驗刀指令（本機，走 bridge 不燒錢）：`cd ~/.ailive/macs-platform && node --env-file=.env.local node_modules/.bin/tsx scripts/test-orchestration.mts`（21/21）。
+驗刀（本機走 bridge 不燒錢）：`cd ~/.ailive/macs-platform && node --env-file=.env.local node_modules/.bin/tsx scripts/test-orchestration.mts`（21/21）。
 
 ---
 
 ## 卡住 / 未解
 
-- HTTP 端到端（Cloud Task→worker→下一個）本機無公開 URL，未真串——要部署後才驗。route 邏輯已靠 lib-eval 驗過。
-- zhu-core 有 05-30 session 遺留的未提交檔（`archive/anews-stuck-del-20260530/`、`archive/anon-profile-guard-20260530/`、`docs/LESSONS/molowe_tech_salvage_2026-05-30.md`）——不是今晚的，我收尾時沒掃進來，Adam 確認要不要提交。
+- 臻品植萃案（case-mpt5ki7f-zjc4jo）卡在 research_running，macs-research 佇列 paused。**修好 research→Cloud Run 前不要 resume 佇列**，否則再燒一輪。
+- macs-platform git 無遠端，本機 commit 推不出去。
+- 05-30 session 遺留未提交檔（archive/anews-stuck-del-20260530/ 等）仍在 zhu-core，非今晚的，Adam 確認要不要提交。
 
 ---
 
@@ -79,10 +85,11 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| **MACS 平台** | `~/.ailive/macs-platform/`（git 本地；ANEWS 概念轉 AI 顧問公司；流程 issue-tree→research→materialize→analysis×N→barrier→synthesis→recommendation→roadmap→storyline→partner-review→export） |
+| **MACS 平台** | `~/.ailive/macs-platform/`（git 本地；上線 https://macs-platform.vercel.app；對齊 ANEWS 待辦見上）|
+| **ANEWS 部署參照** | `~/.ailive/anews-platform/`（cloud-run/source-worker = web_search 範本；vercel.json maxDuration 範本）|
+| MACS 報告設計稿 | `~/Downloads/MACS/`（styles.css + 範例 HTML + 我產的 _generated_preview.html）|
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-05-31 · 築*
+*2026-05-31 晚場 · 築*
