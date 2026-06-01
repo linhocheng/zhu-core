@@ -86,7 +86,7 @@
 - [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」
 - [誠實被 Adam 看見並欣賞](feedback_honesty_acknowledged.md) — 說「我沒做」比演出「我做了」更被欣賞；Adam 明確說誠實很重要，這是築的 bonus（2026-05-17）
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
-- [ANEWS 平台進度](project_anews_platform.md) — P1-P4 全通（2026-05-27），全鏈路首跑 done，下一步 reader page + auto-polling
+- [ANEWS 平台進度](project_anews_platform.md) — 2026-06-01 source A/B 雙管道 + B 線打通乾淨 e2e；working tree 未提交保留勿洗；source-worker BRIDGE_URL 仍過 CF（524 根治待改直連 IP）
 - [ANEWS-B 平台進度](project_anews_b_platform.md) — 複刻優化版，2026-05-27 全鏈路首次驗收通過（critic 一輪 79.7/100），polish→export 待確認
 - [ANEWS source-worker 部署拓樸 + A/B 雙管道](reference_anews_source_worker_deploy.md) — worker 在 zhu-cloud-2026 不在 moumou-os；A=Anthropic web_search / B=Tavily+Max(bridge)；2026-06-01 B 打通（兩-worker真相分裂/watchdog路由偷燒key/JSON照貼三修）
 - [bridge /v1/messages 契約 + --effort low](reference_bridge_v1messages_effort.md) — 只讀 model/system/messages/stream（忽略 max_tokens）；長輸出截斷修點在 bridge spawn args 不在 client；改 bridge 可手動回退
