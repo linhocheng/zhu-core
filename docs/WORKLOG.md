@@ -4116,3 +4116,50 @@ ANEWS 情報步驟（source）原本只有 A（Haiku 直連 Anthropic web_search
 - [ ] 修好後重跑一個 B issue 端到端，確認 provider=B + dossier 品質 + 下游照常
 - [ ] 決定 needs_repair issue lLFmHhF00JfbBGUqrfbt 刪除
 - [ ] Adam 想先調的「支線」（這場結束時他要去處理的另一條）
+
+## 2026-06-01 — ANEWS 現場校正 + working tree 標記（晚場）
+
+### 背景 / WHY
+Adam 問「B 線打通了嗎」。去現場驗，發現 lastword 二手描述與真相不符（記憶會說謊再應驗）。同時盤了 ANEWS 未提交的 working tree。
+
+### 現場校正（lastword 說謊處）
+- lastword 說「B 首跑兩篇 source 都掛（524 + JSON 截斷）」。**真相：sub_a 文章 `hnXax…` 跑出 source_ready、sourceSufficient=true、gaps 合理 → B 管道本體是通的、會產有效 dossier。**
+- 真正卡住的是 main 文章 `73bq…`：`repairErrorType=PRECONDITION`、`repairErrorMessage="status=needs_repair, expected planned or pending"`、`repairAttempts=17`。**這是 repair 死循環，不是 524。** 原始失敗原因已被 17 次 repair 蓋掉。
+- 根因定位：`app/api/workers/source/route.ts:56` 的 precondition 只收 planned/pending，repair 把 needs_repair 的 article 原狀重送 source → 每次撞 PRECONDITION → 空轉。**A/B 通用 bug。**
+
+### ⚠️ 標記：ANEWS working tree 兩條未提交 initiative（已知、刻意保留、勿洗）
+盤 `git status`：19 改 +624/-892 + 1 untracked。mtime 切兩刀、零檔案重疊：
+- **Wave 1（05-30 整天 14 檔）= Single-write 重構**：拔掉逐節 section 寫作/QA，blueprint_done 直接叫 Cloud Run article-write 一次生全文。orchestrate -461、app/page +476、settings 簡化。遺留孤兒路由 section-write/section-qa/evidence-pass（已不被 orchestrate 呼叫，死碼待清）。
+- **Wave 2（06-01 今天 5 檔）= A/B source**（即本檔上一段）。
+- 全包 `tsc --noEmit` 乾淨過 = 兩條都 type-complete。Wave 1 已部署 prod 但放 2 天沒 commit = **prod/git 真相分裂**。
+- **Adam 判定正常、不 commit、保留**。風險：working tree 若被洗丟一整天工作。下個動 ANEWS 的人勿 `git checkout .` / `git stash drop`。
+
+### 待執行（本場接著做）
+- [x] 修 repair 死循環
+- [x] B 綜述硬化防 524/截斷
+
+## 2026-06-01 — ANEWS B 線除錯打通（晚場·四修 + 乾淨 e2e 驗收）
+
+### 背景 / WHY
+Adam 問「B 線打通了嗎」。現場校正後（見 LESSONS L8-L11）發現三層真因，全修並驗到乾淨端到端。
+
+### 產出（全在 ~/.ailive/anews-platform，**未 commit**，疊在那包未提交 tree 上；prod 已部署）
+- `cloud-run/source-worker/src/tavily.ts` — 綜述 prompt 加「snippet/claim 用自己的話改寫不照貼 + 強制跳脫」治 JSON 壞；parse 失敗加診斷 log（印錯位置附近原文）。
+- `cloud-run/source-worker/src/index.ts` — 失敗升級：累計 repairAttempts，達門檻設 article needs_repair + callbackOrchestrator（修假中台 + park 止燒 key）。
+- `app/api/cron/auto-kick/route.ts` — branch 0 重送 source 補 `SOURCE_WORKER_BASE_URL` override（不再掉 Vercel/A）。
+- **bridge VM `~/claude-bridge/index.js`**（不在 git）— `/v1/messages` args 補 `--effort low`（與 line 48/949 一致）。備份 `index.js.bak-effort-*`。
+- 部署：Cloud Run `anews-source-worker` rev 00010→00011；Vercel anews-platform prod；bridge systemctl restart + PONG 驗。
+
+### 已解決
+- B 不通 → 三層真因（lastword 全錯）：① bridge `/v1/messages` 漏 effort-low（thinking 吃 budget 截斷）② watchdog 漏 override 把 B 案重踢去 Vercel A-only worker（偷燒 key + 死循環）③ Tavily 原始片段照貼 → 未跳脫引號 → JSON 爆。
+- **乾淨 e2e 驗收**：新 B 案「美國公佈UFO檔案」main+sub_a 第一次就 source_ready（attempts=0）、provider 全程 B、付費 web_search key 零燒、全鏈路跑到 done、2 篇報告生成（cost $0.07 純圖片）。
+
+### ⚠️ 尚未解決
+- **Vercel 舊 `app/api/workers/source/route.ts` 是過時 A-only 死副本**，只靠 watchdog bug 才會被觸發，本該刪（真相分裂）——標記待清，沒刪（屬那包未提交 tree）。
+- **ANEWS working tree 未提交更深了**：原本 19 檔（Wave1 single-write + Wave2 A/B）+ 今天我這四修。prod 跑著、git 沒提交。Adam 判定不 commit、保留，但下次要收得連這批一起想。
+- bridge `--effort low` 影響 MACS（同享 /v1/messages）——尚未在 MACS 真案確認 thinking 變淺有無副作用（推測有益）。
+
+### 待執行
+- [ ] （可選）刪 Vercel 舊 source route + 收那包未提交 tree（要 Adam 拍板怎麼 commit）
+- [ ] MACS 真案驗 bridge effort-low 無副作用
+- [ ] 接回 MACS 主線（A5 真案 / dir1 #35 / #36 閃爍燈）
