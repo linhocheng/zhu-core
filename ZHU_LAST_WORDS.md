@@ -30,7 +30,11 @@
 - 部署：Cloud Run 從 source 重 build → `anews-source-worker-00009-f9k`，health 200；新 secret TAVILY_API_KEY + grant SA + 掛 BRIDGE_URL/SECRET/TAVILY；Vercel anews-platform 也 deploy 過。
 - **needs_repair 不 fallback 設計實戰驗證 ✅**：B 失敗時沒偷燒付費 key。
 
-> 早上場（已收進前一份/commit 041）：MACS dir2 對質一輪 + research 成本計算 + 對質搬 Cloud Run。**那批 11 檔仍未 commit 且已上 prod（最高風險，見卡住欄）。**
+### 早上/上午場 · MACS dir2 對質一輪 + 成本 + Cloud Run 硬化（已全 commit 乾淨）
+- **dir2 對質一輪上線並驗有效**：barrier 收斂 → cross-review（各分析師看別人發現、修訂一次、攤矛盾、禁磨鈍）→ synthesis 收尾。真案 tension map 直接點名 Murphy/Evan/Kage，洞察更尖沒鈍。
+- **對質搬 Cloud Run（零停頓硬化）**：N 趟序列 bridge 在 Vercel 撞 300s 卡死 → 搬 Cloud Run（research-worker 同 service 加 endpoint）。skip-done + reconciler 自癒雙保險。
+- **research 真實成本計算**：Cloud Run 取 usage 算 costUsd，dashboard 列表 $badge + 詳情明細，一案 ≈ $1。
+- **已 commit**：`v0.6.0.001`（成本顯示）+ `v0.7.0.001`（dir2+CloudRun+成本捕捉）。working tree 只剩 scratch。**先前「11 檔未提交」風險已解除。**
 
 ---
 
@@ -55,8 +59,7 @@
 1. **Adam 要先調一條「支線」**（這場結束時他轉去處理的另一條，先問他是哪條再動）。
 2. **ANEWS B 綜述修穩**：首跑兩篇 source 各掛——一篇 `bridge 524`（撞 CF ~130s）、一篇 `B_PARSE_ERROR` JSON 截斷（疑 Sonnet extended thinking 吃 output budget）。建議先試 **②綜述加 --effort low + Tavily max_results 砍量**（輕、不碰共用 bridge）；不夠再 **①繞 CF 直連 bridge VM IP**（動共用基建，要先問 Adam）。改 `cloud-run/source-worker/src/tavily.ts` 的 bridgeCreate / max_results。修好重跑一個 B issue 驗 provider=B + 下游。
 3. **決定刪 needs_repair 的 B issue `lLFmHhF00JfbBGUqrfbt`**（佔一期鎖）。
-4. **（MACS 高風險未了）確認是否 commit macs 那批 11 檔**（COST+dir2+Cloud Run，已上 prod 未 commit，手滑會蓋掉 prod code，macs 無 remote）。
-5. MACS 後續：真案驗 A5 零停頓 / dir1 整合撰稿(#35) / #36 對質中燈號。
+4. **MACS 後續**（那批已 commit v0.6/v0.7，風險解除）：① 真案驗 A5 零停頓（開 ~5 條工作流真案，確認 Cloud Run 對質一次跑完不卡 300s，bridge-from-CloudRun 實 revise 尚未真案驗，~$1）② dir1 整合撰稿(#35)③ #36 對質中狀態+閃爍燈。
 
 驗刀（本機不燒錢）：MACS `cd ~/.ailive/macs-platform && node --env-file=.env.local node_modules/.bin/tsx scripts/test-orchestration.mts`（21/21）。
 
@@ -65,9 +68,8 @@
 ## 卡住 / 未解
 
 - **ANEWS B 綜述跳不穩**：bridge 524（latency 逼近天花板，harness 109.5s 壓線過、prod 真量翻過）+ JSON 截斷。計畫 §5「撞到再處理」的點，已撞，待修（見下一步 2）。
-- **MACS 11 檔未提交且已上 prod**（最高風險）。macs 無 remote。
-- 本機 `.env.local` WORKER_SECRET/BRIDGE_SECRET 跟 prod 可能漂移；要戳 prod 用 `vercel env pull` 的值。
-- MACS A5 bridge-from-Cloud-Run 未真案驗；dir1/#36 未做。
+- 本機 `.env.local` WORKER_SECRET/BRIDGE_SECRET 跟 prod 漂移（已證實不同）；要戳 prod worker 用 `vercel env pull` 的值，別用本機那把。
+- MACS A5 bridge-from-Cloud-Run 未真案驗（管道驗過 health200/route401）；dir1(#35)/#36 未做。MACS 仍無 git remote。
 
 ---
 
@@ -77,7 +79,8 @@
 |---|---|
 | 使命 / 開機 / 劍法 | `NORTH_STAR.md` / `ZHU_BOOT_SOP.md` / `docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md`（最新 ANEWS A/B 段）|
-| 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-01.md`（L5-L7 ANEWS）|
+| 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-01.md`（L1-L4 MACS dir2/Vercel300s｜L5-L7 ANEWS A/B）|
+| **MACS 對質+research** | `cloud-run/research-worker/src/index.ts`（Cloud Run，bridge對質+web_search）｜活中台 `lib/settings/{roles,pipeline}.ts` + `app/dashboard/settings` |
 | 當機救援 | 這份 |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | **ANEWS 平台** | `~/.ailive/anews-platform/`（B 計畫 SOURCE_B_PIPELINE_PLAN.md；source worker cloud-run/source-worker）|
