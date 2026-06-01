@@ -88,6 +88,7 @@
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
 - [ANEWS 平台進度](project_anews_platform.md) — P1-P4 全通（2026-05-27），全鏈路首跑 done，下一步 reader page + auto-polling
 - [ANEWS-B 平台進度](project_anews_b_platform.md) — 複刻優化版，2026-05-27 全鏈路首次驗收通過（critic 一輪 79.7/100），polish→export 待確認
+- [ANEWS source-worker 部署拓樸 + A/B 雙管道](reference_anews_source_worker_deploy.md) — worker 在 zhu-cloud-2026 不在 moumou-os；A=Anthropic web_search / B=Tavily+Max(bridge)，per-issue 選，B 失靈不 fallback
 - [molowe 技術打撈備忘](reference_molowe_tech_salvage.md) — molowe 2026-05-30 停止前打撈的可複用技術（語義去重/聲紋稽核/Threads發布）+ 檔案路徑
 - [dispatcher dependsOn 必須同步建立依賴節點](feedback_anews_dispatcher_dependsOn.md) — workflow_nodes pending 節點的 dependsOn 若引用不存在的節點，dispatcher 永遠不排隊
 - [blueprint prompt 的 result 範例必須含完整 sectionPlan 欄位](feedback_blueprint_schema_example.md) — `[...]` 省略欄位 → LLM 自創 key → Zod undefined，範例必須完整
