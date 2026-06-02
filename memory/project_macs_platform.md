@@ -1,6 +1,6 @@
 ---
 name: MACS 平台（麥肯錫式 AI 顧問公司）
-description: ANEWS 概念轉 AI 顧問公司，2026-06-02 GitHub 推上 + Marcus dir1 + #36 閃爍燈 + 中台活路全接通
+description: ANEWS 概念轉 AI 顧問公司，2026-06-02 GitHub 推上 + Marcus dir1 + #36 閃爍燈 + 中台活路全接通 + research 改 B 線（$0，已無付費 key）
 type: project
 originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 ---
@@ -22,4 +22,9 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 - **#36 閃爍燈 `cross_review_running` ✅**：barrier 觸發 cross-review 時寫入，Cloud Run 完成切 synthesis_running；`.adm-badge-pulse` 1.6s 動畫；pipeline step 加「對質」節點。
 - **中台活路全接通（假中台修復）✅**：Victoria Cloud Run 改讀 Firestore `reportBuilder`（`getReportBuilderRole()`）；對質 6 分析師每 memo 帶入 `roleFraming[workerType]` persona。
 
-**⚠️ 待辦**：①MACS research 移植路 A/B 待 Adam 確認再動手（路 A=保 markdown/路 B=JSON schema）；②Marcus 真案驗品質；③#36 閃爍燈驗證（等新 case 跑到 cross-review）。細節看 `ZHU_LAST_WORDS.md`。
+**2026-06-02 傍晚（research 改 B 線收尾）**：
+- **路 A 拍板（markdown-direct，B-only 無 toggle）✅**：research-worker 改 generateResearchQueries→Tavily（免費）→Max bridge 綜述，移除 web_search/getLLMClientDirect/Anthropic import/ANTHROPIC_API_KEY/價格常數；BRIDGE_URL 直連 `35.236.185.222:3001`；輸出仍 markdown dossier（下游 0 改）。rev `00012-qmf`。
+- **程式碼層防杜撰 URL ✅**：`stripFabricatedUrls(markdown, hits)` 用 Tavily hits validUrls set 擋素材外 URL，移除數寫 `dossier.fabricatedUrlsRemoved`。rev `00013-cpc`。commit `5028432`。同事 structured-JSON 提案評估後不採（YAGNI+真相分裂+跨角色邊界），只借這點。
+- research 不再是燒付費 key 的點，全鏈路 $0（marginal）。
+
+**⚠️ 待辦**：①**MACS B research path 未跑真案 e2e**（code+部署+health 過，端到端未過——接棒第一件）；②看完整 MACS 資料流（被防杜撰任務插隊未做）；③Marcus 真案驗品質；④#36 閃爍燈驗證。細節看 `ZHU_LAST_WORDS.md`。
