@@ -23,8 +23,13 @@
 
 ---
 
-## 最新完成（2026-06-02 下午 · MACS dir1+dir2 強化 + 中台活路接通）
+## 最新完成（2026-06-02 傍晚 · MACS B 線收尾 + 程式碼層防杜撰）
 
+- **MACS research 改走 B 線 ✅（決策=路 A markdown-direct，B-only）**：research-worker 改 Tavily（免費）+ Max bridge 綜述，移除付費 web_search / ANTHROPIC_API_KEY / 價格常數，輸出仍 markdown dossier（下游 0 改）。BRIDGE_URL 直連 `35.236.185.222:3001`。部署 rev `00012-qmf`。
+- **程式碼層防杜撰 URL ✅**：`stripFabricatedUrls(markdown, hits)` 用 Tavily hits 建 validUrls set，dossier 任何素材外 URL 換成「連結已移除」，移除數寫 `dossier.fabricatedUrlsRemoved`。部署 rev `00013-cpc`，`/health` ok。commit `5028432`。同事 structured-JSON 提案評估後不採（YAGNI + 真相分裂 + 跨角色邊界），只借這一點。
+- ⚠️ **B research path 仍未跑真案 e2e**（config+build+health 過，端到端未過）。
+
+### 前情（2026-06-02 下午，MACS dir1+dir2 + 中台活路）
 - **MACS GitHub 推上去 ✅**：建 private repo `linhocheng/macs-platform`，SSH push，硬碟全滅風險解除。
 - **dir1 整合撰稿者 Marcus ✅**：Victoria 結構化後，Marcus 做第二次整合 pass，帶全 chapter + synthesis context，重寫 soWhat/decisionImpact/narrativeBridge 使各章指向 coreStake。bridge call 1 次，timeout 180s，non-fatal fallback。`integrationWriter` key 已入中台（活路）。
 - **#36 閃爍燈號 `cross_review_running` ✅**：新增 case status，barrier 觸發 cross-review 時寫入，Cloud Run 完成後切 synthesis_running。badge `.adm-badge-pulse` 1.6s 閃爍動畫，`PULSE_STATUSES` Set 管控。pipeline step 加「對質」節點。
@@ -43,7 +48,7 @@
 
 | 檔案 / 資源 | 改了什麼 |
 |---|---|
-| `~/.ailive/macs-platform/cloud-run/research-worker/src/index.ts` | 新增 getIntegrationWriterRole + runIntegrateChapters + /integrate-chapters；getReportBuilderRole 讀 Firestore；getCrossReviewRole 擴充 roleFraming；enqueueSynthesis 先寫 cross_review_running |
+| `~/.ailive/macs-platform/cloud-run/research-worker/src/index.ts` | **B 線**：runResearch 改 generateResearchQueries→tavilySearch→bridge 綜述，移除 web_search/getLLMClientDirect/Anthropic import/價格常數；**防杜撰**：normalizeUrl + stripFabricatedUrls，dossier.fabricatedUrlsRemoved。（前：getIntegrationWriterRole + runIntegrateChapters + /integrate-chapters；getReportBuilderRole/getCrossReviewRole 讀 Firestore；cross_review_running） |
 | `~/.ailive/macs-platform/lib/report/builder.ts` | 新增 integrateAnalysisChapters()；AnalysisChapterSchema 加 narrativeBridge；orderedAnalysis 改用 integratedChapters |
 | `~/.ailive/macs-platform/lib/firestore/types.ts` | CaseStatus 加 `cross_review_running` |
 | `~/.ailive/macs-platform/lib/ui/status.ts` | STATUS_META / PIPELINE_STEPS 加對質；export PULSE_STATUSES |
@@ -59,22 +64,21 @@
 
 ## 下一步（接棒第一件）
 
-**MACS research 移植：確認路 A 或路 B**（跟 Adam 對齊後動手）：
-- **路 A**（簡單）：保 markdown 輸出，只改 synthesis prompt 讀 Tavily 格式 → analysis worker 不動。
-- **路 B**（穩健）：換 JSON schema 輸出 → 要改 analysis worker + 重驗 pipeline。
-- **BRIDGE_URL 用直連 IP**：`35.236.185.222:3001`，不過 CF domain（避免 524）。
-- 確認後按 `ANEWS_OPERATIONS.md §11.9` checklist 逐項打勾。
+**跑一個真實 MACS case 端到端驗 B research path**（research 移植已 code 完成 + 部署，唯獨 e2e 未過——「沒端到端跑過不算完成」）：
+- 開一個真案跑到 export，盯 `dossiers/*` 看：① markdown 品質 ② `fabricatedUrlsRemoved` 有沒有擋到素材外 URL ③ 下游 analysis/synthesis 讀 markdown 正常。
+- 參考 ANEWS B 線真案驗收法（gE4AF2 那種逐 stage 看 provider/err）。
 
 接著：
-2. **Marcus 真案驗品質**：用真實 MACS case 跑到 export，看 narrativeBridge 輸出是否有意義。
-3. **#36 閃爍燈驗證**：等新 case 跑到 cross-review，確認 badge 閃爍出現。
+2. **看完整 MACS 資料流**：Adam 中途問過「整個 MACS 資料流如何」，被防杜撰任務插隊未做。要讀 Vercel workers（materialize/analysis/synthesis/export）+ orchestration/barrier/fan-out，用破綻三處（流動斷裂/真相分裂/邊界模糊）審。
+3. **Marcus 真案驗品質**：narrativeBridge 輸出是否有意義。
+4. **#36 閃爍燈驗證**：等新 case 跑到 cross-review，確認 badge 閃爍出現。
 
 ---
 
 ## 卡住 / 未解
 
-- **MACS research 移植路 A/B 待 Adam 確認**（決策 pending）。
-- **ANEWS source-worker BRIDGE_URL 仍過 CF**（`bridge.soul-polaroid.work`，524 風險存在），待改直連 IP `35.236.185.222:3001`。
+- **MACS B research path 未跑真案 e2e**（code+部署+health 過，端到端未過）——接棒第一件就是這個。
+- ~~ANEWS source-worker BRIDGE_URL 過 CF~~ ✅ 已修直連 `35.236.185.222:3001`（rev 00012-w7r）。
 - `scripts/_*.mts` 診斷腳本 8+ 個未清理（暫留）。
 - ANEWS Vercel 舊 source route（A-only 死副本）標記未刪。
 - ANEWS working tree 深包未 commit（Adam 刻意保留）。
@@ -89,7 +93,7 @@
 
 ```
 brief-intake → problem-framing → issue-tree
-→ research（Cloud Run，付費 API key）
+→ research（Cloud Run，B 線：Tavily 免費 + Max bridge，$0；已無付費 key）
 → analysis（Vercel，bridge）
 → cross-review（Cloud Run，bridge）
 → synthesis（Vercel，bridge）
@@ -166,4 +170,4 @@ curl -X POST https://macs-platform.vercel.app/api/workers/export \
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-02 · MACS dir1 Marcus + #36 閃爍燈 + 中台活路全接通 · 築*
+*2026-06-02 傍晚 · MACS research B 線收尾（markdown-direct）+ 程式碼層防杜撰 URL · 築*
