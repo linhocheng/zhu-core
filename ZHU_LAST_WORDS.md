@@ -15,137 +15,60 @@
 ## 當前環境
 
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING。`claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`（Cloudflare ~130s 邊緣超時 = 524）。bridge listening :3001。SSH：`gcloud compute ssh zhu-dev --zone=asia-east1-b --project=zhu-cloud-2026`。bridge `index.js` 不在 git，改它先下載→本機 edit→grep 驗→上傳→restart，有備份 `index.js.bak-*`。
+- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
+  - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
+  - 跑著 `claude-bridge`（systemd，port 3001）
+  - 對外兩條：①`https://bridge.soul-polaroid.work`（cloudflared tunnel，過 CF，有 ~130s edge timeout）②**`https://bridge-direct.soul-polaroid.work`（新，Caddy+LE 直連 VM，繞開 CF，2026-06-02 建）**
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
-- **zhu-core**：`~/.ailive/zhu-core/`（git，有 remote）
-- **ANEWS 平台**：`~/.ailive/anews-platform/`；prod https://anews-platform.vercel.app；source worker 在 Cloud Run **anews-source-worker**（zhu-cloud-2026 asia-east1）；Firestore moumou-os `(default)`；WORKER_SECRET = `anews-dev-secret-2026`。**working tree 有大包未 commit（Wave1 single-write + Wave2 A/B + 晚場四修），prod 已部署，勿 `git checkout .`/`stash drop`。**
-- **MACS 平台**：`~/.ailive/macs-platform/`；**已推 GitHub `linhocheng/macs-platform`（private）**；prod https://macs-platform.vercel.app；Firestore named DB **`macs`**；Cloud Run `macs-research-worker`（zhu-cloud-2026 asia-east1）；WORKER_SECRET = `anews-dev-secret-2026`。
+- **zhu-core**：`~/.ailive/zhu-core/`（git repo）
+- **MACS 平台**：`~/.ailive/macs-platform/`（git repo，GitHub `linhocheng/macs-platform` private）
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
-## 最新完成（2026-06-02 傍晚 · MACS B 線收尾 + 程式碼層防杜撰）
+## 最新完成（2026-06-02 接棒晚場）
 
-- **MACS research 改走 B 線 ✅（決策=路 A markdown-direct，B-only）**：research-worker 改 Tavily（免費）+ Max bridge 綜述，移除付費 web_search / ANTHROPIC_API_KEY / 價格常數，輸出仍 markdown dossier（下游 0 改）。BRIDGE_URL 直連 `35.236.185.222:3001`。部署 rev `00012-qmf`。
-- **程式碼層防杜撰 URL ✅**：`stripFabricatedUrls(markdown, hits)` 用 Tavily hits 建 validUrls set，dossier 任何素材外 URL 換成「連結已移除」，移除數寫 `dossier.fabricatedUrlsRemoved`。部署 rev `00013-cpc`，`/health` ok。commit `5028432`。同事 structured-JSON 提案評估後不採（YAGNI + 真相分裂 + 跨角色邊界），只借這一點。
-- ⚠️ **B research path 仍未跑真案 e2e**（config+build+health 過，端到端未過）。
-
-### 前情（2026-06-02 下午，MACS dir1+dir2 + 中台活路）
-- **MACS GitHub 推上去 ✅**：建 private repo `linhocheng/macs-platform`，SSH push，硬碟全滅風險解除。
-- **dir1 整合撰稿者 Marcus ✅**：Victoria 結構化後，Marcus 做第二次整合 pass，帶全 chapter + synthesis context，重寫 soWhat/decisionImpact/narrativeBridge 使各章指向 coreStake。bridge call 1 次，timeout 180s，non-fatal fallback。`integrationWriter` key 已入中台（活路）。
-- **#36 閃爍燈號 `cross_review_running` ✅**：新增 case status，barrier 觸發 cross-review 時寫入，Cloud Run 完成後切 synthesis_running。badge `.adm-badge-pulse` 1.6s 閃爍動畫，`PULSE_STATUSES` Set 管控。pipeline step 加「對質」節點。
-- **中台活路接通（假中台修復）✅**：
-  - Victoria Cloud Run：改讀 Firestore `reportBuilder`（`getReportBuilderRole()`），不再寫死。
-  - 對質 6 分析師：`getCrossReviewRole()` 讀 `roleFraming[workerType]`，每個 memo 帶入個性 persona。
-  - 中台 `integrationWriter` 新增為 Marcus 入口。
-
-### 前情（2026-06-02 上午，export 打通）
-- structureAnalysisChapters 移 Cloud Run per-memo，bridge 524 根治。
-- 真案 export 完成，Vercel env + redeploy，enqueueTask 參數修正。
+- 根治 MACS CF 524：VM 裝 Caddy + Let's Encrypt，建直連 host `bridge-direct.soul-polaroid.work`（grey-cloud A record，繞開 CF edge timeout）。
+- Vercel + Cloud Run 的 `BRIDGE_URL` 都改指 https 直連 host（Cloud Run env-only update → rev `00016-xhk`，不 rebuild）。兩條路重 LLM 階段不再被 CF 130s 掐死。
+- 刪死碼 Vercel `app/api/workers/synthesis/route.ts`（真相分裂修復，live synthesis 在 Cloud Run）。
+- commit `d3e1e47` 對齊部署現場（structured-JSON research + Cloud Run synthesis worker + schema 強化），推 GitHub。
+- 更正記憶：structured-JSON 不是「不採」，是線上現役（401 探針確認 deployed=working-tree）。
 
 ---
 
 ## 今天改了哪些檔案
 
-| 檔案 / 資源 | 改了什麼 |
+| 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/macs-platform/cloud-run/research-worker/src/index.ts` | **B 線**：runResearch 改 generateResearchQueries→tavilySearch→bridge 綜述，移除 web_search/getLLMClientDirect/Anthropic import/價格常數；**防杜撰**：normalizeUrl + stripFabricatedUrls，dossier.fabricatedUrlsRemoved。（前：getIntegrationWriterRole + runIntegrateChapters + /integrate-chapters；getReportBuilderRole/getCrossReviewRole 讀 Firestore；cross_review_running） |
-| `~/.ailive/macs-platform/lib/report/builder.ts` | 新增 integrateAnalysisChapters()；AnalysisChapterSchema 加 narrativeBridge；orderedAnalysis 改用 integratedChapters |
-| `~/.ailive/macs-platform/lib/firestore/types.ts` | CaseStatus 加 `cross_review_running` |
-| `~/.ailive/macs-platform/lib/ui/status.ts` | STATUS_META / PIPELINE_STEPS 加對質；export PULSE_STATUSES |
-| `~/.ailive/macs-platform/lib/llm/defaults.ts` | 新增 integrationWriter key（Marcus 完整 persona） |
-| `~/.ailive/macs-platform/lib/orchestration/barrier.ts` | applyDecision synthesize 分支先寫 cross_review_running |
-| `~/.ailive/macs-platform/app/globals.css` | 加 @keyframes macs-pulse + .adm-badge-pulse |
-| `~/.ailive/macs-platform/app/dashboard/page.tsx` + `[caseId]/page.tsx` | badge 套 PULSE_STATUSES 閃爍 |
-| `~/.ailive/macs-platform/app/dashboard/settings/page.tsx` | PROMPT_LABELS 加 integrationWriter |
-| Cloud Run macs-research-worker | 最新 rev（活路接通 + integrate-chapters endpoint） |
-| GitHub linhocheng/macs-platform | 首次推上（private） |
+| VM `/etc/caddy/Caddyfile` | reverse_proxy localhost:3001（bridge-direct host） |
+| Cloudflare DNS | 新增 A record bridge-direct → 35.236.185.222（grey-cloud） |
+| GCP firewall | allow-bridge-tls（tcp 80/443 → tag zhu-dev） |
+| Vercel env `BRIDGE_URL` | → https://bridge-direct.soul-polaroid.work |
+| Cloud Run macs-research-worker env | `BRIDGE_URL` → https 直連 host（rev 00016-xhk） |
+| macs `app/api/workers/synthesis/route.ts` | 刪除（死鏡） |
+| macs `cloud-run/.../index.ts` 等 10 檔 | commit d3e1e47（structured research + synthesis worker + schema） |
+| `memory/project_macs_platform.md` | structured-JSON 更正 + CF 524 根治紀錄 |
+| `docs/LESSONS/LESSONS_2026-06-02.md` | L8 更正 + 新增 L11/L12 |
+| `docs/WORKLOG.md` | 追加接棒晚場段 |
 
 ---
 
-## 下一步（接棒第一件）
+## 下一步
 
-**跑一個真實 MACS case 端到端驗 B research path**（research 移植已 code 完成 + 部署，唯獨 e2e 未過——「沒端到端跑過不算完成」）：
-- 開一個真案跑到 export，盯 `dossiers/*` 看：① markdown 品質 ② `fabricatedUrlsRemoved` 有沒有擋到素材外 URL ③ 下游 analysis/synthesis 讀 markdown 正常。
-- 參考 ANEWS B 線真案驗收法（gE4AF2 那種逐 stage 看 provider/err）。
-
-接著：
-2. **看完整 MACS 資料流**：Adam 中途問過「整個 MACS 資料流如何」，被防杜撰任務插隊未做。要讀 Vercel workers（materialize/analysis/synthesis/export）+ orchestration/barrier/fan-out，用破綻三處（流動斷裂/真相分裂/邊界模糊）審。
-3. **Marcus 真案驗品質**：narrativeBridge 輸出是否有意義。
-4. **#36 閃爍燈驗證**：等新 case 跑到 cross-review，確認 badge 閃爍出現。
+**明天醒來第一件**：跑一個真實 MACS case 端到端，驗兩件事——①CF 524 已根治（重 LLM 階段如 export/structure-analysis 不再 524）②structured research dossier 品質（素材外 URL 有被擋嗎）。
+```bash
+cd ~/.ailive/macs-platform
+# 看 app/api/cases 入口 + scripts/_watch-cases.mts 監控
+```
+為什麼先做：CF 524 修好了但「沒端到端跑過不算完成」，這條已掛兩 session 未打勾。
 
 ---
 
 ## 卡住 / 未解
 
-- **MACS B research path 未跑真案 e2e**（code+部署+health 過，端到端未過）——接棒第一件就是這個。
-- ~~ANEWS source-worker BRIDGE_URL 過 CF~~ ✅ 已修直連 `35.236.185.222:3001`（rev 00012-w7r）。
-- `scripts/_*.mts` 診斷腳本 8+ 個未清理（暫留）。
-- ANEWS Vercel 舊 source route（A-only 死副本）標記未刪。
-- ANEWS working tree 深包未 commit（Adam 刻意保留）。
-
----
-
-## 避雷報告指南（MACS 管線）
-
-> 這份是 Adam 特別要求的。MACS 管線有多個坑，下次卡住先對照這張表。
-
-### 管線全貌（順序）
-
-```
-brief-intake → problem-framing → issue-tree
-→ research（Cloud Run，B 線：Tavily 免費 + Max bridge，$0；已無付費 key）
-→ analysis（Vercel，bridge）
-→ cross-review（Cloud Run，bridge）
-→ synthesis（Vercel，bridge）
-→ recommendation → roadmap → storyline
-→ partner-review（Vercel，bridge）
-→ export（Vercel，bridge + Cloud Run structure-analysis）
-```
-
-### 坑位對照表
-
-| 症狀 | 根因 | 診斷指令 | 修法 |
-|---|---|---|---|
-| bridge 524 | 單次生成 > 100s，Cloudflare 超時 | 看 worker_run.lastError | 找批次 LLM call，拆成 per-item 順序呼叫 |
-| synthesis bridge 524 | cross-review memo 太長（>800 chars），synthesis 一次批次餵 | `_watch-memos.mts` 看 chars | `settings/pipeline.cost.crossReviewMaxChars` 調小（預設 800） |
-| export bridge 524 | `structureAnalysisChapters` 批次 → 已修，Cloud Run per-memo | Vercel logs | 確認 `STRUCTURE_ANALYSIS_BASE_URL` env 有值且 redeploy 過 |
-| case 卡在 `needs_repair` | 連續失敗 3 次，harness 停止重試 | `_check-export-error.mts` | `_repair-case.mts` 重置 status + repairAttempts=0 |
-| export 回 409 `already_running` | Vercel function 還在執行（curl timeout 不等於 function timeout） | Firestore `worker_runs/<taskId>` 看 status | 等 10min lock TTL 過期，或查 Vercel logs 確認 function 狀態 |
-| export worker_run stuck `running` | Vercel function crash 沒 cleanup | `worker_runs/<taskId>.status` | 手動 update status → `failed`，再重發 |
-| synthesis artifact 沒 result 欄 | 舊格式：artifact 存在 `content`，不是 `result` | Firestore 直查 | `readArtifact<T>()` 讀到的是 content 欄，code 已正確，不用改 |
-| Cloud Run 401 Unauthorized | WORKER_SECRET 不對 | curl -v 看 header | 確認 Cloud Run 環境變數 = `anews-dev-secret-2026`；Vercel 同值 |
-| Cloud Run 呼叫 Vercel 回不來 | Vercel lambda 300s 硬上限，Cloud Run 等超時 | Cloud Run logs | 把長任務拆回 Cloud Run 自己做，不要讓 Cloud Run 呼 Vercel 長任務 |
-| barrier 不觸發 synthesis | 某個 workstream_completion 沒寫 | `_watch-barrier.mts` | 找缺少的 workstream，手動補或重跑 analysis |
-| Vercel env 加了但不生效 | 已部署的 Lambda 用舊快照 | Vercel dashboard build log | `npx vercel --prod --yes` redeploy |
-| 中台改 prompt 沒效果 | Cloud Run 寫死 system，沒讀 Firestore | Cloud Run logs 看 system 是否含角色 key | 補 `getXxxRole()` 讀 Firestore，pattern 看 `getReportBuilderRole()` |
-
-### 診斷腳本清單（`~/.ailive/macs-platform/scripts/`）
-
-```bash
-# 查 case 狀態
-npx --yes dotenv-cli -e .env.local -- npx tsx scripts/_check-export-error.mts
-
-# 重置 case（export 重跑）
-npx --yes dotenv-cli -e .env.local -- npx tsx scripts/_clear-pipeline.mts
-
-# 看 analysis memos 狀態
-npx --yes dotenv-cli -e .env.local -- npx tsx scripts/_watch-memos.mts
-
-# 直接觸發 export（注意：若 worker_run 是 running 狀態，會 409）
-curl -X POST https://macs-platform.vercel.app/api/workers/export \
-  -H "Content-Type: application/json" \
-  -H "x-worker-secret: anews-dev-secret-2026" \
-  -d '{"taskId":"macs-export-{caseId}-v1-retry","caseId":"{caseId}","planVersion":"v1"}'
-```
-
-### 黃金原則
-
-1. **看到 524 先量 token 再加 retry** — 加 retry 只會燒更多。
-2. **curl 斷了 function 不見得死** — 先查 Firestore lock 再決定重發。
-3. **Vercel env 加了要 redeploy** — 不 redeploy = 不生效。
-4. **needs_repair 超過 3 次 = harness 放棄** — 用 `_repair-case.mts` 重置，不要等它自己好。
-5. **診斷腳本先用** — 猜比查慢 10 倍，MACS 腳本在 `scripts/_*.mts`。
-6. **新 Cloud Run 端點用 LLM 必問：system prompt 有活路嗎？** — 沒讀 Firestore = 假中台，必補 `getXxxRole()`。
+- **MACS 全鏈路真案 e2e 仍未跑**（config/build/health/deploy 全過，端到端未過）。
+- **Cloudflare API token（`cfat_...`）貼進過 chat，待撤銷**——Adam 說「先用之後再說」，記得收尾。撤銷處：Cloudflare dash → My Profile / Account API Tokens。
+- eval 腳本測的 synthesis 是另一份 impl（非 Cloud Run prod 現役），eval-vs-prod drift 待處理。
 
 ---
 
@@ -153,21 +76,17 @@ curl -X POST https://macs-platform.vercel.app/api/workers/export \
 
 | 要找什麼 | 去哪裡 |
 |---|---|
-| 使命 / 開機 / 劍法 | `NORTH_STAR.md` / `ZHU_BOOT_SOP.md` / `docs/獨孤九劍_架構師心法.md` |
+| 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
+| 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-02.md` |
-| 當機救援 | 這份 |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ANEWS 營運全局 + B 案設計重點 | `~/.ailive/anews-platform/ANEWS_OPERATIONS.md`（跑 ANEWS / MACS 走 B 案前先讀）|
-| ANEWS 部署拓樸 | memory `reference_anews_source_worker_deploy.md` |
-| MACS research 移植 checklist | `~/.ailive/anews-platform/ANEWS_OPERATIONS.md §11.9` |
-| MACS GitHub | `https://github.com/linhocheng/macs-platform`（private） |
-| MACS 管線編排 | `~/.ailive/macs-platform/lib/orchestration/barrier.ts` |
-| MACS builder 主邏輯 | `~/.ailive/macs-platform/lib/report/builder.ts` |
-| MACS Cloud Run 入口 | `~/.ailive/macs-platform/cloud-run/research-worker/src/index.ts` |
-| Marcus 角色 prompt | 中台 admin → integrationWriter（活路） |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| MACS 平台 | `~/.ailive/macs-platform/`（CLAUDE.md 在內） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-02 傍晚 · MACS research B 線收尾（markdown-direct）+ 程式碼層防杜撰 URL · 築*
+*2026-06-02 · 築*

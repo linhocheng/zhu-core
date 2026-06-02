@@ -24,7 +24,10 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 
 **2026-06-02 傍晚（research 改 B 線收尾）**：
 - **路 A 拍板（markdown-direct，B-only 無 toggle）✅**：research-worker 改 generateResearchQueries→Tavily（免費）→Max bridge 綜述，移除 web_search/getLLMClientDirect/Anthropic import/ANTHROPIC_API_KEY/價格常數；BRIDGE_URL 直連 `35.236.185.222:3001`；輸出仍 markdown dossier（下游 0 改）。rev `00012-qmf`。
-- **程式碼層防杜撰 URL ✅**：`stripFabricatedUrls(markdown, hits)` 用 Tavily hits validUrls set 擋素材外 URL，移除數寫 `dossier.fabricatedUrlsRemoved`。rev `00013-cpc`。commit `5028432`。同事 structured-JSON 提案評估後不採（YAGNI+真相分裂+跨角色邊界），只借這點。
+- **程式碼層防杜撰 URL ✅**：`stripFabricatedUrls(markdown, hits)` 用 Tavily hits validUrls set 擋素材外 URL，移除數寫 `dossier.fabricatedUrlsRemoved`。rev `00013-cpc`。commit `5028432`。
 - research 不再是燒付費 key 的點，全鏈路 $0（marginal）。
+
+**⚠️ 更正（2026-06-02 接棒 session，去現場驗證後）**：上面「structured-JSON 提案評估後不採（markdown-direct B-only）」這條**已被現實推翻**。現場真相：Cloud Run（rev `00015-bpb`→`00016-xhk`，401 探針確認 deployed=working-tree）跑的就是 structured-JSON 版——某次 session 改了 research→`ResearchDossierSchema`（keyFacts/sources/caseExamples/opposingViews/strategicImplications/dataGaps/sufficiency）+ `dossierToMarkdown` serializer + schema 層防杜撰 URL，且**新增 Cloud Run synthesis worker**（`SynthesisSchema`/`EvidenceAlignmentSchema` + `getSynthesisRole` 讀中台 roleFraming），cross-review enqueue 帶 `SYNTHESIS_WORKER_BASE_URL` override。這些一直在 prod 跑卻沒進 git（git HEAD 落後部署現場）。已 commit `d3e1e47` 對齊並推上 GitHub。教訓：「不採用」是當時的決定，但現場後來改了——記憶凍結在決策點，會說謊。
+- **CF 524 根治（2026-06-02 接棒）✅**：bridge VM（zhu-dev，35.236.185.222）裝 Caddy + Let's Encrypt，新 host `https://bridge-direct.soul-polaroid.work`（grey-cloud A record，繞開 cloudflared tunnel 的 CF edge timeout）。Vercel + Cloud Run BRIDGE_URL 都改指這個 https host，~10 個 Vercel LLM 階段 + Cloud Run 全部不再被 CF ~130s 掐死。原 `bridge.soul-polaroid.work` tunnel + :3001 都沒動（純加法）。⚠️ Cloudflare API token（cfat_...）建 record 時曾貼進 chat，待撤銷。
 
 **⚠️ 待辦**：①**MACS B research path 未跑真案 e2e**（code+部署+health 過，端到端未過——接棒第一件）；②看完整 MACS 資料流（被防杜撰任務插隊未做）；③Marcus 真案驗品質；④#36 閃爍燈驗證。細節看 `ZHU_LAST_WORDS.md`。
