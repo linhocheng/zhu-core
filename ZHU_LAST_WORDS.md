@@ -145,6 +145,7 @@ curl -X POST https://macs-platform.vercel.app/api/workers/export \
 | 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-02.md` |
 | 當機救援 | 這份 |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| ANEWS 營運全局 + B 案設計重點 | `~/.ailive/anews-platform/ANEWS_OPERATIONS.md`（跑 ANEWS / MACS 走 B 案前先讀）|
 | ANEWS 部署拓樸 | memory `reference_anews_source_worker_deploy.md` |
 | MACS 管線編排 | `~/.ailive/macs-platform/lib/orchestration/barrier.ts` |
 | MACS builder 主邏輯 | `~/.ailive/macs-platform/lib/report/builder.ts` |
