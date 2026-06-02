@@ -1,10 +1,10 @@
 ---
 name: MACS 平台（麥肯錫式 AI 顧問公司）
-description: ANEWS 概念轉 AI 顧問公司的新專案，2026-05-31 一夜建到端到端骨架；流程/架構/狀態/待辦
+description: ANEWS 概念轉 AI 顧問公司，2026-06-02 GitHub 推上 + Marcus dir1 + #36 閃爍燈 + 中台活路全接通
 type: project
 originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 ---
-**MACS 平台** = 用 ANEWS 多 worker 流水線概念，轉成麥肯錫式 AI 顧問公司。repo `~/.ailive/macs-platform`（git 本地，尚未推遠端）。
+**MACS 平台** = 用 ANEWS 多 worker 流水線概念，轉成麥肯錫式 AI 顧問公司。repo `~/.ailive/macs-platform`（**已推 GitHub `linhocheng/macs-platform` private**）。
 
 **Why**：ANEWS 是「五篇文章協奏」（fan-out 後各走）；MACS 是「多條分析線收斂成一個決策」（fan-out 後 barrier 收斂）——這是兩者唯一的架構差異，也是唯一全新要寫的部分（其餘 80% 複用 ANEWS 基建）。
 
@@ -16,4 +16,10 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 
 **真因不是 research，是觀察層 bug**：全 LLM 階段其實早就 ok，卡關是 `lib/workers/trace.ts` 的 `writeWorkerTrace` 用 `.add()` 遇 `llmUsage=undefined`（materialize/export 無 LLM）→ Firestore **同步**拋錯，`.catch()` 抓不到 → 健康 case 被誤判 needs_repair。已修根因（剝 undefined + 包 sync try/catch）。
 
-**⚠️ 待觀察/待辦**：①export 在 05:02 出現一次 `schema invalid（expected string）` blip，重試一次後自己過了，**根因未查**，可能偶發重現。②bridge 回的 usage inputTokens=3 是 placeholder（非真實計數）。③macs-platform repo 仍無遠端（待 Adam 決定放哪才能 push）、要不要接 zhu-vitals。④下一步建議：跑第二個全新 case 從 brief 進場驗完整鏈路。細節看 `zhu-core/docs/WORKLOG.md` 2026-05-31 段 + `ZHU_LAST_WORDS.md`。
+**2026-06-02 強化（下午）**：
+- **GitHub push ✅** `linhocheng/macs-platform`（private），硬碟全滅風險解除。
+- **dir1 Marcus 整合撰稿者 ✅**：Victoria 結構化後第二 pass，帶全 chapter + synthesis context 重寫 soWhat/decisionImpact/narrativeBridge 指向 coreStake；`integrationWriter` key 入中台（活路）；Cloud Run `/api/workers/integrate-chapters`；180s timeout non-fatal。
+- **#36 閃爍燈 `cross_review_running` ✅**：barrier 觸發 cross-review 時寫入，Cloud Run 完成切 synthesis_running；`.adm-badge-pulse` 1.6s 動畫；pipeline step 加「對質」節點。
+- **中台活路全接通（假中台修復）✅**：Victoria Cloud Run 改讀 Firestore `reportBuilder`（`getReportBuilderRole()`）；對質 6 分析師每 memo 帶入 `roleFraming[workerType]` persona。
+
+**⚠️ 待辦**：①MACS research 移植路 A/B 待 Adam 確認再動手（路 A=保 markdown/路 B=JSON schema）；②Marcus 真案驗品質；③#36 閃爍燈驗證（等新 case 跑到 cross-review）。細節看 `ZHU_LAST_WORDS.md`。

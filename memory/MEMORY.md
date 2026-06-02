@@ -95,3 +95,4 @@
 - [bridge（Max）不支援 tool_use](reference_bridge_no_tool_use.md) — 走 bridge 的結構化輸出要 <result> JSON + Zod，不能用 tool_choice；只有 web_search 走直連 API key
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
+- [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
