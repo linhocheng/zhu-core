@@ -4,7 +4,42 @@
 
 ---
 
-## 2026-05-30 — ANEWS settings 以 live 為準砍雜訊 + skipGates 開關化
+## 2026-06-02（下半）— MACS dir1 + #36 + 中台角色全接通 + research 移植分析
+
+### 背景 / WHY
+接續上午 export 打通，繼續推 MACS 主線：dir1 整合撰稿、對質燈號、中台死路補活。最後看完 research 移植 checklist 評估下一步。
+
+### 產出
+- `~/.ailive/macs-platform/lib/llm/defaults.ts` — 加 `integrationWriter`（Marcus）prompt
+- `~/.ailive/macs-platform/lib/report/builder.ts` — 加 `integrateAnalysisChapters()`，Victoria 後接 Marcus pass；`narrativeBridge` 渲染
+- `~/.ailive/macs-platform/cloud-run/research-worker/src/index.ts` — `/api/workers/integrate-chapters`；`/api/workers/structure-analysis` 改讀 `reportBuilder` Firestore；`getCrossReviewRole()` 加 `roleFraming`；`synthesis_running` 寫回
+- `~/.ailive/macs-platform/lib/firestore/types.ts` — 加 `cross_review_running`
+- `~/.ailive/macs-platform/lib/ui/status.ts` — 加對質 meta + pipeline step + `PULSE_STATUSES`
+- `~/.ailive/macs-platform/lib/orchestration/barrier.ts` — barrier 觸發 cross-review 前寫 `cross_review_running`
+- `~/.ailive/macs-platform/app/globals.css` — `@keyframes macs-pulse`
+- `~/.ailive/macs-platform/app/dashboard/*.tsx` — 脈動 badge
+- Cloud Run rev 00009 / 00010 / 00011 已部署
+
+### 已解決
+- dir1 整合撰稿者 Marcus 上線（export 強化，各章 soWhat/decisionImpact/narrativeBridge 跨章整合）
+- #36 對質中閃爍燈號（`cross_review_running` + 茶綠脈動 badge）
+- Victoria Cloud Run 從 hardcoded → 讀 Firestore `reportBuilder`（活路）
+- Cross-review 6 個分析師個性從缺席 → `roleFraming[workerType]` per-memo 注入（活路）
+- MACS platform 推上 GitHub（`linhocheng/macs-platform` private）
+
+### ⚠️ 尚未解決
+- MACS research 移植（唯一燒錢點）：Tavily+Bridge 方向確認，路 A（markdown）vs 路 B（JSON schema），等下一個 session 動手
+- ANEWS bridge URL 是否仍過 CF 域名（source-worker BRIDGE_URL 需確認直連 IP）
+- ANEWS working tree 未 commit 大包（Adam 刻意保留）
+
+### 待執行
+- [ ] 確認 MACS research 移植路 A or B → 按 checklist 11.9 逐項執行
+- [ ] MACS 真案驗 Marcus 整合輸出品質（bridge effort-low 對 Marcus 影響）
+- [ ] #36 燈號真案觸發驗證（等下次跑新案）
+
+---
+
+## 2026-06-02（上半）— MACS export 打通 + 避雷報告指南建立
 
 ### 背景 / WHY
 Adam：「settings 對齊真現場——哪些硬編、哪些雜訊」。假中台審計發現根因：`singleWriteMode=true` + `skipGates=true` 把整條 sectioned/QA 管線變裝飾品。settings 頁列了一堆接不通的旋鈕（QA tab、段落寫作 role、alignment/stitch 等）。決議：以 live（single-write）為準，刪 singleWriteMode 概念、停派死 worker、settings 頁只留接通的；skipGates 升為 UI 開關存進 settings doc。

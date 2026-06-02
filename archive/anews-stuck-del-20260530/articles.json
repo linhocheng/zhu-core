@@ -1,0 +1,113 @@
+{
+  "3809NSrC5hnUoDfnJcaf": {
+    "wordTarget": 3000,
+    "version": 1,
+    "sectionsQaBlocked": 0,
+    "topicId": "ZFbLmdjwLdogaHfgUid0-main",
+    "sectionsTotal": 0,
+    "currentPhase": "init",
+    "issueId": "ZFbLmdjwLdogaHfgUid0",
+    "sectionsDone": 0,
+    "title": "[待生成] main",
+    "createdAt": "TS:1780125518",
+    "sourceSufficient": true,
+    "sourceGaps": [
+      "台灣本地跑鞋市場規模數據缺乏（可參考亞太地區數據推估）",
+      "代工廠商(如宏全、豐泰)與品牌營運模式細節不足",
+      "新興品牌(Satisfy、Speedland等)深度分析有限，多為綜合市場報告簡述"
+    ],
+    "status": "source_ready",
+    "updatedAt": "TS:1780125576"
+  },
+  "A3AxeIXJyIeIgDs0OHLe": {
+    "sectionsDone": 0,
+    "wordTarget": 2000,
+    "sectionsTotal": 0,
+    "title": "[待生成] sub_c",
+    "sectionsQaBlocked": 0,
+    "currentPhase": "init",
+    "version": 1,
+    "issueId": "ZFbLmdjwLdogaHfgUid0",
+    "topicId": "ZFbLmdjwLdogaHfgUid0-sub_c",
+    "createdAt": "TS:1780125519",
+    "sourceSufficient": true,
+    "sourceGaps": [
+      "台灣本地市場的具體市占率與消費者行為數據相對缺乏，建議補充台灣運動鞋市場的代表性調查",
+      "女性消費者在跑鞋市場中的專項數據雖有提及但深度不足，可強化性別差異分析",
+      "各品牌的毛利率與淨利率差異數據有限，建議補充財務對比以評估長期競爭力"
+    ],
+    "status": "source_ready",
+    "updatedAt": "TS:1780125573"
+  },
+  "CHNUcD11eNfc35u77wZP": {
+    "repairErrorType": "PRECONDITION",
+    "repairErrorMessage": "issue XDcxU3TDjHaR7S6PXDqM not found",
+    "status": "needs_repair",
+    "repairAttempts": 27,
+    "updatedAt": "TS:1780132604"
+  },
+  "Gn9RD46lZDnnRR1xcgrH": {
+    "sectionsQaBlocked": 0,
+    "sectionsTotal": 0,
+    "title": "[待生成] sub_a",
+    "sectionsDone": 0,
+    "issueId": "ZFbLmdjwLdogaHfgUid0",
+    "wordTarget": 2000,
+    "version": 1,
+    "currentPhase": "init",
+    "topicId": "ZFbLmdjwLdogaHfgUid0-sub_a",
+    "createdAt": "TS:1780125519",
+    "status": "needs_repair",
+    "repairErrorType": "PRECONDITION",
+    "repairErrorMessage": "article Gn9RD46lZDnnRR1xcgrH status=needs_repair, expected planned or pending",
+    "repairAttempts": 17,
+    "updatedAt": "TS:1780133279"
+  },
+  "NCzXxEbE5RW4dOOfy6Sc": {
+    "repairErrorType": "PRECONDITION",
+    "repairErrorMessage": "issue XDcxU3TDjHaR7S6PXDqM not found",
+    "status": "needs_repair",
+    "repairAttempts": 27,
+    "updatedAt": "TS:1780132590"
+  },
+  "RzSav2xxmNdOGGi3alcy": {
+    "version": 1,
+    "wordTarget": 2000,
+    "sectionsDone": 0,
+    "issueId": "ZFbLmdjwLdogaHfgUid0",
+    "sectionsQaBlocked": 0,
+    "title": "[待生成] sub_b",
+    "topicId": "ZFbLmdjwLdogaHfgUid0-sub_b",
+    "currentPhase": "init",
+    "sectionsTotal": 0,
+    "createdAt": "TS:1780125519",
+    "sourceSufficient": true,
+    "sourceGaps": [
+      "台灣在地市場數據（市占率、消費者偏好、消費金額）付之闕如，仍需補充本地調研。",
+      "各品牌研發投入與智財布局對比分析尚無深度資料，建議後續補充。",
+      "線上與線下通路轉移趨勢（O2O 策略）對品牌定位的具體影響案例有限。"
+    ],
+    "status": "source_ready",
+    "updatedAt": "TS:1780125616"
+  },
+  "TAsMvjREYvrGUYR2h7Ki": {
+    "title": "[待生成] sub_d",
+    "wordTarget": 2000,
+    "sectionsDone": 0,
+    "currentPhase": "init",
+    "version": 1,
+    "sectionsTotal": 0,
+    "sectionsQaBlocked": 0,
+    "topicId": "ZFbLmdjwLdogaHfgUid0-sub_d",
+    "issueId": "ZFbLmdjwLdogaHfgUid0",
+    "createdAt": "TS:1780125519",
+    "repairAttempts": 2,
+    "sourceSufficient": true,
+    "sourceGaps": [
+      "New Balance與Brooks在頂級跑鞋細分市場的具體量化數據較少，如需完整競爭版圖分析建議補充搜尋。",
+      "On Running在台灣的具體營收或門市拓展數據付之闕如，台灣在地市場的品牌銷量排名仍需本土研究機構報告佐證。"
+    ],
+    "status": "source_ready",
+    "updatedAt": "TS:1780126652"
+  }
+}
