@@ -7,7 +7,7 @@ originSessionId: cb4006f6-1b44-47b5-98d0-199f061785f4
 
 **2026-06-01 最新狀態：** source A/B 雙管道上線 + **B 線打通並乾淨 e2e 驗收**（main+sub_a 第一次就 source_ready、provider 全程 B、付費 key 零燒、跑到 done）。A=Anthropic web_search（付費 key）；B=Tavily 免費搜+Max 綜述（走 bridge，$0）。per-issue 選、預設 A、B 失靈不 fallback。詳見 reference_anews_source_worker_deploy + reference_bridge_v1messages_effort。
 - 今天修：bridge `/v1/messages` 補 effort-low；auto-kick 重送 source 補 Cloud Run override（修「B 案被 watchdog 偷踢去 Vercel A-only worker 燒 key + 死循環」）；Cloud Run source worker 失敗補升級 needs_repair（修假中台）；B 綜述 prompt 改寫片段不照貼（修引號沒跳脫 JSON 爆）。
-- ⚠️ **真相分裂待對齊**：本檔下方 line「BRIDGE_URL 直連 VM IP 繞 CF」是給 Vercel 那批 worker 的；**Cloud Run source-worker 的 BRIDGE_URL 仍是 `https://bridge.soul-polaroid.work`（過 CF）** → B 綜述會逼近 CF 130s/524。effort-low 是減症，**根治是 source-worker 也改直連 VM IP**（下次可做）。
+- ✅ **2026-06-02 真相分裂已修**：`anews-source-worker` 的 `BRIDGE_URL` 已從 CF 域名改直連 `http://35.236.185.222:3001`（rev `00012-w7r`），與 article-write-worker 一致。524 根治（CF ~100s 上限 → 自設 180s timeout）。effort-low 保留為保險。
 - ✅ **2026-06-02 已提交 + 推 GitHub 災備**：Wave1/Wave2/四修全工作包已 commit 並推 `github.com/linhocheng/anews-platform`（PRIVATE）。硬碟全滅風險解除。Vercel 舊 `app/api/workers/source/route.ts` 仍是 A-only 死副本，待刪。
 
 ---
