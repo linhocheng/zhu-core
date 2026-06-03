@@ -1,5 +1,36 @@
 # 工的工作日誌
 
+---
+
+## 2026-06-03 — MACS e2e 驗通 + 刪案功能 + UI 雙層重設計
+
+### 背景 / WHY
+接續昨晚的 CF524 根治（bridge-direct），今早確認工程夥伴整修完成，跑完 e2e 驗證整條管道，補刪除功能，重設計 case detail 與 HTML 報告排版。
+
+### 產出
+- `lib/pipeline/flow.ts` — 新增 `deleteCase()`，清 8 個 collection
+- `app/api/cases/[caseId]/route.ts` — 新增 DELETE handler
+- `app/dashboard/page.tsx` — 案件列表加刪除按鈕（confirm + reload）
+- `app/dashboard/[caseId]/page.tsx` — artifact 區塊換 doc-* 閱讀層語言
+- `app/globals.css` — 新增 `.doc-card` / `.doc-field` / `.doc-insight` 等 CSS
+- `lib/report/renderHtml.ts` — table overflow 修復 + divider 輕量化 + callout 間距 + bullet 節奏
+- macs-platform commit: `v0.9.1.001`
+
+### 已解決
+- CF 524 根因：Vercel BRIDGE_URL 改 `bridge-direct.soul-polaroid.work`（無 CF proxy）→ 所有 Vercel worker 不再 524
+- synthesis 掛掉根因：已在昨晚搬 Cloud Run（rev 00016-xhk）
+- case-mpwr0rfy-0uhfyb 全程 e2e 跑通，21 分鐘，done，5 artifact 全齊，$0 成本
+- 角色全接後台 prompt（getRoleSettings() 每個 worker 都有）
+- HTML 報告 table `overflow: hidden` bug → `overflow-x: auto`
+
+### ⚠️ 尚未解決
+- HTML 報告還沒用新 case 重跑驗一遍（舊案子 reportHtml 是舊版 CSS 的）；需建新案才能看到新排版效果
+- `STRUCTURE_ANALYSIS_BASE_URL` 尾端 `\n`：`.trim()` 已保護，但原始 Vercel env 值還是髒的（非緊急）
+
+### 待執行
+- [ ] 建一個新案跑完，開 HTML 報告驗新排版
+- [ ] 若 Adam 對 HTML 報告排版還有意見，繼續調 `renderHtml.ts`
+
 ## 自主迴圈驗證 - 工自己讀到、自己做、自己回報，全程不問 Adam。
 
 ---
