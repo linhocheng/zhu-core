@@ -17,61 +17,49 @@
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），bridge-direct HTTPS 直連：`https://bridge-direct.soul-polaroid.work`
+  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 - **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
-## 最新完成（2026-06-04 下午場 · Opus 4.8）
+## 最新完成（2026-06-05）
 
-- MACS 策略框架重構 Phase 0-2 落地：把「mode 邏輯散落各檔 if(mode)」這個結構性破綻，改成「每模式一本食譜(framework)」
-- Phase 0 安全網：tag `before-framework-refactor`（macs commit fc65959，修真相分裂：prod 曾跑沒進 git 的 702 行 hybrid code）
-- Phase 1 契約：`lib/frameworks/contract.ts`，三種 stage 形狀(Singleton/PerUnit/RoundTable)，Adam 看過草稿才落地
-- Phase 2：接通 hybrid 分析(根因:analysis route 從沒傳 mode)、各分析師章節改 Mode 2 渲染、research 多收兩格、recommend route 框架 pilot
-- 三次真案 e2e 撐證明，不是綠勾（case-mpyzkp95 / mpz4fwjd / mpz5pc0c）
+- 揭穿自己的假評估：上 session 宣布「沈牧三段靈魂注入成功」是錯的——live 走 single-write，好聲音其實是既有「刺客 Soul Evoker V4」prompt 寫的，我改的三段是孤兒路徑、沒跑。
+- 把沈牧靈魂折成整篇單寫版，寫進真正會跑的 `settings/roles.article_write`（Firestore live + code DEFAULT 同步），取代刺客。
+- 釐清沈牧＝後台「角色人格→長文寫手」，可編＝改 live。
+- 三段寫手整條（section-write/section-qa/evidence-pass/alignment/stitch + write_intro/body/conclusion/qa）標記為技術債，選「標記不刪」，greppable marker `[停用-三段寫手路徑]` 釘兩處 + auto-memory。
 
 ---
 
-## 今天改了哪些檔案（macs-platform，commit v0.10.0.007~011）
+## 今天改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `lib/frameworks/contract.ts` | 框架契約：StageId/三形狀/ResourceKey/runsOn/control |
-| `lib/frameworks/registry.ts` | getFramework 查表，hybrid 已註冊 |
-| `lib/frameworks/hybrid/index.ts` | hybrid 7 個 Vercel 單次棒薄包現有函式 |
-| `lib/frameworks/orchestrator.ts` | buildStageContext 解析 stage reads |
-| `app/api/workers/analysis/route.ts` | 接通 mode + 存 hybridMemo（根因修正） |
-| `lib/report/builder.ts` | 各分析師章節從 hybridMemo 直接渲染 Mode 2 |
-| `cloud-run/research-worker/src/index.ts` | dossier 多收 consumerLanguage+analogyCandidates（rev 00018） |
-| `app/api/workers/recommendation/route.ts` | pilot：hybrid 走框架 stage |
+| `anews-platform/app/api/settings/roles/route.ts` | article_write DEFAULT 刺客→沈牧 |
+| Firestore `settings/roles.article_write` | 同步推沈牧（Cloud Run 直讀，已驗 match） |
+| `anews-platform/app/api/workers/orchestrate/route.ts` | blueprint_done 釘技術債 marker |
+| `anews-platform/app/api/workers/section-write/route.ts` | 頂端釘 marker 指回 orchestrate |
+| `memory/project_anews_platform.md` | 技術債清單加三段孤兒 + 沈牧位置 |
+
+anews local commit：963eeef（021）、3a49185（022）、822a542（023），**均未推遠端**。
 
 ---
 
 ## 下一步
 
-**先等 Adam 拍板策略岔路：A(續攻 Phase 3 全遷) vs B(收在這、等 Mode 3 順勢遷)。築傾向 B。**
-
-若走 B / Mode 3：
-```bash
-cd ~/.ailive/macs-platform
-grep -n "creative_lead" lib/firestore/types.ts lib/llm/defaults.ts
-ls lib/pipeline/creative*.ts lib/pipeline/problemReframe.ts lib/pipeline/validationSprint.ts
-```
-Mode 3 的 lib/pipeline 骨架已建（creativeAnalysis/creativeSynthesis/creativeRecommendation/creativeTrack/problemReframe/validationSprint），照框架(`lib/frameworks/hybrid/` 為範本)蓋 + 接 route。記得：**查資料共用不分 mode、Cloud Run 是承重牆(執行搬不動)、改 lib 必同步改 route(心法四)**。
-
-若走 A / Phase 3：route 全改 getFramework、status data-driven 讀 framework.pipeline、建框架執行 instrumentation。
+1. **Adam 開一篇新 ANEWS issue → 拉 `article_write` 真實輸出**，確認沈牧單寫版聲音/立場對不對。做法：`cd ~/.ailive/anews-platform`，臨時 .cjs 讀 `.env.local` 的 `FIREBASE_SERVICE_ACCOUNT_B64`，找最新 issue 的 articles（topicId endsWith `-main`），blueprint 用 `articleId`（不是 issueId！）查，全文在 GCS `gs://moumou-os.firebasestorage.app/articles/{articleId}/final.md`。
+2. 評估是否替 single-write 補「內容複審閘門」——三段的 section-qa 是現成基礎（這就是當初標記不刪的理由）。
+3. anews 三個今日 commit push 遠端 `github.com/linhocheng/anews-platform`（PRIVATE）災備。
 
 ---
 
 ## 卡住 / 未解
 
-- Cloud Run 三棒 schema 仍兩份（A+ 的「schema 單一源 vendor 給 Cloud Run」未做）
-- 框架執行可觀測性未落地（outputSummary 沒存 Firestore，pilot 是 by-construction 證明）
-- Mode 1 框架未註冊，recommend route 還有 legacy 分支（Phase 5 收）
-- Cloudflare API token 外洩待撤銷（延宕多 session）
-- `STRUCTURE_ANALYSIS_BASE_URL` 尾端有 `\n`（`.trim()` 保護中，非緊急）
+- single-write 無內容複審：polish 只產 metadata 不審內文，沈牧自律是唯一把關。
+- 沈牧單寫版 prompt 已 live 但未開新 issue e2e 驗收。
+- ANEWS pipeline 路徑寫死（single-write vs 三段）在 orchestrate 程式裡，後台無開關。
 
 ---
 
@@ -86,12 +74,10 @@ Mode 3 的 lib/pipeline 骨架已建（creativeAnalysis/creativeSynthesis/creati
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| MACS 平台 | `~/.ailive/macs-platform/`，prod: https://macs-platform.vercel.app |
-| 框架契約 | `~/.ailive/macs-platform/lib/frameworks/contract.ts`（食譜格式） |
-| Mode 1→2 踩雷心法 | `~/.ailive/macs-platform/docs/MODE1_TO_MODE2_LESSONS.md` |
-| 框架重構教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-04.md`（下午場 L6-L11） |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ANEWS 沈牧/技術債 | `memory/project_anews_platform.md` + grep `[停用-三段寫手路徑]` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-04 · 築*
+*2026-06-05 · 築*

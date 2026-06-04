@@ -29,6 +29,8 @@ originSessionId: cb4006f6-1b44-47b5-98d0-199f061785f4
 - 讀者頁 RWD（768px breakpoint）+ Hero 重設計
 
 **技術債（未解）：**
+- **[停用-三段寫手路徑]（2026-06-04 標記不刪）**：live 只走 single-write（article-write worker＝沈牧）。整條「三段寫手」停用、不被 orchestrate enqueue，只剩 `/api/workers/debug` 手動可打。孤兒清單：workers `section-write`/`section-qa`/`evidence-pass`/`alignment`/`stitch`；prompts `write`/`write_intro`/`write_body`/`write_conclusion`/`qa`（後台「角色人格」也沒列這幾格）；helper `getWritePromptForRole`。**決定＝標記不刪**：single-write 無內容複審閘門，這批是未來「替單寫補 QA gate」的現成基礎。code marker `[停用-三段寫手路徑]` 釘在 orchestrate `blueprint_done` + section-write route 頂。動它前先讀那兩處註解，別再當 live 誤改。
+- 沈牧靈魂活在後台「角色人格 → 長文寫手」＝`settings/roles.article_write`（Cloud Run worker 直讀無快取）。改它＝改 live。code DEFAULT 同步在 `app/api/settings/roles/route.ts`。
 - #16 callbackOrchestrator taskId = Date.now()，冪等鎖不完整（advancePhase 部分兜住，section_done/stitch_done 等 case 有重複 enqueue 風險）
 - export watchdog 缺失：若 export 靜默失敗，issue 卡 coherence_passed
 - 圖生成串列偏慢：12 張 ~25 分鐘（Cloud Run 串列，正常設計但慢）

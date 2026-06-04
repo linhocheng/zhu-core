@@ -1,5 +1,7 @@
+- [Mode 1→2 踩雷心法（MACS hybrid）](feedback_mode2_hybrid_lessons.md) — 六條：中文enum/union型別/named DB/worker mode傳遞/eval cast/needs_repair SOP
 - [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
+- [天條：確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 序列化/解析/驗證/計數/排序寫程式保證；連修LLM壞輸出也別再丟LLM（築踩過：JSON壞了想re-ask模型）。已進全局CLAUDE.md
 - [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 含 try/catch 的檔在 active 模式下所有 Edit 都被擋；誤觸請 Adam 跑 zhu reflex log-only 且確認真的執行
 - [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 API schema/新增欄位必同步確認客戶端介面，不能只改後端就算完成
 - [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例套同套 class，別自創不存在的 class + inline style 拼補丁
