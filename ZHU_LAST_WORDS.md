@@ -24,14 +24,14 @@
 
 ---
 
-## 最新完成（2026-06-03）
+## 最新完成（2026-06-04）
 
-- 確認工程夥伴整修完成：`bridge-direct.soul-polaroid.work` 上線，Vercel + Cloud Run BRIDGE_URL 全換直連，CF 524 根治
-- MACS case-mpwr0rfy-0uhfyb e2e 全程跑通（21min，$0，5 artifact 全齊）
-- 驗證：所有 worker 角色接後台 prompt，全程 $0（Tavily free + bridge Max）
-- 案件真刪除功能：deleteCase() + DELETE API + UI 按鈕（macs-platform v0.9.1.001）
-- Case detail page：新增 doc-* 閱讀層 CSS（正文 1rem/1.85，section title 不全大寫，field 分隔線）
-- HTML 報告：table overflow 修復、章節分隔輕量化、callout 間距收緊
+- MACS Mode 2 (hybrid) 全鏈路端到端首跑打通 — 案件 `case-mpy8v88r-uibmns` status=done
+- Cloud Run synthesis 加 `HybridSynthesisSchema` 分支（讀 `c.strategyMode`，輸出 `dataAnchoredTruth / creativeBet`）
+- roadmap / partner-review / export 三個 worker route 補讀 `strategyMode` 並往下傳
+- export worker：hybrid 跳過 `assembleDeliverables`（Mode 1 only），改走 `runReportBuild` HTML 路徑
+- commit v0.10.0.006，Vercel + Cloud Run (rev 00017) 已部署
+- 整理十條踩雷心法：`docs/MODE1_TO_MODE2_LESSONS.md`（新建），memory 更新
 
 ---
 
@@ -39,24 +39,42 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/pipeline/flow.ts` | 新增 deleteCase()，8 collection 全清 |
-| `macs-platform/app/api/cases/[caseId]/route.ts` | 新增 DELETE handler |
-| `macs-platform/app/dashboard/page.tsx` | 案件刪除按鈕 UI |
-| `macs-platform/app/dashboard/[caseId]/page.tsx` | doc-* 閱讀層 artifact 區塊 |
-| `macs-platform/app/globals.css` | doc-* CSS classes |
-| `macs-platform/lib/report/renderHtml.ts` | table/divider/callout 排版修復 |
+| `macs-platform/cloud-run/research-worker/src/index.ts` | HybridSynthesisSchema + buildHybridSynthesisUser + handleSynthesis hybrid 分支 |
+| `macs-platform/app/api/workers/roadmap/route.ts` | 讀 strategyMode，傳 mode，readArtifact union type |
+| `macs-platform/app/api/workers/partner-review/route.ts` | 同上 |
+| `macs-platform/app/api/workers/export/route.ts` | mode guard + assembleDeliverables skip + runReportBuild 傳 mode |
+| `macs-platform/docs/MODE1_TO_MODE2_LESSONS.md` | 十條踩雷心法（新建） |
+| `memory/feedback_mode2_hybrid_lessons.md` | 從六條更新到十條 |
 
 ---
 
 ## 下一步
 
-建一個新案跑完，點「開啟 HTML 報告」，驗新排版（特別看策略選項 7 欄表格是否正常橫向捲動、章節分隔是否輕量）。若還有意見繼續調 `renderHtml.ts`。
+**Mode 3 (creative_lead) 實作**
+
+先看現場：
+```bash
+cd ~/.ailive/macs-platform
+grep -n "creative_lead" lib/firestore/types.ts
+grep -n "creative_lead" lib/llm/defaults.ts
+```
+
+然後照 Mode 2 的路徑：
+1. `lib/pipeline/analysis.ts` — 加 CreativeLeadAnalysisMemoSchema
+2. `lib/llm/synthesis.ts` — 加 CreativeLeadSynthesisSchema + buildCreativeLeadUserContent
+3. `cloud-run/research-worker/src/index.ts` — handleSynthesis 加 creative_lead 分支
+4. 各 worker route 確認三模式都傳 mode
+5. 跑真案 e2e 驗
+
+記得先看 `docs/MODE1_TO_MODE2_LESSONS.md` 的 checklist 對照，不靠記憶。
 
 ---
 
 ## 卡住 / 未解
 
-- HTML 報告新排版未用新 case 驗（舊案子 reportHtml 是舊 CSS）
+- Mode 3 (creative_lead) 尚未實作
+- Eval scripts 仍然 Mode 1 only（低優先，下次另開）
+- Cloudflare API token 外洩（`cfat_...`）待撤銷（已延宕多個 session）
 - `STRUCTURE_ANALYSIS_BASE_URL` 尾端有 `\n`（`.trim()` 保護中，非緊急）
 
 ---
@@ -73,9 +91,9 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | MACS 平台 | `~/.ailive/macs-platform/`，prod: https://macs-platform.vercel.app |
-| MACS HTML 報告渲染 | `~/.ailive/macs-platform/lib/report/renderHtml.ts` |
+| Mode 1→2 踩雷心法 | `~/.ailive/macs-platform/docs/MODE1_TO_MODE2_LESSONS.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-03 · 築*
+*2026-06-04 · 築*
