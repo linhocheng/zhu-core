@@ -24,57 +24,53 @@
 
 ---
 
-## 最新完成（2026-06-04）
+## 最新完成（2026-06-04 下午場 · Opus 4.8）
 
-- MACS Mode 2 (hybrid) 全鏈路端到端首跑打通 — 案件 `case-mpy8v88r-uibmns` status=done
-- Cloud Run synthesis 加 `HybridSynthesisSchema` 分支（讀 `c.strategyMode`，輸出 `dataAnchoredTruth / creativeBet`）
-- roadmap / partner-review / export 三個 worker route 補讀 `strategyMode` 並往下傳
-- export worker：hybrid 跳過 `assembleDeliverables`（Mode 1 only），改走 `runReportBuild` HTML 路徑
-- commit v0.10.0.006，Vercel + Cloud Run (rev 00017) 已部署
-- 整理十條踩雷心法：`docs/MODE1_TO_MODE2_LESSONS.md`（新建），memory 更新
+- MACS 策略框架重構 Phase 0-2 落地：把「mode 邏輯散落各檔 if(mode)」這個結構性破綻，改成「每模式一本食譜(framework)」
+- Phase 0 安全網：tag `before-framework-refactor`（macs commit fc65959，修真相分裂：prod 曾跑沒進 git 的 702 行 hybrid code）
+- Phase 1 契約：`lib/frameworks/contract.ts`，三種 stage 形狀(Singleton/PerUnit/RoundTable)，Adam 看過草稿才落地
+- Phase 2：接通 hybrid 分析(根因:analysis route 從沒傳 mode)、各分析師章節改 Mode 2 渲染、research 多收兩格、recommend route 框架 pilot
+- 三次真案 e2e 撐證明，不是綠勾（case-mpyzkp95 / mpz4fwjd / mpz5pc0c）
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（macs-platform，commit v0.10.0.007~011）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/cloud-run/research-worker/src/index.ts` | HybridSynthesisSchema + buildHybridSynthesisUser + handleSynthesis hybrid 分支 |
-| `macs-platform/app/api/workers/roadmap/route.ts` | 讀 strategyMode，傳 mode，readArtifact union type |
-| `macs-platform/app/api/workers/partner-review/route.ts` | 同上 |
-| `macs-platform/app/api/workers/export/route.ts` | mode guard + assembleDeliverables skip + runReportBuild 傳 mode |
-| `macs-platform/docs/MODE1_TO_MODE2_LESSONS.md` | 十條踩雷心法（新建） |
-| `memory/feedback_mode2_hybrid_lessons.md` | 從六條更新到十條 |
+| `lib/frameworks/contract.ts` | 框架契約：StageId/三形狀/ResourceKey/runsOn/control |
+| `lib/frameworks/registry.ts` | getFramework 查表，hybrid 已註冊 |
+| `lib/frameworks/hybrid/index.ts` | hybrid 7 個 Vercel 單次棒薄包現有函式 |
+| `lib/frameworks/orchestrator.ts` | buildStageContext 解析 stage reads |
+| `app/api/workers/analysis/route.ts` | 接通 mode + 存 hybridMemo（根因修正） |
+| `lib/report/builder.ts` | 各分析師章節從 hybridMemo 直接渲染 Mode 2 |
+| `cloud-run/research-worker/src/index.ts` | dossier 多收 consumerLanguage+analogyCandidates（rev 00018） |
+| `app/api/workers/recommendation/route.ts` | pilot：hybrid 走框架 stage |
 
 ---
 
 ## 下一步
 
-**Mode 3 (creative_lead) 實作**
+**先等 Adam 拍板策略岔路：A(續攻 Phase 3 全遷) vs B(收在這、等 Mode 3 順勢遷)。築傾向 B。**
 
-先看現場：
+若走 B / Mode 3：
 ```bash
 cd ~/.ailive/macs-platform
-grep -n "creative_lead" lib/firestore/types.ts
-grep -n "creative_lead" lib/llm/defaults.ts
+grep -n "creative_lead" lib/firestore/types.ts lib/llm/defaults.ts
+ls lib/pipeline/creative*.ts lib/pipeline/problemReframe.ts lib/pipeline/validationSprint.ts
 ```
+Mode 3 的 lib/pipeline 骨架已建（creativeAnalysis/creativeSynthesis/creativeRecommendation/creativeTrack/problemReframe/validationSprint），照框架(`lib/frameworks/hybrid/` 為範本)蓋 + 接 route。記得：**查資料共用不分 mode、Cloud Run 是承重牆(執行搬不動)、改 lib 必同步改 route(心法四)**。
 
-然後照 Mode 2 的路徑：
-1. `lib/pipeline/analysis.ts` — 加 CreativeLeadAnalysisMemoSchema
-2. `lib/llm/synthesis.ts` — 加 CreativeLeadSynthesisSchema + buildCreativeLeadUserContent
-3. `cloud-run/research-worker/src/index.ts` — handleSynthesis 加 creative_lead 分支
-4. 各 worker route 確認三模式都傳 mode
-5. 跑真案 e2e 驗
-
-記得先看 `docs/MODE1_TO_MODE2_LESSONS.md` 的 checklist 對照，不靠記憶。
+若走 A / Phase 3：route 全改 getFramework、status data-driven 讀 framework.pipeline、建框架執行 instrumentation。
 
 ---
 
 ## 卡住 / 未解
 
-- Mode 3 (creative_lead) 尚未實作
-- Eval scripts 仍然 Mode 1 only（低優先，下次另開）
-- Cloudflare API token 外洩（`cfat_...`）待撤銷（已延宕多個 session）
+- Cloud Run 三棒 schema 仍兩份（A+ 的「schema 單一源 vendor 給 Cloud Run」未做）
+- 框架執行可觀測性未落地（outputSummary 沒存 Firestore，pilot 是 by-construction 證明）
+- Mode 1 框架未註冊，recommend route 還有 legacy 分支（Phase 5 收）
+- Cloudflare API token 外洩待撤銷（延宕多 session）
 - `STRUCTURE_ANALYSIS_BASE_URL` 尾端有 `\n`（`.trim()` 保護中，非緊急）
 
 ---
@@ -91,7 +87,9 @@ grep -n "creative_lead" lib/llm/defaults.ts
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | MACS 平台 | `~/.ailive/macs-platform/`，prod: https://macs-platform.vercel.app |
+| 框架契約 | `~/.ailive/macs-platform/lib/frameworks/contract.ts`（食譜格式） |
 | Mode 1→2 踩雷心法 | `~/.ailive/macs-platform/docs/MODE1_TO_MODE2_LESSONS.md` |
+| 框架重構教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-04.md`（下午場 L6-L11） |
 
 ---
 
