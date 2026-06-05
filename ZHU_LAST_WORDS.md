@@ -15,51 +15,62 @@
 ## 當前環境
 
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
-  - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
+- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING（跑 `claude-bridge` systemd）
+  - bridge-direct：`https://bridge-direct.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
+- **MACS 平台**：`~/.ailive/macs-platform/`，prod https://macs-platform.vercel.app，git remote github.com/linhocheng/macs-platform
+- **MACS 研究 worker（Cloud Run）**：`macs-research-worker` · asia-east1 · project `zhu-cloud-2026`（rev 00019）
 
 ---
 
-## 最新完成（2026-06-05）
+## 最新完成（2026-06-05 晚場 · Opus 4.8 · MACS Mode 3 + 設計系統 + JSON 根治）
 
-- 揭穿自己的假評估：上 session 宣布「沈牧三段靈魂注入成功」是錯的——live 走 single-write，好聲音其實是既有「刺客 Soul Evoker V4」prompt 寫的，我改的三段是孤兒路徑、沒跑。
-- 把沈牧靈魂折成整篇單寫版，寫進真正會跑的 `settings/roles.article_write`（Firestore live + code DEFAULT 同步），取代刺客。
-- 釐清沈牧＝後台「角色人格→長文寫手」，可編＝改 live。
-- 三段寫手整條（section-write/section-qa/evidence-pass/alignment/stitch + write_intro/body/conclusion/qa）標記為技術債，選「標記不刪」，greppable marker `[停用-三段寫手路徑]` 釘兩處 + auto-memory。
+- Mode 3（creative_lead/純創意）端到端落地：型別+全局憲法+13階段prompt → 10 run-fn + creativeLead 框架 → 全 route 接線 + 兩支新 Vercel route（cross-review/synthesis）→ barrier 唯一分岔點
+- 報告篇幅後台旋鈕（精簡/標準/深入），確定性 tier→directive/scale 映射（守天條）
+- 報告渲染換上 Adam 的設計參考（暖調經典襯線：Spectral + petrol + 古銅金 + 奶油暖白）；Mode 3 收編 ViewModel（8章）、刪 creativeDeck.ts → 一套設計三套章節
+- **天條落地**：LLM 吐的 JSON 用程式確定性修復（jsonrepair，嚴格→修→再 parse），不 re-ask 模型；Vercel + Cloud Run 全 parse 點。研究「不是每次跑完」根治
+- 真案兩跑到 done（含 Adam 親手開的 case-mpzmkh7u，零 failed，verdict=magic），全程 Max($0)
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（macs-platform v0.11.0.001~008）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `anews-platform/app/api/settings/roles/route.ts` | article_write DEFAULT 刺客→沈牧 |
-| Firestore `settings/roles.article_write` | 同步推沈牧（Cloud Run 直讀，已驗 match） |
-| `anews-platform/app/api/workers/orchestrate/route.ts` | blueprint_done 釘技術債 marker |
-| `anews-platform/app/api/workers/section-write/route.ts` | 頂端釘 marker 指回 orchestrate |
-| `memory/project_anews_platform.md` | 技術債清單加三段孤兒 + 沈牧位置 |
-
-anews local commit：963eeef（021）、3a49185（022）、822a542（023），**均未推遠端**。
+| `lib/firestore/types.ts` | Mode 3 介面 + ArtifactType +4 + conceptMemo |
+| `lib/llm/defaults.ts` | CREATIVE_CONSTITUTION + 13 階段 prompt |
+| `lib/pipeline/creativeLead.ts` | 10 支藍圖 run-fn（走 callCreative，篇幅旋鈕） |
+| `lib/frameworks/creative-lead/{index,report}.ts` | 框架骨 + buildCreativeReport 8 章 |
+| `app/api/workers/*/route.ts` | 各 route creative 分支 + 新增 cross-review/synthesis |
+| `lib/orchestration/barrier.ts` | crossReviewBaseUrl(mode) 唯一分岔 |
+| `lib/settings/pipeline.ts` + `lib/report/length.ts` + 設定頁 | 篇幅旋鈕 |
+| `lib/report/{renderHtml,types}.ts` | 設計系統換皮 + figure block |
+| `lib/llm/jsonLoose.ts` + `structured.ts` + `cloud-run/.../index.ts` | parseJsonLoose 確定性修復 |
 
 ---
 
-## 下一步
+## 下一步（接棒第一件能直接動手）
 
-1. **Adam 開一篇新 ANEWS issue → 拉 `article_write` 真實輸出**，確認沈牧單寫版聲音/立場對不對。做法：`cd ~/.ailive/anews-platform`，臨時 .cjs 讀 `.env.local` 的 `FIREBASE_SERVICE_ACCOUNT_B64`，找最新 issue 的 articles（topicId endsWith `-main`），blueprint 用 `articleId`（不是 issueId！）查，全文在 GCS `gs://moumou-os.firebasestorage.app/articles/{articleId}/final.md`。
-2. 評估是否替 single-write 補「內容複審閘門」——三段的 section-qa 是現成基礎（這就是當初標記不刪的理由）。
-3. anews 三個今日 commit push 遠端 `github.com/linhocheng/anews-platform`（PRIVATE）災備。
+**先驗 Mode 1，再收 5C。**
+
+1. **跑一個 Mode 1（market_evidence）真案到 done**：驗新設計在 Mode 1 + JSON 修復在 Cloud Run synthesis 也穩。
+   - 建案：`curl -X POST https://macs-platform.vercel.app/api/cases -H "authorization: Bearer $ADMIN_PW" -d '{"clientProblem":"...","businessContext":"...","decisionPurpose":"...","strategyMode":"market_evidence","fullAuto":true}'`（ADMIN_PW：`npx vercel env pull` 拉 production 的 ADMIN_PASSWORD，用完刪）
+   - 監控：`cd ~/.ailive/macs-platform && npx tsx --env-file=.env.local scripts/_watch-creative.mts <caseId>` + `scripts/_errs.mts <caseId>`
+2. **5C 架構收尾**：`lib/frameworks/contract.ts` 加 `buildReport(ctx)`；hybrid + Mode 1 章節從 `lib/report/builder.ts` 搬進各框架 report.ts；runReportBuild 改成 cover + getFramework(mode).buildReport + footer。Mode 1 無框架前暫留 legacy。
+3. **篇幅旋鈕接 Mode 1/2 + Cloud Run**（同 creativeLead.ts 的 callCreative 套路）。
+4. **macs-platform git push**（領先 origin 8 commits 未推；部署是工作樹）。
 
 ---
 
 ## 卡住 / 未解
 
-- single-write 無內容複審：polish 只產 metadata 不審內文，沈牧自律是唯一把關。
-- 沈牧單寫版 prompt 已 live 但未開新 issue e2e 驗收。
-- ANEWS pipeline 路徑寫死（single-write vs 三段）在 orchestrate 程式裡，後台無開關。
+- 5C 未做（Mode 1/2 章節還在 builder.ts 的 if(mode)；Mode 3 已在框架）。
+- Mode 1/2 換新設計後沒 live 驗（渲染共用、ViewModel 沒動，理論自動套）。
+- 篇幅旋鈕只 Mode 3 全通。
+- Phase 3 Cloud Run 隔離護欄未做（防禦性，非阻斷）。
+- macs-platform 8 commits 未推遠端（災備風險，收尾會推）。
+- Cloudflare API token 外洩待撤銷（延宕多 session）。
 
 ---
 
@@ -72,10 +83,12 @@ anews local commit：963eeef（021）、3a49185（022）、822a542（023），**
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| 今日心得/技法 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-05.md`（MACS 段 + 施工心得） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ANEWS 沈牧/技術債 | `memory/project_anews_platform.md` + grep `[停用-三段寫手路徑]` |
+| 天條：計算用程式不丟LLM | `~/.claude/CLAUDE.md` 永遠生效的紀律 + `memory/feedback_deterministic_work_belongs_in_code.md` |
+| MACS 框架契約 | `~/.ailive/macs-platform/lib/frameworks/contract.ts` |
+| MACS 報告設計系統 | `~/.ailive/macs-platform/lib/report/renderHtml.ts`（REPORT_CSS） |
+| Mode 3 章節 | `~/.ailive/macs-platform/lib/frameworks/creative-lead/report.ts` |
 
 ---
 
