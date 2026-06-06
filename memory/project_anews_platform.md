@@ -5,6 +5,8 @@ type: project
 originSessionId: cb4006f6-1b44-47b5-98d0-199f061785f4
 ---
 
+**2026-06-05 沈牧單寫版上線並驗收：** 刺客（Soul Evoker V4）已從 live `article_write` 換下，沈牧整篇單寫版推上 `settings/roles.article_write`（Firestore live + code DEFAULT 同步）。Adam 開新 issue 實測，回「有感覺有不同 Nice」——破槍式 e2e 驗過，聲音確認到位（不再是昨天誤把刺客功勞當沈牧的假評估）。**此項已從待辦移除。**
+
 **2026-06-01 最新狀態：** source A/B 雙管道上線 + **B 線打通並乾淨 e2e 驗收**（main+sub_a 第一次就 source_ready、provider 全程 B、付費 key 零燒、跑到 done）。A=Anthropic web_search（付費 key）；B=Tavily 免費搜+Max 綜述（走 bridge，$0）。per-issue 選、預設 A、B 失靈不 fallback。詳見 reference_anews_source_worker_deploy + reference_bridge_v1messages_effort。
 - 今天修：bridge `/v1/messages` 補 effort-low；auto-kick 重送 source 補 Cloud Run override（修「B 案被 watchdog 偷踢去 Vercel A-only worker 燒 key + 死循環」）；Cloud Run source worker 失敗補升級 needs_repair（修假中台）；B 綜述 prompt 改寫片段不照貼（修引號沒跳脫 JSON 爆）。
 - ✅ **2026-06-02 真相分裂已修**：`anews-source-worker` 的 `BRIDGE_URL` 已從 CF 域名改直連 `http://35.236.185.222:3001`（rev `00012-w7r`），與 article-write-worker 一致。524 根治（CF ~100s 上限 → 自設 180s timeout）。effort-low 保留為保險。
