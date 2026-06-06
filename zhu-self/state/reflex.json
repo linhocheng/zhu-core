@@ -1,6 +1,6 @@
 {
   "enabled": true,
-  "mode": "active",
+  "mode": "log_only",
   "note": "預設 disabled。Adam 簽字後改 enabled=true 啟用 log-only。兩週後評估升 active。",
-  "updated_at": "2026-06-06T00:57:14.317Z"
+  "updated_at": "2026-06-06T07:02:42.936Z"
 }

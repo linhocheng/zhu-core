@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-06-06 晚 — MACS partner-review revisedStoryline 字串崩潰修復（天條落地）
+
+### 背景 / WHY
+5C 框架重構（上個 session 完成）的 e2e 驗證被擋：兩個真案＋我自建測試案都跑不到 done。Adam：「回去看 log」。
+
+### 產出
+- 檔案：`macs-platform/lib/pipeline/partnerReview.ts` — 加 `coerceObjectOrNull` preprocess（market_evidence + hybrid 兩個 revisedStoryline schema）+ 兩個 prompt 補 `verdict=revised` 完整物件範例。commit v0.11.2.002，已 push + Vercel deploy 上線。
+
+### 已解決
+- partner-review 死在 `revisedStoryline expected object received string` → 根因：nullable 巢狀欄位 prompt 只示範 null 分支，模型走 revised 分支亂丟字串，repair loop 重問4次仍死（天條坑：拿 LLM 補 LLM 壞輸出）→ 修法：確定性 coerce（字串化 JSON 就 parse、散文退回 null 讓下游沿用原 storyline）+ prompt 補完整範例。
+- 全面檢查 Mode 1/2/3：grep `}).nullable()` 全 pipeline 確認唯一 nullable 巢狀物件就是這兩個 revisedStoryline，其餘巢狀欄位皆必填且 prompt 有完整範例。子代理報 Mode 3 四個 HIGH 風險，自核 code 後確認全是假陽性。
+
+### ⚠️ 尚未解決
+- 端到端還沒驗：兩個 needs_repair 案子（`case-mq200e8b-8s5uks` 我的測試案、`case-mq1xix6b-clkkvf`）要重跑穿過 partner-review 到 done 才算真通。Adam 喊「先停」在重跑前，所以程式修復已驗（單元測試4種輸入全過 + tsc 綠 + deploy），但 e2e 是空的。
+
+### 待執行
+- [ ] 重跑 `case-mq200e8b-8s5uks`：取 planVersion（pipeline_artifacts 的 planVersion 欄）→ reset 案 doc `repairAttempts=0`/`repairErrorType,Message=null`/`status=partner_review_running` → 走 `productionEnqueue("macs-report","/api/workers/partner-review",{taskId,caseId,planVersion})` 觸發部署的 worker 驗新 code → watch 到 done → 開匯出報告確認 5C 設計＋章節對。partner-review body 只要 `{caseId,planVersion}`，repairCollection="cases"。
+- [ ] 之後收 Task #21（hybrid e2e）/ #31（5C 標 done）
+
+---
+
 ## 2026-06-03 — MACS e2e 驗通 + 刪案功能 + UI 雙層重設計
 
 ### 背景 / WHY
