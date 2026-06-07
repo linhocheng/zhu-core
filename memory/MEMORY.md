@@ -2,6 +2,7 @@
 - [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
 - [天條：確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 序列化/解析/驗證/計數/排序寫程式保證；連修LLM壞輸出也別再丟LLM（築踩過：JSON壞了想re-ask模型）。已進全局CLAUDE.md
+- [防禦釘在收斂點不是每個生產端](feedback_defend_at_convergence_point.md) — 多處LLM輸出流經同一消費端時把coerce/validate釘在那唯一咽喉，一個commit守全部；MACS esc()根治三模式
 - [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 含 try/catch 的檔在 active 模式下所有 Edit 都被擋；誤觸請 Adam 跑 zhu reflex log-only 且確認真的執行
 - [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 API schema/新增欄位必同步確認客戶端介面，不能只改後端就算完成
 - [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例套同套 class，別自創不存在的 class + inline style 拼補丁
@@ -98,3 +99,4 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06 驗收完，語音待真機撥話，無 git repo，admin=ailiveX2026

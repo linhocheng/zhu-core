@@ -4590,3 +4590,28 @@ Adam 調整 Mode 1 角色出場順序，Victoria [7] 和 Marcus [9] 升格為獨
 
 ### 待執行
 - [ ] 新起 Mode 1 測試案從頭跑到 done，確認 structure-chapters + integrate-chapters 正確入 artifact
+
+---
+
+## 2026-06-07（午後）— MACS export 崩潰根治 + 用相同概念查 Mode 2/3
+
+### 背景 / WHY
+Mode 1 export 一直 timeout / 卡 "exporting"。表面看是 Cloud Run 慢，挖到底是兩層根因：(1) keyFindings 物件流進 render 層的 esc() 被 `.replace()` 呼叫炸掉；(2) 更隱蔽——我自己丟在 scripts/ 的診斷腳本有 TS error，從 v0.11.3.001 起每次 Vercel build 靜默失敗，prod 一直跑舊 code（沒 preBuiltChapters 快路徑）才 300s timeout。Adam 要我「用相同概念查 Mode 2/3 並寫學習重點」。
+
+### 產出
+- `lib/report/renderHtml.ts` — esc() 從 `(s: string)` 改 `(s: unknown)`，在單一收斂點確定性 coerce（string/null/object.finding|.text|.claim/JSON.stringify/String）。v0.11.3.005，已 push + Vercel deploy（macs-platform.vercel.app）
+- `tsconfig.json` — exclude 加 "scripts"，診斷腳本永不破 prod build。v0.11.3.004
+- `lib/report/builder.ts` — flattenKeyFindings + preBuiltChapters fast path（v0.11.3.003，前段）
+- `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-07.md` — 追加 L4（收斂點打法）+ L5（診斷腳本無聲炸 build）
+
+### 已解決
+- export "e.replace is not a function" → 根因 LLM 物件輸出流進 render；根治 = 釘最窄收斂點 esc() 確定性 coerce，一個 commit 守三模式（天條姿態）
+- Mode 1 export 300s timeout → 真根因是 prod 跑舊 code（build 靜默失敗）；tsconfig 隔離 scripts 後新 code 真上線，case-mq3rw8r2-2b29ic 已到 done
+- 用相同概念查 Mode 2/3：hybrid/report.ts + creative-lead/report.ts 確認有同類 vulnerability（一狗票 string 欄位無 data 層正規化），但因全走 esc() → 已被 esc() 收斂修一次蓋掉
+
+### ⚠️ 尚未解決
+- Mode 2/3 尚無真案 e2e 跑過驗 esc() 修在真實資料上（只做 build 綠 + 靜態分析）
+
+### 待執行
+- [ ] Mode 2 / Mode 3 各跑一個真案到 done，開匯出報告確認不崩潰且設計一致
+- [ ] Task #31 5C：章節改框架驅動（buildReport）尚未動

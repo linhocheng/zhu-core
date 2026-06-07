@@ -27,41 +27,37 @@
 
 ## 最新完成（2026-06-07）
 
-- **MACS Mode 1 管線重構（v0.11.3.001 上線）**：
-  - Victoria（structure-chapters）和 Marcus（integrate-chapters）從 export inline call 升格為獨立中途 pipeline worker
-  - cross-review 結尾 → enqueue structure-chapters；synthesis（Arthur）讀 Victoria 輸出 + enqueue integrate-chapters
-  - Oscar（recommendation）precondition 驗 integrate_chapters artifact
-  - export 純渲染：讀 integrate_chapters artifact 傳 preBuiltChapters，跳過 Cloud Run inline call
-  - issue-tree 雙階段：Eric（issueTreePrefix）拆解問題 → 配兵官（issueTreeSuffix）從選單指派 workerType
-  - tsc + build 全過 + commit v0.11.3.001 + push + Cloud Run deploy（revision 00023-58v）
+- **MACS export 崩潰根治（v0.11.3.005 上線）**：
+  - 根因①：LLM 把宣告為 string 的欄位（keyFindings）回成 `{finding,...}` 物件 → 流進 render 層 esc() 被 `.replace()` 呼叫炸（"e.replace is not a function"）。**根治 = 釘最窄收斂點**：`esc(s: string)` → `esc(s: unknown)`，在唯一消費端確定性 coerce。一個 commit 守 Mode 1/2/3。
+  - 根因②（最隱蔽）：我自己丟在 scripts/ 的診斷腳本有 TS error，從 v0.11.3.001 起每次 Vercel build 靜默失敗，prod 跑舊 code（沒快路徑）才一直 300s timeout。修：tsconfig exclude 加 "scripts"（v0.11.3.004）。
+  - 用相同概念查 Mode 2/3：hybrid/report.ts + creative-lead/report.ts 確認有同類 vulnerability，但全走 esc() → 已被 esc() 收斂修一次蓋掉。
+  - case-mq3rw8r2-2b29ic 已到 done，exports doc 存在。
+  - LESSONS_2026-06-07 加 L4（收斂點打法）+ L5（診斷腳本無聲炸 build）。
 
-### 同日稍早（上個 session）
-- ailiveX walking skeleton Phase 0-7 全通（dialogue + doc-worker + Cloud Tasks + GCS）
+### 同日稍早
+- MACS Mode 1 管線重構 v0.11.3.001（Victoria/Marcus 中途 worker + issue-tree 雙階段）
+- ailiveX walking skeleton Phase 0-7 全通
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（午後 session）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/cloud-run/research-worker/src/index.ts` | handleStructureChapters + handleIntegrateChaptersPipeline + 新 routes；enqueue 鏈調整 |
-| `macs-platform/lib/firestore/types.ts` | 新增 CaseStatus（structure_chapters_running / integrate_chapters_running）+ ArtifactType（structure_chapters / integrate_chapters）|
-| `macs-platform/app/api/workers/recommendation/route.ts` | Oscar precondition 驗 integrate_chapters |
-| `macs-platform/app/api/workers/export/route.ts` | 讀 integrate_chapters → preBuiltChapters 純渲染 |
-| `macs-platform/lib/report/builder.ts` | preBuiltChapters fast path；export AnalysisChapter type |
-| `macs-platform/lib/pipeline/issueTree.ts` | Eric + 配兵官雙階段（EricIssueTreeSchema + 兩次 callStructured + usage 加總）|
+| `macs-platform/lib/report/renderHtml.ts` | esc() `(s: string)`→`(s: unknown)` + 確定性 coerce（收斂點根治三模式）v0.11.3.005 |
+| `macs-platform/tsconfig.json` | exclude 加 "scripts"，診斷腳本永不破 prod build v0.11.3.004 |
+| `macs-platform/lib/report/builder.ts` | flattenKeyFindings + preBuiltChapters fast path（前段 v0.11.3.003）|
 
 ---
 
 ## 下一步（接棒第一件能直接動手）
 
-**新起一個 Mode 1 測試案，從頭跑到 done，確認新管線正確。**
+**Mode 2 / Mode 3 各跑一個真案到 done，開匯出報告驗 esc() 修在真實 LLM 輸出上不崩潰。**
 
-1. 在 https://macs-platform.vercel.app 新建 Mode 1 案件
-2. 跑到 cross-review 完成後，Firestore 確認 `structure_chapters` artifact 已存入
-3. 繼續跑到 integrate-chapters 完成，確認 `integrate_chapters` artifact 已存入
-4. 繼續跑到 done，確認 export HTML 正確
-5. 監控：`cd ~/.ailive/macs-platform && npx tsx --env-file=.env.local scripts/_status.mts <caseId>`
+1. 在 https://macs-platform.vercel.app 新建 Mode 2（hybrid）案件，跑到 done
+2. 開匯出報告，確認不崩潰、設計一致
+3. 同樣跑 Mode 3（creative_lead）
+4. 監控：`cd ~/.ailive/macs-platform && npx tsx --env-file=.env.local scripts/_status.mts <caseId>`
 
 **踩雷備忘**：MACS admin API 認證用 `ADMIN_PASSWORD="dm28224038"` 當 Bearer token。
 
@@ -69,7 +65,9 @@
 
 ## 卡住 / 未解
 
-- 新管線 e2e 未有真案跑過（code + build + deploy 全過，但 LLM 輸出未驗）
+- Mode 2/3 esc() 修只做 build 綠 + 靜態分析，尚無真案 e2e 驗
+- Mode 1 新管線（v0.11.3.001）整鏈也尚無乾淨真案跑過（但 export 段已驗到 done）
+- Task #31 5C：章節改框架驅動（buildReport）尚未動
 - Cloudflare API token 外洩待撤銷（延宕多 session）
 - ailiveX 尚未 git init + push 到 GitHub
 
@@ -86,6 +84,7 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | MACS 管線新結構 | `cloud-run/research-worker/src/index.ts`（handleStructureChapters / handleIntegrateChaptersPipeline）|
+| MACS render 收斂點 | `lib/report/renderHtml.ts` 的 esc()——三模式所有動態值的唯一咽喉，防禦在這釘 |
 | MACS worker harness | `macs-platform/lib/workers/harness.ts` |
 | MACS 案件狀態查詢 | `macs-platform/scripts/_status.mts <caseId>` |
 | MACS admin 認證 | Bearer `ADMIN_PASSWORD`（值 dm28224038），非 ADMIN_PW |
