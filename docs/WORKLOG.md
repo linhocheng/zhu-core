@@ -4564,3 +4564,29 @@ Adam 想讓即時語音對話畫面有角色底圖。規則：角色身份欄位
 - [ ] 真機語音撥話驗收（Phase 6 最後一里路）
 - [ ] ailiveX-platform git init + push 到 GitHub
 - [ ] 把剩餘兩個 pending job 也 enqueue（或清掉）
+
+---
+
+## 2026-06-07 — MACS Mode 1 管線重構：Victoria/Marcus 中途 worker + export 純渲染 + issue-tree 雙階段
+
+### 背景 / WHY
+Adam 調整 Mode 1 角色出場順序，Victoria [7] 和 Marcus [9] 升格為獨立中途 worker；issue-tree 拆成 Eric（問題定義）+ 配兵官（workerType 指派）雙階段。
+
+### 產出
+- `cloud-run/research-worker/src/index.ts` — handleStructureChapters + handleIntegrateChaptersPipeline + 新 routes；cross-review → enqueue structure-chapters；synthesis 讀 structure_chapters + enqueue integrate-chapters
+- `lib/firestore/types.ts` — 新增 CaseStatus / ArtifactType（structure_chapters / integrate_chapters）
+- `app/api/workers/recommendation/route.ts` — Oscar precondition 驗 integrate_chapters
+- `app/api/workers/export/route.ts` — 讀 integrate_chapters → preBuiltChapters，純渲染
+- `lib/report/builder.ts` — preBuiltChapters fast path + export AnalysisChapter type
+- `lib/pipeline/issueTree.ts` — Eric + 配兵官雙階段 LLM call
+- Commit v0.11.3.001 + push + Cloud Run deploy revision 00023-58v
+
+### 已解決
+- export 同步呼叫 Cloud Run × 2 → 改為讀已存 artifact，純渲染快路徑
+- issue-tree 角色責任混淆 → 兩個分開的 LLM call + 兩個 schema
+
+### ⚠️ 尚未解決
+- 新管線 e2e 未有真案跑過
+
+### 待執行
+- [ ] 新起 Mode 1 測試案從頭跑到 done，確認 structure-chapters + integrate-chapters 正確入 artifact
