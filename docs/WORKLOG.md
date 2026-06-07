@@ -4531,3 +4531,36 @@ Adam 想讓即時語音對話畫面有角色底圖。規則：角色身份欄位
 ### 待執行
 - [ ] 若要照片版全淨：realtime/voice 照版分支移除 canvas 疊層
 - [ ] Adam 既有 user_profile 改動由他自己決定何時 commit（不是我的）
+
+---
+
+## 2026-06-06 夜 — ailiveX walking skeleton Phase 0-7 全通
+
+### 背景 / WHY
+從上個 session 留下的 Vercel 500（`/api/dialogue`）開始，這個 session 追完全部 bug，直到 Phase 7 文件生成端到端驗收通過。
+
+### 產出
+- `~/.ailive/ailivex-platform/src/lib/enqueue.ts` — 從 @google-cloud/tasks SDK 改為 REST API（修 Vercel protos.json 炸）
+- `~/.ailive/ailivex-platform/next.config.ts` — 移除 @google-cloud/tasks serverExternalPackages
+- `~/.ailive/ailivex-platform/cloud-run/doc-worker/src/index.ts` — 移除 `public: true`（修 GCS uniform ACL）
+- `~/.ailive/ailivex-platform/scripts/test-enqueue.mjs` — 本地 Cloud Tasks REST 測試腳本（debug 用）
+- `~/.ailive/ailivex-platform/scripts/reset-admin-pw.mjs` — admin 密碼重設工具
+- Vercel env 補齊：BRIDGE_ENABLED、BRIDGE_URL、GCP_PROJECT_ID、CLOUD_TASKS_LOCATION、DOC_TASKS_QUEUE、DOC_WORKER_INVOKER_SA
+- GCP IAM 補齊：SA self actAs + Cloud Tasks service agent tokenCreator + GCS bucket allUsers objectViewer
+
+### 已解決
+- Vercel `@google-cloud/tasks` protos.json 404 → 改 REST API + GoogleAuth token
+- `/api/dialogue` 500（bridge env 缺失）→ 補 BRIDGE_ENABLED + BRIDGE_URL 到 Vercel
+- Cloud Tasks OIDC token 不送達 → 補三層 IAM（self actAs / Cloud Tasks SA tokenCreator / Cloud Run invoker）
+- GCS `public: true` 被 uniform bucket ACL 擋 → bucket-level allUsers + 移除 per-object ACL
+- admin 密碼不知道 → 寫 reset script（scrypt hex salt 格式必須對）
+
+### ⚠️ 尚未解決
+- 語音通話（Phase 6）尚未真機測試（電話撥通、角色出聲）；骨架代碼通，但實際效果未驗
+- ailiveX 尚未初始化 git repo，沒有版控保護
+- 三個早期 pending doc job（ailiveX 骨架策略書 / ailiveX 2.0 策略書）尚未重排（只修了第一個測試文件）
+
+### 待執行
+- [ ] 真機語音撥話驗收（Phase 6 最後一里路）
+- [ ] ailiveX-platform git init + push 到 GitHub
+- [ ] 把剩餘兩個 pending job 也 enqueue（或清掉）

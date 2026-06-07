@@ -19,64 +19,74 @@
   - bridge-direct：`https://bridge-direct.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **ailive 平台**：`~/.ailive/ailive-platform/`（Next.js 16.1.6 Turbopack），prod https://ailive-platform.vercel.app
-- **MACS 平台**：`~/.ailive/macs-platform/`，prod https://macs-platform.vercel.app，git remote github.com/linhocheng/macs-platform
+- **ailive 平台**：`~/.ailive/ailive-platform/`，prod https://ailive-platform.vercel.app
+- **ailiveX 平台**（新）：`~/.ailive/ailivex-platform/`，prod https://ailivex-platform.vercel.app（無 git，注意）
+- **MACS 平台**：`~/.ailive/macs-platform/`，prod https://macs-platform.vercel.app
 - **MACS 研究 worker（Cloud Run）**：`macs-research-worker` · asia-east1 · project `zhu-cloud-2026`
 - **ANEWS source-worker（Cloud Run）**：`anews-source-worker` · asia-east1 · project `zhu-cloud-2026`
+- **ailiveX Cloud Run**：GCP project `ailivex-2026`
+  - agent（realtime-voice）：`ailivex-realtime-agent` · us-central1
+  - doc-worker：`ailivex-doc-worker` · us-central1
 
 ---
 
-## 最新完成（2026-06-06 晚）
+## 最新完成（2026-06-06 夜）
 
-- **MACS partner-review `revisedStoryline` 字串崩潰修復（天條落地）**：
-  - 病灶：`verdict=revised` 時 LLM 把 nullable 巢狀欄位丟成字串（散文或字串化 JSON），schema 要物件 → `SCHEMA_VALIDATION` → repair loop 重問4次仍死（天條坑：拿 LLM 補 LLM 壞輸出）。
-  - 修法兩層：`coerceObjectOrNull` preprocess（字串化 JSON 就 parse、散文退回 null 讓下游沿用原 storyline）+ 兩個 prompt 補 `verdict=revised` 完整物件範例。market_evidence + hybrid 兩 schema 都修。
-  - 全面檢查 Mode 1/2/3：grep `}).nullable()` 確認全 pipeline 唯一 nullable 巢狀物件就是這兩個 revisedStoryline；其餘必填且有完整範例。子代理報的 Mode 3 四個 HIGH 全是假陽性（自核 code 確認）。
-  - 驗證：單元測試4種輸入全過 + tsc 綠 + commit `v0.11.2.002` + push + Vercel deploy 上線。
+- **ailiveX walking skeleton Phase 0-7 全通端到端驗收** ✅
+  - Phase 0：GCP infra（SA、bucket、Cloud Tasks queue、secrets）
+  - Phase 1：帳號系統（scrypt + signed cookie，admin/user 角色）
+  - Phase 2：管理者建角色（靈魂+頭像）
+  - Phase 3：指派 access（用戶×角色）
+  - Phase 4：用戶大廳（只列被指派角色）
+  - Phase 5：文字聊天 + per 用戶×角色記憶（記憶隔離驗證）
+  - Phase 6：即時語音（LiveKit agent Cloud Run 部署，worker registered）
+  - Phase 7：文件生成（bridge 寫 md → marked HTML → GCS → documents ✅）
+- 修 Vercel `@google-cloud/tasks` protos.json 炸 → 改 REST API（LESSONS_2026-06-06_night.md L1）
+- 補 Vercel 缺失 env（BRIDGE_ENABLED, BRIDGE_URL, GCP_PROJECT_ID, DOC_TASKS_QUEUE 等）
+- 修 Cloud Tasks OIDC 三層 IAM（L2）
+- 修 GCS uniform bucket ACL → 移除 `public: true`，改 bucket-level allUsers（L3）
 
-### 同日稍早
-- 5C 框架驅動章節組裝完成（上個 session）：hybrid 章節搬進 `lib/frameworks/hybrid/report.ts` + `sharedChapters.ts`，`v0.11.2.001`。
-- ailive 即時語音加角色底圖層（realtime + voice），已上 prod，Adam 確認 OK。
+### 同日稍早（上個 session）
+- MACS partner-review `revisedStoryline` 字串崩潰修復（天條落地）
+- ailive 即時語音加角色底圖層
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（夜段 ailiveX）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/pipeline/partnerReview.ts` | `coerceObjectOrNull` preprocess（兩 schema）+ 兩 prompt 補 revised 完整範例 |
-| `macs-platform/lib/frameworks/hybrid/report.ts` | （上個 session）hybrid 章節組裝 buildHybridChapters |
-| `macs-platform/lib/report/sharedChapters.ts` | （上個 session）共用章節 decisionMaker/coreStake/sources |
-| `ailive-platform/src/app/realtime|voice/...page.tsx` | （稍早）語音角色底圖層 |
+| `ailivex-platform/src/lib/enqueue.ts` | @google-cloud/tasks SDK → Cloud Tasks REST API |
+| `ailivex-platform/next.config.ts` | 移除 @google-cloud/tasks serverExternalPackages |
+| `ailivex-platform/cloud-run/doc-worker/src/index.ts` | 移除 `public: true`（GCS uniform ACL） |
+| `ailivex-platform/scripts/test-enqueue.mjs` | 新增：Cloud Tasks REST 測試腳本 |
+| `ailivex-platform/scripts/reset-admin-pw.mjs` | 新增：admin 密碼重設工具 |
 
 ---
 
-## 下一步（接棒第一件能直接動手）
+## 下一步（接棒第一件）
 
-**端到端驗證 partner-review 修復——重跑卡住的測試案到 done。** 程式修復已驗+已 deploy，但 e2e 還是空的（Adam 喊停在重跑前）。
+**ailiveX 語音通話真機驗收**（Phase 6 最後一里路）：
+1. 登入 https://ailivex-platform.vercel.app（admin / ailiveX2026）
+2. 確認有角色被指派（小築）
+3. 進 `/realtime/{characterId}` 點「開始通話」
+4. 確認角色出聲、通話後記憶寫入 Firestore `memories` collection
 
-1. **重跑 `case-mq200e8b-8s5uks`**（我的測試案，Mode 1，needs_repair）：
-   - 取 planVersion：查 `pipeline_artifacts` where caseId 的 `planVersion` 欄。
-   - reset 案 doc：`repairAttempts=0`、`repairErrorType=null`、`repairErrorMessage=null`、`status="partner_review_running"`。
-   - 觸發部署的 worker（驗新 code，不要本機跑）：`productionEnqueue("macs-report","/api/workers/partner-review",{taskId:`macs-partner-${caseId}-${planVersion}`,caseId,planVersion})`。partner-review body 只要 `{caseId,planVersion}`，repairCollection="cases"。
-   - 監控：`cd ~/.ailive/macs-platform && npx tsx --env-file=.env.local scripts/_status.mts case-mq200e8b-8s5uks`。
-   - 到 done → 開匯出報告確認 5C 設計＋章節對。
-2. 同法重跑 `case-mq1xix6b-clkkvf`（另一個卡的真案）。
-3. 通過後收 Task #21（hybrid e2e）、#31（5C 標 done）。
+接著：
+- **ailiveX git init**：`cd ~/.ailive/ailivex-platform && git init && git remote add origin ... && git push`
+- **清 pending jobs**：`node scripts/test-enqueue.mjs J8nS13pfAB4VCa8upXs8` + `node scripts/test-enqueue.mjs eLjlb6ujTfM3GB9qWzLQ`（先 reset to pending）
 
-**踩雷備忘**：MACS admin API 認證用 `ADMIN_PASSWORD="dm28224038"` 當 Bearer token，**不是** `ADMIN_PW`（那個 env 不存在，上 session 踩過）。inline tsx `-e` 會 CJS top-level-await 報錯，改寫 `.mts` 檔再 `npx tsx --env-file=.env.local /tmp/x.mts`。
+MACS 那條線（待 Adam 指示繼續）：partner-review e2e 驗收兩個 needs_repair 案子。
 
 ---
 
 ## 卡住 / 未解
 
-- **MACS e2e 未驗**：partner-review 修復只驗到單元+deploy，沒有真案跑穿過 partner-review→export→done。兩個 needs_repair 案子待重跑（見下一步）。
-- Mode 1/2 報告新設計（5A）未 live 驗（理論自動套，沒真案跑過）。
-- 篇幅旋鈕只 Mode 3 全通（Mode 1/2 + Cloud Run 未接）。
-- MACS `cloud-run/research-worker/src/index.ts` Tavily 輪用改動：上 session 已 commit `v0.11.1.002`（已入 git）。
-- ailive working tree：Adam 既有未提交 `agent/user_profile.py`、`src/lib/user-profile.ts`（非我的，勿洗）。
-- Cloudflare API token 外洩待撤銷（延宕多 session）。
-- ANEWS source-worker tavily.ts 改動未 commit（ANEWS 非 git repo，只靠 deploy + WORKLOG）。
+- Phase 6 語音：Cloud Run agent registered ✅，但尚未真機撥話驗收
+- ailiveX-platform 無 git repo，本地改動無版控
+- 舊 pending doc jobs（ailiveX 骨架策略書 / ailiveX 2.0 策略書）尚未重排
+- MACS e2e 未驗（needs_repair 兩案待重跑）
+- Cloudflare API token 外洩待撤銷（延宕多 session）
 
 ---
 
@@ -90,13 +100,13 @@
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| MACS partner-review | `macs-platform/lib/pipeline/partnerReview.ts`（coerceObjectOrNull + schema + prompt）|
-| MACS 章節組裝 | `macs-platform/lib/report/{builder.ts,sharedChapters.ts}` + `lib/frameworks/hybrid/report.ts` |
-| MACS worker harness | `macs-platform/lib/workers/harness.ts`（repairAttempts/needs_repair 機制）|
-| MACS 案件狀態查詢 | `macs-platform/scripts/_status.mts <caseId>` |
+| ailiveX 源碼 | `~/.ailive/ailivex-platform/` |
+| ailiveX prod | https://ailivex-platform.vercel.app |
+| ailiveX admin 帳號 | username: `admin` / password: `ailiveX2026` |
+| ailiveX Cloud Run | project `ailivex-2026`，region `us-central1` |
 | MACS admin 認證 | Bearer `ADMIN_PASSWORD`（值 dm28224038），非 ADMIN_PW |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-06 · 築*
+*2026-06-06 夜 · 築*
