@@ -1,6 +1,6 @@
 ---
 name: MACS 平台（麥肯錫式 AI 顧問公司）
-description: ANEWS 概念轉 AI 顧問公司，2026-06-02 GitHub 推上 + Marcus dir1 + #36 閃爍燈 + 中台活路全接通 + research 改 B 線（$0，已無付費 key）
+description: ANEWS 概念轉 AI 顧問公司；2026-06-08 四模式（market_evidence/hybrid/creative_lead/creative_proposal）e2e 全通，10 條 worker route 已 framework 泛型化（零 mode hardcode）
 type: project
 originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 ---
@@ -30,4 +30,12 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 **⚠️ 更正（2026-06-02 接棒 session，去現場驗證後）**：上面「structured-JSON 提案評估後不採（markdown-direct B-only）」這條**已被現實推翻**。現場真相：Cloud Run（rev `00015-bpb`→`00016-xhk`，401 探針確認 deployed=working-tree）跑的就是 structured-JSON 版——某次 session 改了 research→`ResearchDossierSchema`（keyFacts/sources/caseExamples/opposingViews/strategicImplications/dataGaps/sufficiency）+ `dossierToMarkdown` serializer + schema 層防杜撰 URL，且**新增 Cloud Run synthesis worker**（`SynthesisSchema`/`EvidenceAlignmentSchema` + `getSynthesisRole` 讀中台 roleFraming），cross-review enqueue 帶 `SYNTHESIS_WORKER_BASE_URL` override。這些一直在 prod 跑卻沒進 git（git HEAD 落後部署現場）。已 commit `d3e1e47` 對齊並推上 GitHub。教訓：「不採用」是當時的決定，但現場後來改了——記憶凍結在決策點，會說謊。
 - **CF 524 根治（2026-06-02 接棒）✅**：bridge VM（zhu-dev，35.236.185.222）裝 Caddy + Let's Encrypt，新 host `https://bridge-direct.soul-polaroid.work`（grey-cloud A record，繞開 cloudflared tunnel 的 CF edge timeout）。Vercel + Cloud Run BRIDGE_URL 都改指這個 https host，~10 個 Vercel LLM 階段 + Cloud Run 全部不再被 CF ~130s 掐死。原 `bridge.soul-polaroid.work` tunnel + :3001 都沒動（純加法）。⚠️ Cloudflare API token（cfat_...）建 record 時曾貼進 chat，待撤銷。
 
-**⚠️ 待辦**：①**MACS B research path 未跑真案 e2e**（code+部署+health 過，端到端未過——接棒第一件）；②看完整 MACS 資料流（被防杜撰任務插隊未做）；③Marcus 真案驗品質；④#36 閃爍燈驗證。細節看 `ZHU_LAST_WORDS.md`。
+**⚠️ 待辦（2026-06-02 當時）**：①MACS B research path e2e；②看完整資料流；③Marcus 真案驗品質；④#36 閃爍燈驗證。（多數已被後續 session 推進，見下。）
+
+**2026-06-08 — 四模式架構 + complete-B route 泛型化（重大演進）**：
+- **四個 strategyMode**：`market_evidence`（Mode 1，麥肯錫式）/ `hybrid`（Mode 2，50% 資料+50% 創意，synthesize 在 Cloud Run）/ `creative_lead`（Mode 3，破格者）/ `creative_proposal`（Mode 4，奧美×李奧貝納 6 人創意部，兩幕 13 章商業企劃書）。
+- **framework 架構**：`lib/frameworks/`——`contract.ts`（ModeFramework：pipeline/stages/theme/`vercelNative`/`buildReport`）、`registry.ts`（`getFramework`/`hasFramework`/`isVercelNative`）、各 mode 一個 framework dir（hybrid/creative-lead/creative-proposal）。stage 有 `reads:ResourceKey[]`/`writes:ResourceKey`/`runsOn`，`buildStageContext` 把 ResourceKey 解析成 artifact。
+- **complete-B 收尾（commit v0.12.0.001/002）**：10 條 Vercel worker route 從 hardcode `mode === "creative_lead"` 改成 framework 驅動泛型分派——分支只看 `isVercelNative(mode)`（只 creative_lead/creative_proposal 為 true；hybrid 雖有 framework 但有 cloudRun synthesize + legacy route 故 false）、artifact 名走 `stage.writes`、export 用 `buildReport` hook + `deckReadKeys` 泛型 gather。**未來加 vercel-native mode = 註冊 framework + 寫 buildReport，零 route 改動**（但這只對「全 Vercel stage」的 mode 成立，cloudRun-heavy 如 hybrid 不算）。
+- **四模式 e2e 全跑到 done**（回歸閘）：M1 86655 字 / M2 88878 字 / M3 28388 字 / M4 26821 字。
+- **⚠️ Mode 4 內容仍是 P0 假資料**：`lib/pipeline/creativeProposal.ts` 的 run* 回 fixture，管道/泛型/渲染通但內文是 `(P0 假資料)`。下一階段才換真 prompt。
+- Cloud Run hybrid 三修（全形標點正規化 / hybrid 不走 chapter 鏈 / SYNTH_TAIL 一份一模式）此前已部署 live、2026-06-08 才 commit 回 git（v0.11.4.002）。

@@ -26,6 +26,13 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 - 決定性測試被擋：讀 BRIDGE_SECRET 被 settings 層 deny（不暴露密鑰紅線），curl bridge 帶真 auth 跑不了。
 - **下次第一件**：擇一 — (a) agent 加 LLM 級 instrumentation log（llm 呼叫前/首 token/完成/TTS 進入）重部署，Adam 撥一通就定位；(b) Adam 核 ailive Cloud Run env 是否走直連 key；(c) 經 Adam 同意臨時切 ANTHROPIC_API_KEY 直連驗證是否 bridge 串流問題（會燒錢，需同意）。
 
+**Memory Architecture v2 落地（2026-06-08）：**
+- T1-T6 全完成：schema 擴展（6種type）、relationships collection、7區塊 system prompt、time-aware、active recall、stale 機制
+- `src/lib/memory.ts`、`src/lib/relationship.ts`、`src/lib/collections.ts` 全改
+- `agent/firestore_loader.py`：`load_relationship()` 新增、`build_system_prompt` 7區塊、extraction prompt 升 6 types
+- `agent/realtime_agent.py`：import `load_relationship`，傳 relationship 給 build_system_prompt
+- Vercel 已部署（ailivex-platform.vercel.app）；Cloud Run build 中（asia-east1）
+
 **其他待完成：** ailiveX-platform git init + push GitHub；清 3 個 pending doc jobs。
 
 **How to apply:** 處理 ailiveX 相關問題時，認識這是全新 GCP 專案（ailivex-2026）與 ailive 完全隔離。admin / ailiveX2026。語音「沒聲音」先查 LLM/Bridge 串流斷點，不是 TTS 也不是 dispatch。
