@@ -24,48 +24,52 @@
 
 ---
 
-## 最新完成（2026-06-08）
+## 最新完成（2026-06-08 夜）
 
-- 接通 MACS 報告篇幅旋鈕到三模式：釘 `callStructured` 收斂點一處注入 directive + scale token
-- 補上 Mode 1 analysis 的 raw prose call 旁路（繞過 callStructured，手動呼叫 applyLengthControl）
-- 拆掉 Mode 3 creativeLead 原本的重複注入，避免雙重注入
-- Cloud Run 章節生成透傳 lengthTier：`structureOneMemo` + `runIntegrateChapters` 讀同一 settings/pipeline 並 scale token
-- Cloud Run 部署上線：revision **macs-research-worker-00025-tkc** serving 100%
+- MACS complete-B：10 條 Vercel worker route 全泛型化（framework 驅動，`isVercelNative` / `stage.writes` / `buildReport` hook），未來加 vercel-native mode 零 route 改動
+- 接通 Mode 4 creative_proposal（兩幕 13 章商業企劃書）：framework + buildProposalReport
+- 四模式 **e2e 全跑到 done**：M1 86655 字 / M2 88878 字 / M3 28388 字 / M4 26821 字（回歸閘通過，M3 證明泛型化沒打壞既有模式）
+- 修 Mode 4 issue-tree compat 映射 mode 耦合 bug（讀 CreativeTerritory 專屬欄位 → 改共享欄位）
+- 回補 commit 既有未提交的 Cloud Run hybrid 三修（部署已 live、git 落後）
 
 ---
 
 ## 今天改了哪些檔案
 
+（白天另有一段「篇幅旋鈕接三模式」，見 WORKLOG 2026-06-08 上半；以下是夜場 complete-B）
+
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/report/length.ts` | 新增 applyLengthControl 單一接縫（append directive + scale token） |
-| `macs-platform/lib/llm/structured.ts` | callStructured 送 LLM 前呼叫 applyLengthControl（三模式收斂點） |
-| `macs-platform/lib/pipeline/analysis.ts` | Mode 1 raw prose call 補注入（唯一繞過 callStructured 的旁路） |
-| `macs-platform/lib/pipeline/creativeLead.ts` | callCreative 移除自身注入，去雙重注入 |
-| `macs-platform/cloud-run/research-worker/src/index.ts` | getReportLength() + structureOneMemo/runIntegrateChapters 透傳 tier |
-| `zhu-core/docs/LESSONS/LESSONS_2026-06-08.md` | L1 收斂點配旁路盤點 + L2 旋鈕只接一 mode = 血管不通 |
+| `macs-platform/lib/frameworks/contract.ts` | ModeFramework 加 vercelNative + buildReport hook |
+| `macs-platform/lib/frameworks/registry.ts` | 加 isVercelNative（只 creative_lead/proposal 為 true） |
+| `macs-platform/lib/frameworks/creative-lead/index.ts` | 設 vercelNative + buildReport |
+| `macs-platform/lib/frameworks/creative-proposal/{index,report}.ts` | Mode 4 framework + buildProposalReport（13 章兩幕） |
+| `macs-platform/app/api/workers/*.ts`（9 條）+ cases/route | 全改 framework 泛型分派，零 mode hardcode |
+| `macs-platform/app/api/workers/issue-tree/route.ts` | territory→workstream 映射改共享欄位（修 Mode 4 needs_repair） |
+| `macs-platform/cloud-run/research-worker/src/index.ts` | 回補既有 hybrid 三修（獨立 commit） |
 
-commit：macs-platform `v0.11.4.001`（已 push + 雙端部署）
+commit：macs-platform `v0.12.0.001` / `v0.12.0.002` / `v0.11.4.002`（皆已 push + prod deploy，alias macs-platform.vercel.app）
 
 ---
 
 ## 下一步
 
-**篇幅真案對照驗證**（最該先做、能直接動手）：
-1. 去 https://macs-platform.vercel.app/dashboard/settings 把篇幅設「精簡」
-2. /dashboard 新建案件、勾「全自動」、選 market_evidence，跑到 done
-3. 同題再設「深入」跑一份，比兩份報告字數 → 確認旋鈕真的咬住
-   - 注意：cache 60s、只影響之後跑的 run（不回溯既有報告）
-4. curl 起案範例見 WORKLOG 2026-06-08
+**Mode 4 把 P0 假資料換成真 prompt**（最該先做、能直接動手）：
+- 現況：Mode 4 e2e 通了，但 13 章內文全是 `(P0 假資料)` 佔位 —— 管道/泛型路由/渲染綠，內容是假的。
+- 動手點：`macs-platform/lib/pipeline/creativeProposal.ts` 的 `run*` 函式（forge/territories/synthesis/selection/execution…）目前回 fixture，逐個換成真 LLM 呼叫（走 bridge，`<result>` JSON + Zod schema，不用 tool_use）。
+- 逐 stage 驗：起一個 creative_proposal 全自動案，盯 artifact 內容不再是 P0、Zod 不炸。
+- 起案 curl 範例見 WORKLOG 2026-06-08 夜（admin bearer 在 macs-platform/.env.production.local 的 ADMIN_PASSWORD）。
 
-連帶把昨日待辦的 Mode 2/3 真案 e2e（驗 esc() + 設計一致）一起跑掉。
+連帶未清待辦：
+- 篇幅真案對照（精簡 vs 深入比字數，白天那段的遺留驗證）
+- Task #31 5C：Mode 1 integrate_chapters 仍 legacy，未改 buildReport 框架驅動
 
 ---
 
 ## 卡住 / 未解
 
-- 篇幅改動只做到 build 綠 + 雙端部署，**尚無真案 e2e 驗字數真的降**。Adam 收工前我問「要不要起一個全自動案跑到 done」，他選擇收工換手——驗證留給下一棒。
-- Task #31（5C 章節改框架驅動 buildReport）仍未動。
+- Mode 4 內容是 P0 假資料（**設計如此**，非 bug；真 prompt 是下一階段）。骨架通了 ≠ 內容對了。
+- 篇幅旋鈕仍無真案 e2e 比字數驗證（白天遺留）。
 
 ---
 
@@ -82,8 +86,9 @@ commit：macs-platform `v0.11.4.001`（已 push + 雙端部署）
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 | MACS 平台 | `~/.ailive/macs-platform/`（Vercel + Cloud Run research worker） |
+| MACS Mode 4 計畫 | `~/.ailive/macs-platform/docs/MODE4_CREATIVE_PROPOSAL_PLAN.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-08 · 築*
+*2026-06-08 夜 · 築*
