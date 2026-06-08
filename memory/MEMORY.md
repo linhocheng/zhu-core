@@ -22,6 +22,7 @@
 - [MiniMax 海外版 plan tier ≠ 餘額（2061 vs 2053）](feedback_minimax_plan_tier.md) — 2061 plan not support 儲值救不了，2053 才是儲值能解
 - [LiveKit Cloud project 共用時必用 agent_name 隔離](reference_livekit_agent_name_isolation.md) — 多業務共用同一 LiveKit 時不要靠 prompt 防呆，用 agent_name + RoomAgentDispatch
 - [LiveKit Agents 1.5.x token 必帶 RoomConfiguration](reference_livekit_1_5_room_configuration.md) — 1.5.x 預設 explicit dispatch，照 1.3.x 文件寫 token 會無聲失敗
+- [LiveKit「沒聲音」可能是跨 region 重複 Cloud Run 殭屍](reference_livekit_duplicate_region_zombie.md) — 同 agent_name 部到兩 region 各 min-instances=1，偷一半 dispatch；用無 --region 的 services list 抓
 - [新 GCP project 第一次 deploy 雙必踩 IAM](reference_gcp_new_project_iam.md) — Cloud Build 必帶 --region、Cloud Run compute SA 必 grant secretAccessor
 - [jianbin-v2 全鏈路上線（2026-04-25）](project_jianbin_v2_live.md) — STT/LLM/TTS 三鏈全通，撥號實測 OK
 - [ailive 即時語音上線（2026-04-27）](project_ailive_realtime_voice_live.md) — LiveKit + Cloud Run + Deepgram + Haiku + MiniMax 端到端通，寫記憶 tool 待 Phase 7
