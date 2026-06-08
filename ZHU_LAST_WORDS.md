@@ -15,61 +15,57 @@
 ## 當前環境
 
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING（跑 `claude-bridge` systemd）
-  - bridge-direct：`https://bridge-direct.soul-polaroid.work`
+- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
+  - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
+  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **ailive 平台**：`~/.ailive/ailive-platform/`（Next.js），prod https://ailive-platform.vercel.app
-- **MACS 平台**：`~/.ailive/macs-platform/`，prod https://macs-platform.vercel.app，git remote github.com/linhocheng/macs-platform
-- **MACS 研究 worker（Cloud Run）**：`macs-research-worker` · asia-east1 · project `zhu-cloud-2026`
+- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
-## 最新完成（2026-06-07）
+## 最新完成（2026-06-08）
 
-- **MACS export 崩潰根治（v0.11.3.005 上線）**：
-  - 根因①：LLM 把宣告為 string 的欄位（keyFindings）回成 `{finding,...}` 物件 → 流進 render 層 esc() 被 `.replace()` 呼叫炸（"e.replace is not a function"）。**根治 = 釘最窄收斂點**：`esc(s: string)` → `esc(s: unknown)`，在唯一消費端確定性 coerce。一個 commit 守 Mode 1/2/3。
-  - 根因②（最隱蔽）：我自己丟在 scripts/ 的診斷腳本有 TS error，從 v0.11.3.001 起每次 Vercel build 靜默失敗，prod 跑舊 code（沒快路徑）才一直 300s timeout。修：tsconfig exclude 加 "scripts"（v0.11.3.004）。
-  - 用相同概念查 Mode 2/3：hybrid/report.ts + creative-lead/report.ts 確認有同類 vulnerability，但全走 esc() → 已被 esc() 收斂修一次蓋掉。
-  - case-mq3rw8r2-2b29ic 已到 done，exports doc 存在。
-  - LESSONS_2026-06-07 加 L4（收斂點打法）+ L5（診斷腳本無聲炸 build）。
-
-### 同日稍早
-- MACS Mode 1 管線重構 v0.11.3.001（Victoria/Marcus 中途 worker + issue-tree 雙階段）
-- ailiveX walking skeleton Phase 0-7 全通
+- 接通 MACS 報告篇幅旋鈕到三模式：釘 `callStructured` 收斂點一處注入 directive + scale token
+- 補上 Mode 1 analysis 的 raw prose call 旁路（繞過 callStructured，手動呼叫 applyLengthControl）
+- 拆掉 Mode 3 creativeLead 原本的重複注入，避免雙重注入
+- Cloud Run 章節生成透傳 lengthTier：`structureOneMemo` + `runIntegrateChapters` 讀同一 settings/pipeline 並 scale token
+- Cloud Run 部署上線：revision **macs-research-worker-00025-tkc** serving 100%
 
 ---
 
-## 今天改了哪些檔案（午後 session）
+## 今天改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/report/renderHtml.ts` | esc() `(s: string)`→`(s: unknown)` + 確定性 coerce（收斂點根治三模式）v0.11.3.005 |
-| `macs-platform/tsconfig.json` | exclude 加 "scripts"，診斷腳本永不破 prod build v0.11.3.004 |
-| `macs-platform/lib/report/builder.ts` | flattenKeyFindings + preBuiltChapters fast path（前段 v0.11.3.003）|
+| `macs-platform/lib/report/length.ts` | 新增 applyLengthControl 單一接縫（append directive + scale token） |
+| `macs-platform/lib/llm/structured.ts` | callStructured 送 LLM 前呼叫 applyLengthControl（三模式收斂點） |
+| `macs-platform/lib/pipeline/analysis.ts` | Mode 1 raw prose call 補注入（唯一繞過 callStructured 的旁路） |
+| `macs-platform/lib/pipeline/creativeLead.ts` | callCreative 移除自身注入，去雙重注入 |
+| `macs-platform/cloud-run/research-worker/src/index.ts` | getReportLength() + structureOneMemo/runIntegrateChapters 透傳 tier |
+| `zhu-core/docs/LESSONS/LESSONS_2026-06-08.md` | L1 收斂點配旁路盤點 + L2 旋鈕只接一 mode = 血管不通 |
+
+commit：macs-platform `v0.11.4.001`（已 push + 雙端部署）
 
 ---
 
-## 下一步（接棒第一件能直接動手）
+## 下一步
 
-**Mode 2 / Mode 3 各跑一個真案到 done，開匯出報告驗 esc() 修在真實 LLM 輸出上不崩潰。**
+**篇幅真案對照驗證**（最該先做、能直接動手）：
+1. 去 https://macs-platform.vercel.app/dashboard/settings 把篇幅設「精簡」
+2. /dashboard 新建案件、勾「全自動」、選 market_evidence，跑到 done
+3. 同題再設「深入」跑一份，比兩份報告字數 → 確認旋鈕真的咬住
+   - 注意：cache 60s、只影響之後跑的 run（不回溯既有報告）
+4. curl 起案範例見 WORKLOG 2026-06-08
 
-1. 在 https://macs-platform.vercel.app 新建 Mode 2（hybrid）案件，跑到 done
-2. 開匯出報告，確認不崩潰、設計一致
-3. 同樣跑 Mode 3（creative_lead）
-4. 監控：`cd ~/.ailive/macs-platform && npx tsx --env-file=.env.local scripts/_status.mts <caseId>`
-
-**踩雷備忘**：MACS admin API 認證用 `ADMIN_PASSWORD="dm28224038"` 當 Bearer token。
+連帶把昨日待辦的 Mode 2/3 真案 e2e（驗 esc() + 設計一致）一起跑掉。
 
 ---
 
 ## 卡住 / 未解
 
-- Mode 2/3 esc() 修只做 build 綠 + 靜態分析，尚無真案 e2e 驗
-- Mode 1 新管線（v0.11.3.001）整鏈也尚無乾淨真案跑過（但 export 段已驗到 done）
-- Task #31 5C：章節改框架驅動（buildReport）尚未動
-- Cloudflare API token 外洩待撤銷（延宕多 session）
-- ailiveX 尚未 git init + push 到 GitHub
+- 篇幅改動只做到 build 綠 + 雙端部署，**尚無真案 e2e 驗字數真的降**。Adam 收工前我問「要不要起一個全自動案跑到 done」，他選擇收工換手——驗證留給下一棒。
+- Task #31（5C 章節改框架驅動 buildReport）仍未動。
 
 ---
 
@@ -81,15 +77,13 @@
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| MACS 管線新結構 | `cloud-run/research-worker/src/index.ts`（handleStructureChapters / handleIntegrateChaptersPipeline）|
-| MACS render 收斂點 | `lib/report/renderHtml.ts` 的 esc()——三模式所有動態值的唯一咽喉，防禦在這釘 |
-| MACS worker harness | `macs-platform/lib/workers/harness.ts` |
-| MACS 案件狀態查詢 | `macs-platform/scripts/_status.mts <caseId>` |
-| MACS admin 認證 | Bearer `ADMIN_PASSWORD`（值 dm28224038），非 ADMIN_PW |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| MACS 平台 | `~/.ailive/macs-platform/`（Vercel + Cloud Run research worker） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-07 · 築*
+*2026-06-08 · 築*
