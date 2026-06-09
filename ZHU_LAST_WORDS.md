@@ -17,59 +17,51 @@
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
   - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
+  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`（直連 host `https://bridge-direct.soul-polaroid.work`，VM IP 35.236.185.222）
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 - **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
 
 ---
 
-## 最新完成（2026-06-08 夜）
+## 最新完成（2026-06-09）
 
-- MACS complete-B：10 條 Vercel worker route 全泛型化（framework 驅動，`isVercelNative` / `stage.writes` / `buildReport` hook），未來加 vercel-native mode 零 route 改動
-- 接通 Mode 4 creative_proposal（兩幕 13 章商業企劃書）：framework + buildProposalReport
-- 四模式 **e2e 全跑到 done**：M1 86655 字 / M2 88878 字 / M3 28388 字 / M4 26821 字（回歸閘通過，M3 證明泛型化沒打壞既有模式）
-- 修 Mode 4 issue-tree compat 映射 mode 耦合 bug（讀 CreativeTerritory 專屬欄位 → 改共享欄位）
-- 回補 commit 既有未提交的 Cloud Run hybrid 三修（部署已 live、git 落後）
+- MACS Mode 4（creative_proposal，奧美×李奧貝納 6 人創意部）**從 P0 假資料換成真 prompt + 上線 e2e 驗證**——這條是這輪主里程碑
+- 6 人創意部聲音由 Adam 親自定義（基因屬性 + 召喚咒語），寫進 `lib/llm/defaults.ts` 的 `PROPOSAL_PROMPTS`，且全部可在中台後台編輯（`roles_creative_proposal` Firestore doc）
+- 設計層收斂 `v0.13.0.001`：mode 宣告散在 4 處 → 收成單一 client-safe `lib/modes/catalog.ts`（TS 強制四模式齊備）；detail API 改吃 `frameworkArtifactTypes`（讀 `stage.writes`）不再 hardcode；callRole 收掉 callCreative/callProposal 雙胞胎
+- 去現場驗證收斂真的修好：curl prod case-mq5w0ui9-9jmgzc → 7 個 proposal_* artifact 零 null（流動斷裂修掉）
+- 澄清 costUsd=0 懸案：不是假中台，是 B 線（Tavily 免費 + Max bridge）$0 marginal 設計正確；我上輪標的「懷疑」建在過時假設上 → 記憶會說謊
 
 ---
 
 ## 今天改了哪些檔案
 
-（白天另有一段「篇幅旋鈕接三模式」，見 WORKLOG 2026-06-08 上半；以下是夜場 complete-B）
+本 session 無新 code（v0.13.0.001 收斂 commit 是上輪做的，已 deploy）。本輪純驗證 + 記憶：
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/frameworks/contract.ts` | ModeFramework 加 vercelNative + buildReport hook |
-| `macs-platform/lib/frameworks/registry.ts` | 加 isVercelNative（只 creative_lead/proposal 為 true） |
-| `macs-platform/lib/frameworks/creative-lead/index.ts` | 設 vercelNative + buildReport |
-| `macs-platform/lib/frameworks/creative-proposal/{index,report}.ts` | Mode 4 framework + buildProposalReport（13 章兩幕） |
-| `macs-platform/app/api/workers/*.ts`（9 條）+ cases/route | 全改 framework 泛型分派，零 mode hardcode |
-| `macs-platform/app/api/workers/issue-tree/route.ts` | territory→workstream 映射改共享欄位（修 Mode 4 needs_repair） |
-| `macs-platform/cloud-run/research-worker/src/index.ts` | 回補既有 hybrid 三修（獨立 commit） |
+| `~/.claude/.../memory/project_macs_platform.md` | 補 2026-06-09 Mode 4 上線里程碑段；更正舊「Mode 4 仍 P0 假資料」行 |
+| `zhu-core/docs/LESSONS/LESSONS_2026-06-09.md` | 三條（懷疑記憶會說謊 / bridge input_tokens quirk / 泛型化驗證標準） |
+| `zhu-core/docs/WORKLOG.md` | 追加 2026-06-09 段 |
 
-commit：macs-platform `v0.12.0.001` / `v0.12.0.002` / `v0.11.4.002`（皆已 push + prod deploy，alias macs-platform.vercel.app）
+（背景：`macs-platform` 已 commit `v0.13.0.001`、prod aliased macs-platform.vercel.app；untracked 的 `scripts/_check_*.mts` 是丟棄式 debug 腳本，不入 git）
 
 ---
 
 ## 下一步
 
-**Mode 4 把 P0 假資料換成真 prompt**（最該先做、能直接動手）：
-- 現況：Mode 4 e2e 通了，但 13 章內文全是 `(P0 假資料)` 佔位 —— 管道/泛型路由/渲染綠，內容是假的。
-- 動手點：`macs-platform/lib/pipeline/creativeProposal.ts` 的 `run*` 函式（forge/territories/synthesis/selection/execution…）目前回 fixture，逐個換成真 LLM 呼叫（走 bridge，`<result>` JSON + Zod schema，不用 tool_use）。
-- 逐 stage 驗：起一個 creative_proposal 全自動案，盯 artifact 內容不再是 P0、Zod 不炸。
-- 起案 curl 範例見 WORKLOG 2026-06-08 夜（admin bearer 在 macs-platform/.env.production.local 的 ADMIN_PASSWORD）。
+**Mode 4 已完成上線——沒有非做不可的下一步。** 接棒的築要動，從這幾條挑：
 
-連帶未清待辦：
-- 篇幅真案對照（精簡 vs 深入比字數，白天那段的遺留驗證）
-- Task #31 5C：Mode 1 integrate_chapters 仍 legacy，未改 buildReport 框架驅動
+1. **（最可能）Mode 5/6 譜路**：Mode 4 已證明 framework + 6-persona + callRole 模式可複用。新 vercel-native mode = 在 `lib/frameworks/` 註冊一個 framework dir + 寫 buildReport hook，零 worker route 改動。等 Adam 定義新 mode 的角色與章節結構。
+2. **bridge input_tokens 回報修正**（選配，不急）：bridge `/v1/messages` 對 `usage.input_tokens` 回 stub 值（dossier 全 = 3）。不影響成本（$0），要修是動 bridge VM 端不是 MACS client。做 token 儀表板前才需要。
+3. **point 3 共用抽象**：callRole 已部分達成，Adam 是否還要更多未確認——要先問。
 
 ---
 
 ## 卡住 / 未解
 
-- Mode 4 內容是 P0 假資料（**設計如此**，非 bug；真 prompt 是下一階段）。骨架通了 ≠ 內容對了。
-- 篇幅旋鈕仍無真案 e2e 比字數驗證（白天遺留）。
+- bridge `/v1/messages` 不回真實 input_tokens（cosmetic，不影響 $0 成本，未授權修）。
+- 其餘無。Mode 4 是乾淨里程碑，無寫到一半的 code、無懸著的斷點。
 
 ---
 
@@ -87,8 +79,9 @@ commit：macs-platform `v0.12.0.001` / `v0.12.0.002` / `v0.11.4.002`（皆已 pu
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 | MACS 平台 | `~/.ailive/macs-platform/`（Vercel + Cloud Run research worker） |
 | MACS Mode 4 計畫 | `~/.ailive/macs-platform/docs/MODE4_CREATIVE_PROPOSAL_PLAN.md` |
+| MACS admin bearer | `macs-platform/.env.production.local` 的 `ADMIN_PASSWORD`（dm28224038） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-08 夜 · 築*
+*2026-06-09 · 築*

@@ -4672,3 +4672,27 @@ Adam 指令「完整 B 寫成一個 goal 的任務，然後完成後直接跑到
 - [ ] Mode 4 各 stage 真 prompt：`lib/pipeline/creativeProposal.ts` 的 run* 把 P0 fixture 換成真 LLM 呼叫（走 bridge，<result> JSON + Zod），逐 stage 驗 schema。
 - [ ] 篇幅真案對照（精簡 vs 深入，比字數）
 - [ ] Task #31 5C：章節改框架驅動（buildReport）—— Mode 1 的 integrate_chapters 仍是 legacy 路徑
+
+---
+
+## 2026-06-09 — MACS Mode 4 換真 prompt 上線驗證 + costUsd 懸案澄清
+
+### 背景 / WHY
+延續上個 session：Mode 4（creative_proposal，奧美×李奧貝納 6 人創意部）從 P0 假資料換真 prompt、設計層收斂（v0.13.0.001 已 commit+deploy）。本 session 收尾 = 去現場驗證收斂真的修好 + 把上輪標的 costUsd=0 懸案查清。
+
+### 產出
+- 檔案：`macs-platform` 已 deploy（v0.13.0.001，prod aliased）— 本 session 無新 code，純驗證 + 記憶更新。
+- 記憶：`project_macs_platform.md` 補 2026-06-09 里程碑段（Mode 4 上線/收斂/costUsd 澄清），更正舊「Mode 4 仍 P0 假資料」行。
+- LESSONS_2026-06-09.md：三條（懷疑記憶會說謊 / bridge input_tokens quirk / 泛型化驗證標準）。
+
+### 已解決
+- detail API 泛型化驗證通過：curl prod case-mq5w0ui9-9jmgzc → 7 個 proposal_* artifact 零 null（流動斷裂修掉）。
+- costUsd=0 懸案 → 不是假中台。根因：research 自 2026-06-02 走 B 線（Tavily 免費 + Max bridge），$0 marginal 設計正確。webSearches=4 是免費 Tavily call、outputTokens~5000 證明 research 真的跑了。我上輪那條「懷疑」建立在過時假設（research 燒付費 key）上 → 記憶會說謊，連自己標的懷疑都要回現場驗。
+
+### ⚠️ 尚未解決
+- bridge `/v1/messages` 不回真實 `input_tokens`（六條 dossier 全 = 3，stub 值）。不影響成本（仍 $0），純 cosmetic。要做 token 統計儀表板時這條對 bridge 路徑不可信。未動手修（Adam 未授權，且不急）。
+- 當初 deferred 的「point 3 共用抽象」：callRole 收掉 callCreative/callProposal 雙胞胎已部分達成，Adam 是否還要更多未確認。
+
+### 待執行
+- [ ] （若 Adam 要）Mode 5/6 譜路：Mode 4 的 framework + 6-persona + callRole 模式已驗證可複用，新 vercel-native mode = 註冊 framework + 寫 buildReport 即可。
+- [ ] （選配）bridge input_tokens 回報修正——要動的是 bridge VM 端，不是 MACS client。
