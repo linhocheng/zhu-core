@@ -1,6 +1,6 @@
 ---
 name: MACS 平台（麥肯錫式 AI 顧問公司）
-description: ANEWS 概念轉 AI 顧問公司；2026-06-09 Mode 4（creative_proposal，奧美×李奧貝納 6 人創意部）已從 P0 假資料換真 prompt + 上線 e2e 驗證；四模式全通，worker route 已 framework 泛型化（零 mode hardcode）
+description: ANEWS 概念轉 AI 顧問公司；2026-06-09 Mode 4（奧美×李奧貝納 6 人創意部）+ Mode 3（creative_lead，11 角色暗黑心理 prompt）都已換真 prompt 上線；四模式全通，worker route 已 framework 泛型化（零 mode hardcode）
 type: project
 originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 ---
@@ -46,3 +46,9 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 - **設計層收斂（v0.13.0.001，修真相分裂根因）**：mode 宣告原本散在 4 處 → 收斂成單一 client-safe `lib/modes/catalog.ts`（TS 強制四模式齊備）；detail API 改吃 `frameworkArtifactTypes`（讀 `stage.writes`）不再 hardcode Mode-1 清單。
 - **e2e 驗證（去現場跑 prod）**：case-mq5w0ui9-9jmgzc status=done，detail API 7 個 proposal_* artifact 零 null（流動斷裂修掉），聲音品質佳。
 - **costUsd=0 不是假中台（已驗證澄清）**：research 自 2026-06-02 走 B 線（Tavily 免費 + Max bridge），$0 marginal 是設計正確；webSearches=4 是免費 Tavily call、outputTokens ~5000 證明 research 真的跑了。唯一小瑕疵：dossier `inputTokens:3` 六條一致，是 bridge `/v1/messages` 對 `usage.input_tokens` 沒回真值的已知 reporting quirk，不影響成本（仍 $0），未動手修。
+
+**2026-06-09（下半場）— Mode 3（creative_lead）換真 prompt + 清死碼（commit v0.14.0.001，已 deploy+push）**：
+- **澄清上輪說謊記憶**：上輪標「Mode 3 仍有真的 `[ADAM_FILL]` 假資料」是錯的。去現場追 framework run-fn import 鏈確認：`lib/frameworks/creative-lead/index.ts` 11 個 run-fn 全 import 自 `lib/pipeline/creativeLead.ts`，呼叫 blueprint 11 個**填滿**的 prompt key（briefIntake/briefForge/territoryMap/conceptMemo/collisionRoom/realityBoundary/conceptSynthesis/conceptSelection/prototypeRoadmap/worldviewStoryline/creativePartnerReview）。`[ADAM_FILL]` 那 3 個 track_* 坐在 `CREATIVE_ROLE_FRAMING`（Mode 3 不用 roleFraming）+ 6 個零 import legacy 孤兒檔 = 死碼。
+- **11 角色暗黑心理聲音由 Adam 定義**：委託解碼者(欲望恐懼竊聽器)/命題鍛造師(NLP催眠)/場域拆解者(集體潛意識地圖)/母題煉金師(情緒毒梟)/撞擊室(認知破壞者)/現實邊界官(法律駭客)/概念鍛造師(高壓熔爐,我代筆)/概念選型師(心理操盤手)/Hans(行為控制官)/Victor(神話編織者)/Max(集體解離判定官)，每人「核心/能力/咒印」寫進 `CREATIVE_PROMPTS`。export(creativeDeck)是 `buildCreativeReport` 確定性組裝無 LLM。
+- **清死碼**：CREATIVE_PROMPTS 移除 13 個死 key（creativeIntake/inspirationResearch/creativeDeck/6 legacy/4 別名）；CREATIVE_ROLE_FRAMING 清空；刪 6 孤兒檔；settings 後台移除假中台編輯框（`CREATIVE_PROMPT_KEYS=Object.keys(CREATIVE_PROMPTS)` 會把死 key 全渲染成可編輯）。後台 Mode 3 現在只剩 11 現役 + soul。
+- **驗證**：curl prod `/api/settings/roles?mode=creative_lead` 確認 11 key 齊、咒印字串全中、死 key 全消、roleFraming 空；`saved` 全空（無 DB 覆寫）→ 預設即 effective、deploy 即生效、無真相分裂。⚠️ 新聲音「魔性」未跑真案 e2e，質感待驗。

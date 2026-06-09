@@ -4696,3 +4696,28 @@ Adam 指令「完整 B 寫成一個 goal 的任務，然後完成後直接跑到
 ### 待執行
 - [ ] （若 Adam 要）Mode 5/6 譜路：Mode 4 的 framework + 6-persona + callRole 模式已驗證可複用，新 vercel-native mode = 註冊 framework + 寫 buildReport 即可。
 - [ ] （選配）bridge input_tokens 回報修正——要動的是 bridge VM 端，不是 MACS client。
+
+---
+
+## 2026-06-09（下半場）— MACS Mode 3 創意線 11 角色暗黑心理 prompt 上線 + 清死碼
+
+### 背景 / WHY
+Mode 4 收乾後，Adam 要逐 mode 重審/重寫 role prompt。Mode 1/2 先看完，這場專攻 Mode 3（creative_lead）。先驗上輪記憶標的「Mode 3 有真的 [ADAM_FILL] 假資料」是否屬實，再由 Adam 親自定義角色聲音。
+
+### 產出
+- 檔案：`macs-platform/lib/llm/defaults.ts` — CREATIVE_PROMPTS 11 個現役 key 換成 Adam 定義的暗黑心理聲音（核心/能力/咒印）；conceptSynthesis 概念鍛造師由我用 Brief Forge 聲線代筆；移除 13 個死 key + 清空 CREATIVE_ROLE_FRAMING。
+- 檔案：`macs-platform/app/dashboard/settings/page.tsx` — 移除死 key 對應的假中台編輯框 label。
+- 刪除：`macs-platform/lib/pipeline/{problemReframe,creativeTrack,creativeAnalysis,creativeSynthesis,creativeRecommendation,validationSprint}.ts` — 6 個零 import 孤兒檔。
+- commit `175dc9c`（v0.14.0.001）→ deploy aliased macs-platform.vercel.app → push GitHub linhocheng/macs-platform。
+
+### 已解決
+- 記憶說謊（Mode 3 [ADAM_FILL] 是活洞）→ 根因：那些洞在死碼裡，現役 11 個 blueprint prompt 全填滿 → 追 framework run-fn import 鏈確認後清死碼。
+- 假中台（後台長出沒人讀的編輯框）→ 根因：CREATIVE_PROMPT_KEYS = Object.keys(CREATIVE_PROMPTS) 把死 key 全渲染 → 刪死 key 後後台只剩 11 個現役 + soul。
+- Mode 3 現役 11 角色全部換成真實角色聲音，curl prod defaults 驗證 11 key 齊、咒印字串全中、死 key 全消、roleFraming 空。
+
+### ⚠️ 尚未解決
+- 新聲音的「魔性」只證明「沒打壞 + 上線」（tsc 綠 + curl 驗），未跑真案 e2e —— 11 角色協奏出來的提案質感還沒實際看過。
+
+### 待執行
+- [ ] 開一個 creative_lead 新案跑 e2e，驗 11 角色暗黑心理聲音協奏出的提案質感。
+- [ ] （若 Adam 要）續審 Mode 1 / Mode 2 的 role prompt，比照 Mode 3 由 Adam 定義聲音。
