@@ -24,48 +24,42 @@
 
 ---
 
-## 最新完成（2026-06-09 下半場）
+## 最新完成（2026-06-09c · ailivex）
 
-- MACS **Mode 3（creative_lead）11 個現役角色換成 Adam 定義的暗黑心理 prompt 聲音**——這場主里程碑（commit v0.14.0.001，已 deploy + push）
-- 澄清上輪說謊記憶：「Mode 3 仍有真的 `[ADAM_FILL]` 假資料」是**錯的**。去現場追 framework run-fn import 鏈確認——現役 11 個 blueprint prompt 全填滿，`[ADAM_FILL]` 那 3 個 track_* 坐在死碼裡（`CREATIVE_ROLE_FRAMING` Mode 3 不用 + 6 個零 import legacy 孤兒檔）
-- 清死碼：移除 13 個死 prompt key + 清空 CREATIVE_ROLE_FRAMING + 刪 6 孤兒檔 + 移除 settings 後台的假中台編輯框（後台 Mode 3 現在只剩 11 現役 + soul）
-- 11 角色：委託解碼者/命題鍛造師/場域拆解者/母題煉金師/撞擊室/現實邊界官/概念鍛造師(我用 Brief Forge 聲線代筆)/概念選型師/Hans/Victor/Max。export 是 `buildCreativeReport` 確定性組裝（無 LLM）
-- 上線驗證：curl prod defaults 確認 11 key 齊、咒印全中、死 key 全消、roleFraming 空；`saved` 全空無 DB 覆寫 → 預設即 effective、無真相分裂
+- ailivex `/documents` 三份卡住 pending 的文件手動打通，全 200 done
+- 根因修完 deploy：`after()` 裡改為 `await Promise.all(pendingJobIds.map(id => dispatchDocumentJob(id)))`，確保 lambda 不在 fetch 送出前結束
+- doc worker system prompt 加「一律用繁體中文撰寫」並 redeploy Cloud Run
+- `check-jobs.mjs` 加 `assertEnvVar()` 確定性驗證，env parsing 出錯立刻炸，不等 API 401
+- memory `feedback_deterministic_work_belongs_in_code.md` 補 2026-06-09 `\n` 實例 + 觸發信號
 
-（同日上半場已完成 Mode 4 換真 prompt 上線 + costUsd=0 懸案澄清，見 WORKLOG 2026-06-09 段）
+（同日上半場 MACS Mode 3 下半場已完成，見前版 LAST_WORDS / WORKLOG）
 
 ---
 
-## 今天改了哪些檔案（下半場）
+## 今天改了哪些檔案（2026-06-09c）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `macs-platform/lib/llm/defaults.ts` | CREATIVE_PROMPTS 11 現役 key 換真聲音；移除 13 死 key；清空 CREATIVE_ROLE_FRAMING |
-| `macs-platform/app/dashboard/settings/page.tsx` | 移除死 key 的後台 label（假中台編輯框） |
-| `macs-platform/lib/pipeline/{problemReframe,creativeTrack,creativeAnalysis,creativeSynthesis,creativeRecommendation,validationSprint}.ts` | 刪除（6 個零 import 孤兒檔） |
-| `~/.claude/.../memory/project_macs_platform.md` | 補 2026-06-09 下半場 Mode 3 段 + 更新 description |
-| `zhu-core/docs/LESSONS/LESSONS_2026-06-09.md` | 追加 L4（Mode 3 [ADAM_FILL] 說謊記憶）、L5（改預設前 curl saved 驗 DB 無覆寫） |
-| `zhu-core/docs/WORKLOG.md` | 追加 2026-06-09 下半場段 |
-
-（macs-platform commit `175dc9c` v0.14.0.001 已 deploy aliased macs-platform.vercel.app + push GitHub linhocheng/macs-platform。untracked `scripts/_*.mts` 是丟棄式 debug 腳本，不入 git）
+| `ailivex-platform/src/app/api/dialogue/route.ts` | `after()` 改 `await Promise.all(pendingJobIds.map(...))` |
+| `ailivex-doc-worker/src/index.ts` | system prompt 加繁體中文指示 |
+| `ailivex-doc-worker/check-jobs.mjs` | 加 `assertEnvVar()` + strip 尾巴 `\n` |
+| `memory/feedback_deterministic_work_belongs_in_code.md` | 補 `\n` 實例 + 觸發信號 |
 
 ---
 
 ## 下一步
 
-**Mode 3 已換真 prompt 上線——沒有非做不可的下一步。** 接棒的築要動，從這幾條挑：
+**ailivex 文件鏈已通，但只手動 curl 過 Cloud Run，從沒跑過完整對話觸發路徑。**
 
-1. **（最可能）驗 Mode 3 魔性**：tsc + 上線只證明沒打壞，11 角色暗黑心理聲音協奏出的提案質感**還沒跑真案 e2e**。開一個 creative_lead 新案跑到 done，看報告質感。是這場唯一留下的驗證缺口。
-2. **續審 Mode 1 / Mode 2 的 role prompt**：Adam 的大方向是逐 mode 重寫角色聲音。Mode 3、Mode 4 已做，剩 Mode 1（market_evidence，麥肯錫式）、Mode 2（hybrid）。比照流程：列現役 cast → Adam 定義核心/能力/咒印 → 寫進對應 DEFAULTS（Mode 1=`DEFAULT_PROMPTS`+`DEFAULT_ROLE_FRAMING`，Mode 2=`HYBRID_PROMPTS`+`HYBRID_ROLE_FRAMING`）。
-3. **bridge input_tokens 回報修正**（選配，不急）：bridge `/v1/messages` 對 `usage.input_tokens` 回 stub 值。不影響成本（$0），要修動 bridge VM 端不是 MACS client。
+1. **最優先**：開對話讓角色輸出 `[[DOCUMENT]]`，確認 `dialogue → after() → Cloud Run → done` 完整 e2e 通
+2. **MACS 續**：Mode 3 真案 e2e（11 角色暗黑心理聲音協奏質感，tsc 綠不代表 LLM 輸出好）
 
 ---
 
 ## 卡住 / 未解
 
-- Mode 3 新聲音「魔性」未跑真案 e2e（cosmetic 缺口，code 已上線且驗證乾淨）。
-- bridge `/v1/messages` 不回真實 input_tokens（cosmetic，不影響 $0，未授權修）。
-- 其餘無。Mode 3、Mode 4 都是乾淨里程碑，無寫到一半的 code。
+- ailivex 文件鏈 e2e（dialogue 觸發路徑）未驗，只確認 Cloud Run 直打通
+- MACS Mode 3 新 prompt 聲音魔性未跑真案驗
 
 ---
 
@@ -81,12 +75,11 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| MACS 平台 | `~/.ailive/macs-platform/`（Vercel + Cloud Run research worker） |
-| MACS Mode 3 prompt | `macs-platform/lib/llm/defaults.ts` 的 `CREATIVE_PROMPTS`（11 key，可在後台 `roles_creative_lead` 編輯） |
-| MACS framework 對應 | `macs-platform/lib/frameworks/creative-lead/index.ts` → run-fn 在 `lib/pipeline/creativeLead.ts` |
-| MACS admin bearer | `macs-platform/.env.production.local` 的 `ADMIN_PASSWORD`（dm28224038） |
+| ailivex 平台 | `~/.ailive/ailivex-platform/`（Vercel） |
+| ailivex doc worker | `~/.ailive/ailivex-doc-worker/`（Cloud Run asia-east1） |
+| MACS 平台 | `~/.ailive/macs-platform/` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-09 · 築*
+*2026-06-09c · 築*
