@@ -6,7 +6,9 @@ originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
-**2026-06-10 更新：語音已能用且順**（下方 06-08「沒聲音」斷點已解）。改 MiniMax TTS 串流降延遲後曾「角色說兩次」，根因是串流最後一塊 status==2 整句重送，已修+部署（revision 00010-xpn）。詳見 `reference_minimax_streaming_dup_audio.md`。待 Adam 撥一通確認真實聽感。
+**2026-06-10 更新：語音已能用且順**（下方 06-08「沒聲音」斷點已解）。改 MiniMax TTS 串流降延遲後曾「角色說兩次」，根因是串流最後一塊 status==2 整句重送，已修。
+
+**2026-06-10 下半場：語氣優化上線。** TTS 改成 MiniMax **WebSocket 真串流**（`streaming=True`，跨句語調連貫，不再每段重音）+ `opencc` 繁→簡硬轉（發音穩）+ 全角色 emotion=neutral（降戲劇感）。現役 Cloud Run revision `00011-4h5`（image `wsstream20260610`）。回滾 tag：`voice-stable-20260610`（REST版）/`voice-ws-stable-20260610`（WS版）。詳見 `reference_minimax_realtime_voice_quality.md`。**ailivex-platform 仍無 git repo，今日 code 改動只在本機+已部署。**
 
 **Why:** Adam 要複刻精簡版 ailive，架構翻成「用戶為中心」——用戶×角色各記記憶，不共享。
 
