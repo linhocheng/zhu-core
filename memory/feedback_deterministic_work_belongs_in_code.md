@@ -13,3 +13,10 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 **心態:** 動手前先分類「這一步是判斷，還是計算？」。計算就寫 code。最隱蔽的陷阱是「拿 LLM 去補 LLM 的壞輸出」——例如 JSON 壞了就 re-ask 模型修。那還是用 LLM 做計算機的事，要用程式級 deterministic repair（補括號/修引號逗號/清控制字元）或 tool_use 結構化解碼，靠機制不靠拜託。Adam 2026-06-04 點出時，築自己的藥方 (b) 就踩了這個坑——診斷對一半，藥方又丟回 LLM。
 
 **How to apply:** 看到「請模型輸出 JSON/格式」「壞了再問模型一次」「讓模型算/數/排」就停，問：這能不能用程式 100% 保證？能就寫程式。LLM 的輸出一律當不可信文字，外層用確定性程式 parse/repair/validate。需要 schema 鐵保證走 tool_use，不靠 prompt 哀求。
+
+**觸發信號（第一刀就用，不是 debug 一圈才想到）：**
+- 看到 `.env` 或 secret 讀取 → 立刻寫 `assertEnvVar()`，parse 完就炸，不等 API 401 才知道
+- 看到 JSON parse → 先 assert 結構完整，再用
+- 看到 string 格式清理（trim/strip/unescape）→ 寫程式，斷言結果，不靠眼睛
+
+**2026-06-09 實例（ailivex doc worker）：** `.env.tmp` 裡 WORKER_SECRET 尾巴帶了字面 `\n`（兩個字元：反斜線 + n），dispatch 打到 Cloud Run 回 401。前幾輪用 repr() 看、改 replace 參數——全是靠眼睛判斷。正確做法：`assertEnvVar` 在 parse 完立刻驗「尾巴有沒有 `\n`、有沒有殘留引號」，第一秒就炸，不是等 API 告訴你。背天條跟第一刀用它，是兩件事。

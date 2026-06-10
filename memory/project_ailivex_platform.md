@@ -6,6 +6,8 @@ originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
+**2026-06-10 更新：語音已能用且順**（下方 06-08「沒聲音」斷點已解）。改 MiniMax TTS 串流降延遲後曾「角色說兩次」，根因是串流最後一塊 status==2 整句重送，已修+部署（revision 00010-xpn）。詳見 `reference_minimax_streaming_dup_audio.md`。待 Adam 撥一通確認真實聽感。
+
 **Why:** Adam 要複刻精簡版 ailive，架構翻成「用戶為中心」——用戶×角色各記記憶，不共享。
 
 **架構要點：**
