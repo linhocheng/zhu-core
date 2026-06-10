@@ -104,3 +104,4 @@
 - [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06 驗收完，語音待真機撥話，無 git repo，admin=ailiveX2026
 - [MiniMax 串流 TTS status==2 重複整句](reference_minimax_streaming_dup_audio.md) — 即時語音 stream:true 降延遲，最後一塊整句重送→角色說兩次；exclude_aggregated_audio+硬擋status==2
 - [MiniMax 即時語音語氣優化（WS串流+opencc+emotion）](reference_minimax_realtime_voice_quality.md) — 語氣連貫=streaming=True走WS、口音=opencc餵簡體、情緒=voiceSettings.emotion三旋鈕分開調
+- [壓縮續跑前先查現場狀態，別盲信摘要](feedback_compacted_session_verify_state.md) — compacted摘要是過時子集；續跑debug前先tail WORKLOG/git log/lastwords確認沒被別處解掉

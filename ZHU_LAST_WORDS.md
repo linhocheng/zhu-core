@@ -58,6 +58,7 @@
 
 - ailivex-platform **無 git repo**（今日 code 改動無版控，斷點）
 - emotion=neutral 真機聽感未經 Adam 復測確認
+- ⚠️ **本機 AIR 的 ailivex 磁碟落後 production**：`page.tsx` 是舊 debug 標籤+殘留、`minimax_tts.py` 是 SSE 版；線上跑的是 WS 版 rev 00011-4h5。無 git 不同步所致。**在 AIR 動 ailivex 並 deploy 前必先對齊，否則回退線上 WS 版**
 
 ---
 
