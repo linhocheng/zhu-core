@@ -105,3 +105,5 @@
 - [MiniMax 串流 TTS status==2 重複整句](reference_minimax_streaming_dup_audio.md) — 即時語音 stream:true 降延遲，最後一塊整句重送→角色說兩次；exclude_aggregated_audio+硬擋status==2
 - [MiniMax 即時語音語氣優化（WS串流+opencc+emotion）](reference_minimax_realtime_voice_quality.md) — 語氣連貫=streaming=True走WS、口音=opencc餵簡體、情緒=voiceSettings.emotion三旋鈕分開調
 - [壓縮續跑前先查現場狀態，別盲信摘要](feedback_compacted_session_verify_state.md) — compacted摘要是過時子集；續跑debug前先tail WORKLOG/git log/lastwords確認沒被別處解掉
+- [humanizer 兩段式去AI味工具(獨立未接系統)](project_humanizer_tool.md) — ~/.ailive/humanizer/ standalone CLI,程式硬擋+LLM改判斷題;閒置零消耗,接系統時搬規格成TS不import Python
+- [env 值字面\n讓URL解析成/n→404靜默吞](feedback_env_literal_newline_url.md) — env尾端字面反斜線n .trim()吃不掉,當URL被解析成.../n打404被catch吞,任務卡pending;讀env的URL/secret用前deterministic洗+查r.ok

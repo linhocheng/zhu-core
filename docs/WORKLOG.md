@@ -4859,3 +4859,65 @@ ailivex 語音語氣優化後，要過群聊(P2)+主動插話(P3)兩關。研究
 - **3a 評估改走 Bridge**（吃 Max 不燒錢）：`_maybe_interject` bridge 優先 base_url=BRIDGE_URL，缺則退直連 Haiku。主對話不能走 bridge（即時串流，Adam 確認）。
 - **3a 主動插話關掉**（rev 00010-6rm）：實測 log 證實 silence-trigger 從沒觸發——1:1 角色秒接話、無真空冷場，計時器永遠被「角色還在說」gate。`_on_user_state` 的 listening 分支改 pass（保留打斷讓位）。留待 P3 群聊再開（uncomment 即可）。
 - v2 現況 = 乾淨反應式：Sonnet 4.6 + temp可調 + 平實口氣 + speech-2.6-hd + WS串流 + opencc + 沒頭沒尾修 + 打斷讓位 + 後台對話手感。2.6-hd 真機聽感仍待 Adam 驗。
+
+## 2026-06-11 — humanizer 兩段式去 AI 味工具(獨立建置,刻意未接系統)
+
+### 背景 / WHY
+看 kevintsai1202/Humanizer-zh-TW(維基「Signs of AI writing」的繁中 skill),Adam 要把「最該偷的用法」落地:把 24 模式表+AI詞彙黑名單做成「程式硬擋(確定性)+ LLM 只改判斷題」的兩段式工具,獨立建好但**先不接任何現有系統**。
+
+### 產出(全在 ~/.ailive/humanizer/,共 84KB)
+- `patterns.py` — 24 模式拆成 DETERMINISTIC(程式擋)vs JUDGMENT(交LLM)+ AI詞彙黑名單/填充短語映射/regex規則
+- `lint.py` — Stage 1:硬指標偵測+機械自動修(emoji/彎引號/填充短語),判斷類只標記。無連網無副作用
+- `humanize.py` — Stage 2:只把判斷類交LLM改寫,走 bridge(/v1/messages,Max吃到飽$0)。輸出用 <rewritten>/<changes> 標籤+regex抽,不用JSON避跳脫;含 certifi SSL + UA header(CF 1010)
+- `cli.py` — `python3 cli.py file.md [--rewrite]`,stdin 支援
+- `test_lint.py` — 17 條 deterministic 測試,全綠
+- `.gitignore` — 擋 .env/__pycache__
+
+### 守住的紀律
+- 天條:確定性的事(emoji/引號/破折號密度/三段式/否定排比)全程式擋,只有誇大象徵/模糊歸因/注入靈魂才丟LLM
+- bridge-first:Stage 2 走 bridge 不燒付費key
+- secret 不落地:資料夾無 .env,測試臨時借環境變數,跑完即消
+
+### 端到端驗證
+- 17 測試綠;咖啡館廣告文 + Tracy Lai 談判貼文兩例都跑通兩段
+- 觀察:工具適合 MACS/ANEWS 那種「該像中立專業文件」的場景;社群爆款公式文(金句+TakeAway+hashtag)套 Stage 2 會變乾淨但拔掉傳播鉤子——Adam 點出我這判斷不夠客觀(把文學品味當客觀標準,公式有沒有效市場說了算)
+
+### ⚠️ 狀態:刻意未接系統
+- **沒有常駐**:無 systemd/cron/launchd/Vercel/Cloud Run。閒置零消耗,是「叫才動」的CLI不是服務
+- 未來接法(後面聊):這Python是「規格的可執行參考實作」,接進MACS/ANEWS(TS)時搬那張模式表移植成TS lint,釘在 bridgeCreate 回傳後的收斂點,不是跨語言 import Python
+- 未 git init(Adam未定)
+
+### 待執行
+- [ ] 決定要不要 git init humanizer
+- [ ] 若接系統:從 MACS synthesis 終稿的收斂點先做一個 TS 版 Stage 1 lint
+
+---
+
+## 2026-06-12 — ailivex 即時語音 v2：掛斷記憶收尾釘死 + 上次對話連貫 + ailive 記憶設計搬移
+
+### 背景 / WHY
+v2 掛斷「一按就斷」，記憶提煉被 job 關閉砍斷 → 角色不記得剛聊的、沒時間序。Adam 要求查明並修。後續比對 ailive 記憶設計，把「上次對話 / 時間感知」搬進 ailivex v2。
+
+### 產出（全在 ailivex-platform，**無 git repo**，只在本機 + 已部署）
+- `agent/realtime_agent_v2.py` — finalize 重構：idempotent（Lock+flag）、transcript 先秒存、lastSession+記憶並行萃取、shutdown callback 唯一保證路徑；greeting 指令改「最新未完優先、別念摘要」。
+- `agent/firestore_loader.py` — 新增 `extract_session_summary`（走 bridge）/`build_last_session_block`/`update_last_session`/`should_inject_gap`/`format_gap`；ConversationContext 加 `last_session`；build_system_prompt 注入【上次對話】+【上次聊到最後·原話】+【當前時間】遠近規則+【時間感知】距上次多久；save_conversation 加 last_session 參數。
+- `agent/main_v2.py` — `shutdown_process_timeout=90`（根因修復）。
+- `src/app/realtime-v2/[characterId]/page.tsx` — 掛斷改「整理中」1.8s 短轉場就斷（砍掉沒通的 end_call/finalize_done handshake，記憶交 server 端 shutdown callback）。
+- `src/app/admin/characters/page.tsx` — 電腦版破版修正（每列改兩段排版）。
+- 現役 Cloud Run revision：`ailivex-realtime-agent-v2-00016-vdb`。前端：ailivex-platform.vercel.app。
+
+### 已解決
+- 掛斷記憶被砍 → 根因 `shutdown_process_timeout` 預設 10s → 拉 90s + transcript 先存。
+- 「整理中」卡 30s → 根因 end_call data channel 沒通 → 砍掉 handshake，改短轉場 + server 端保證。
+- 「有記憶但不連貫」→ greeting 念摘要 + lastSession 回播時間差 → 注入原話結尾 + 最新優先 + 並行加速。
+- admin/characters 電腦版破版 → 300px 左欄塞四顆按鈕溢出 → 每列兩段排版。
+
+### ⚠️ 尚未解決
+- **ailivex-platform 仍無 git repo**——今天大量 code 改動只在本機 + 已部署，零版控（最該補）。
+- 秒回播（<~5s）連原話結尾都還沒存完，仍可能差一拍。根治＝通話中即時滾動存逐字稿（未做）。
+- 【最近的事】(ailive platform_insights 事件線) 沒搬——ailivex 無反思/insights 管道，硬搬會與現有記憶塊重複；要做需新 createdAt-desc 查詢 + composite index（待 Adam 決定）。
+
+### 待執行
+- [ ] **v3（群聊 + 主動插話/內心戲）寫完整計劃書**（任務交給築排）。築建議序列：先 1:1 最小驗「主動廣播機制 session.say 從沒被證實」→ 再群聊多人輸入（per-participant STT + 協調器）→ 再內心戲評分（imThreshold/interruptThreshold，內心戲=各角色自己的 soul）。
+- [ ] 待 Adam 答：①v3 順序（先驗機制 vs 先攻群聊）②「現在可測群聊」是否有多帳號/裝置。
+- [ ] ailivex-platform git init + push（標準斷點，每次 lastword 都掛）。
