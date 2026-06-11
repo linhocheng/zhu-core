@@ -4854,3 +4854,8 @@ ailivex 語音語氣優化後，要過群聊(P2)+主動插話(P3)兩關。研究
 - [ ] **P2 群聊 + P3-3b 還沒做**（只做了 3a spike）；soul 加 imThreshold/interruptThreshold 已可後台調
 - [ ] **ailivex-platform 仍無 git repo**：今天大量 code 改動（v2 整套 + conv_tuning + admin）只在本機+已部署，沒版控——最該補
 - [ ] 決定 conv 旋鈕是否也套用 v1（目前接話速度/打斷已套 v1，溫度只 v2）
+
+### 補記（同日稍晚）
+- **3a 評估改走 Bridge**（吃 Max 不燒錢）：`_maybe_interject` bridge 優先 base_url=BRIDGE_URL，缺則退直連 Haiku。主對話不能走 bridge（即時串流，Adam 確認）。
+- **3a 主動插話關掉**（rev 00010-6rm）：實測 log 證實 silence-trigger 從沒觸發——1:1 角色秒接話、無真空冷場，計時器永遠被「角色還在說」gate。`_on_user_state` 的 listening 分支改 pass（保留打斷讓位）。留待 P3 群聊再開（uncomment 即可）。
+- v2 現況 = 乾淨反應式：Sonnet 4.6 + temp可調 + 平實口氣 + speech-2.6-hd + WS串流 + opencc + 沒頭沒尾修 + 打斷讓位 + 後台對話手感。2.6-hd 真機聽感仍待 Adam 驗。

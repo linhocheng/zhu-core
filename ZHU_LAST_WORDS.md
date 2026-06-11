@@ -24,7 +24,9 @@
 
 ## 最新完成（2026-06-11 · ailivex 即時語音 2.0）
 
-- 立「即時語音 2.0」獨立平行服務 `ailivex-realtime-agent-v2`（不動現役 1:1 v1），裡面放實驗：Sonnet 4.6 + 主動插話(3a) + HD 模型 + 後台可調
+- 立「即時語音 2.0」獨立平行服務 `ailivex-realtime-agent-v2`（不動現役 1:1 v1），裡面放實驗：Sonnet 4.6 + HD 模型 + 後台可調
+- ⚠️ **3a 主動插話已關**（rev 00010）：1:1 對話角色秒接話、幾乎無真空冷場，silence-trigger 永遠被「角色還在說」gate 掉、log 證實從沒觸發 → 暫關，留待 P3 群聊（群聊才有冷場）。打斷讓位仍在。
+- 3a 評估的 LLM 已改走 **Bridge**（吃 Max 不燒錢）；主對話 LLM 仍直連付費 key（即時串流不能走 bridge，Adam 確認）
 - 派 3 研究 agent 寫計劃書（P2 群聊 / P3 Inner Thoughts），P2 有官方 recipe 不必全手搖，P3 主旋鈕是 imThreshold
 - 後台「對話手感」面板上線：per 角色 convSettings（接話速度/被打斷/主動/搶話/溫度），即時生效，conv_tuning.py 映射 turn_handling
 - admin 能直接對話/語音測角色
