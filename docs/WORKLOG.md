@@ -4949,3 +4949,35 @@ Adam 交接：deploy `documents.ts` 的 cleanEnv 修文件「卡住」。deploy 
 - [ ] Adam 驗文件功能 e2e（語音 + 文字各一）
 - [ ] 進 v3：照 PLAN 第 6 節跑一吋蛋糕（1:1 session.say 主動播一句）
 - [ ] doc-worker 磁碟源碼對齊線上 + ailivex git init
+
+---
+
+## 2026-06-12 — ailiveX 文件「卡住」根因+手動清積壓、humanizer 工具、現場實查報告（築 AIR session）
+
+### 背景 / WHY
+Adam 指 /documents 卡住，要對照 MACS/ailive（能動）查明。延伸出 humanizer 去 AI 味工具、ailivex 三代語音現場盤點、記憶對賬。
+
+### 產出
+- 檔案：`~/.ailive/humanizer/`（patterns/lint/humanize/cli/test，5 檔 84KB，git init commit a36e05b，未 push）— 兩段式去 AI 味工具，獨立未接系統
+- 檔案：`~/.ailive/ailivex-platform/src/lib/documents.ts` — 加 `cleanEnv()` 洗 env 字面 `\n` + dispatch 檢查 `r.ok`（AIR 本機，**未 deploy**）
+- 檔案：`~/.ailive/zhu-core/docs/AILIVEX_CURRENT_STATE_2026-06-12.md` — V1/V2/V3 全景 + 雷清單 + 記憶對賬實查報告
+- 記憶：`project_humanizer_tool.md`、`feedback_env_literal_newline_url.md`（+索引）
+- 更正：`ZHU_LAST_WORDS.md` 四處（doc-worker 兩份副本釐清、記憶對賬、語音三代、殭屍）
+
+### 已解決
+- /documents 卡住 → 根因 env `CLOUD_RUN_DOC_WORKER_URL` 尾端字面 `\n`（hexdump `5c 6e`）→ WHATWG 解析成 `.../n` → 404 被靜默吞 → 文件卡 pending。手動把 6 份積壓 POST 給 worker 跑完（17 全 done、0 卡）。程式修補已寫（cleanEnv），未部署。
+- doc-worker「磁碟≠線上」舊警告 → 查清是兩份副本：`ailivex-doc-worker/`（`/`+secret，符合線上）vs `platform/cloud-run/doc-worker/`（`/process`，舊棄用）。
+- 「AIR 磁碟落後」逐檔驗：page.tsx 其實是部署源頭（不落後）；documents.ts 才真落後。
+
+### ⚠️ 尚未解決
+- documents.ts 的 cleanEnv 修補**未部署**（AIR 本機）；prod 24 分鐘前有一次部署但「是否含此修補」未證 → 要建測試文件確認新文件不卡。
+- ailivex-platform 無 git = AIR/PRO 雙機分裂根源，平行重做一再發生。
+- V3 半成品未接通：cloudbuild-v3 跑 main_v2 / 前端送 {v2:true} / token 無 v3 / chat 無入口。
+- doc-worker us-central1 殭屍待刪。
+- humanizer git 未 push GitHub（Adam 喊停）。
+
+### 待執行
+- [ ] 建測試文件驗證 prod documents 修補是否生效
+- [ ] ailivex git init + push（最高優先斷點）
+- [ ] 修 cloudbuild-v3 的 main_v2→main_v3，接通 V3 四點
+- [ ] 刪 doc-worker us-central1 殭屍
