@@ -5073,3 +5073,30 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] 不要急著重建 v5。先跟 Adam 一步步把「真正想要的狀態」講清楚。
 - [ ] 拍板架構岔路：共享房間 vs 各自登入聲學疊。
 - [ ] 決定 ailivex-platform 那批未提交改動要不要 commit/push。
+
+---
+
+## 2026-06-12（四）— 前沿學習(RAG/MCP/Skills/記憶) + Vivi 真實對話驗收（築 AIR，接續檢索分層）
+
+### 背景 / WHY
+修完 Vivi 法規檢索後，Adam 要藉機把前沿吃進來指導日後重設計；並給權限實撥 Vivi 驗證繃帶在真實對話裡接通。
+
+### 產出
+- 學習文件：`docs/FRONTIER_RAG_MCP_SKILLS_MEMORY_2026-06-12.md`（四研究員打撈 + ailive 對照 + MVP 階梯 + 來源 URL，commit 8e78dcf）
+- memory：`reference_frontier_rag_mcp_skills_memory.md`（已進 MEMORY.md 索引）
+- LESSONS：`docs/LESSONS/LESSONS_2026-06-12_vivi-rag.md`（L1-L5）
+
+### 已解決
+- Vivi 真實對話驗收**通過**（撥兩輪）：①違規宣稱問題→引用「治療青春痘/脂漏性皮膚炎」逐字法規 + 產品定位給合規替換；②得宣稱問題→引用整套核可詞句。query_knowledge_base 兩輪都觸發。WORKLOG 前一條的待執行第一項清掉。
+- 前沿確認：ailive 記憶骨架血統純正（CoALA/斯坦福/Mem0 都點頭），缺的是「多一層智能、少一點永遠在場」。
+
+### ⚠️ 尚未解決（同前一條，未動）
+- insights threshold 三路徑不一致（knowledge-search 0.3 / insights·knowledge GET 0.5）
+- knowledge 與 insights 共用 threshold + 排序，未分流
+- in-memory 全撈不可擴展（92 條未到痛點）
+
+### 待執行（rerank 接棒計劃——下個 session 開專案，先寫計劃不動手）
+- [ ] **rerank 開專案**。三個決策先拍：①選型 BGE-reranker（本地、零 API 成本、要跑模型 + 冷啟動延遲）vs Voyage rerank-2.5 API（即插、燒錢 + 又一 key）②熱路徑落點（knowledge-search 已有一次 Haiku 整理，rerank 加哪、延遲預算多少）③eval harness（攢真實查詢：法規/產品/模糊推薦，改前改後對賬命中率，不憑感覺）。
+- [ ] rerank 上線後可拆掉今天的硬規則（general 永遠帶入 + 每產品上限），改用 instruction reranker 寫「優先法規」。
+- [ ] 第二槓桿：記憶檢索加 recency + importance（用既有 timestamp + 蒸餾時 LLM 評分），配 hitCount 湊斯坦福公式。
+- [ ] 安全債：確認 knowledge-search 的 (characterId, userId) 釘在 Firestore 查詢層，不是查完再過濾。

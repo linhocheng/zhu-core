@@ -22,6 +22,18 @@
 
 ---
 
+## 另一條線（AIR · ailive-platform · Vivi 知識庫/RAG · 2026-06-12 已完成驗證）
+
+> 這條跟下面的 ailivex v5 是不同 session、不同 repo。已收乾淨，非當機關鍵，留指標即可。
+
+- **修好 Vivi 知識庫讀不到法規**：根因是窄域語義坍縮（product 文件 0.9+ 擠掉法規 0.65-0.78、flat top-N 切掉），非上傳壞。修法：knowledge-search 參考層 general 永遠帶入兩條路徑 + 每產品上限 3。已 deploy + commit（ailive-platform 6d4b5ef）。
+- **真實對話驗收通過**：撥 Vivi 兩輪，違規/得宣稱都逐字引用法規 + query_knowledge_base 觸發。
+- **前沿學習文件**：`docs/FRONTIER_RAG_MCP_SKILLS_MEMORY_2026-06-12.md`（RAG/MCP/Skills/記憶 2025-2026 + ailive 對照 + 階梯）。memory：`reference_frontier_rag_mcp_skills_memory.md`。
+- **接棒（rerank 開專案）**：見 WORKLOG 2026-06-12（四）待執行——選型 BGE vs Voyage + eval harness + 熱路徑落點，先寫計劃不動手。rerank 上線可拆今天的硬規則。
+- 細節：`docs/LESSONS/LESSONS_2026-06-12_vivi-rag.md`、WORKLOG 該日兩條。
+
+---
+
 ## 最新進度（2026-06-12 晚 · ailivex v5 多角色語音圓桌：建了、撞牆、被 Adam 清掉）
 
 ### 這個 session 發生什麼
