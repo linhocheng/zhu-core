@@ -4981,3 +4981,33 @@ Adam 指 /documents 卡住，要對照 MACS/ailive（能動）查明。延伸出
 - [ ] ailivex git init + push（最高優先斷點）
 - [ ] 修 cloudbuild-v3 的 main_v2→main_v3，接通 V3 四點
 - [ ] 刪 doc-worker us-central1 殭屍
+
+---
+
+## 2026-06-12（三）— ailivex v3 主動發話上線 + v4 單機群聊 + git 首推 GitHub
+
+### 背景 / WHY
+延續文件派工修復，Adam 連續拍板：進 v3 跑一吋蛋糕（主動發話）→ 推 GitHub 分享 → 進 v4 群聊。執行模式連續完成。
+
+### 產出（全在 ailivex-platform，**現已有 git repo**）
+- v3 主動發話：`agent/realtime_agent_v3.py`（pipe-test→擬真 backoff+抖動+soul驅動→禁罐頭脈絡生成）、`main_v3.py`、`cloudbuild-v3.yaml`、`src/app/realtime-v3/[id]/page.tsx`、chat 3.0 按鈕、token route v3 分支。現役 `ailivex-realtime-agent-v3-00003-gnb`。
+- v4 單機群聊：`agent/realtime_agent_v4.py`（Soniox diarization + 內建 MultiSpeakerAdapter + speaker_id 驗證 log + 多人 prompt）、`main_v4.py`、`cloudbuild-v4.yaml`、`realtime-v4` 頁、chat 4.0 按鈕、token route v4 分支。現役 `ailivex-realtime-agent-v4-00001-nl9`。
+- `README.md`：v1→v4 版本現況說明。
+- **GitHub repo 首建**：https://github.com/linhocheng/ailivex-platform（public）。
+
+### 已解決
+- v3 主動發話端到端驗通（im=5 開口、im=3 選沉默、backoff 時間軸實測對）。
+- 「罐頭問候」→ prompt 禁通用句+脈絡生成。
+- **ailivex 零版控斷點**→ git init + push（密鑰掃描零洩漏，走 Secret Manager 不入庫）。同時根治 AIR/PRO 雙機分裂（其他機 pull 即同步）。
+- Lilith 卡住 doc → admin retry 清掉（順帶 e2e 證明文字派工修法）。
+- v4 群聊架構查清楚：Soniox diarization + MultiSpeakerAdapter 內建，單機可行、不需聲紋。
+
+### ⚠️ 尚未解決
+- v4 群聊**未實機驗 speaker_id 準度**（要 Adam 一機多人撥 4.0，撈 `v4 STT speaker_id=` log 看 Soniox 標人準不準、即時 diarization 會先標錯講久才穩）。
+- v3/v4 都未做「自報名→speaker 映射成真名」那層（目前只標 #編號）。
+- 文件語音路徑（Python 直 POST worker）仍未實機 e2e（文字路徑已證）。
+
+### 待執行
+- [ ] Adam 實機測 v4 群聊，撈 speaker_id log 判準度
+- [ ] 過了 → 加「自報名映射真名」+ 考慮把 v3 主動發話併進 v4
+- [ ] doc-worker 磁碟源碼對齊（platform/cloud-run/doc-worker 舊副本可刪）
