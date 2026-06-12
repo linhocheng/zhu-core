@@ -1,3 +1,4 @@
+- [前沿學習筆記 RAG/MCP/Skills/記憶](reference_frontier_rag_mcp_skills_memory.md) — 重設計 ailive 記憶/RAG 前先讀；前沿+對照+階梯，最該先動 rerank
 - [Mode 1→2 踩雷心法（MACS hybrid）](feedback_mode2_hybrid_lessons.md) — 六條：中文enum/union型別/named DB/worker mode傳遞/eval cast/needs_repair SOP
 - [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
@@ -69,6 +70,7 @@
 - [Next.js App Router lib 模組 client/server 拆分 SOP](skill_nextjs_lib_client_server_split.md) — 寫 lib/*.ts 第一個 import 之前先列舉 caller，被 client component 用就拆 shared，避免 firebase-admin 進 client bundle
 - [測試前先列假設 + dry-run + 副作用分級](feedback_dryrun_before_test.md) — 探索性測試（測一下/跑看看）反射動作 trigger = 踩雷，先列三件事再動手
 - [介面建完強制問：血管接通了嗎](feedback_interface_blood_vessel_check.md) — UI / 編輯器交付前自問三題：誰讀/何時讀/沒讀怎樣，沒接通主動標斷點
+- [walking skeleton 要含「使用者怎麼把輸入送進去」](feedback_mvp_include_input_entry.md) — MVP 別只驗機制；最笨的入口（人怎麼塞輸入，尤其手機/語音）沒做＝整條等於沒驗（ailivex v5 roster 沒進房間）
 - [bridge 拒絕的是 structured RP block 不是「你是 X」](feedback_bridge_structured_rp_refusal.md) — 三級對照 STRONG/light/OK，5/10 早段「全鏈路掃毒」恐慌的真相縮窄
 - [技術債監測 Agent v0.1 計畫（待動手）](project_tech_debt_agent_plan.md) — zhu debt 子指令、ledger.jsonl + marker 回寫、6 階段施工，5/10 後段成形未動手
 - [Vercel lambda 300s 硬上限不適合長生成任務](reference_vercel_300s_lambda_limit.md) — output >12K token 的單次 LLM call 必撞牆，改 Cloud Run / Firebase Functions

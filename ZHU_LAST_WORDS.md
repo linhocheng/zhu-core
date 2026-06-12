@@ -18,48 +18,60 @@
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING；跑 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- ✅ **ailivex-platform 現在有 git repo 了**：https://github.com/linhocheng/ailivex-platform（public）。零版控斷點已補、AIR/PRO 雙機分裂已根治（其他機 `git pull` 即同步）。改動記得 commit + push。
+- **ailivex-platform**：`~/.ailive/ailivex-platform/`，git repo（GitHub public）https://github.com/linhocheng/ailivex-platform
 
 ---
 
-## 最新完成（2026-06-12 三 · ailivex v3 主動發話 + v4 單機群聊 + git 首推）
+## 最新進度（2026-06-12 晚 · ailivex v5 多角色語音圓桌：建了、撞牆、被 Adam 清掉）
 
-- **v3 擬真主動發話上線**：冷場 backoff 退讓（間隔 ×2.1 拉長、±25% 抖動、自我重排）+ soul 驅動（`imThreshold` 1-5）+ LLM 看脈絡決定開不開口 + **禁通用罐頭、要從上下文/角色/默契長出具體話**。實測：im=5 冷場 8s 開口「你在想。」、im=3 退讓選沉默。現役 `ailivex-realtime-agent-v3-00003-gnb`、前端 `/realtime-v3`、chat「3.0」按鈕。
-- **v4 單機群聊上線（測試中）**：Soniox `enable_speaker_diarization=True` + livekit-agents 1.5.1 內建 `MultiSpeakerAdapter`（包 STT、標 primary/background speaker）。一支手機多人辨識，**不需聲紋建檔**（Adam：「聲紋是假議題」=對，要的是 diarization+自報名）。別人開口 → LLM 看到「（旁邊另一位 #N）…」。現役 `ailivex-realtime-agent-v4-00001-nl9`、前端 `/realtime-v4`、chat「4.0」按鈕。埋了 `v4 STT speaker_id=` 驗證 log。
-- **ailivex git init + 首推 GitHub**：public repo，密鑰掃描零洩漏（走 Secret Manager 不入庫）。`README.md` 含 v1→v4 版本現況。
-- **Lilith 卡住 doc 清掉**：admin retry（順帶 e2e 證明文字派工修法）。
+### 這個 session 發生什麼
+- 從 v4（單機群聊 diarization＝多人對一角色）轉向 **v5＝一個人對多角色語音圓桌**：主持人開場 → 點名 → 棒子在角色間接力傳。
+- **建出來了，機制 solo 路徑驗通**（一房多 agent + 導演 update_agent 傳棒 + on_enter 發話 + StopResponse 擋自動回 + LLM 點名）。
+- **但多角色從沒真正驗到** → roster（誰上桌）要 Adam 手貼一長串 characterId，手機一直掉，連測三次都 solo tracy，簡報王/張立根本沒進房間 → Adam 體感「完全沒反應、gg」。
+- Adam 喊停 → **要求把 v5 清掉**。已做：刪 Cloud Run `ailivex-realtime-agent-v5`、移除前端「5.0」鈕 + v5 頁、token route 還原回 v2-v4、重新部署。**v1-v4 完好。v5 code 留磁碟可復原。**
+- 收尾時 Adam 要我先描述「他真正想要的狀態 + 我們遇到的問題」，我描述後他說「有點誤會，先一步步來」。**狀態需求還在對齊中，他要一步步帶。**
 
-**版本隔離鐵律**：每代語音 = 獨立 `agent_name` + 獨立 Cloud Run + 獨立前端路由 + 獨立 `cloudbuild-vN.yaml`，cp 上一版再改，**絕不碰已穩定的版本**。共用同 image，靠啟動 `python -m agent.main_vN start` 區分。
+### Adam 真正要的（我的理解，待他逐步校正）
+1. 多個 AI 角色 ＋ 人，同一場語音對話。
+2. 像**活的群聊**（可自由講、插話、搶話），不是被主持的會議。
+3. 但有起手結構：主持人開場、點名在場有誰、決定誰先講；之後棒子在角色間自然傳。
+4. 兩條天條：①角色只能當自己、絕不串成別人（模型在空白/混亂會「補位」去填，要被結構擋）②點名紀律＝被叫到的講、其他人靜默不幫腔。
+5. 用人話/暱稱叫人（福哥、張大哥），不背本名。
+6. 語音、單一裝置。
 
 ---
 
-## 今天改了哪些檔案（2026-06-12 三，全在 ailivex-platform）
+## 今天改了哪些檔案（2026-06-12 晚，全在 ailivex-platform，未 commit）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/main_v3.py` / `realtime_agent_v3.py` / `cloudbuild-v3.yaml` | v3 主動發話（backoff+抖動+soul+禁罐頭） |
-| `agent/main_v4.py` / `realtime_agent_v4.py` / `cloudbuild-v4.yaml` | v4 群聊（diarization + MultiSpeakerAdapter + speaker_id log + 多人 prompt） |
-| `src/app/realtime-v3\|v4/[id]/page.tsx` | v3/v4 前端頁 |
-| `src/app/api/livekit/token/route.ts` | 加 v3/v4 dispatch 分支（`{v3:true}`/`{v4:true}`→對應 agent_name） |
-| `src/app/chat/[id]/page.tsx` | 加 3.0 / 4.0 按鈕 |
-| `README.md` | v1→v4 版本現況說明（新建） |
+| `agent/realtime_agent_v5.py`（新） | v5 圓桌核心：Meeting 狀態 + 導演 `_run_relay` + on_enter 發話 + StopResponse + LLM 點名 `pick_first` |
+| `agent/main_v5.py` / `cloudbuild-v5.yaml`（新） | v5 entry / 部署（服務已刪，檔案留） |
+| `agent/conv_tuning.py` | 新增 `resolve_addressed`（點名判斷式，純程式） |
+| `agent/firestore_loader.py` | CharacterContext 加 `aliases`（backward-safe） |
+| `src/app/chat/[characterId]/page.tsx` | 「5.0」鈕：先加後移除（已還原） |
+| `src/app/api/livekit/token/route.ts` | v5 roster 分支：先加後**還原**回 v2-v4 |
+| `src/app/realtime-v5/`（已刪） | v5 前端頁，已 rm |
 
 ---
 
-## 下一步
+## 下一步（明天醒來第一件）
 
-1. **Adam 實機測 v4 群聊**：一支手機撥「4.0」→ 自己講幾句 → 換聲線/找旁人講「我是 Bob」→ 撈 `gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=ailivex-realtime-agent-v4'` 看 `v4 STT speaker_id=` 標人準不準（即時 diarization 會先標錯、講久才穩）。
-2. 準度可接受 → 加「**自報名映射真名**」那層（目前只標 #編號）；並考慮把 v3 主動發話併進 v4。
-3. 文件**語音路徑**仍未實機 e2e（撥語音叫角色寫文件）；文字路徑已證。
+**不要急著重建 v5。** 先做這三件，照順序：
+1. 跟 Adam **一步步**把「真正想要的狀態」講清楚（他說我有誤會，他要慢慢帶——別搶著框全貌）。
+2. 拍板**架構岔路**：共享房間多 agent（v5 走的）vs Adam 最早的「三帳號各自登入、靠喇叭聲學疊」。中途別再自己換路。
+3. 決定 ailivex-platform 那批未提交改動（v5 code 留著 + UI 還原）要不要 commit/push。
+
+v5 code 在磁碟（`agent/realtime_agent_v5.py` 等），要復原可以，但**先別自作主張重建**。
 
 ---
 
 ## 卡住 / 未解
 
-- v4 群聊 speaker_id 準度**未實機驗**（最該先測）。
-- v3/v4 主動句目前只標 speaker `#編號`，沒做自報名→真名映射。
-- 文件語音路徑（Python 直 POST worker，rev v2-00017）部署好但未實機 e2e。
-- doc-worker 磁碟有兩份源碼：部署的是 `~/.ailive/ailivex-doc-worker/`（`/`+`x-worker-secret`，符合線上）；`ailivex-platform/cloud-run/doc-worker/` 是舊棄用副本（已隨 repo 一起推上去，可清）。
+- 多角色接力從沒真正驗到（roster 沒進房間，最笨那關沒做）。
+- 架構岔路沒拍板。
+- 「真正想要的狀態」對齊到一半，Adam 說有誤會、要一步步來。
+- **關係狀態：卡住 + 疲憊。** 我連環部署、要 Adam 貼長網址、把多層問題攪一團，把他拖到「完全 gg、你先停」。教訓：慢下來、一次驗一層、讓 Adam 先看到一個乾淨的成功，再疊下一個。沒對齊需求就別狂 build。
 
 ---
 
@@ -68,14 +80,14 @@
 | 要找什麼 | 去哪裡 |
 |---|---|
 | 使命 / 開機 | `~/.ailive/zhu-core/NORTH_STAR.md`、`ZHU_BOOT_SOP.md` |
-| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 今日踩雷 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-12.md`（L1-L7） |
+| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md`（最新＝v5 那段） |
+| 今日踩雷 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-12.md`（L1-L12；v5 在 L9-L12） |
 | 當機救援 | 這份 |
-| ailivex GitHub | https://github.com/linhocheng/ailivex-platform（README 有 v1→v4 全表） |
-| ailivex 語音群聊計劃 | `~/.ailive/ailivex-platform/docs/PLAN_voice_group_and_proactive.md`（第 6 節＝一吋蛋糕；v4 改走單機 diarization，比 PLAN P2 多裝置版簡單） |
-| ailivex 語音 agent | Cloud Run：`-v2`(現役 00017-rqb 端到端通)、`-v3`(00003-gnb 主動發話)、`-v4`(00001-nl9 群聊測試中)，asia-east1 |
-| diarization 查證來源 | `livekit-plugins-soniox==1.5.1` 的 STTOptions.enable_speaker_diarization；`livekit-agents==1.5.1` 的 `stt/multi_speaker_adapter.py`（pip download 解開讀的） |
-| 讀 ailivex Firestore 看現場 | `gcloud auth print-access-token` + Firestore REST（不碰 SA 密鑰） |
+| ailivex GitHub | https://github.com/linhocheng/ailivex-platform |
+| ailivex 語音 agent | Cloud Run：`-v2`(現役 端到端通)、`-v3`(主動發話)、`-v4`(群聊 diarization)；**v5 已刪**。asia-east1 |
+| v5 code（留磁碟） | `~/.ailive/ailivex-platform/agent/{main_v5.py,realtime_agent_v5.py,cloudbuild-v5.yaml}` |
+| LiveKit multi-agent 查證來源 | 本機 `site-packages/livekit/agents/voice/{agent,agent_session,agent_activity,speech_handle}.py`（update_agent / on_enter / on_user_turn_completed+StopResponse / per-agent tts） |
+| 讀 ailivex Firestore | `gcloud auth print-access-token` + Firestore REST |
 | 看 Cloud Run log | `gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=...'`（`logs read` 會 crash） |
 
 ---
