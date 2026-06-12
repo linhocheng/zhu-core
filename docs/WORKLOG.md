@@ -5011,3 +5011,35 @@ Adam 指 /documents 卡住，要對照 MACS/ailive（能動）查明。延伸出
 - [ ] Adam 實機測 v4 群聊，撈 speaker_id log 判準度
 - [ ] 過了 → 加「自報名映射真名」+ 考慮把 v3 主動發話併進 v4
 - [ ] doc-worker 磁碟源碼對齊（platform/cloud-run/doc-worker 舊副本可刪）
+
+---
+
+## 2026-06-12（四）— Vivi 知識庫讀不到法規：根因+檢索分層重構（築 AIR）
+
+### 背景 / WHY
+Adam 報 Vivi 在 client 上傳化妝品法規文件，但對話讀不到。查明後發現是檢索層結構問題，非上傳問題。
+
+### 根因
+- 法規文件上傳/解析/embedding 全正常（cosine 0.65-0.78，dim=768）。
+- 真因：`knowledge-search` 純按 cosine top-N（limit=10）。窄域（中文化妝品）embedding 全坍縮在 0.85-0.92，product「適合對象」類佔滿前排，法規排第 24+ 被切掉。
+- 同病兩面：①`hitCount:100 天命優先` 是假中台（排序根本沒讀 hitCount）②同域語義坍縮。
+
+### 產出（全 ailive-platform，已 deploy prod）
+- `src/app/api/tools/knowledge-search/route.ts` — 檢索分層重構：
+  - 參考層 `category=general`（法規/指引/文案規定）永遠帶入、置頂、去重，**兩條路徑（matchedProduct + 語義 fallback）都帶**，不參與分數競爭。
+  - 語義 fallback 加 `PER_PRODUCT_CAP=3`，破除單一產品壟斷 top-N。
+  - 壓縮顯示改「全 general + top3 非 general」，避免置頂把產品擠出結構化區塊。
+- `src/app/api/dialogue/route.ts` 1581 — query_knowledge_base 觸發語意補「產品知識、規範、法規」（原本只說「回想過去說過的事」，法規查詢不觸發）。
+- `src/app/api/knowledge/route.ts` 104 — hitCount 註解改誠實（非排序輸入；天命優先由檢索分層保證）。
+
+### 已解決
+- Vivi 三情境驗通：純法規→3 法規；產品+合規→產品+法規護欄並存；模糊查詢→4 法規+3 不同產品（每產品≤3）。
+
+### ⚠️ 尚未解決（刻意不在這次動，避免回歸）
+- insights threshold 在 knowledge-search 是 0.3、standalone insights/knowledge GET 是 0.5——三路徑不一致。動 insights 閾值會影響「角色記憶連續」使命，要有實測再調。
+- knowledge 與 insights 共用一個 threshold + 一條排序線（一個要精準檢索、一個要聯想召回），未分流。
+- in-memory 全撈（200 knowledge + 100 insights 在 JS 算 cosine）不可擴展；Vivi 92 條還沒到痛點，有 Firestore vector search 的記憶但沒接。
+
+### 待執行
+- [ ] 觀察 Vivi 實際對話是否穩定讀到法規（撥/打字各測）
+- [ ] threshold 三路徑對齊（需先設計 knowledge vs insights 分流策略）
