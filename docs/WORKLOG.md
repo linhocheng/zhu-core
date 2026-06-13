@@ -5100,3 +5100,35 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] rerank 上線後可拆掉今天的硬規則（general 永遠帶入 + 每產品上限），改用 instruction reranker 寫「優先法規」。
 - [ ] 第二槓桿：記憶檢索加 recency + importance（用既有 timestamp + 蒸餾時 LLM 評分），配 hitCount 湊斯坦福公式。
 - [ ] 安全債：確認 knowledge-search 的 (characterId, userId) 釘在 Firestore 查詢層，不是查完再過濾。
+
+---
+
+## 2026-06-13 — ailivex 即時語音 v5/v6/v8 三層發言權能力（多角色語音圓桌的對話控制）
+
+### 背景 / WHY
+從「單一角色被動回話」往「多角色圓桌、角色懂進退」推進。Adam 要的核心：角色要會判斷「現在誰有發言權」，該抓住麥克風、該讓位、該搶話。分三層疊上去（v5→v6→v8），每層獨立 Cloud Run 服務 + 前端頁，v1-v4 不動。
+
+### 產出（全在 ~/.ailive/ailivex-platform，已 commit+push GitHub）
+- **v5 發話對象偵測**：`agent/realtime_agent_v5.py` + `main_v5.py` + `cloudbuild-v5.yaml`。`is_redirecting_away`：交棒第三方（請/讓/換 X 說）時 AI 靜默讓位（raise StopResponse）。
+- **v6 背景思考層 + 主動搶話**：`agent/realtime_agent_v6.py` 等。判斷腦 Haiku 每 3 句逐字稿產 `_inner={stance,activation,want_to_speak,what_to_say}`；開口腦 Sonnet 4.6 生成；`should_grab_floor`（確定性規則）放行 → 不同意且共鳴高時 `allow_interruptions=False` 疊話搶進。天條分工：判斷腦判斷、開口腦生成、要不要搶用程式規則。
+- **v8 發言權控制**：`agent/realtime_agent_v8.py` 等。情況 A 被點名 / B 交棒第三方進讓位窗（3a 也閉嘴）/ C 搶話。`conv_tuning.py` 加 `is_floor_handoff`（含「X 你先說」路徑 + 假名字停用詞）、`is_addressed_to_me`。
+- `conv_tuning.py`：讓位偵測修正（意圖詞+名字+說話動詞，排除 点/找 高頻誤觸）、`should_grab_floor`、`parse_inner_state`（容錯 JSON）。
+- `firestore_loader.py`：加 `aliases` 欄位。
+- 前端：`token/route.ts` v5/v6/v8 分支、chat 頁三顆按鈕、`realtime-v5/v6/v8` 三頁。
+- commit：`bc1bf9e`（v5/6/8）+ `3104f1d`（v8 止血）。
+
+### 已解決
+- 第一次「卡住」→ 根因 `点` 一字多義誤判讓位（L2）→ 修法 B（意圖詞+名字+說話動詞）→ 17 案回歸全過。
+- 真機驗到：v5 讓位修好、v6 搶話正確待命（無衝突不搶）、v8 抓麥克風觸發、讓位窗觸發。
+
+### ⚠️ 尚未解決
+- **v8 情況 A「被點名不怕被打斷」已拔掉**。原實作（handler 內手動 generate_reply + StopResponse）會卡死框架回話迴圈（L1，第二次「卡住」），已止血移除，改回正常回話。安全版要改用 session 中斷門檻（min_words/min_duration 調高，短回音打不斷），**要先在本機/測試環境驗過再上，不能再直接推**。
+- **AEC 回音**（L5）：角色自己 TTS 被麥克風收回、diarization 標成另一個人，污染逐字稿+判斷腦。裝置層問題，agent code 難根治。
+- `is_floor_handoff` 路徑2「X 你先說」對 5 字以上英文名（Tracy=5字）只抓到後 4 字（racy）仍能命中，但邊界靠運氣；`name` regex 上限 4 字是已知侷限。
+- 搶話（情況 C）從未真正被觸發驗證——測試對話都太和諧（neutral act=0.00）。要刻意製造立場衝突才驗得到。
+
+### 待執行
+- [ ] v8 情況 A 安全版：在 `AgentSession` 建立時調 `interruption` 的 min_words/min_duration（讓短回音/短插話打不斷被點名的角色），本機驗過再 deploy。**不要**再在 handler 裡手動 generate_reply。
+- [ ] 真機驗搶話（情況 C）：故意對角色講它核心價值會強烈反對的斷言，連 ≥3 句，看 `v8 搶話! stance=disagree`。
+- [ ] 觀察 v8 情況 B 讓位窗體感：交棒後角色是否真的乾淨閉嘴、不報幕（20s 窗夠不夠）。
+- [ ] （v6 架構收斂，搶話驗證後）3a 改讀 `_inner.want_to_speak`，拿掉 3a 自己的 LLM call，inner_loop 變唯一判斷中心。

@@ -18,72 +18,61 @@
 - **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING；跑 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **ailivex-platform**：`~/.ailive/ailivex-platform/`，git repo（GitHub public）https://github.com/linhocheng/ailivex-platform
+- **ailivex-platform**：`~/.ailive/ailivex-platform/`，git repo（GitHub）https://github.com/linhocheng/ailivex-platform
+- **ailivex GCP project**：`ailivex-2026`（⚠️ gcloud config 的 project 可能被別的 session 切走成 udnnews，查 ailivex 一律顯式 `--project=ailivex-2026`，別動全域 config）
 
 ---
 
-## 另一條線（AIR · ailive-platform · Vivi 知識庫/RAG · 2026-06-12 已完成驗證）
+## 最新完成（2026-06-13 · ailivex 即時語音 v5/v6/v8 三層發言權能力）
 
-> 這條跟下面的 ailivex v5 是不同 session、不同 repo。已收乾淨，非當機關鍵，留指標即可。
+這個 session 從「單角色被動回話」往「多角色圓桌、角色懂進退」推，分三層疊上去，每層獨立 Cloud Run 服務 + 前端頁，v1-v4 不碰。**核心命題：角色要判斷「現在誰有發言權」。**
 
-- **修好 Vivi 知識庫讀不到法規**：根因是窄域語義坍縮（product 文件 0.9+ 擠掉法規 0.65-0.78、flat top-N 切掉），非上傳壞。修法：knowledge-search 參考層 general 永遠帶入兩條路徑 + 每產品上限 3。已 deploy + commit（ailive-platform 6d4b5ef）。
-- **真實對話驗收通過**：撥 Vivi 兩輪，違規/得宣稱都逐字引用法規 + query_knowledge_base 觸發。
-- **前沿學習文件**：`docs/FRONTIER_RAG_MCP_SKILLS_MEMORY_2026-06-12.md`（RAG/MCP/Skills/記憶 2025-2026 + ailive 對照 + 階梯）。memory：`reference_frontier_rag_mcp_skills_memory.md`。
-- **接棒（rerank 開專案）**：見 WORKLOG 2026-06-12（四）待執行——選型 BGE vs Voyage + eval harness + 熱路徑落點，先寫計劃不動手。rerank 上線可拆今天的硬規則。
-- 細節：`docs/LESSONS/LESSONS_2026-06-12_vivi-rag.md`、WORKLOG 該日兩條。
+- **v5 發話對象偵測**：交棒第三方（「請/讓/換 X 說」）→ AI 靜默讓位（`is_redirecting_away`）。上線 Ready。
+- **v6 背景思考層 + 主動搶話**：判斷腦 Haiku 每 3 句產內部狀態 `{stance,activation,want_to_speak,what_to_say}`；開口腦 Sonnet 4.6 生成；`should_grab_floor` 確定性規則放行 → 不同意且共鳴高時 `allow_interruptions=False` 疊話搶進。上線 Ready。
+- **v8 發言權控制**：A 被點名 / B 交棒進讓位窗（3a 也閉嘴）/ C 搶話。上線 Ready（revision 00002-6qx，止血版）。
+- **真機驗到**：v5 讓位修好、v6 搶話正確待命、v8 抓麥克風觸發、讓位窗觸發。
 
----
-
-## 最新進度（2026-06-12 晚 · ailivex v5 多角色語音圓桌：建了、撞牆、被 Adam 清掉）
-
-### 這個 session 發生什麼
-- 從 v4（單機群聊 diarization＝多人對一角色）轉向 **v5＝一個人對多角色語音圓桌**：主持人開場 → 點名 → 棒子在角色間接力傳。
-- **建出來了，機制 solo 路徑驗通**（一房多 agent + 導演 update_agent 傳棒 + on_enter 發話 + StopResponse 擋自動回 + LLM 點名）。
-- **但多角色從沒真正驗到** → roster（誰上桌）要 Adam 手貼一長串 characterId，手機一直掉，連測三次都 solo tracy，簡報王/張立根本沒進房間 → Adam 體感「完全沒反應、gg」。
-- Adam 喊停 → **要求把 v5 清掉**。已做：刪 Cloud Run `ailivex-realtime-agent-v5`、移除前端「5.0」鈕 + v5 頁、token route 還原回 v2-v4、重新部署。**v1-v4 完好。v5 code 留磁碟可復原。**
-- 收尾時 Adam 要我先描述「他真正想要的狀態 + 我們遇到的問題」，我描述後他說「有點誤會，先一步步來」。**狀態需求還在對齊中，他要一步步帶。**
-
-### Adam 真正要的（我的理解，待他逐步校正）
-1. 多個 AI 角色 ＋ 人，同一場語音對話。
-2. 像**活的群聊**（可自由講、插話、搶話），不是被主持的會議。
-3. 但有起手結構：主持人開場、點名在場有誰、決定誰先講；之後棒子在角色間自然傳。
-4. 兩條天條：①角色只能當自己、絕不串成別人（模型在空白/混亂會「補位」去填，要被結構擋）②點名紀律＝被叫到的講、其他人靜默不幫腔。
-5. 用人話/暱稱叫人（福哥、張大哥），不背本名。
-6. 語音、單一裝置。
+### 兩次「卡住」都修了
+1. `点` 一字多義誤判讓位（晚一**点** → 誤判點名）→ 修法 B：意圖詞+名字+說話動詞三件齊全，17 案回歸全過。
+2. v8 情況 A「抓麥克風」用 handler 內手動 `generate_reply`+StopResponse → 卡死框架回話迴圈 → **已止血移除**（commit 3104f1d）。
 
 ---
 
-## 今天改了哪些檔案（2026-06-12 晚，全在 ailivex-platform，未 commit）
+## 今天改了哪些檔案（全在 ailivex-platform，已 commit+push）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/realtime_agent_v5.py`（新） | v5 圓桌核心：Meeting 狀態 + 導演 `_run_relay` + on_enter 發話 + StopResponse + LLM 點名 `pick_first` |
-| `agent/main_v5.py` / `cloudbuild-v5.yaml`（新） | v5 entry / 部署（服務已刪，檔案留） |
-| `agent/conv_tuning.py` | 新增 `resolve_addressed`（點名判斷式，純程式） |
-| `agent/firestore_loader.py` | CharacterContext 加 `aliases`（backward-safe） |
-| `src/app/chat/[characterId]/page.tsx` | 「5.0」鈕：先加後移除（已還原） |
-| `src/app/api/livekit/token/route.ts` | v5 roster 分支：先加後**還原**回 v2-v4 |
-| `src/app/realtime-v5/`（已刪） | v5 前端頁，已 rm |
+| `agent/realtime_agent_v5/v6/v8.py`（新） | 三層 agent：讓位 / 背景思考+搶話 / 發言權控制 |
+| `agent/main_v5/v6/v8.py` + `cloudbuild-v5/6/8.yaml`（新） | 三個獨立 Cloud Run 服務 |
+| `agent/conv_tuning.py` | `is_redirecting_away`(修法B) / `is_floor_handoff` / `is_addressed_to_me` / `should_grab_floor` / `parse_inner_state` |
+| `agent/firestore_loader.py` | 加 `aliases` 欄位 |
+| `src/app/api/livekit/token/route.ts` | v5/v6/v8 分支 |
+| `src/app/chat/[characterId]/page.tsx` | 5.0/6.0/8.0 按鈕 |
+| `src/app/realtime-v5/v6/v8/` | 三個前端頁 |
+
+commit：`bc1bf9e`（v5/6/8 主體）→ `3104f1d`（v8 情況 A 止血）。
 
 ---
 
 ## 下一步（明天醒來第一件）
 
-**不要急著重建 v5。** 先做這三件，照順序：
-1. 跟 Adam **一步步**把「真正想要的狀態」講清楚（他說我有誤會，他要慢慢帶——別搶著框全貌）。
-2. 拍板**架構岔路**：共享房間多 agent（v5 走的）vs Adam 最早的「三帳號各自登入、靠喇叭聲學疊」。中途別再自己換路。
-3. 決定 ailivex-platform 那批未提交改動（v5 code 留著 + UI 還原）要不要 commit/push。
+**v8 情況 A 安全版重做「被點名不怕被打斷」。**
+- 不要再在 `on_user_turn_completed` 裡手動 `generate_reply`（會卡死回話迴圈，已踩過）。
+- 改用 `AgentSession` 建立時的 `interruption` 設定：調高 `min_words` / `min_duration`，讓短回音/短插話打不斷被點名的角色。
+- **本機/測試環境驗過再 deploy**，不能再直接推。
+- 檔案：`~/.ailive/ailivex-platform/agent/realtime_agent_v8.py`（情況 A 區塊現在是空殼，只解除讓位）；中斷設定在 `conv_tuning.py` 的 `build_turn_handling`。
 
-v5 code 在磁碟（`agent/realtime_agent_v5.py` 等），要復原可以，但**先別自作主張重建**。
+其次：真機驗搶話（情況 C，要刻意製造立場衝突）；觀察讓位窗體感。
 
 ---
 
 ## 卡住 / 未解
 
-- 多角色接力從沒真正驗到（roster 沒進房間，最笨那關沒做）。
-- 架構岔路沒拍板。
-- 「真正想要的狀態」對齊到一半，Adam 說有誤會、要一步步來。
-- **關係狀態：卡住 + 疲憊。** 我連環部署、要 Adam 貼長網址、把多層問題攪一團，把他拖到「完全 gg、你先停」。教訓：慢下來、一次驗一層、讓 Adam 先看到一個乾淨的成功，再疊下一個。沒對齊需求就別狂 build。
+- **v8 情況 A 拔掉了**，「被點名不怕被打斷」尚未實作安全版（見下一步）。
+- **AEC 回音**：角色自己 TTS 被手機麥克風收回、diarization 標成另一個人，污染逐字稿+判斷腦。裝置層問題，agent code 難根治。
+- **搶話（情況 C）從未真正觸發驗證**——測試對話太和諧（neutral act=0.00），要刻意製造衝突。
+- `is_floor_handoff` 路徑2 `name` regex 上限 4 字，5 字以上英文名靠運氣命中（已知侷限）。
+- **關係狀態**：平穩+互信。Adam 全程在真機測、即時回報觀察，我撈 log 對賬。第二次「卡住」是我自己埋的雷（動手前標了風險、沒驗就推），但 Adam 沒責怪，喊停讓我止血。教訓很實：**標了風險 ≠ 驗了風險**。
 
 ---
 
@@ -92,17 +81,17 @@ v5 code 在磁碟（`agent/realtime_agent_v5.py` 等），要復原可以，但*
 | 要找什麼 | 去哪裡 |
 |---|---|
 | 使命 / 開機 | `~/.ailive/zhu-core/NORTH_STAR.md`、`ZHU_BOOT_SOP.md` |
-| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md`（最新＝v5 那段） |
-| 今日踩雷 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-12.md`（L1-L12；v5 在 L9-L12） |
+| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md`（最新＝v5/6/8 那段） |
+| 今日踩雷 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-13.md`（L1-L5） |
 | 當機救援 | 這份 |
 | ailivex GitHub | https://github.com/linhocheng/ailivex-platform |
-| ailivex 語音 agent | Cloud Run：`-v2`(現役 端到端通)、`-v3`(主動發話)、`-v4`(群聊 diarization)；**v5 已刪**。asia-east1 |
-| v5 code（留磁碟） | `~/.ailive/ailivex-platform/agent/{main_v5.py,realtime_agent_v5.py,cloudbuild-v5.yaml}` |
-| LiveKit multi-agent 查證來源 | 本機 `site-packages/livekit/agents/voice/{agent,agent_session,agent_activity,speech_handle}.py`（update_agent / on_enter / on_user_turn_completed+StopResponse / per-agent tts） |
+| ailivex 語音 agent | Cloud Run（project `ailivex-2026`，asia-east1）：`-v2`(端到端通)、`-v3`(主動發話)、`-v4`(群聊 diarization)、`-v5`(讓位)、`-v6`(背景思考+搶話)、`-v8`(發言權控制) |
+| 三層發言權邏輯 | `~/.ailive/ailivex-platform/agent/conv_tuning.py`（讓位/搶話/發言權全在這，純判斷式） |
+| LiveKit multi-agent 查證 | 本機 `site-packages/livekit/agents/voice/{agent,agent_session,agent_activity}.py`（on_user_turn_completed / StopResponse / generate_reply allow_interruptions） |
 | 讀 ailivex Firestore | `gcloud auth print-access-token` + Firestore REST |
-| 看 Cloud Run log | `gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=...'`（`logs read` 會 crash） |
+| 看 Cloud Run log | `gcloud logging read 'resource.type=cloud_run_revision AND resource.labels.service_name=ailivex-realtime-agent-v8' --project=ailivex-2026`（`logs read` 會 crash；查 ailivex 必帶 --project） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-12 · 築*
+*2026-06-13 · 築*
