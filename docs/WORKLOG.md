@@ -5132,3 +5132,33 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] 真機驗搶話（情況 C）：故意對角色講它核心價值會強烈反對的斷言，連 ≥3 句，看 `v8 搶話! stance=disagree`。
 - [ ] 觀察 v8 情況 B 讓位窗體感：交棒後角色是否真的乾淨閉嘴、不報幕（20s 窗夠不夠）。
 - [ ] （v6 架構收斂，搶話驗證後）3a 改讀 `_inner.want_to_speak`，拿掉 3a 自己的 LLM call，inner_loop 變唯一判斷中心。
+
+---
+
+## 2026-06-14 — ailivex 反討好天條 + 全局Prompt後台可改 + v9 LLM floor-gate
+
+### 背景 / WHY
+延續多角色語音圓桌。Adam 提出核心觀察：AI 有討好天性（底模 RLHF），任何角色都會滲出附和。要建反討好機制。接著釐清真正場景＝「一個焦點 AI 對多個真人」（不是多 AI 群聊；星雲+達賴是測試夾具）。星雲卡住暴露 regex 發言權判斷的侷限 → 升級 v9。
+
+### 產出（全在 ~/.ailive/ailivex-platform，已 commit+push）
+- **反討好（v8.1, commit 3eedb3f）**：開口腦全局天條【比討好更重要的事】緊貼 soul_text（firestore_loader build_system_prompt）；判斷腦（v8 _run_inner_judgment）reframe 克服 default 中性。
+- **全局 Prompt 後台可改（v8.1）**：4 結點（antiSycophancy/timeRule/abilities/voiceRules）抽出 Firestore `config/globalPrompts`；`load_global_prompts()` fallback 寫死預設；admin 新頁 `/admin/global-prompts` + API route GET/PUT。改完下一通生效，不用 deploy。
+- **v9 LLM floor-gate（commit dee4560）**：`agent/realtime_agent_v9.py` 等。發言權判斷（叫我/交棒/彼此聊）多人情境改 Haiku，regex 快路徑 + fallback。新 class `AilivexAgentV9`（傳 transcript/ctx_flags 引用）；多人偵測 latch（≥2 speaker 或「旁邊另一位」）；`_floor_gate_llm` 2s timeout。獨立 Cloud Run 服務 ailivex-realtime-agent-v9。
+
+### 已解決
+- 反討好開口腦：真機驗證張立頂回「刷流量比做好重要」的價值觀挑釁（Adam：很漂亮）。
+- 星雲卡住根因：①名字變體（星雲大師↔星云法师）is_addressed=False ②「期待听你说」誤判交棒。v9 用 LLM gate 天然解。
+
+### ⚠️ 尚未解決
+- **v9 真機未驗**：星雲圓桌重現、看 LLM gate 是否解掉卡住，還沒測。
+- **判斷腦反討好沒驗到觸發**：搶話（情況 C）需要不被點名 + 強烈不同意的場景，且 Haiku default 中性比開口腦頑固，即使 reframe 踩價值觀還是 act=0.00。要刻意製造「AI 在旁聽、有人講錯話」的場景才驗得到。
+- **v8 情況 A（被點名不怕被打斷）仍是空殼**：安全版（session 中斷門檻）還沒做。
+- **AEC 回音**：裝置層，未解。
+- 全局 Prompt 預設值兩份（Python DEFAULT_GLOBAL_PROMPTS + TS route DEFAULTS），改 default 要手動同步（已註解標記）。
+
+### 待執行
+- [ ] 真機驗 v9：星雲+達賴圓桌，看 `v9 gate[LLM]：被點名→正常回話`（星雲不再卡）、`非對我→靜默`（不插嘴）。
+- [ ] 驗判斷腦搶話：刻意製造「焦點 AI 旁聽 + 有人講它價值觀會反對的話」，看 `v9 搶話!`。
+- [ ] v9 觀察延遲：多人 turn 加了 Haiku call，體感慢多少；快路徑（一對一）有沒有正確不喚 LLM。
+- [ ] （若 v9 穩）把 v9 設為主線，舊版收掉。
+- [ ] v8 情況 A 安全版（session interruption min_words/min_duration），本機驗過再上。
