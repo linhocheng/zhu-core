@@ -5162,3 +5162,33 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] v9 觀察延遲：多人 turn 加了 Haiku call，體感慢多少；快路徑（一對一）有沒有正確不喚 LLM。
 - [ ] （若 v9 穩）把 v9 設為主線，舊版收掉。
 - [ ] v8 情況 A 安全版（session interruption min_words/min_duration），本機驗過再上。
+
+---
+
+## 2026-06-16 — ailivex v9 修正 + 文字讀網址 + v10 多人房（含 6/15 工作）
+
+### 背景 / WHY
+延續即時語音多角色。先修 v9 真機問題，加文字讀網址，再開 v10 解「一個焦點 AI 在一群真人裡像真人參與」的多人房問題（身份盲/3a 主持/回音污染）。
+
+### 產出（全在 ~/.ailive/ailivex-platform，已 commit+push）
+- **v9.0.1（7be1f18）**：gate 改直連 key（bridge 每次超時）；靜默時把訊息寫進 chat_ctx+transcript（解失憶/文不對題）。
+- **文字讀網址 v0.1.0（5ff41c7）**：`src/lib/url-reader.ts` —— 偵測 URL→抓網頁→抽正文→附 context→角色討論。全局。SSRF 守緊（擋私有IP/localhost/雲端 metadata，DNS 解析驗 IP，redirect 逐跳重驗）。dialogue route 接上。
+- **v10.0（ec17efc）**：`agent/multi_party.py`（純函數：回音偵測 opencc+difflib / 講者解析 / 名冊格式化）。回音過濾、講者身份+名冊（判斷腦兼差學名字）、3a 多人收斂（有貨才說，want_to_speak 廣化）。`realtime_agent_v10.py` + main + cloudbuild + 前端頁。
+- **v10.0.1（82e40e3）**：判斷腦跟對話流動重跑（_notify_turn，含靜默 turn）解 Tracy 啞巴；⑤ 斷線停 3a（_stopped 旗標）解空轉/isn't running；名冊去雜訊。
+
+### 已解決
+- 文不對題根因（StopResponse 失憶）→ 靜默也記住 → 真機驗證張立逮到對話矛盾。
+- Tracy 啞巴（inner 只在 committed turn 觸發）→ 含靜默 turn 都觸發。
+- 3a 斷線無限空轉 → _stopped 旗標終止。
+- 回音污染 → 文字級過濾。
+
+### ⚠️ 尚未解決（物理上限，非程式能補）
+- 單機收音的身份/回音/串話 → 要換「每人自己裝置進共享房間」架構才乾淨（見 LESSONS L5）。
+- 回音過濾盡力而為，STT 差太多會漏。
+- 兩個 AI（Tracy+簡報王）互測是壓力測試，真實「1 AI:N 真人」不會這麼髒。
+- v10.0.1 的「判斷腦跟對話流動重跑」修正，真機沒驗到（驗時對話已安靜，無 user turn 觸發 inner）——下一通有人活躍講話才看得到。
+
+### 待執行
+- [ ] 真機驗 v10 修正（00003 revision）：有人活躍的多人對話下，看 Tracy 全程冒 `v10 inner`（不啞巴）、斷線後 3a 不再空轉、名冊乾淨。
+- [ ] （若決定走乾淨身份）評估「每人自己裝置進共享房間」架構——這是多角色語音的真正地基，目前單機聲學橋是測試夾具。
+- [ ] 文字讀網址 MVP 侷限：歷史不存正文（無快取）、只 HTML、簡單抽取——要升級再說。

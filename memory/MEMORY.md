@@ -4,6 +4,7 @@
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
 - [標了風險不等於驗了風險](feedback_flagged_risk_must_be_verified.md) — 計畫裡標的技術風險上線前必須真的本機驗過；標完就推＝沒標（v8 generate_reply-in-handler 卡死框架，自己標過還是踩）
 - [AI 討好是底模天性，反制要分層](reference_ai_sycophancy_is_baked_in.md) — 討好烤進 RLHF 權重非可調參數；反制＝prompt抬地板(內化敘事+風格讓給角色)+結構強逼；prompt必要不充分，小模型判斷腦更頑固
+- [自我重排的背景迴圈必須綁 lifecycle 停止條件](feedback_self_rescheduling_loop_needs_lifecycle_stop.md) — self-rescheduling timer/loop 同 commit 內就要有停止旗標+所有退出路徑設旗標+入口檢查；ailivex 3a 在 v6/v8/v9/v10 重複踩斷線後空轉 isn't running
 - [天條：確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 序列化/解析/驗證/計數/排序寫程式保證；連修LLM壞輸出也別再丟LLM（築踩過：JSON壞了想re-ask模型）。已進全局CLAUDE.md
 - [防禦釘在收斂點不是每個生產端](feedback_defend_at_convergence_point.md) — 多處LLM輸出流經同一消費端時把coerce/validate釘在那唯一咽喉，一個commit守全部；MACS esc()根治三模式
 - [泛型化要泛到葉節點](feedback_genericize_to_leaf_nodes.md) — 消滅 if-mode 重構時，compat/映射層最易殘留讀某 mode 專屬欄位的耦合；舊 mode 過只證沒打壞，新 mode 才是試金石
