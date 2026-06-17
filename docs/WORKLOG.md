@@ -5220,3 +5220,34 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] Adam 實機撥聖嚴語音驗即時路徑（Cloud Run 已部署）
 - [ ] Step 2 episodic 排序升級
 - [ ] anon 防呆補 commit 對齊 git/image
+
+---
+
+## 2026-06-17 — ailivex v10.0.3：判別式 target resolver + 角色別名系統
+
+### 背景 / WHY
+v10 多人房 3-way（Adam + 聖嚴 + 達賴）實測：「聖嚴法師怎麼看？」→ 聖嚴 agent 的 gate 回 handoff，聖嚴沉默。
+根因：LLM gate 問「是否交棒」，兩個 agent 都站旁觀者視角答 yes，不知道「交棒給我 = addressed」。
+
+### 產出
+- `agent/realtime_agent_v10.py` v10.0.3 — `_deterministic_addressed_check()` 插在 gate 前；LLM gate prompt 改核心問句為「這句話期待你開口嗎？」commit f7aa638, 3ba117d
+- `agent/Dockerfile` — HuggingFace model download 加 `|| true`，CDN 超時不爆 build。commit 3ba117d
+- `src/lib/collections.ts` — `CharacterDoc` 加 `aliases?: string[]`
+- `src/app/api/admin/characters/[id]/route.ts` — GET 回傳、PATCH 接受 aliases
+- `src/app/admin/characters/page.tsx` — 編輯 modal 加別名欄位（每行一個）
+- `scripts/set-character-aliases.mts` — migration script，補聖嚴/達賴/星雲別名
+- Cloud Run `ailivex-realtime-agent-v10` revision 00004-vql 上線
+
+### 已解決
+- 聖嚴/達賴 agent 收到「聖嚴法師怎麼看？」→ 聖嚴 `gate[det]` 命中直接回話；達賴 LLM gate 正確讓位
+- HuggingFace CDN timeout 爆 build → `|| true` 繞過，model 改為 runtime 下載（v11 VP 啟用時才需要）
+
+### ⚠️ 尚未解決
+- conditional alias（「法師」限場上只有一位法師時）邏輯未做，目前靜態列在 aliases 裡（偶有誤觸風險）
+- 群體問話（「兩位怎麼看？」）無 orchestrator，兩 agent 可能同時搶話——技術債，gate schema 升級（target_type: group）是正解
+- v11 voiceprint 在 1v1 創假講者（echo 分群），VP_ENABLED=0 暫停，待解決 echo gate 問題
+
+### 待執行
+- [ ] 測試 v10.0.3 實機 3-way call，確認 log 出現 `gate[det]：別名命中`
+- [ ] gate schema 升級：target_type / local_action / reason（Adam 設計稿，v10.0.4 或 v12）
+- [ ] conditional alias runtime 邏輯（場上只有一位「法師」時才激活）
