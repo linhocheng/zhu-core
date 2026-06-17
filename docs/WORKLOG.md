@@ -5251,3 +5251,30 @@ v10 多人房 3-way（Adam + 聖嚴 + 達賴）實測：「聖嚴法師怎麼看
 - [ ] 測試 v10.0.3 實機 3-way call，確認 log 出現 `gate[det]：別名命中`
 - [ ] gate schema 升級：target_type / local_action / reason（Adam 設計稿，v10.0.4 或 v12）
 - [ ] conditional alias runtime 邏輯（場上只有一位「法師」時才激活）
+
+---
+
+## 2026-06-17（第二 session）— ailivex 後台指派語音版本（Req 1）+ 即時語音讀網址工作臺（Req 2 Phase 1, v12）
+
+### 背景 / WHY
+Adam 兩需求：①後台能把某語音版本指派給某用戶，用戶端看不到一堆版本（現況版本由前端按鈕硬選）。②即時對話下方加同步框，貼網址角色即時讀、之後對話結束可結合資料源轉拋企劃案。
+
+### 產出（都在 ailivex-platform repo，已 commit+push）
+- commit `d2e4045` v0.2.0：`AccessDoc.voiceVersion` + `VOICE_VERSIONS` 登錄表 + `agentNameForVersion()`（`src/lib/collections.ts`）；token route 後端版本決策（`src/app/api/livekit/token/route.ts`）；admin 版本下拉（`src/app/admin/access/{route.ts,page.tsx}`）；chat 頁實驗版收 admin-only。
+- commit `a86f550` v12.0：`agent/source_intake.py`（讀網址工作臺：暫停→「我看一下哦」→抓取→Haiku摘要→update_instructions注入→恢復接話）；`agent/{main_v12,realtime_agent_v12}.py` + `cloudbuild-v12.yaml`（=v3+RPC share_source）；`/api/voice-source` 薄抓取端點（複用 url-reader SSRF）；`src/lib/url-reader.ts` 加 `fetchUrlClean`；middleware 白名單；base `/realtime/` 頁同步框（performRpc + 思考動畫）。
+
+### 已解決
+- 「用戶不該自選版本」→ token route 對一般用戶忽略前端 flag、讀 access 指派、缺省 v3；admin 帶 flag 仍可逐版測試。線上端到端自測 11/11（自簽 session cookie 打線上 + 解 LiveKit JWT 驗實際派工版本）。
+- 「LiveKit 1.5.1 能不能 mid-call 暫停/改 context/收 data」可測前提 → 翻套件源碼驗四原語全在，計畫有根（見 LESSONS L5）。
+- 「新功能不該碰剛上線的生產預設 v3」→ 開 v12，用 Req 1 指派當安全 rollout gate（LESSONS L7）。v12 Cloud Run 部署 Ready、worker registered 乾淨啟動（我加的 source_intake import 沒搞崩）。
+
+### ⚠️ 尚未解決
+- **v12 通話中完整迴圈未真機驗**：RPC→暫停→「我看一下哦」→抓取→摘要→注入→恢復接話，只能 Adam 撥電話驗（CLI 無法跑真實語音）。
+- **WORKER_SECRET 三邊對齊是推論非直驗**：由「文件管線正常運作⇒Vercel/agent/doc-worker 同把」推論，直驗指令（讀 GCP secret）被 Adam 擋。失敗為安全失敗（agent 收 403→角色說「打不開」不崩）。最終確認點＝真機 log 的 `[source]` 軌跡。
+
+### 待執行
+- [ ] Adam 真機撥 v12：後台把測試帳號某角色指到「12（讀網址）」→ 語音通話 → 講話中貼網址 → 看「我看一下哦」+讀完接話
+- [ ] 驗過 → Req 2 Phase 2：sources collection 持久化（embedding，獨立於 memories 不污染排序）+ 下次通話載入
+- [ ] Req 2 Phase 3：對話結束 finalize 時結合 sources + 逐字稿轉拋企劃案（複用 doc-generation）
+- [ ] v12 驗穩後翻全域預設 v3→v12（改 `DEFAULT_VOICE_VERSION`）
+- [ ] Req 2 之後擴充：檔案上傳（目前只做網址）
