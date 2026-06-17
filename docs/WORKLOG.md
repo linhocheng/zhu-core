@@ -5192,3 +5192,31 @@ Adam 要的核心：多個 AI 角色 ＋ 人，在同一場語音裡像「活的
 - [ ] 真機驗 v10 修正（00003 revision）：有人活躍的多人對話下，看 Tracy 全程冒 `v10 inner`（不啞巴）、斷線後 3a 不再空轉、名冊乾淨。
 - [ ] （若決定走乾淨身份）評估「每人自己裝置進共享房間」架構——這是多角色語音的真正地基，目前單機聲學橋是測試夾具。
 - [ ] 文字讀網址 MVP 侷限：歷史不存正文（無快取）、只 HTML、簡單抽取——要升級再說。
+
+---
+
+## 2026-06-14〜17 — ailive 檢索層重構：BM25 hybrid + 記憶資格層拆白名單（築 AIR，遙控）
+
+### 背景 / WHY
+延續 Vivi 知識庫修復，Adam 要看記憶設計完整性。一路追下來發現「檢索層只信 cosine 一個分數」是貫穿知識庫 + episodic 記憶的同一個病。
+
+### 產出（ailive-platform，已 commit+deploy）
+- 知識庫檢索 BM25 hybrid：`knowledge-search/route.ts` cosine + 中文 bigram BM25 加權 RRF(2:1)，general 永遠帶入。commit 907cbc3。
+- 記憶資格層拆白名單：`episodic-memory.ts` + `agent/firestore_loader.py` 廢除共用 source 白名單；5 寫入路徑補 userId；`sleep/route.ts` getMemoryType 補語音 source + 消滅兩處內聯複製。commit 4b95063。
+- Cloud Run `ailive-realtime-agent` 重部署（rev 00066-h4q，project ailive-realtime-2026）。
+- memory：`feedback_sandtable_not_validation.md`、`project_ailive_retrieval_refactor.md`（+索引）。
+
+### 已解決
+- 窄域語義坍縮：BM25 字面繞過（法規查詢 BM25 #1 vs cosine #16）。離線驗證 4 查詢對賬，端到端撥 Vivi 治療痘痘+美白兩案逐字引法規。
+- 語音角色被動記憶 100% 隱形：聖嚴 56 條全來自語音、被白名單擋，0→50 可注入；撥測被動腦海現裝真記憶。跨用戶洩漏 0。
+- 走過一條彎路：contextual chunking（prefix 改 embedding）對 text-embedding-004 無效（cos(raw,prefixed)=1.0），驗證後放棄、code 回滾乾淨。
+
+### ⚠️ 尚未解決
+- Step 2 未做：episodic 排序升級（recency+importance+hitCount 斯坦福加權，治「寫了沒用」假中台）。Step 1 讓記憶進得來，Step 2 讓對的排前面。
+- `agent/user_profile.py` 的 anon 防呆未提交、卻已隨語音 image 部署（非我改、良性、likely本來在prod）——git 對不上 image，待補 commit。
+- MiniMax 破音字字典(`rules/minimax.ts`)空的、Python 即時語音繁簡靠 LLM 自律沒接確定性轉換（違天條）——兩個已知未動。
+
+### 待執行
+- [ ] Adam 實機撥聖嚴語音驗即時路徑（Cloud Run 已部署）
+- [ ] Step 2 episodic 排序升級
+- [ ] anon 防呆補 commit 對齊 git/image
