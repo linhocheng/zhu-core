@@ -5308,3 +5308,28 @@ Adam 兩需求：①後台能把某語音版本指派給某用戶，用戶端看
 - [ ] Req 2 Phase 3：對話結束 finalize 時結合 sources + 逐字稿轉拋企劃案（複用 doc-generation）
 - [ ] v12 驗穩後翻全域預設 v3→v12（改 `DEFAULT_VOICE_VERSION`）
 - [ ] Req 2 之後擴充：檔案上傳（目前只做網址）
+
+---
+
+## 2026-06-18（第三 session）— StraTA 學習收束 + HD 專案進度檔
+
+### 背景 / WHY
+HD 排盤專案上一輪暫停（「先到這邊」），Adam 轉去搜尋並一起讀 StraTA 論文。本 session 收束兩件：把 StraTA 可搬模式寫進記憶、給 HD 專案補進度檔讓重啟時接得上。
+
+### 產出
+- 檔案：`~/.claude/projects/-Users-adamlin/memory/reference_strata_agentic_design_patterns.md` — StraTA 編排層三模式（Top-δ評分/最遠點語義多樣性/校準自審）+ plan→condition→execute=三段公式上位連結 + 限制（RL訓練半部N/A、固定策略）；含心態+觸發信號欄
+- 檔案：`~/.claude/projects/-Users-adamlin/memory/MEMORY.md` — 加 StraTA 指標行
+- 檔案：`~/.ailive/human-design-mcp/PROGRESS.md`（新）— HD 暫停狀態快照：未提交改動清單、環境雷、兩個設計決策WHY、待辦三條
+
+### 已解決
+- StraTA 學習無外部化 → 寫成 reference memory，未來設計 MACS/ailivex 編排時可觸發
+- HD 重啟接棒斷點 → PROGRESS.md 記錄未提交改動勿洗 + 重啟先看這份
+
+### ⚠️ 尚未解決
+- HD 工作區仍有未提交改動（chart.py/geo.py/render.py/places.py/crosses.py/web/pyproject.toml），未切版號入庫
+- HD 視角/動力名稱是否與 Jovian 標準對調未確認（動前查權威來源）
+- HD web 端只本機跑過，未部署
+
+### 待執行
+- [ ] HD 重啟時：決定版號切換並 commit 未提交改動
+- [ ] （前 session 遺留）UDN NEWS deploy + 驗 09A meme 風格輸出

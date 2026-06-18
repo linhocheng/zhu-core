@@ -25,17 +25,11 @@
 
 ---
 
-## 最新完成（2026-06-18）— UDN NEWS UI 修繕
+## 最新完成（2026-06-18 · 第三 session）— StraTA 學習 + HD 進度收束
 
-- 修 `openTask` stale closure：切換專案後 URL 不再帶舊 ticket（`nav("kanban", { projectId, workOrderId: "" })`）
-- Sidebar 加「當前專案」strip，Dashboard/Create 導航明確清 projectId
-- 雷達動畫改條件式（只在 collecting=true 時旋轉）
-- Dashboard 專案列加刪除按鈕（連根清除）
-- 08 頁加製圖風格三選（圖文資訊/梗圖為主/照片模擬），handleComplete 儲存到 output_payload
-- finalProduction.js executeImageMaker(09A) 接通 image_style 讀取 + Claude prompt 注入風格指令 + UDN logo 強制右下角
-- Matrix 頁 aspect ratio 新增 9:16 選項
-- Proof 頁圖容器改動態 aspectRatio（跟著 contentSpec 走，不固定 1:1）
-- 寫 LESSONS_2026-06-18（三條：stale closure / 假中台血管未接 / useCallback closure）
+- 把 StraTA 論文可搬的編排層三模式寫進 memory（Top-δ評分 / 最遠點語義多樣性 / 校準自審）+ plan→condition→execute=三段公式上位連結；標明 RL 訓練半部不適用（我們走 bridge 不自訓）
+- HD 排盤專案（暫停中）補 `PROGRESS.md`：未提交改動清單 + 環境雷 + 兩個設計決策 WHY + 待辦
+- 核實 HD 兩個決策點的程式註解已到位（沒反射性加 noise），追加 LESSONS L4/L5
 
 ---
 
@@ -43,33 +37,32 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `Documents/UDN NEWS/frontend/pages1.jsx` | 雷達條件式動畫 + 刪除按鈕 |
-| `Documents/UDN NEWS/frontend/app.jsx` | 當前專案 strip + nav stale closure 修正 + pipeline dim |
-| `Documents/UDN NEWS/frontend/pages3.jsx` | IMAGE_STYLES 選鈕 + handleComplete + Proof 動態 aspectRatio |
-| `Documents/UDN NEWS/frontend/pages2.jsx` | 9:16 選項（replace_all 兩處） |
-| `Documents/UDN NEWS/backend/src/partners/finalProduction.js` | image_style 注入 + UDN logo 強制 |
-| `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-18.md` | 三條教訓 |
+| `~/.claude/.../memory/reference_strata_agentic_design_patterns.md` | 新建：StraTA 三模式 reference memory |
+| `~/.claude/.../memory/MEMORY.md` | 加 StraTA 指標行 |
+| `~/.ailive/human-design-mcp/PROGRESS.md` | 新建：HD 暫停狀態快照 |
+| `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-18.md` | 追加 L4/L5（第二/三 session） |
+| `~/.ailive/zhu-core/docs/WORKLOG.md` | 追加第三 session 條目 |
+
+> 註：今天還有前兩個 session 的 UDN NEWS UI 修繕（見 commit 021）。
 
 ---
 
 ## 下一步（接棒第一件）
 
-**UDN NEWS deploy 並驗 09A meme 風格輸出**：
-```bash
-# 前端 deploy
-cd "/Users/adamlin/Documents/UDN NEWS" && gcloud builds submit --config web/cloudbuild.yaml --project udnnews
+兩條 pending，依 Adam 醒來指示擇一：
 
-# 後端 deploy
-gcloud builds submit --config backend/cloudbuild.yaml --project udnnews
-```
-Deploy 完後：在平台找一個有 meme 風格的 08 任務完成 → 觸發 09A → 看生成的 image_spec 是否含 meme 排版指令（強對比 / 口語字 / 黑白反差）。
+**A. UDN NEWS 驗 09A meme 風格（前 session 已 deploy 未驗）**
+在平台找一個 meme 風格的 08 任務完成 → 觸發 09A → 看 image_spec 是否含 meme 排版指令（強對比 / 口語字 / 黑白反差）。
+
+**B. HD 排盤專案重啟（目前暫停）**
+先讀 `~/.ailive/human-design-mcp/PROGRESS.md`。工作區有未提交改動**勿洗**。重啟第一件是決定版號切換並 commit。
 
 ---
 
 ## 卡住 / 未解
 
-- **09A meme 風格 Adam 已送出但結果未驗**（session 結束時還沒看回傳）
-- **UDN NEWS 其他假中台斷點未全部審計**：image_style 這條管道接通，其他欄位未全掃
+- **UDN NEWS 09A meme 風格 Adam 已送出但結果未驗**
+- **HD 工作區未提交改動未入庫**；視角/動力名稱是否對調未確認（動前查權威來源，別憑記憶）
 - （前 session 遺留）ailivex v12 通話中完整迴圈未真機驗、v10 conditional alias 未解
 
 ---
@@ -86,6 +79,7 @@ Deploy 完後：在平台找一個有 meme 風格的 08 任務完成 → 觸發 
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | ailivex 平台 | `~/.ailive/ailivex-platform/`（CLAUDE.md 是現況真相） |
+| HD 排盤 | `~/.ailive/human-design-mcp/`（PROGRESS.md 是暫停狀態真相） |
 | UDN NEWS | `/Users/adamlin/Documents/UDN NEWS/`（frontend/ + backend/） |
 
 ---
