@@ -2,6 +2,36 @@
 
 ---
 
+## 2026-06-18 — UDN NEWS UI 修繕（多專案架構、製圖風格、stale closure）
+
+### 背景 / WHY
+UDN NEWS 平台（GCP Cloud Run，新聞多媒體生產流水線）UI/UX 一批積累問題：Dashboard 混入專案上下文、雷達動畫無條件旋轉、切換專案後 URL 帶舊 ticket、新功能（製圖風格、9:16 尺寸）沒有實作完整。
+
+### 產出
+- 檔案：`Documents/UDN NEWS/frontend/pages1.jsx` — 雷達動畫改條件式 spin、Dashboard 專案列加刪除按鈕
+- 檔案：`Documents/UDN NEWS/frontend/app.jsx` — sidebar 加當前專案 strip、Dashboard/Create 清 projectId+workOrderId、pipeline nav 無專案時 dim、openTask stale closure 修正
+- 檔案：`Documents/UDN NEWS/frontend/pages3.jsx` — 08 頁加 IMAGE_STYLES 三選鈕（圖文資訊/梗圖為主/照片模擬）+ handleComplete 儲存 image_style、Proof 頁圖容器改用 contentSpec.aspectRatio
+- 檔案：`Documents/UDN NEWS/frontend/pages2.jsx` — Matrix 兩個 aspect ratio 下拉新增 9:16 選項
+- 檔案：`Documents/UDN NEWS/backend/src/partners/finalProduction.js` — executeImageMaker(series_master_template) 讀 carouselUpstream.output_payload.image_style、注入風格指令到 Claude prompt、強制 UDN logo 右下角
+- 檔案：`~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-18.md` — 三條教訓（stale closure / 假中台 / useCallback）
+
+### 已解決
+- 切換專案卡在舊專案 → 根因：`nav("kanban")` 使用 useCallback closure 的舊 projectId → 修法：`setActiveTicket(null)` + `nav("kanban", { projectId, workOrderId: "" })` 明確傳
+- URL 帶舊 work_order_id → 根因：nav 預設 workOrderId 從 activeTicket 讀 → 修法：同上，明確傳 `workOrderId: ""`
+- 雷達無條件旋轉 → 改 `animation: app.collecting ? "spin 3.4s..." : "none"`
+- 製圖風格 UI 有但後端沒讀 → 補 executeImageMaker 讀 image_style 路徑 + 風格指令 inject
+
+### ⚠️ 尚未解決
+- 09A meme 風格 Adam 已送出但結果未驗（session 內沒時間跟）
+- UDN NEWS 其他 UI 斷點（假中台審計）未全部補完，本次只修了 image_style 這條管道
+
+### 待執行
+- [ ] 驗 09A meme 風格輸出是否確實含 meme 指令的排版規格
+- [ ] UDN NEWS frontend+backend deploy（`web/cloudbuild.yaml` + `backend/cloudbuild.yaml`）
+- [ ] 繼續假中台審計：其他欄位是否有「UI 有、後端沒讀」的斷點
+
+---
+
 ## 2026-06-06 晚 — MACS partner-review revisedStoryline 字串崩潰修復（天條落地）
 
 ### 背景 / WHY

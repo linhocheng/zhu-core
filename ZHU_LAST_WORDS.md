@@ -25,48 +25,52 @@
 
 ---
 
-## 最新完成（2026-06-17 第二 session）— ailivex 兩需求
+## 最新完成（2026-06-18）— UDN NEWS UI 修繕
 
-- 上線「後台指派語音版本給用戶」（Req 1, commit v0.2.0）：用戶端看不到版本，全域預設 v3，後台可逐(用戶×角色)指派
-- 線上 API 端到端自測 11/11（自簽 session cookie 打 prod + 解 LiveKit JWT 驗派工版本）
-- 設計 Req 2（即時語音讀網址）+ 離線驗 LiveKit 1.5.1 四原語全在（沒沙推）
-- 上線 Req 2 Phase 1（commit v12.0）：新 agent v12 = v3 + 讀網址工作臺，Cloud Run Ready、worker registered 乾淨啟動
-- 兩 commit push GitHub（`linhocheng/ailivex-platform` main）
+- 修 `openTask` stale closure：切換專案後 URL 不再帶舊 ticket（`nav("kanban", { projectId, workOrderId: "" })`）
+- Sidebar 加「當前專案」strip，Dashboard/Create 導航明確清 projectId
+- 雷達動畫改條件式（只在 collecting=true 時旋轉）
+- Dashboard 專案列加刪除按鈕（連根清除）
+- 08 頁加製圖風格三選（圖文資訊/梗圖為主/照片模擬），handleComplete 儲存到 output_payload
+- finalProduction.js executeImageMaker(09A) 接通 image_style 讀取 + Claude prompt 注入風格指令 + UDN logo 強制右下角
+- Matrix 頁 aspect ratio 新增 9:16 選項
+- Proof 頁圖容器改動態 aspectRatio（跟著 contentSpec 走，不固定 1:1）
+- 寫 LESSONS_2026-06-18（三條：stale closure / 假中台血管未接 / useCallback closure）
 
 ---
 
-## 今天改了哪些檔案（第二 session，都在 ailivex-platform）
+## 今天改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/lib/collections.ts` | `AccessDoc.voiceVersion` + `VOICE_VERSIONS` 登錄表 + `agentNameForVersion()` |
-| `src/app/api/livekit/token/route.ts` | 版本決策搬後端：用戶讀指派/缺省 v3，admin flag 測試 |
-| `src/app/api/admin/access/route.ts` + `admin/access/page.tsx` | 版本下拉 + PATCH |
-| `src/app/chat/[characterId]/page.tsx` | 實驗版按鈕收 admin-only |
-| `agent/source_intake.py`（新） | 讀網址工作臺迴圈：暫停→「我看一下哦」→抓取→摘要→注入→接話 |
-| `agent/{main_v12,realtime_agent_v12}.py` + `cloudbuild-v12.yaml`（新） | v12 = v3 + RPC `share_source` |
-| `src/app/api/voice-source/route.ts`（新）+ `src/lib/url-reader.ts` | 薄抓取端點（複用 SSRF）+ `fetchUrlClean` |
-| `src/middleware.ts` | `/api/voice-source` 加白名單（worker-secret 鑑權） |
-| `src/app/realtime/[characterId]/page.tsx` | base 頁同步框 + performRpc + 思考動畫 |
+| `Documents/UDN NEWS/frontend/pages1.jsx` | 雷達條件式動畫 + 刪除按鈕 |
+| `Documents/UDN NEWS/frontend/app.jsx` | 當前專案 strip + nav stale closure 修正 + pipeline dim |
+| `Documents/UDN NEWS/frontend/pages3.jsx` | IMAGE_STYLES 選鈕 + handleComplete + Proof 動態 aspectRatio |
+| `Documents/UDN NEWS/frontend/pages2.jsx` | 9:16 選項（replace_all 兩處） |
+| `Documents/UDN NEWS/backend/src/partners/finalProduction.js` | image_style 注入 + UDN logo 強制 |
+| `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-18.md` | 三條教訓 |
 
 ---
 
 ## 下一步（接棒第一件）
 
-**Adam 真機撥 v12 驗讀網址**：後台「權限指派」把測試帳號某角色版本下拉選「12（讀網址）」→ 用該帳號語音通話 → 接通講幾句 → 下方同步框貼網址按分享 → 預期角色說「我看一下哦」+ 思考動畫 + 讀完帶內容接話。
-有狀況看 v12 log 的 `[source]` 軌跡：
-`gcloud logging read 'resource.type="cloud_run_revision" AND resource.labels.service_name="ailivex-realtime-agent-v12"' --project=ailivex-2026 --limit=30 --freshness=15m --format="value(textPayload)"`
-（注意：`gcloud run services logs read` 會自己 crash，用 `gcloud logging read`）
+**UDN NEWS deploy 並驗 09A meme 風格輸出**：
+```bash
+# 前端 deploy
+cd "/Users/adamlin/Documents/UDN NEWS" && gcloud builds submit --config web/cloudbuild.yaml --project udnnews
 
-驗過 → Req 2 Phase 2（sources collection 持久化 RAG）→ Phase 3（對話結束結合資料源轉拋企劃案）→ 翻全域預設 v3→v12。
+# 後端 deploy
+gcloud builds submit --config backend/cloudbuild.yaml --project udnnews
+```
+Deploy 完後：在平台找一個有 meme 風格的 08 任務完成 → 觸發 09A → 看生成的 image_spec 是否含 meme 排版指令（強對比 / 口語字 / 黑白反差）。
 
 ---
 
 ## 卡住 / 未解
 
-- **v12 通話中完整迴圈未真機驗**：CLI 跑不了真實語音，只能 Adam 撥電話驗。
-- **WORKER_SECRET 三邊對齊是推論非直驗**：由文件管線正常⇒Vercel/agent/doc-worker 同把推論；直驗指令（讀 GCP secret）被 Adam 擋。失敗為安全失敗（agent 收 403→角色說「打不開」不崩）。
-- （前一 session 遺留）ailivex v10 conditional alias / 群體問話 orchestrator / v11 VP echo gate 未解。
+- **09A meme 風格 Adam 已送出但結果未驗**（session 結束時還沒看回傳）
+- **UDN NEWS 其他假中台斷點未全部審計**：image_style 這條管道接通，其他欄位未全掃
+- （前 session 遺留）ailivex v12 通話中完整迴圈未真機驗、v10 conditional alias 未解
 
 ---
 
@@ -81,9 +85,10 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailivex 平台 | `~/.ailive/ailivex-platform/`（CLAUDE.md 是現況真相，README stale） |
+| ailivex 平台 | `~/.ailive/ailivex-platform/`（CLAUDE.md 是現況真相） |
+| UDN NEWS | `/Users/adamlin/Documents/UDN NEWS/`（frontend/ + backend/） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-17（第二 session）· 築*
+*2026-06-18 · 築*
