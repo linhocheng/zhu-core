@@ -24,15 +24,16 @@
 
 ---
 
-## 最新完成（2026-06-18）
+## 最新完成（2026-06-18 第五 session）
 
-- 建 ailivex v12 前台頁（`/realtime-v12/[characterId]/page.tsx`）
-- 修 v12 RPC payload 格式（JSON.stringify({url}) 對齊 agent json.loads）
-- 大改 `agent/source_intake.py`：靜默取資料 + fire-and-forget + Sonnet 摘要 + 主動開口設計
-- 提升 `voice-source` route fetchUrlClean 上限至 50000 chars
-- `DEFAULT_VOICE_VERSION` 切 'v3'→'v12'（所有用戶預設 v12）
-- admin 側欄：Wordmark 改連 `/admin`、加「前台主頁」按鈕
-- 文件頁：移除 PDF 下載 + Google Slides 按鈕
+- 設計並實作 `media-worker` 獨立服務（Cloud Run, TypeScript Express, gpt-image-2 + MiniMax audio, Cloud Tasks async, GCS upload, webhook callback）
+- 部署 media-worker 至 `ailivex-2026` GCP project
+- AILivex 任務派發系統：`[[DISPATCH]]` tag（文字路徑）+ `dispatch_task` function_tool（語音路徑）
+- `tasks` Firestore collection + TaskDoc schema + capabilities gate
+- 任務通知注入機制（`build_task_notifications_block()` 接在 lastSession 後）
+- AILivex admin 後台：角色能力開關（capabilities checkboxes）
+- realtime-v13 page + v13 Cloud Run deployed（`ailivex-realtime-agent-v13`）
+- Vercel deploy 完成
 
 ---
 
@@ -40,31 +41,51 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/src/app/realtime-v12/[characterId]/page.tsx` | 新建 v12 語音頁，URL 輸入框 + performRpc |
-| `ailivex-platform/agent/source_intake.py` | 靜默模式 + fire-and-forget + Sonnet 4.6 摘要 + generate_reply |
-| `ailivex-platform/src/app/api/voice-source/route.ts` | fetchUrlClean content 上限 50000 |
-| `ailivex-platform/src/lib/collections.ts` | DEFAULT_VOICE_VERSION = 'v12' |
-| `ailivex-platform/src/app/chat/[characterId]/page.tsx` | admin-only v12 按鈕 |
-| `ailivex-platform/src/app/admin/layout.tsx` | Wordmark→/admin、前台主頁按鈕 |
-| `ailivex-platform/src/app/documents/page.tsx` | 移除 PDF + Slides 按鈕 |
+| `~/.ailive/media-worker/src/**` | 全新服務（config/firestore/idempotency/cloudTasks/storage/providers/handlers/index） |
+| `~/.ailive/media-worker/cloudbuild.yaml` | Cloud Run 部署設定 |
+| `ailivex-platform/src/lib/collections.ts` | TaskCapability / TaskDoc / capabilities field / v13 voice version |
+| `ailivex-platform/src/lib/task-dispatcher.ts` | 新：dispatchTask() fire-and-forget |
+| `ailivex-platform/src/lib/tool-tags.ts` | [[DISPATCH]] tag 解析 |
+| `ailivex-platform/src/app/api/dialogue/route.ts` | dispatch loop + capabilities gate |
+| `ailivex-platform/src/app/api/tasks/callback/route.ts` | 新：webhook receiver |
+| `ailivex-platform/src/app/admin/characters/page.tsx` | capabilities checkboxes UI |
+| `ailivex-platform/agent/firestore_loader.py` | build_task_notifications_block / dispatch_task_job / _enqueue_media_task |
+| `ailivex-platform/agent/realtime_agent_v13.py` | 新：dispatch_task function_tool |
+| `ailivex-platform/agent/main_v13.py` | 新：v13 entry |
+| `ailivex-platform/agent/cloudbuild-v13.yaml` | 新：v13 Cloud Run deploy |
+| `ailivex-platform/src/app/realtime-v13/[characterId]/page.tsx` | 新：v13 語音通話頁 |
+| `ailivex-platform/src/app/chat/[characterId]/page.tsx` | 加 v13 Link 到版本列 |
 
 ---
 
 ## 下一步
 
-**v12 重新部署（最重要）**：
+**第一件（接棒直接動手）：v13 Cloud Run 補兩個 env var**
+
 ```bash
-cd ~/.ailive/ailivex-platform
-gcloud builds submit --config=agent/cloudbuild-v12.yaml --project=ailivex-2026 .
+# 1. 先確認 media-worker URL
+gcloud run services describe media-worker --region=asia-east1 --project=ailivex-2026 --format='value(status.url)'
+
+# 2. 確認 MEDIA_WORKER_KEY_AILIVEX secret 存在
+gcloud secrets describe MEDIA_WORKER_KEY_AILIVEX --project=ailivex-2026
+
+# 3. 更新 agent/cloudbuild-v13.yaml：在 --set-secrets 加兩個 binding，再 redeploy
+gcloud builds submit --config=agent/cloudbuild-v13.yaml --substitutions=COMMIT_SHA=$(date +%Y%m%d-%H%M%S) .
 ```
-然後 Adam 撥 v12 通話 → 貼網址 → 驗 agent log `[source]` 軌跡 + 主動開口
+
+**第二件：端到端驗收**
+- admin 後台：某角色 capabilities 勾 `image_generation`
+- chat 頁傳「幫我生一張[描述]的圖片」
+- 確認 Firestore `tasks` doc pending → running → done
+- 確認角色下次回覆注入了「已完成的背景任務」通知
 
 ---
 
 ## 卡住 / 未解
 
-- **source_intake.py 改動尚未部署**：前台已上 Vercel，但 agent 程式還是舊版（ACK + 同步等）。需要 cloudbuild-v12.yaml 重 deploy，才能驗新設計
-- v12 完整迴圈（貼URL→靜默→主動開口）只在程式設計層驗，未真機跑過
+1. **v13 兩個 env var 未設定**：`MEDIA_WORKER_URL` / `MEDIA_WORKER_KEY_AILIVEX` 未加進 cloudbuild-v13.yaml `--set-secrets`，語音 dispatch 會失敗
+2. **端到端未真機驗**：dispatch → media-worker → callback → notified 注入整條未跑
+3. **圖片管理 UI 暫緩**：Adam 先想版面
 
 ---
 
@@ -79,9 +100,8 @@ gcloud builds submit --config=agent/cloudbuild-v12.yaml --project=ailivex-2026 .
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ailivex 前台 | `~/.ailive/ailivex-platform/` → Vercel |
-| ailivex v12 agent | `~/.ailive/ailivex-platform/agent/source_intake.py` |
+| media-worker 服務 | `~/.ailive/media-worker/` |
+| AILivex platform | `~/.ailive/ailivex-platform/` |
 
 ---
 

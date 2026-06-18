@@ -2,6 +2,52 @@
 
 ---
 
+## 2026-06-18（第五 session）— media-worker 服務 + AILivex v13 任務派發系統
+
+### 背景 / WHY
+Adam 想讓 AILivex 角色能下指令給「工廠」生成圖片/音訊，角色是大腦，media-worker 是工廠。
+原型：UDN NEWS 的 Cloud Tasks async 圖片生成 pipeline。目標：提取成獨立服務，跨平台 HTTP API 呼叫。
+
+### 產出
+- 新服務 `~/.ailive/media-worker/`（TypeScript Express）
+  - `src/config.ts` / `src/firestore.ts` / `src/idempotency.ts` / `src/cloudTasks.ts` / `src/storage.ts`
+  - `src/providers/openai-image.ts`（gpt-image-2）/ `src/providers/minimax-audio.ts`
+  - `src/handlers/enqueue.ts` / `src/handlers/worker.ts` / `src/handlers/status.ts` / `src/handlers/webhook.ts`
+  - `src/index.ts` / `cloudbuild.yaml`
+  - 部署至 Cloud Run `ailivex-2026`
+- AILivex platform 改動：
+  - `src/lib/collections.ts` — TaskCapability / TaskDoc / capabilities field on CharacterDoc / v13 VOICE_VERSIONS
+  - `src/lib/task-dispatcher.ts`（新）— dispatchTask() fire-and-forget → media-worker /v1/jobs
+  - `src/lib/tool-tags.ts` — [[DISPATCH]] tag 解析
+  - `src/app/api/dialogue/route.ts` — dispatch loop + capabilities gate
+  - `src/app/api/tasks/callback/route.ts`（新）— webhook receiver
+  - `src/app/admin/characters/page.tsx` — capabilities checkboxes
+  - `agent/firestore_loader.py` — build_task_notifications_block() + dispatch_task_job() + _enqueue_media_task()
+  - `agent/realtime_agent_v13.py`（新）— dispatch_task function_tool
+  - `agent/main_v13.py`（新）/ `agent/cloudbuild-v13.yaml`（新）
+  - `src/app/realtime-v13/[characterId]/page.tsx`（新）
+  - `src/app/chat/[characterId]/page.tsx` — v13 Link 加入版本列
+  - Vercel deploy 完成 / v13 Cloud Run 部署完成（`ailivex-realtime-agent-v13`）
+
+### 已解決
+- Cloud Build `$COMMIT_SHA` 空字串 → `--substitutions=COMMIT_SHA=$(date +%Y%m%d-%H%M%S)` 解
+- Artifact Registry 路徑錯誤（`media/media-worker` → `ailivex/media-worker`）
+- `/health` 403（Cloud Run `--allow-unauthenticated` 缺失 + IAM policy binding）
+- MEDIA_WORKER_INTERNAL_URL chicken-and-egg → 先 optional deploy，拿到 URL 後改 required redeploy
+
+### ⚠️ 尚未解決
+- **v13 Cloud Run 缺少兩個 env var**：`MEDIA_WORKER_URL` 和 `MEDIA_WORKER_KEY_AILIVEX` 未加進 GCP Secret Manager / cloudbuild-v13.yaml，語音 dispatch_task 無法真正呼叫 media-worker
+- **端到端未真機驗**：admin 設 capabilities → 角色 [[DISPATCH]] → tasks doc → media-worker job → callback → notified 注入，整條未完整跑過
+- **admin/access voice version selector 未加 v13**（minor）
+- **圖片管理 UI**（list/delete/download）— Adam 說先暫停想版面
+
+### 待執行
+- [ ] 把 MEDIA_WORKER_URL + MEDIA_WORKER_KEY_AILIVEX 加進 GCP Secret Manager 並更新 cloudbuild-v13.yaml → redeploy v13
+- [ ] admin 後台：某角色開 image_generation → 在 chat 頁打「幫我生一張...」→ 確認 tasks doc 建立 + media-worker job 觸發
+- [ ] 語音 v13 真機驗：說「幫我生一張」→ 確認 dispatch_task tool call log
+
+---
+
 ## 2026-06-18（第四 session）— ailivex v12 改版：靜默取資料 + 主動開口 + DEFAULT 版本切換 + UI 清理
 
 ### 背景 / WHY
