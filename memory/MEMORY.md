@@ -1,6 +1,7 @@
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
 - [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
 - [前沿學習筆記 RAG/MCP/Skills/記憶](reference_frontier_rag_mcp_skills_memory.md) — 重設計 ailive 記憶/RAG 前先讀；前沿+對照+階梯，最該先動 rerank
+- [StraTA 三個可搬的 agentic 編排模式](reference_strata_agentic_design_patterns.md) — 設計 MACS/ailivex fan-out/評分/自審時讀；Top-δ評分+最遠點多樣性+校準自審，RL訓練半部不適用
 - [Mode 1→2 踩雷心法（MACS hybrid）](feedback_mode2_hybrid_lessons.md) — 六條：中文enum/union型別/named DB/worker mode傳遞/eval cast/needs_repair SOP
 - [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
 - [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
