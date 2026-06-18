@@ -21,15 +21,18 @@
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 - **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
-- **gcloud 預設 project 是 `udnnews`，不是 ailivex！動 ailivex Cloud Run 必帶 `--project=ailivex-2026`**
 
 ---
 
-## 最新完成（2026-06-18 · 第三 session）— StraTA 學習 + HD 進度收束
+## 最新完成（2026-06-18）
 
-- 把 StraTA 論文可搬的編排層三模式寫進 memory（Top-δ評分 / 最遠點語義多樣性 / 校準自審）+ plan→condition→execute=三段公式上位連結；標明 RL 訓練半部不適用（我們走 bridge 不自訓）
-- HD 排盤專案（暫停中）補 `PROGRESS.md`：未提交改動清單 + 環境雷 + 兩個設計決策 WHY + 待辦
-- 核實 HD 兩個決策點的程式註解已到位（沒反射性加 noise），追加 LESSONS L4/L5
+- 建 ailivex v12 前台頁（`/realtime-v12/[characterId]/page.tsx`）
+- 修 v12 RPC payload 格式（JSON.stringify({url}) 對齊 agent json.loads）
+- 大改 `agent/source_intake.py`：靜默取資料 + fire-and-forget + Sonnet 摘要 + 主動開口設計
+- 提升 `voice-source` route fetchUrlClean 上限至 50000 chars
+- `DEFAULT_VOICE_VERSION` 切 'v3'→'v12'（所有用戶預設 v12）
+- admin 側欄：Wordmark 改連 `/admin`、加「前台主頁」按鈕
+- 文件頁：移除 PDF 下載 + Google Slides 按鈕
 
 ---
 
@@ -37,33 +40,31 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.claude/.../memory/reference_strata_agentic_design_patterns.md` | 新建：StraTA 三模式 reference memory |
-| `~/.claude/.../memory/MEMORY.md` | 加 StraTA 指標行 |
-| `~/.ailive/human-design-mcp/PROGRESS.md` | 新建：HD 暫停狀態快照 |
-| `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-06-18.md` | 追加 L4/L5（第二/三 session） |
-| `~/.ailive/zhu-core/docs/WORKLOG.md` | 追加第三 session 條目 |
-
-> 註：今天還有前兩個 session 的 UDN NEWS UI 修繕（見 commit 021）。
+| `ailivex-platform/src/app/realtime-v12/[characterId]/page.tsx` | 新建 v12 語音頁，URL 輸入框 + performRpc |
+| `ailivex-platform/agent/source_intake.py` | 靜默模式 + fire-and-forget + Sonnet 4.6 摘要 + generate_reply |
+| `ailivex-platform/src/app/api/voice-source/route.ts` | fetchUrlClean content 上限 50000 |
+| `ailivex-platform/src/lib/collections.ts` | DEFAULT_VOICE_VERSION = 'v12' |
+| `ailivex-platform/src/app/chat/[characterId]/page.tsx` | admin-only v12 按鈕 |
+| `ailivex-platform/src/app/admin/layout.tsx` | Wordmark→/admin、前台主頁按鈕 |
+| `ailivex-platform/src/app/documents/page.tsx` | 移除 PDF + Slides 按鈕 |
 
 ---
 
-## 下一步（接棒第一件）
+## 下一步
 
-兩條 pending，依 Adam 醒來指示擇一：
-
-**A. UDN NEWS 驗 09A meme 風格（前 session 已 deploy 未驗）**
-在平台找一個 meme 風格的 08 任務完成 → 觸發 09A → 看 image_spec 是否含 meme 排版指令（強對比 / 口語字 / 黑白反差）。
-
-**B. HD 排盤專案重啟（目前暫停）**
-先讀 `~/.ailive/human-design-mcp/PROGRESS.md`。工作區有未提交改動**勿洗**。重啟第一件是決定版號切換並 commit。
+**v12 重新部署（最重要）**：
+```bash
+cd ~/.ailive/ailivex-platform
+gcloud builds submit --config=agent/cloudbuild-v12.yaml --project=ailivex-2026 .
+```
+然後 Adam 撥 v12 通話 → 貼網址 → 驗 agent log `[source]` 軌跡 + 主動開口
 
 ---
 
 ## 卡住 / 未解
 
-- **UDN NEWS 09A meme 風格 Adam 已送出但結果未驗**
-- **HD 工作區未提交改動未入庫**；視角/動力名稱是否對調未確認（動前查權威來源，別憑記憶）
-- （前 session 遺留）ailivex v12 通話中完整迴圈未真機驗、v10 conditional alias 未解
+- **source_intake.py 改動尚未部署**：前台已上 Vercel，但 agent 程式還是舊版（ACK + 同步等）。需要 cloudbuild-v12.yaml 重 deploy，才能驗新設計
+- v12 完整迴圈（貼URL→靜默→主動開口）只在程式設計層驗，未真機跑過
 
 ---
 
@@ -78,9 +79,9 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailivex 平台 | `~/.ailive/ailivex-platform/`（CLAUDE.md 是現況真相） |
-| HD 排盤 | `~/.ailive/human-design-mcp/`（PROGRESS.md 是暫停狀態真相） |
-| UDN NEWS | `/Users/adamlin/Documents/UDN NEWS/`（frontend/ + backend/） |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ailivex 前台 | `~/.ailive/ailivex-platform/` → Vercel |
+| ailivex v12 agent | `~/.ailive/ailivex-platform/agent/source_intake.py` |
 
 ---
 

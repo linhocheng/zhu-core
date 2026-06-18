@@ -2,6 +2,38 @@
 
 ---
 
+## 2026-06-18（第四 session）— ailivex v12 改版：靜默取資料 + 主動開口 + DEFAULT 版本切換 + UI 清理
+
+### 背景 / WHY
+v12（讀網址工作臺）上次部署完但缺前台頁、RPC payload 格式錯、用 Haiku 摘要太短、取資料期間角色在說 ACK 語（不自然）。
+Adam 要求：建前台頁 → 修 payload → 取資料靜默 → 摘要換 Sonnet → 完成後角色主動開口 → 切 DEFAULT 預設版本 → 清理 admin UI。
+
+### 產出
+- 檔案：`src/app/realtime-v12/[characterId]/page.tsx`（新）— v12 語音頁，加 URL 輸入框，performRpc payload 改 JSON.stringify({url})
+- 檔案：`agent/source_intake.py` — 大改：靜默 fetch + asyncio.create_task() fire-and-forget + Sonnet 4.6 摘要（max 1500 token）+ 主動 generate_reply；MAX_TEXT_CHARS=50_000；移除 ACK say()
+- 檔案：`src/app/api/voice-source/route.ts` — fetchUrlClean(url, 50000) 提升 content 上限
+- 檔案：`src/lib/collections.ts` — DEFAULT_VOICE_VERSION 'v3'→'v12'
+- 檔案：`src/app/chat/[characterId]/page.tsx` — admin-only 版本面板加 v12 按鈕
+- 檔案：`src/app/admin/layout.tsx` — Wordmark 改連 /admin、加「前台主頁」按鈕（SVG house icon）
+- 檔案：`src/app/documents/page.tsx` — 移除 PDF 下載 + Google Slides 按鈕（用戶端 + admin 端皆清）
+
+### 已解決
+- RPC timeout：fire-and-forget 設計，agent 立刻 return {ok, queued}，Sonnet 在背景跑
+- payload 格式錯誤：frontend 改 JSON.stringify，agent json.loads 正確解析
+- 用戶端無 v12 功能：DEFAULT_VOICE_VERSION 改 v12，所有用戶預設吃 v12
+- ACK 語不自然：移除，取資料中靜默，完成後主動開口
+
+### ⚠️ 尚未解決
+- **source_intake.py 改動尚未重新部署 v12 Cloud Run**：需要跑 `gcloud builds submit --config=agent/cloudbuild-v12.yaml --project=ailivex-2026 .`
+- v12 通話中完整迴圈待真機驗（貼網址→靜默→主動開口）
+
+### 待執行
+- [ ] 重新 deploy v12：`cd ~/.ailive/ailivex-platform && gcloud builds submit --config=agent/cloudbuild-v12.yaml --project=ailivex-2026 .`
+- [ ] Adam 撥 v12 → 貼網址 → 驗 agent log `[source]` 軌跡 + 主動開口行為
+- [ ] 驗穩後決定是否推 Phase 2（sources collection 持久化）
+
+---
+
 ## 2026-06-18 — UDN NEWS UI 修繕（多專案架構、製圖風格、stale closure）
 
 ### 背景 / WHY
