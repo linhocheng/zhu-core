@@ -115,4 +115,9 @@
 - [MiniMax 即時語音語氣優化（WS串流+opencc+emotion）](reference_minimax_realtime_voice_quality.md) — 語氣連貫=streaming=True走WS、口音=opencc餵簡體、情緒=voiceSettings.emotion三旋鈕分開調
 - [壓縮續跑前先查現場狀態，別盲信摘要](feedback_compacted_session_verify_state.md) — compacted摘要是過時子集；續跑debug前先tail WORKLOG/git log/lastwords確認沒被別處解掉
 - [humanizer 兩段式去AI味工具(獨立未接系統)](project_humanizer_tool.md) — ~/.ailive/humanizer/ standalone CLI,程式硬擋+LLM改判斷題;閒置零消耗,接系統時搬規格成TS不import Python
-- [env 值字面\n讓URL解析成/n→404靜默吞](feedback_env_literal_newline_url.md) — env尾端字面反斜線n .trim()吃不掉,當URL被解析成.../n打404被catch吞,任務卡pending;讀env的URL/secret用前deterministic洗+查r.ok
+- [env 值字面\n讓URL解析成/n→404靜默吞 + vercel env pull 會說謊](feedback_env_literal_newline_url.md) — 字面\n .trim()吃不掉打404靜默吞;vercel env pull 把真換行重編碼成字面\n→肉眼比檔案說謊,要byte級resend測;咽喉合併 cleanSecret/cleanUrl 套生產+消費兩端
+- [天條：Cloud Run firebase-admin 一律走 ADC，不注入 SA JSON](feedback_cloudrun_firebase_adc.md) — cert(sa)打oauth2/v4/token在某些GCP project Premature close；ADC走metadata server永遠可達；多次重踩
+- [自架 mp4 在 Cloud Run 必須支援 HTTP Range(206)](reference_selfhost_mp4_needs_range_206.md) — Safari/iOS 沒206 Range 不播；MIME要video/mp4；Drive iframe 受分享權限故改自架；curl -H Range 驗
+- [從 Drive 抓大檔(confirm token)+ avconvert 壓影片 + 純 python 讀 mp4 解析度](reference_drive_large_file_download_and_avconvert.md) — 本機無 ffmpeg/gdown/rclone 時的替代路徑
+- [共用 loader 的 NameError 被吞→全版本靜默斷靈魂(244字fallback)](feedback_shared_loader_nameerror_silent_soulless.md) — build_system_prompt(共用)被vN新功能塞了不在scope的user_id→NameError→except吞→FALLBACK_PROMPT;連預設v12一起中招;log簽名=using fallback+soul=244;text路徑不受影響
+- [語音讀網址「讀不到/沒收到」三根因(機房IP擋/base頁非vN頁/plugin空格400)](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — ①fetch失敗=站擋機房IP(同UA本機curl比對) ②用戶在/realtime/base頁但agent是v13,改vN頁等於沒改 ③抓成功卻不開口=plugin對sonnet-4-6在assistant結尾注入純空格user撞400,override llm_node補(empty)
