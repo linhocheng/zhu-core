@@ -24,16 +24,15 @@
 
 ---
 
-## 最新完成（2026-06-18 第五 session）
+## 最新完成（2026-06-19 · UDN NEWS demo 修繕）
 
-- 設計並實作 `media-worker` 獨立服務（Cloud Run, TypeScript Express, gpt-image-2 + MiniMax audio, Cloud Tasks async, GCS upload, webhook callback）
-- 部署 media-worker 至 `ailivex-2026` GCP project
-- AILivex 任務派發系統：`[[DISPATCH]]` tag（文字路徑）+ `dispatch_task` function_tool（語音路徑）
-- `tasks` Firestore collection + TaskDoc schema + capabilities gate
-- 任務通知注入機制（`build_task_notifications_block()` 接在 lastSession 後）
-- AILivex admin 後台：角色能力開關（capabilities checkboxes）
-- realtime-v13 page + v13 Cloud Run deployed（`ailivex-realtime-agent-v13`）
-- Vercel deploy 完成
+- 選單重排：資料分析→新聞123→吳念真/影片1→張立/影片2→蔣勳/影片3；`switchNews(idx,btn)` 解耦 tab 順序 vs panel DOM 順序
+- 換 3 支講者影片（吳念真/張立/蔣勳）：Drive confirm-token 抓 1080p 原檔 → avconvert 壓 540×960 H.264 faststart（~140MB，原始 420MB）
+- **修「沒有影片」**：根因 Cloud Run ~32MiB 單次回應上限，瀏覽器開放式 `Range: bytes=0-` 讓 server 回整段 42MB 爆 500 → `<video>` err=4。修法：`server.js` 每次回應封頂 8MiB，瀏覽器自動續抓後續 range
+- e2e 驗通：線上三支 curl 無 Range / `bytes=0-` 都回 206；headless Chrome 三支全 `canplay rs=4 540x960 err=none`
+- 記憶：`reference_selfhost_mp4_needs_range_206.md` 補 32MiB 天坑；新建 `reference_drive_large_file_download_and_avconvert.md`
+
+線上：https://udnnews-web-62w6sp6iba-de.a.run.app/frontend/demo.html
 
 ---
 
@@ -41,51 +40,27 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/media-worker/src/**` | 全新服務（config/firestore/idempotency/cloudTasks/storage/providers/handlers/index） |
-| `~/.ailive/media-worker/cloudbuild.yaml` | Cloud Run 部署設定 |
-| `ailivex-platform/src/lib/collections.ts` | TaskCapability / TaskDoc / capabilities field / v13 voice version |
-| `ailivex-platform/src/lib/task-dispatcher.ts` | 新：dispatchTask() fire-and-forget |
-| `ailivex-platform/src/lib/tool-tags.ts` | [[DISPATCH]] tag 解析 |
-| `ailivex-platform/src/app/api/dialogue/route.ts` | dispatch loop + capabilities gate |
-| `ailivex-platform/src/app/api/tasks/callback/route.ts` | 新：webhook receiver |
-| `ailivex-platform/src/app/admin/characters/page.tsx` | capabilities checkboxes UI |
-| `ailivex-platform/agent/firestore_loader.py` | build_task_notifications_block / dispatch_task_job / _enqueue_media_task |
-| `ailivex-platform/agent/realtime_agent_v13.py` | 新：dispatch_task function_tool |
-| `ailivex-platform/agent/main_v13.py` | 新：v13 entry |
-| `ailivex-platform/agent/cloudbuild-v13.yaml` | 新：v13 Cloud Run deploy |
-| `ailivex-platform/src/app/realtime-v13/[characterId]/page.tsx` | 新：v13 語音通話頁 |
-| `ailivex-platform/src/app/chat/[characterId]/page.tsx` | 加 v13 Link 到版本列 |
+| `/tmp/udnnews-build/frontend/demo.html` | 選單重排 + switchNews 解耦 + 切離 pause video |
+| `/tmp/udnnews-build/web/server.js` | MAX_RESPONSE_BYTES=8MiB 封頂 + streamFile 防中斷 crash |
+| `/tmp/udnnews-build/frontend/videos/{reels-wu,fb-zhang,yt-jiang}.mp4` | 新版 540×960 壓縮檔 |
+| `~/.claude/.../memory/reference_selfhost_mp4_needs_range_206.md` | 補 Cloud Run 32MiB 天坑 |
+| `~/.claude/.../memory/reference_drive_large_file_download_and_avconvert.md` | 新建 |
+
+> 註：udnnews demo 的 source 在 `/tmp/udnnews-build`（非 git repo）。重啟若 /tmp 被清需從 Drive / Cloud Run 重抓。
 
 ---
 
 ## 下一步
 
-**第一件（接棒直接動手）：v13 Cloud Run 補兩個 env var**
-
-```bash
-# 1. 先確認 media-worker URL
-gcloud run services describe media-worker --region=asia-east1 --project=ailivex-2026 --format='value(status.url)'
-
-# 2. 確認 MEDIA_WORKER_KEY_AILIVEX secret 存在
-gcloud secrets describe MEDIA_WORKER_KEY_AILIVEX --project=ailivex-2026
-
-# 3. 更新 agent/cloudbuild-v13.yaml：在 --set-secrets 加兩個 binding，再 redeploy
-gcloud builds submit --config=agent/cloudbuild-v13.yaml --substitutions=COMMIT_SHA=$(date +%Y%m%d-%H%M%S) .
-```
-
-**第二件：端到端驗收**
-- admin 後台：某角色 capabilities 勾 `image_generation`
-- chat 頁傳「幫我生一張[描述]的圖片」
-- 確認 Firestore `tasks` doc pending → running → done
-- 確認角色下次回覆注入了「已完成的背景任務」通知
+**接棒第一件：等 Adam 真機回報**
+- Adam 要在手機 + 電腦各開三個影片頁確認播放。若有頁面回報不播，先 `curl -o /dev/null -w "%{http_code}" <video_url>`（無 Range）+ `curl -H "Range: bytes=0-" ...` 兩種都要非 500，再上 headless Chrome 讀 readyState/error，**別只測封閉小段 range（會騙過你）**。
 
 ---
 
 ## 卡住 / 未解
 
-1. **v13 兩個 env var 未設定**：`MEDIA_WORKER_URL` / `MEDIA_WORKER_KEY_AILIVEX` 未加進 cloudbuild-v13.yaml `--set-secrets`，語音 dispatch 會失敗
-2. **端到端未真機驗**：dispatch → media-worker → callback → notified 注入整條未跑
-3. **圖片管理 UI 暫緩**：Adam 先想版面
+- UDN NEWS demo：無未解（三件全完成且 live 驗過）。
+- **（6-18 第五 session 遺留，未確認是否已解）AILivex v13**：`MEDIA_WORKER_URL` / `MEDIA_WORKER_KEY_AILIVEX` 兩個 env var 是否已加進 `ailivex-platform/agent/cloudbuild-v13.yaml --set-secrets` 未確認；dispatch→media-worker→callback→notified 整條端到端是否真機驗過未確認。接棒若回到 ailivex 線先核這兩件。
 
 ---
 
@@ -100,10 +75,12 @@ gcloud builds submit --config=agent/cloudbuild-v13.yaml --substitutions=COMMIT_S
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| udnnews demo source | `/tmp/udnnews-build/`（frontend/demo.html + web/server.js） |
+| 自架影片 Range 心法 | memory `reference_selfhost_mp4_needs_range_206.md` |
 | media-worker 服務 | `~/.ailive/media-worker/` |
 | AILivex platform | `~/.ailive/ailivex-platform/` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-18 · 築*
+*2026-06-19 · 築*

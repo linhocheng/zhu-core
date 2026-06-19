@@ -5411,3 +5411,32 @@ HD 排盤專案上一輪暫停（「先到這邊」），Adam 轉去搜尋並一
 ### 待執行
 - [ ] HD 重啟時：決定版號切換並 commit 未提交改動
 - [ ] （前 session 遺留）UDN NEWS deploy + 驗 09A meme 風格輸出
+
+---
+
+## 2026-06-19 — UDN NEWS demo 選單重排 + 換 3 支講者影片 + 修「沒有影片」
+
+### 背景 / WHY
+udnnews 老老照顧外部 pitch demo（Cloud Run，公開無 PIN）。Adam 三件事：選單照新順序、影片換新版（吳念真/張立/蔣勳，從 .mov 轉好改名上 Drive）、實測發現三支都不播要修。
+
+### 產出
+- 檔案：`/tmp/udnnews-build/frontend/demo.html` — 選單重排（資料分析→新聞123→吳念真/影片1→張立/影片2→蔣勳/影片3）；`switchNews(idx,btn)` 解耦 tab 順序 vs panel DOM 順序；切離影片時 pause
+- 檔案：`/tmp/udnnews-build/web/server.js` — 加 `MAX_RESPONSE_BYTES=8MiB`，static handler 每次回應封頂；`streamFile` helper 加 stream error + res close 防中斷 crash
+- 檔案：`/tmp/udnnews-build/frontend/videos/{reels-wu,fb-zhang,yt-jiang}.mp4` — 新版壓 540×960 H.264 faststart（共 ~140MB，原始 420MB）
+- 記憶：`reference_selfhost_mp4_needs_range_206.md` 補 Cloud Run 32MiB 天坑；`reference_drive_large_file_download_and_avconvert.md` 新建（Drive confirm-token 下載 + avconvert 壓 + 純 python 讀解析度）
+
+### 已解決
+- 「沒有影片」→ 根因 Cloud Run ~32MiB 單次回應上限，瀏覽器開放式 `Range: bytes=0-` 讓 server 回整段 42MB 爆 500 → err=4 → 封頂 8MiB 修好
+- 選單順序 → switchNews 解耦 tab/panel，e2e 驗通
+- 本機無 ffmpeg/gdown → Drive confirm-token curl 抓原檔 + avconvert 壓
+
+### 已驗證（e2e）
+- 線上三支 curl 無 Range 與 `bytes=0-` 都回 206（非 500），content-range bytes 0-8388607/<total>
+- headless Chrome：reels-wu/fb-zhang/yt-jiang 全 `canplay rs=4 540x960 err=none`
+- 線上：https://udnnews-web-62w6sp6iba-de.a.run.app/frontend/demo.html
+
+### ⚠️ 尚未解決
+- 無（三件全完成且 live 驗過）
+
+### 待執行
+- [ ] Adam 真機（手機+電腦）各開三個影片頁確認
