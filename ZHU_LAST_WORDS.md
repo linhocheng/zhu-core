@@ -30,7 +30,9 @@
 - 修 VALID_CAPABILITIES 漏 script_draft bug（tag 被過濾，任務永不建）
 - 強化 TOOL_INSTRUCTIONS 防 LLM 幻覺（「不夾 tag = 謊話」）
 - dialogue/route.ts 自動注入 voiceIdMinimax 到 script_draft params
-- 端到端驗通架構：Firestore draft → gallery → generate-audio → media-worker（MiniMax key 是環境問題，不是程式問題）
+- 草稿卡永遠可編修＋重試（移除 submitted 狀態鎖定）
+- 修 media-worker MiniMax 端點錯誤：`api.minimax.chat`（大陸）→ `api.minimax.io`（國際），model 改 `speech-02-turbo`
+- 音檔生成端到端全通
 - commit `v14.0.0` pushed（19 files, 1816 insertions）—— 含 v14 即時語音 agent 骨架
 
 ---
@@ -59,12 +61,11 @@
 
 ## 下一步
 
-**主線：v14 已 deploy，驗功能**
+**腳本草稿→音檔全通，下一個功能看 Adam 決定**
 
-v14 Cloud Run 已上線（2026-06-20）：
-`https://ailivex-realtime-agent-v14-6ybo3vltfq-de.a.run.app` → Ready ✅
-
-去 admin 後台把某個角色的 voiceVersion 設成 v14，打開 `/realtime-v14/[charId]` 驗語音 + 腳本派發。
+- v14 Cloud Run 已上線：`https://ailivex-realtime-agent-v14-6ybo3vltfq-de.a.run.app` ✅
+- 音檔生成已驗通（MiniMax `.io` 國際版）✅
+- 可選：接 HeyGen（音檔 → 口型同步影片）
 
 **次線：驗真實音檔生成**
 
@@ -74,8 +75,6 @@ v14 Cloud Run 已上線（2026-06-20）：
 
 ## 卡住 / 未解
 
-- ~~v14 Cloud Run 尚未跑~~ ✅ 已 deploy，Ready
-- MiniMax TTS key 在 Vercel 環境可能無效（error 2049 invalid api key）
 - 一批 ad-hoc debug scripts（`scripts/check-*.mjs` 等）untracked，留著沒清
 
 ---
