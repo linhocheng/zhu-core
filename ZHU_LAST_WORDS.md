@@ -59,18 +59,12 @@
 
 ## 下一步
 
-**主線：把 v14 真的 deploy 上 Cloud Run**
+**主線：v14 已 deploy，驗功能**
 
-```bash
-cd ~/.ailive/ailivex-platform
-SHA=$(git rev-parse --short HEAD)
-gcloud builds submit \
-  --config=agent/cloudbuild-v14.yaml \
-  --substitutions=COMMIT_SHA=$SHA \
-  --project=ailivex-2026 .
-```
+v14 Cloud Run 已上線（2026-06-20）：
+`https://ailivex-realtime-agent-v14-6ybo3vltfq-de.a.run.app` → Ready ✅
 
-deploy 完後，去 admin 後台把某個角色的 voiceVersion 設成 v14，打開 /realtime-v14/[charId] 驗語音 + 腳本派發。
+去 admin 後台把某個角色的 voiceVersion 設成 v14，打開 `/realtime-v14/[charId]` 驗語音 + 腳本派發。
 
 **次線：驗真實音檔生成**
 
@@ -80,7 +74,7 @@ deploy 完後，去 admin 後台把某個角色的 voiceVersion 設成 v14，打
 
 ## 卡住 / 未解
 
-- v14 Cloud Run 尚未跑 gcloud builds submit（yaml 寫好了，只差跑）
+- ~~v14 Cloud Run 尚未跑~~ ✅ 已 deploy，Ready
 - MiniMax TTS key 在 Vercel 環境可能無效（error 2049 invalid api key）
 - 一批 ad-hoc debug scripts（`scripts/check-*.mjs` 等）untracked，留著沒清
 
