@@ -26,14 +26,11 @@
 
 ## 最新完成（2026-06-20）
 
-- 設計並全端實作 ailiveX 腳本草稿 → 角色音檔 pipeline（C 方案：草稿先存、確認後燒 TTS）
-- 修 VALID_CAPABILITIES 漏 script_draft bug（tag 被過濾，任務永不建）
-- 強化 TOOL_INSTRUCTIONS 防 LLM 幻覺（「不夾 tag = 謊話」）
-- dialogue/route.ts 自動注入 voiceIdMinimax 到 script_draft params
-- 草稿卡永遠可編修＋重試（移除 submitted 狀態鎖定）
-- 修 media-worker MiniMax 端點錯誤：`api.minimax.chat`（大陸）→ `api.minimax.io`（國際），model 改 `speech-02-turbo`
-- 音檔生成端到端全通
-- commit `v14.0.0` pushed（19 files, 1816 insertions）—— 含 v14 即時語音 agent 骨架
+- story_draft 加進文字對話 DISPATCH 標記（tool-tags.ts + TOOL_INSTRUCTIONS）
+- ui.tsx 補 5 個缺 icon（refresh / chevron-left / chevron-right / edit / close）
+- dialogue/route.ts 把 dispatchTask 移進 after()，確保 lambda 存活
+- generate-story Phase A+B 合一 after()，消除 HTTP 鏈（v14.2.4 已 deploy）
+- Vercel env 新增 PLATFORM_URL
 
 ---
 
@@ -41,41 +38,31 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/lib/collections.ts` | TaskCapability + script_draft；TaskStatus + draft/submitted；TaskDoc + scriptText/voiceId/audioUrl；VOICE_VERSIONS + v14 |
-| `src/lib/task-dispatcher.ts` | script_draft 寫 scriptText + voiceId；dispatch messages 補全 |
-| `src/lib/tool-tags.ts` | VALID_CAPABILITIES 補 script_draft；TOOL_INSTRUCTIONS 防幻覺強化 |
-| `src/app/api/dialogue/route.ts` | dispatch script_draft 時自動注入 voiceIdMinimax |
-| `src/app/api/gallery/route.ts` | type filter 加 script_draft；回傳 audioUrl/scriptText/voiceId |
-| `src/app/gallery/page.tsx` | 媒體庫改版：草稿卡＋音檔卡＋條件式輪詢 |
-| `src/app/api/tasks/[id]/generate-audio/route.ts` | 新增：草稿確認後送 media-worker |
-| `src/app/api/tasks/callback/route.ts` | audio 完成後寫 audioUrl |
-| `agent/firestore_loader.py` | dispatch_script_draft / load_pending_task_notifications / 注入任務通知 |
-| `agent/realtime_agent_v13.py` | script_draft 工具 + audio voiceId 自注入 |
-| `agent/main_v14.py` + `realtime_agent_v14.py` + `cloudbuild-v14.yaml` | v14 新版即時語音骨架 |
-| `src/app/realtime-v14/[characterId]/page.tsx` | v14 前端頁 |
-| `src/app/admin/characters/page.tsx` | script_draft 勾選能力 |
-| `src/app/chat/[characterId]/page.tsx` | 版本面板加 v14 連結 |
-| `src/app/_components/ui.tsx` | audio icon |
+| `src/lib/tool-tags.ts` | 加 story_draft 到 VALID_CAPABILITIES + TOOL_INSTRUCTIONS |
+| `src/app/_components/ui.tsx` | 補 5 個 icon |
+| `src/app/api/dialogue/route.ts` | dispatchTask 移進 after() |
+| `src/app/api/tasks/[id]/generate-story/route.ts` | Phase A+B 合一 after()，v14.2.4 |
 
 ---
 
 ## 下一步
 
-**腳本草稿→音檔全通，下一個功能看 Adam 決定**
+去文字對話跟角色（開 story_draft capability 的角色）說「幫我做一個故事板，主題是 XXX」，
+確認 Firestore 裡這個 story_draft task 的 status 最終到 ready 且 cards.length > 0。
+這才算 v14.2.4 端到端驗過。
 
-- v14 Cloud Run 已上線：`https://ailivex-realtime-agent-v14-6ybo3vltfq-de.a.run.app` ✅
-- 音檔生成已驗通（MiniMax `.io` 國際版）✅
-- 可選：接 HeyGen（音檔 → 口型同步影片）
-
-**次線：驗真實音檔生成**
-
-確認 Vercel env `MEDIA_WORKER_KEY_AILIVEX` 有效，打一次 `/api/tasks/[id]/generate-audio`，等 webhook 回來，gallery 顯示音檔播放卡。
+```
+repo: ~/.ailive/ailivex-platform
+prod: https://ailivex-platform.vercel.app/stories
+```
 
 ---
 
 ## 卡住 / 未解
 
-- 一批 ad-hoc debug scripts（`scripts/check-*.mjs` 等）untracked，留著沒清
+- WORKER_SECRET：vercel env pull 拿到的值打 prod 401。runtime 真實值不知道。
+  暫不阻塞，用 session-based 認證（瀏覽器登入後點「重新分析」）可繞過。
+- v14.2.4 A→B 自動鏈未實測（新 story_draft 尚未真實走一遍）
 
 ---
 
@@ -90,8 +77,7 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailiveX 平台 | `~/.ailive/ailivex-platform/`（Next.js + Python agent） |
-| ailiveX prod | https://ailivex-platform.vercel.app |
+| ailivex 主戰場 | `~/.ailive/ailivex-platform/` |
 
 ---
 

@@ -2,6 +2,32 @@
 
 ---
 
+## 2026-06-20 — ailivex 第八 session：故事板 v14.2.x，Phase A→B 鏈修正
+
+### 背景 / WHY
+Adam 說圖片沒有生成成功，查出根因是 Phase A→B 靠 HTTP 鏈不可靠（Vercel after() 裡發的 fetch 靜默失敗）。同時補上文字對話缺 story_draft DISPATCH 支援、ui.tsx 缺 icon、dispatchTask 未在 after() 裡。
+
+### 產出
+- `src/lib/tool-tags.ts` — VALID_CAPABILITIES 加 story_draft；TOOL_INSTRUCTIONS 加故事板說明
+- `src/app/_components/ui.tsx` — 補 refresh / chevron-left / chevron-right / edit / close 五個 icon
+- `src/app/api/dialogue/route.ts` — dispatchTask 移進 after()，確保 lambda 存活到請求送出
+- `src/app/api/tasks/[id]/generate-story/route.ts` — Phase A+B 合進同一個 after()，刪除 HTTP 鏈（v14.2.4）
+- Vercel env：新增 `PLATFORM_URL=https://ailivex-platform.vercel.app`
+- v14.2.1 ~ v14.2.4 共四個 commit，全 push + deploy
+
+### 已解決
+- Phase A→B 靠 HTTP 鏈不可靠 → 根因 Vercel after() lambda 提前回收 → 修法：A+B 合一 after()，不跨 route 發 HTTP
+
+### ⚠️ 尚未解決
+- WORKER_SECRET 從 vercel env pull 拿到的值打 prod 401（runtime 值可能不同源）
+- v14.2.4 端到端尚未真實驗過（新 story_draft → A→B 自動完成 → cards 出現）
+
+### 待執行
+- [ ] 發一個新 story_draft 對話，確認 A→B 自動鏈跑通（cards.length > 0 且 status=ready）
+- [ ] 查 WORKER_SECRET runtime 真實值（vercel logs 或測試端點）
+
+---
+
 ## 2026-06-18（第五 session）— media-worker 服務 + AILivex v13 任務派發系統
 
 ### 背景 / WHY
