@@ -2,6 +2,27 @@
 
 ---
 
+## 2026-06-20 — ailivex 第九 session：故事板重複圖卡修正 + 語音版本盤點
+
+### 背景 / WHY
+Adam 說故事板有掉圖 + 重複圖卡。同時詢問語音版本記憶/工具能力現況。
+
+### 產出
+- `src/app/stories/[id]/page.tsx` — 移除 client-side Phase B 自動觸發（v14.2.5），修掉重複/掉圖根因
+
+### 已解決
+- 重複圖卡 → 根因：page.tsx 的 `phaseBTriggered` fallback 在 v14.2.4 沒拿掉，server after() 跑 Phase B 的同時 client 也觸發 generate-scripts，兩個 Phase B 互相覆蓋 → 移除 client 端觸發，只留 server after() 一條路
+
+### ⚠️ 尚未解決
+- v14 語音 agent 從未 deploy（Cloud Run 沒有 ailivex-realtime-agent-v14 服務）
+- v11/v12/v13 是否真的有 Cloud Run 服務跑著，未確認
+
+### 待執行
+- [ ] 確認 v11-v13 Cloud Run 服務狀態（`gcloud run services list --project=ailivex-2026`）
+- [ ] 決定是否 deploy v14 語音 agent
+
+---
+
 ## 2026-06-20 — ailivex 第八 session：故事板 v14.2.x，Phase A→B 鏈修正
 
 ### 背景 / WHY

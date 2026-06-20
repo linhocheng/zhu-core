@@ -24,13 +24,11 @@
 
 ---
 
-## 最新完成（2026-06-20）
+## 最新完成（2026-06-20 第九 session）
 
-- story_draft 加進文字對話 DISPATCH 標記（tool-tags.ts + TOOL_INSTRUCTIONS）
-- ui.tsx 補 5 個缺 icon（refresh / chevron-left / chevron-right / edit / close）
-- dialogue/route.ts 把 dispatchTask 移進 after()，確保 lambda 存活
-- generate-story Phase A+B 合一 after()，消除 HTTP 鏈（v14.2.4 已 deploy）
-- Vercel env 新增 PLATFORM_URL
+- v14.2.5：移除 client-side Phase B 自動觸發，修掉重複/掉圖根因（已 deploy）
+- 確認 v14 語音 agent 從未 deploy 到 Cloud Run（/realtime-v14/ 空房間的真相）
+- 確認語音版本記憶架構：v10 現役，lastSession + 記憶提煉全有；v14 多 dispatch_task 工具但沒跑
 
 ---
 
@@ -38,31 +36,29 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/lib/tool-tags.ts` | 加 story_draft 到 VALID_CAPABILITIES + TOOL_INSTRUCTIONS |
-| `src/app/_components/ui.tsx` | 補 5 個 icon |
-| `src/app/api/dialogue/route.ts` | dispatchTask 移進 after() |
-| `src/app/api/tasks/[id]/generate-story/route.ts` | Phase A+B 合一 after()，v14.2.4 |
+| `src/app/stories/[id]/page.tsx` | 移除 phaseBTriggered client-side fallback（v14.2.5）|
 
 ---
 
 ## 下一步
 
-去文字對話跟角色（開 story_draft capability 的角色）說「幫我做一個故事板，主題是 XXX」，
-確認 Firestore 裡這個 story_draft task 的 status 最終到 ready 且 cards.length > 0。
-這才算 v14.2.4 端到端驗過。
-
-```
-repo: ~/.ailive/ailivex-platform
-prod: https://ailivex-platform.vercel.app/stories
-```
+1. **確認 v11-v13 Cloud Run 服務狀態**：
+   ```bash
+   gcloud run services list --project=ailivex-2026 --region=asia-east1
+   ```
+2. **決定是否 deploy v14 語音 agent**：
+   ```bash
+   SHA=$(git rev-parse --short HEAD)
+   gcloud builds submit --config=agent/cloudbuild-v14.yaml --substitutions=COMMIT_SHA=$SHA --project=ailivex-2026 .
+   ```
+3. **驗 v14.2.5 故事板**：發新故事確認無重複/掉圖
 
 ---
 
 ## 卡住 / 未解
 
-- WORKER_SECRET：vercel env pull 拿到的值打 prod 401。runtime 真實值不知道。
-  暫不阻塞，用 session-based 認證（瀏覽器登入後點「重新分析」）可繞過。
-- v14.2.4 A→B 自動鏈未實測（新 story_draft 尚未真實走一遍）
+- v14 語音 agent 未 deploy：/realtime-v14/ 無 agent，lastSession 在 v10 才有效
+- v11/v12/v13 Cloud Run 是否真的活著，未查
 
 ---
 
@@ -72,14 +68,12 @@ prod: https://ailivex-platform.vercel.app/stories
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | ailivex 主戰場 | `~/.ailive/ailivex-platform/` |
+| prod | https://ailivex-platform.vercel.app |
 
 ---
 
-*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-20 · 築*
+*2026-06-20 第九 session · 築*
