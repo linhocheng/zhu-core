@@ -24,41 +24,65 @@
 
 ---
 
-## 最新完成（2026-06-19 · 第六 session · ailivex）
+## 最新完成（2026-06-20）
 
-- 推 `7783bcc`：v13 語音 agent + 讀網址讀完不開口的 Anthropic 400 修正（SanitizingAgent override llm_node，補 `(empty)` 擋 plugin 純空格注入）。
-- 推 `fc78a55`：圖庫 `/gallery` + 角色 capabilities 派發任務（製圖/生音/寫文件/搜尋）+ clean-env/safe-json 工具 + embeddings 維度自檢。22 檔，typecheck 過。
-- 驗證文字版讀網址：自簽 admin cookie 打 prod `/api/dialogue`（張立）→ 維基百科準確讀到、商周（機房 IP 擋）優雅降級。
+- 設計並全端實作 ailiveX 腳本草稿 → 角色音檔 pipeline（C 方案：草稿先存、確認後燒 TTS）
+- 修 VALID_CAPABILITIES 漏 script_draft bug（tag 被過濾，任務永不建）
+- 強化 TOOL_INSTRUCTIONS 防 LLM 幻覺（「不夾 tag = 謊話」）
+- dialogue/route.ts 自動注入 voiceIdMinimax 到 script_draft params
+- 端到端驗通架構：Firestore draft → gallery → generate-audio → media-worker（MiniMax key 是環境問題，不是程式問題）
+- commit `v14.0.0` pushed（19 files, 1816 insertions）—— 含 v14 即時語音 agent 骨架
 
 ---
 
-## 今天改了哪些檔案（第六 session）
+## 今天改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/realtime_agent_v13.py` | SanitizingAgent override llm_node，trailing-assistant 補 `(empty)` 擋 400 |
-| `agent/cloudbuild-v13.yaml` / `agent/main_v13.py` | v13 部署 |
-| `src/app/api/livekit/token/route.ts` | v13 分支 + 回傳 webSearch |
-| `src/lib/collections.ts` | DEFAULT_VOICE_VERSION→v13、TaskCapability、imageUrl |
-| `src/app/realtime{,-v12,-v13}/[characterId]/page.tsx` | webSearch gate 貼網址框 |
-| `src/lib/task-dispatcher.ts` + `src/app/api/tasks/callback` + `src/app/{gallery,api/gallery}` | 任務派發 + 圖庫 |
-| `src/app/admin/characters/*` | 角色能力勾選 UI + 持久化 |
-| `src/lib/{clean-env,safe-json,embeddings}.ts` | 工具 + 維度自檢 |
+| `src/lib/collections.ts` | TaskCapability + script_draft；TaskStatus + draft/submitted；TaskDoc + scriptText/voiceId/audioUrl；VOICE_VERSIONS + v14 |
+| `src/lib/task-dispatcher.ts` | script_draft 寫 scriptText + voiceId；dispatch messages 補全 |
+| `src/lib/tool-tags.ts` | VALID_CAPABILITIES 補 script_draft；TOOL_INSTRUCTIONS 防幻覺強化 |
+| `src/app/api/dialogue/route.ts` | dispatch script_draft 時自動注入 voiceIdMinimax |
+| `src/app/api/gallery/route.ts` | type filter 加 script_draft；回傳 audioUrl/scriptText/voiceId |
+| `src/app/gallery/page.tsx` | 媒體庫改版：草稿卡＋音檔卡＋條件式輪詢 |
+| `src/app/api/tasks/[id]/generate-audio/route.ts` | 新增：草稿確認後送 media-worker |
+| `src/app/api/tasks/callback/route.ts` | audio 完成後寫 audioUrl |
+| `agent/firestore_loader.py` | dispatch_script_draft / load_pending_task_notifications / 注入任務通知 |
+| `agent/realtime_agent_v13.py` | script_draft 工具 + audio voiceId 自注入 |
+| `agent/main_v14.py` + `realtime_agent_v14.py` + `cloudbuild-v14.yaml` | v14 新版即時語音骨架 |
+| `src/app/realtime-v14/[characterId]/page.tsx` | v14 前端頁 |
+| `src/app/admin/characters/page.tsx` | script_draft 勾選能力 |
+| `src/app/chat/[characterId]/page.tsx` | 版本面板加 v14 連結 |
+| `src/app/_components/ui.tsx` | audio icon |
 
 ---
 
 ## 下一步
 
-1. **反爬站讀取方案選型**：businessinsider.tw 類站擋 Vercel 機房 IP，文字+語音兩路都讀不到。要 Adam 選方向：browser-level UA / headless（@sparticuz/chromium 已在依賴）/ 住宅代理。
-2. **v13 圖庫/任務派發端到端真驗**：目前只驗了 typecheck + 文字讀網址；gallery 產圖鏈（角色 dispatch image_generation → media-worker → /api/tasks/callback 回填 imageUrl → /gallery 顯示）還沒實跑一次。
-3. **firestore_loader.py 清理**（working tree 未提交 -47 行）決定是否單獨 commit。
+**主線：把 v14 真的 deploy 上 Cloud Run**
+
+```bash
+cd ~/.ailive/ailivex-platform
+SHA=$(git rev-parse --short HEAD)
+gcloud builds submit \
+  --config=agent/cloudbuild-v14.yaml \
+  --substitutions=COMMIT_SHA=$SHA \
+  --project=ailivex-2026 .
+```
+
+deploy 完後，去 admin 後台把某個角色的 voiceVersion 設成 v14，打開 /realtime-v14/[charId] 驗語音 + 腳本派發。
+
+**次線：驗真實音檔生成**
+
+確認 Vercel env `MEDIA_WORKER_KEY_AILIVEX` 有效，打一次 `/api/tasks/[id]/generate-audio`，等 webhook 回來，gallery 顯示音檔播放卡。
 
 ---
 
 ## 卡住 / 未解
 
-- 反爬新聞站（商周等）擋機房 IP，未選讀取方案。
-- ailivex working tree 仍留：`agent/firestore_loader.py`（-47 清理，刻意未提交）+ 一批 ad-hoc debug scripts（untracked）。下個 session 別誤以為是髒污就洗掉。
+- v14 Cloud Run 尚未跑 gcloud builds submit（yaml 寫好了，只差跑）
+- MiniMax TTS key 在 Vercel 環境可能無效（error 2049 invalid api key）
+- 一批 ad-hoc debug scripts（`scripts/check-*.mjs` 等）untracked，留著沒清
 
 ---
 
@@ -73,10 +97,10 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ailivex 語音讀網址三根因 | memory `feedback_voice_url_read_datacenter_block_and_page_agent_split.md` |
+| ailiveX 平台 | `~/.ailive/ailivex-platform/`（Next.js + Python agent） |
+| ailiveX prod | https://ailivex-platform.vercel.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-19 · 築*
+*2026-06-20 · 築*
