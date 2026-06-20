@@ -2,6 +2,29 @@
 
 ---
 
+## 2026-06-21 — ailivex 第十 session：API 費用地圖 + v14.3.0 UI 改版
+
+### 背景 / WHY
+Adam 要了解 ailivex 哪些地方燒 key、哪些走 Bridge 吃到飽、各自用什麼 model；接著要調整 v14 語音頁 UI，讓燈號更輕、search bar 位置更自然。
+
+### 產出
+- 全盤掃描 `ailivex-platform` 所有 API 呼叫，分類成「Bridge 吃到飽」vs「直連燒 key」vs「第三方服務」，整理成費用地圖表格
+- `src/app/realtime-v14/[characterId]/page.tsx` — v14.3.0：燈號移右上角只有圓點（無框），search bar 移到名字正下方，通話前 disabled、接通後可用
+
+### 已解決
+- 舊版狀態 pill（有框線）→ 移除，改成右上角 9px 圓點，顏色語義：綠=in-call、橘=connecting/waiting、紅=error、灰=idle
+- search bar 原本在畫面底部且只在 in-call 才顯示 → 移到名字下方，webSearch 角色始終顯示，連線前 disabled
+
+### ⚠️ 尚未解決
+- v14 語音 agent 仍未 deploy 到 Cloud Run（/realtime-v14/ 空房間問題未解）
+- v11/v12/v13 Cloud Run 服務狀態未確認
+
+### 待執行
+- [ ] 確認 Cloud Run 服務清單：`gcloud run services list --project=ailivex-2026 --region=asia-east1`
+- [ ] 決定是否 deploy v14 語音 agent
+
+---
+
 ## 2026-06-20 — ailivex 第九 session：故事板重複圖卡修正 + 語音版本盤點
 
 ### 背景 / WHY

@@ -24,11 +24,10 @@
 
 ---
 
-## 最新完成（2026-06-20 第九 session）
+## 最新完成（2026-06-21 第十 session）
 
-- v14.2.5：移除 client-side Phase B 自動觸發，修掉重複/掉圖根因（已 deploy）
-- 確認 v14 語音 agent 從未 deploy 到 Cloud Run（/realtime-v14/ 空房間的真相）
-- 確認語音版本記憶架構：v10 現役，lastSession + 記憶提煉全有；v14 多 dispatch_task 工具但沒跑
+- 掃描 ailivex-platform 全部 API 呼叫，產出費用地圖（Bridge/直連/第三方三分）
+- v14.3.0：v14 語音頁燈號移右上角（9px 圓點無框），search bar 移名字下方（已 deploy）
 
 ---
 
@@ -36,29 +35,39 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/app/stories/[id]/page.tsx` | 移除 phaseBTriggered client-side fallback（v14.2.5）|
+| `src/app/realtime-v14/[characterId]/page.tsx` | v14.3.0：右上角狀態圓點 + 名字下方 search bar |
 
 ---
 
 ## 下一步
 
-1. **確認 v11-v13 Cloud Run 服務狀態**：
+1. **確認 Cloud Run 語音服務狀態**：
    ```bash
    gcloud run services list --project=ailivex-2026 --region=asia-east1
    ```
-2. **決定是否 deploy v14 語音 agent**：
+2. **決定是否 deploy v14 語音 agent**（目前 /realtime-v14/ 空房間）：
    ```bash
-   SHA=$(git rev-parse --short HEAD)
+   SHA=$(cd ~/.ailive/ailivex-platform && git rev-parse --short HEAD)
    gcloud builds submit --config=agent/cloudbuild-v14.yaml --substitutions=COMMIT_SHA=$SHA --project=ailivex-2026 .
    ```
-3. **驗 v14.2.5 故事板**：發新故事確認無重複/掉圖
+3. **驗 v14.3.0 UI**：開 `/realtime-v14/[characterId]`，確認右上角燈號 + 名字下 search bar 正常
 
 ---
 
 ## 卡住 / 未解
 
-- v14 語音 agent 未 deploy：/realtime-v14/ 無 agent，lastSession 在 v10 才有效
-- v11/v12/v13 Cloud Run 是否真的活著，未查
+- v14 語音 agent 未 deploy：/realtime-v14/ 進房間無 agent（語音）
+- v11/v12/v13 Cloud Run 存活狀態未確認
+
+---
+
+## ailivex 費用地圖（速查）
+
+**Bridge 吃到飽**：dialogue / doc-process / generate-story / generate-scripts / generate-storyboard / soul-enhance / 記憶提煉 / lastSession 快照 / source_intake 網址摘要
+
+**直連燒 key**：語音 turn-path（需 streaming）/ 語音判斷腦（Haiku floor-gate）
+
+**第三方計費**：LiveKit / Soniox STT / MiniMax TTS / Vertex AI embedding / media-worker
 
 ---
 
@@ -76,4 +85,4 @@
 
 ---
 
-*2026-06-20 第九 session · 築*
+*2026-06-21 第十 session · 築*
