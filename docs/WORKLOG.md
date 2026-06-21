@@ -2,6 +2,57 @@
 
 ---
 
+## 2026-06-21 — ailivex 第十二 session：HeyGen 分身影片全修 + 平台全檢
+
+### 背景 / WHY
+HeyGen 分身照片上傳失敗、影片生成無反應、v14 agent 腳本寫成指令而非內容。Adam 要求全檢並按優先序修正。
+
+### 產出
+- `src/app/api/admin/characters/[id]/heygen-avatar/route.ts` — 移除 makePublic()，改用 GCS 直接 URL
+- `src/app/admin/characters/page.tsx` — 新增 HeygenAvatarUpload 圖片預覽（120x120），上傳成功後立即顯示
+- `src/app/api/admin/characters/[id]/route.ts` — GET 補回 `heygenAvatarUrl` 欄位
+- `agent/realtime_agent_v14.py` — script_draft tool 描述改為明確要求「逐字寫出口播稿再呼叫」；Cloud Run v14 重新部署
+- `src/app/api/admin/characters/route.ts` — POST route ALL_CAPABILITIES 補齊 7 個（原本只有 4 個）
+- `src/app/api/tasks/[id]/generate-video/route.ts` — idempotency 改為允許 failed 任務重試（清除 videoTaskId 重送）
+- `src/app/gallery/page.tsx` — AudioCard 偵測 linked video 是否 failed → 顯示橘色「重新生成影片」按鈕；修正 error code mapping
+- `src/app/api/tasks/[id]/generate-storyboard/route.ts` — addOne 補存 cardText、cardType、正確 intent
+- `src/app/stories/[id]/page.tsx` — addNewCard 補送 cardType 欄位
+- `src/app/api/tasks/[id]/generate-story/route.ts` — Phase B 清理範圍從 scripted 改為 scripted+failed
+- `src/app/api/tasks/[id]/generate-scripts/route.ts` — 同上
+
+### 已解決
+- GCS makePublic() 在 uniform bucket-level access 下爆 403 → 移除呼叫，改組直接 URL
+- Admin 後台圖片預覽空白 → GET route 漏回傳 heygenAvatarUrl
+- v14 張立寫「指令」不寫「口播稿」→ tool description 改明確行為要求，Cloud Run 重部署
+- 全平台 Audit agent 誤報兩個「不存在」→ 現場確認都存在，不盲目修
+- video 失敗後無重試路徑 → idempotency 改為 failed 時允許重試
+- addNewCard cardType 遺失 → route + client 兩側補齊
+
+### ⚠️ 尚未解決
+- 角色歸檔（CharacterStatus: 'archived'）admin 無按鈕也無 PATCH 邏輯，屬功能缺口非斷路
+- 張立的 heygenAvatarUrl 需 Adam 重新在後台上傳一次才會有值（舊上傳已失敗）
+
+### 待執行
+- [ ] Adam 重新上傳張立的分身照片（後台 → 編輯張立 → HeyGen 分身照片）
+- [ ] 驗證端到端流程：上傳照片 → gallery 生成分身短影音 → 影片顯示
+
+---
+
+## 2026-06-21 — ailivex 第十一 session：跨 session 三件待執行補收
+
+### 背景 / WHY
+第七～十 session 重複掛著三條未解，Adam 確認全部已通，補記閉環。
+
+### 已解決
+- v14 Cloud Run deploy → 完成，/realtime-v14/ 語音 agent 上線
+- MiniMax key → Vercel 已設好，音檔端到端真實生成過
+- untracked debug scripts → 已清理（保留 test-echo.mjs，其餘清或納 .gitignore）
+
+### ⚠️ 尚未解決
+- 無
+
+---
+
 ## 2026-06-21 — ailivex 第十 session：API 費用地圖 + v14.3.0 UI 改版
 
 ### 背景 / WHY

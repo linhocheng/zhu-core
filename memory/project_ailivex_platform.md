@@ -1,9 +1,11 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音版本 v2-v13、media-worker 任務派發系統、後台指派版本、v12 讀網址工作臺（2026-06-18）
+description: ailiveX 語音版本 v2-v14、media-worker HeyGen 分身影片、全平台審計修正（2026-06-21）
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+**2026-06-21（第十二 session）：HeyGen 分身影片全鏈路修正 + 全平台審計。** GCS uniform bucket-level access 下 `makePublic()` 爆 403 → 移除，改組直接 URL；後台 HeyGen 照片預覽新增（120×120）；GET /api/admin/characters/[id] 補回 `heygenAvatarUrl`；v14 script_draft tool 描述改明確「逐字寫出口播稿再呼叫」，Cloud Run 重部署。**全平台審計修正**：Admin POST ALL_CAPABILITIES 從 4 補到 7（script_draft/story_draft/video_generation）；generate-video idempotency 改為 failed 時允許重試（清 videoTaskId 重送）；gallery AudioCard 偵測 linked video failed → 橘色重試按鈕 + error code 補 no_avatar_url；generate-storyboard addOne 補存 cardText/cardType/intent；stories addNewCard 補送 cardType；generate-story/generate-scripts Phase B 清理擴大到 scripted+failed。**Audit agent 偵測到兩個假陽性**（stories [id] route、gallery DELETE 其實都存在），說明 agent Glob 有盲區，Audit 後必須手動 ls 驗。**Adam 下一步**：重新上傳張立分身照片 → 驗端到端 HeyGen 影片生成。
+
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
 **2026-06-10 更新：語音已能用且順**（下方 06-08「沒聲音」斷點已解）。改 MiniMax TTS 串流降延遲後曾「角色說兩次」，根因是串流最後一塊 status==2 整句重送，已修。

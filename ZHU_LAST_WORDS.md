@@ -24,10 +24,13 @@
 
 ---
 
-## 最新完成（2026-06-21 第十 session）
+## 最新完成（2026-06-21）
 
-- 掃描 ailivex-platform 全部 API 呼叫，產出費用地圖（Bridge/直連/第三方三分）
-- v14.3.0：v14 語音頁燈號移右上角（9px 圓點無框），search bar 移名字下方（已 deploy）
+- 修 HeyGen 分身照片上傳失敗（GCS makePublic() 在 uniform bucket-level access 爆 403，移除呼叫改組直接 URL）
+- 後台角色編輯頁新增 HeyGen 照片預覽（120×120，上傳成功即時顯示）
+- 修 GET /api/admin/characters/[id] 漏回傳 heygenAvatarUrl
+- v14 agent script_draft tool 描述改為明確要求「逐字寫出口播稿再呼叫」；Cloud Run 重部署
+- ailiveX 全平台審計：修 Admin POST ALL_CAPABILITIES（4→7）、video 失敗重試路徑、gallery 重新生成按鈕、addNewCard cardText/cardType 遺失、Phase A/B 清理範圍補 failed
 
 ---
 
@@ -35,39 +38,38 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/app/realtime-v14/[characterId]/page.tsx` | v14.3.0：右上角狀態圓點 + 名字下方 search bar |
+| `src/app/api/admin/characters/[id]/heygen-avatar/route.ts` | 移除 makePublic()，改組直接 GCS URL |
+| `src/app/admin/characters/page.tsx` | 新增圖片預覽；EditState + HeygenAvatarUpload 補 heygenAvatarUrl prop |
+| `src/app/api/admin/characters/[id]/route.ts` | GET 補回 heygenAvatarUrl 欄位 |
+| `agent/realtime_agent_v14.py` | script_draft tool description 改明確行為要求 |
+| `src/app/api/admin/characters/route.ts` | POST ALL_CAPABILITIES 從 4 補到 7 個 |
+| `src/app/api/tasks/[id]/generate-video/route.ts` | idempotency 改為 failed 時清除 videoTaskId 重送 |
+| `src/app/gallery/page.tsx` | AudioCard 偵測 video failed → 橘色重試按鈕；tasks prop；error code 補 no_avatar_url |
+| `src/app/api/tasks/[id]/generate-storyboard/route.ts` | addOne 補存 cardText/cardType/intent |
+| `src/app/stories/[id]/page.tsx` | addNewCard 補送 cardType |
+| `src/app/api/tasks/[id]/generate-story/route.ts` | Phase B 清理也刪 failed 子卡 |
+| `src/app/api/tasks/[id]/generate-scripts/route.ts` | 同上 |
 
 ---
 
 ## 下一步
 
-1. **確認 Cloud Run 語音服務狀態**：
-   ```bash
-   gcloud run services list --project=ailivex-2026 --region=asia-east1
-   ```
-2. **決定是否 deploy v14 語音 agent**（目前 /realtime-v14/ 空房間）：
-   ```bash
-   SHA=$(cd ~/.ailive/ailivex-platform && git rev-parse --short HEAD)
-   gcloud builds submit --config=agent/cloudbuild-v14.yaml --substitutions=COMMIT_SHA=$SHA --project=ailivex-2026 .
-   ```
-3. **驗 v14.3.0 UI**：開 `/realtime-v14/[characterId]`，確認右上角燈號 + 名字下 search bar 正常
+**Adam 要先做：後台重新上傳張立分身照片**
+1. 前往 https://ailivex-platform.vercel.app/admin/characters
+2. 點「編輯」張立 → 找「HeyGen 分身照片」區塊 → 上傳 .png
+3. 看到 120×120 預覽 = 成功，heygenAvatarUrl 寫入 Firestore
+
+**之後驗端到端流程：**
+1. 去 gallery，找張立的音檔
+2. 按「生成分身短影音」
+3. 等 video_generation 完成，確認影片顯示在「分身短影音」區
 
 ---
 
 ## 卡住 / 未解
 
-- v14 語音 agent 未 deploy：/realtime-v14/ 進房間無 agent（語音）
-- v11/v12/v13 Cloud Run 存活狀態未確認
-
----
-
-## ailivex 費用地圖（速查）
-
-**Bridge 吃到飽**：dialogue / doc-process / generate-story / generate-scripts / generate-storyboard / soul-enhance / 記憶提煉 / lastSession 快照 / source_intake 網址摘要
-
-**直連燒 key**：語音 turn-path（需 streaming）/ 語音判斷腦（Haiku floor-gate）
-
-**第三方計費**：LiveKit / Soniox STT / MiniMax TTS / Vertex AI embedding / media-worker
+- 角色歸檔功能缺口：CharacterStatus 有 `archived` 但 admin 無按鈕也無 PATCH 支援，非斷路，待需求再做
+- 全檢 Audit agent 掃到假陽性（兩個「不存在」其實存在），說明 agent Glob 有盲區，下次 Audit 必須手動 ls 驗
 
 ---
 
@@ -77,12 +79,17 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| ailivex 主戰場 | `~/.ailive/ailivex-platform/` |
-| prod | https://ailivex-platform.vercel.app |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ailiveX 平台 | `~/.ailive/ailivex-platform/`，prod: https://ailivex-platform.vercel.app |
+| ailiveX admin | https://ailivex-platform.vercel.app/admin/characters |
+| ailiveX v14 agent | `agent/realtime_agent_v14.py`，Cloud Run `ailivex-realtime-agent-v14` |
 
 ---
 
-*2026-06-21 第十 session · 築*
+*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
+*2026-06-21 · 築*
