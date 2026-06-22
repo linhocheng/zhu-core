@@ -24,12 +24,12 @@
 
 ---
 
-## 最新完成（2026-06-22）
+## 最新完成（2026-06-22 第十四 session）
 
-- Kling 影片生成按鈕驗收 OK（502 由工程師修好，端到端通）
-- 評估自架 HeyGem 可行性 → Mac 無 CUDA，硬體瓶頸，Adam 再想方向
-- 品牌素材庫 × 智慧制圖功能完整規劃，六個 Phase 施工清單寫完
-- 新建 `docs/PLAN_brand_asset_library.md`
+- 文件標題簡體修復：`createDocumentJob` 加 opencc-js cn→tw 轉換
+- 語音頁 6 燈號移到左上角 header，去掉外框
+- 品牌素材庫 Phase 1：collections.ts 新增 `BrandLayoutDoc`、`BrandProductDoc`、`COL.brandLayouts/brandProducts`、`TaskDoc.brandLayoutId/productImageUrl`
+- 品牌素材庫 Phase 2：4 個 API routes（Layout CRUD + Product CRUD，含 GCS）+ 後台角色頁品牌素材 overlay
 
 ---
 
@@ -37,30 +37,37 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/docs/PLAN_brand_asset_library.md` | 新建，品牌素材庫完整規劃文件 |
+| `ailivex-platform/src/lib/documents.ts` | opencc-js cn→tw 轉換 title |
+| `ailivex-platform/src/app/realtime-v14/[characterId]/page.tsx` | 6 燈號移 header 左側，去外框 |
+| `ailivex-platform/src/lib/collections.ts` | 新增 BrandLayoutDoc、BrandProductDoc、COL 項目、TaskDoc 兩欄位 |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-layouts/route.ts` | 新建（GET/POST） |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-layouts/[layoutId]/route.ts` | 新建（PATCH/DELETE） |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-products/route.ts` | 新建（GET/POST） |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-products/[productId]/route.ts` | 新建（DELETE） |
+| `ailivex-platform/src/app/admin/characters/page.tsx` | 品牌素材按鈕 + overlay CRUD |
+| `ailivex-platform/docs/PLAN_brand_asset_library.md` | schema 更新（characterId）+ Phase 2 清單更新 |
 
 ---
 
-## 下一步
+## 下一步（接棒直接動）
 
-**品牌素材庫 Phase 1（直接動手）：**
-```
-~/.ailive/ailivex-platform/src/lib/collections.ts
-```
-新增：
-- `BrandLayoutDoc`（id / name / imageUrl / description / isDefault / createdAt）
-- `BrandProductDoc`（id / name / imageUrls[] / tags[] / description / createdAt）
-- `TaskDoc` 補兩個欄位：`brandLayoutId?: string` / `productImageUrl?: string`
-- `COL` 補 `brandLayouts` / `brandProducts`
+**主線：品牌素材庫 Phase 3 — 故事板 UI**
 
-完整規劃在 `ailivex-platform/docs/PLAN_brand_asset_library.md`。
+1. 先讀計畫書：`cat ~/.ailive/ailivex-platform/docs/PLAN_brand_asset_library.md`
+2. 找故事板頁面：`find ~/.ailive/ailivex-platform/src -name "*.tsx" | xargs grep -l "story" | head -10`
+3. 加「全版 Layout」下拉選單（讀 `/api/admin/characters/[id]/brand-layouts`，儲存到 story_draft TaskDoc.brandLayoutId）
+4. 加每張卡片的「產品圖」選取（讀 `/api/admin/characters/[id]/brand-products` + 直接上傳，儲存到 card.productImageUrl）
+
+**之後接 Phase 4：**
+- `media-worker/src/providers/types.ts` ImageInput 加 `referenceImageUrls?: string[]`
+- `media-worker/src/providers/openai-image.ts` 有 refs 時切 FormData + `/v1/images/edits`
 
 ---
 
 ## 卡住 / 未解
 
-- 自架 HeyGem / 本機說話頭：Mac 無 CUDA，現有開源模型（MuseTalk/LatentSync/Hallo）跑不起來，SadTalker MPS 弱且慢。Adam 說「再想想」，方向未定。
-- 角色歸檔功能（CharacterStatus = archived）：admin 無按鈕，待需求再做。
+- Phase 3 故事板 UI 尚未實作（確認故事板頁面路徑後直接做）
+- Phase 4 media-worker 尚未改（獨立 Cloud Run，改完要 Cloud Build deploy）
 
 ---
 
@@ -68,20 +75,15 @@
 
 | 要找什麼 | 去哪裡 |
 |---|---|
+| 品牌素材庫計畫書 | `~/.ailive/ailivex-platform/docs/PLAN_brand_asset_library.md` |
+| ailiveX 平台 | `~/.ailive/ailivex-platform/` |
+| media-worker | `~/.ailive/media-worker/` |
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ailiveX 平台 | `~/.ailive/ailivex-platform/`，prod: https://ailivex-platform.vercel.app |
-| ailiveX admin | https://ailivex-platform.vercel.app/admin/characters |
-| ailiveX v14 agent | `agent/realtime_agent_v14.py`，Cloud Run `ailivex-realtime-agent-v14` |
-| 品牌素材庫規劃 | `ailivex-platform/docs/PLAN_brand_asset_library.md` |
 
 ---
 
-*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-22 · 築*
+*2026-06-22 · 第十四 session · 品牌素材庫 Phase 1+2 · 築*

@@ -2,6 +2,41 @@
 
 ---
 
+## 2026-06-22b — ailivex 第十四 session：品牌素材庫 Phase 1+2 實作
+
+### 背景 / WHY
+接續第十三 session 的品牌素材庫規劃，本次開始實作。同時修掉兩個小 bug（文件標題簡體 + 語音頁燈號位置）。
+
+### 產出
+- `src/lib/documents.ts`：加 opencc-js 繁化，`createDocumentJob` 存 title 前 cn→tw 轉換
+- `src/app/realtime-v14/[characterId]/page.tsx`：6 個健康燈號移到 header 左側 back button 右邊，去掉外框
+- `src/lib/collections.ts`：新增 `COL.brandLayouts / brandProducts`、`BrandLayoutDoc`、`BrandProductDoc`、`TaskDoc.brandLayoutId / productImageUrl`
+- `src/app/api/admin/characters/[id]/brand-layouts/route.ts`：GET / POST（列出 + 上傳 Layout）
+- `src/app/api/admin/characters/[id]/brand-layouts/[layoutId]/route.ts`：PATCH（設預設）/ DELETE（含 GCS）
+- `src/app/api/admin/characters/[id]/brand-products/route.ts`：GET / POST（列出 + 上傳產品圖）
+- `src/app/api/admin/characters/[id]/brand-products/[productId]/route.ts`：DELETE（含 GCS）
+- `src/app/admin/characters/page.tsx`：角色列表加「品牌素材」按鈕 + 品牌素材 overlay（Layout / 產品圖各自 CRUD）
+- `docs/PLAN_brand_asset_library.md`：schema 更新（加 characterId）+ Phase 2 施工清單更新
+
+### 已解決
+- 文件標題簡體 → opencc-js cn→tw 在 createDocumentJob 層轉換
+- 語音頁 6 燈在 bottom:140 且有外框 → 移到 header left 內，純圓點
+- 技術路線澄清：gpt-image-2 edit 不是 style reference，ailive-platform Gemini multimodal 才是對的路徑（下載 ref 圖 bytes → 送入 model）
+
+### ⚠️ 尚未解決
+- Phase 3：故事板 UI 選素材（全版 Layout 下拉 + 頁面級產品圖）— 尚未實作
+- Phase 4：media-worker `ImageInput` 加 `referenceImageUrls[]`，openai-image.ts 切 `/edits` endpoint
+- Phase 5+6：generate-images route 整合 + 測試
+
+### 待執行
+- [ ] Phase 3：`src/app/stories/[id]/page.tsx` 加 Layout 選擇器（讀角色的 brand_layouts，存 story_draft TaskDoc.brandLayoutId）
+- [ ] Phase 3：故事板每張卡片加「產品圖」按鈕（讀 brand_products + 直接上傳，存 card.productImageUrl）
+- [ ] Phase 4：`media-worker/src/providers/types.ts` ImageInput 加 `referenceImageUrls?: string[]`
+- [ ] Phase 4：`media-worker/src/providers/openai-image.ts` 有 refs 時切 FormData + `/v1/images/edits`
+- [ ] Phase 5：`src/app/api/tasks/[id]/generate-images/route.ts` 讀 brandLayoutId/productImageUrl 組 referenceImageUrls
+
+---
+
 ## 2026-06-21 — ailivex 第十二 session：HeyGen 分身影片全修 + 平台全檢
 
 ### 背景 / WHY
