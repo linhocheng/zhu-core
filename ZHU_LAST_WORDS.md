@@ -24,13 +24,15 @@
 
 ---
 
-## 最新完成（2026-06-22 第十五 session）
+## 最新完成（2026-06-24）
 
-- 品牌素材庫 Phase 3：故事板 UI — Layout 下拉選單 + 產品圖 picker modal（3 個新 API routes + stories/[id]/page.tsx 大改）
-- 品牌素材庫 Phase 4+5：media-worker 支援 referenceImageUrls → /v1/images/edits，generate-images route 整合
-- 端到端驗證：UDN logo（聯合新聞網）+ 張立 character → 生圖成功，logo 精準出現左上角
-- media-worker Cloud Build deploy 完成（tag: phase4-brand）
-- ailivex-platform Vercel deploy 兩次（Phase 3 + Phase 4）
+- 修品牌素材中文上傳 → HTTP header encodeURIComponent 前後端配對
+- HeyGen 分身照快取不刷新 → GCS path 加 timestamp
+- 口播音檔 speech-02-turbo → speech-2.6-hd（media-worker deploy）
+- 影片尺寸跟圖片走 → image-size probe；Kling 傳 aspect_ratio；HeyGen 傳 portrait_720p
+- HeyGen dimension 400 爆雷修復 → 改回 resolution 字串
+- 品牌素材後端加 content-type 驗證、delete/setDefault error handling、tags?.防禦
+- stories 頁加「不用生圖」跳過按鈕（skipImages PATCH）
 
 ---
 
@@ -38,41 +40,28 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/src/app/api/brands/[characterId]/layouts/route.ts` | 新建 — 用戶端 GET layouts，hasAccess 守門 |
-| `ailivex-platform/src/app/api/brands/[characterId]/products/route.ts` | 新建 — 用戶端 GET products |
-| `ailivex-platform/src/app/api/brands/[characterId]/upload/route.ts` | 新建 — POST binary → GCS temp 路徑 |
-| `ailivex-platform/src/app/api/stories/[id]/route.ts` | GET 加 brandLayoutId + cards.productImageUrl；PATCH 加 brandLayoutId |
-| `ailivex-platform/src/app/api/tasks/[id]/route.ts` | PATCH 加 productImageUrl（null = 清空） |
-| `ailivex-platform/src/app/api/tasks/[id]/generate-images/route.ts` | 讀 brandLayoutId→layoutUrl + card.productImageUrl，組 referenceImageUrls 傳給 media-worker |
-| `ailivex-platform/src/app/stories/[id]/page.tsx` | 品牌設定區塊 + 產品圖 picker modal + CardRow 改動 |
-| `media-worker/src/providers/types.ts` | ImageInput 加 referenceImageUrls?: string[] |
-| `media-worker/src/providers/openai-image.ts` | refs 非空時走 /v1/images/edits FormData multipart |
-| `media-worker/src/handlers/worker.ts` | 傳遞 referenceImageUrls 給 imageInput |
+| `ailivex-platform/src/app/api/tasks/[id]/generate-video-kling/route.ts` | probe ratio → aspect_ratio 傳 fal.ai |
+| `media-worker/src/providers/heygen-video.ts` | probe ratio → portrait_720p/720p/square_720p，移除 dimension |
+| `media-worker/src/providers/minimax-audio.ts` | speech-02-turbo → speech-2.6-hd |
+| `ailivex-platform/src/app/api/admin/characters/[id]/heygen-avatar/route.ts` | GCS path 加 timestamp |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-layouts/route.ts` | decodeURIComponent + content-type 驗證 |
+| `ailivex-platform/src/app/api/admin/characters/[id]/brand-products/route.ts` | 同上 |
+| `ailivex-platform/src/app/admin/characters/page.tsx` | encodeURIComponent + 6 個 bug 修復 |
+| `ailivex-platform/src/app/stories/[id]/page.tsx` | 加「不用生圖」跳過按鈕 |
+| `ailivex-platform/src/app/api/stories/[id]/route.ts` | skipImages PATCH 邏輯 |
 
 ---
 
-## 下一步（接棒直接動）
+## 下一步
 
-**主線：品牌素材庫 Phase 6 — 正式 end-to-end 測試，前必修 bug**
-
-**必修：admin brand-layouts/products route 的 makePublic() 要移除**
-
-1. 移除 `makePublic()` 的 route：
-   - `src/app/api/admin/characters/[id]/brand-layouts/route.ts`（POST 裡的 `await file.makePublic()`）
-   - `src/app/api/admin/characters/[id]/brand-products/route.ts`（同樣）
-   - `src/app/api/brands/[characterId]/upload/route.ts`（同樣）
-   - 理由：ailivex-2026-assets bucket 是 uniform bucket-level access，allUsers objectViewer 已在 IAM 設定，物件自動公開，不需要 makePublic()，呼叫會爆 400
-
-2. 修完 deploy Vercel
-
-3. Phase 6 測試：在後台「品牌素材」頁上傳一張 Layout → 故事板選它 → 「生成圖卡」→ 驗圖有品牌感
+1. 等 Lulu 跑一次 HeyGen 任務，確認 `portrait_720p` 被接受（admin → 生成影片 → 看 task error）
+2. 若 portrait_720p 失敗 → 查 HeyGen v3 文件，改 `media-worker/src/providers/heygen-video.ts` ratioToResolution()，重新 Cloud Build
 
 ---
 
 ## 卡住 / 未解
 
-- admin brand routes 的 `makePublic()` bug（uniform bucket-level access）→ 會導致後台上傳 brand asset 500
-- Phase 6 正式 end-to-end 從 UI 到生圖還沒跑過（media-worker 部分已驗，API 部分已驗，UI→API 鏈路待驗）
+- HeyGen `portrait_720p` resolution 字串未驗證（今天修完後沒有新任務跑過）
 
 ---
 
@@ -80,15 +69,16 @@
 
 | 要找什麼 | 去哪裡 |
 |---|---|
-| 品牌素材庫計畫書 | `~/.ailive/ailivex-platform/docs/PLAN_brand_asset_library.md` |
-| ailiveX 平台 | `~/.ailive/ailivex-platform/` |
-| media-worker | `~/.ailive/media-worker/` |
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
+| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ailivex 平台 | `~/.ailive/ailivex-platform/` |
+| media-worker | `~/.ailive/media-worker/` |
 
 ---
 
-*2026-06-22 · 第十五 session · 品牌素材庫 Phase 3-5 全通 + UDN 生圖驗證 · 築*
+*2026-06-24 · 築*

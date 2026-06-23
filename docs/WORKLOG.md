@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-06-24 — ailivex 第十六 session：品牌素材 bug 修復 + TTS 升級 + HeyGen dimension 爆雷修復
+
+### 背景 / WHY
+ailivex 平台品牌素材上傳中文失敗、HeyGen 分身照快取不刷新、口播音檔模型偏差、影片尺寸沒跟圖片走
+
+### 產出
+- `src/app/api/tasks/[id]/generate-video-kling/route.ts` — 加 image-size probe → 傳 aspect_ratio 給 fal.ai
+- `media-worker/src/providers/heygen-video.ts` — probe ratio → resolution 字串（portrait_720p / 720p / square_720p），修掉 dimension 400 爆雷
+- `media-worker/src/providers/minimax-audio.ts` — speech-02-turbo → speech-2.6-hd
+- `src/app/api/admin/characters/[id]/heygen-avatar/route.ts` — GCS path 加 timestamp 防快取
+- `src/app/api/admin/characters/[id]/brand-layouts/route.ts` — decodeURIComponent + content-type 驗證
+- `src/app/api/admin/characters/[id]/brand-products/route.ts` — 同上
+- `src/app/admin/characters/page.tsx` — encodeURIComponent + delete/setDefault error handling + tags?.防禦
+
+### 已解決
+- HTTP header 中文 → encodeURIComponent / decodeURIComponent 前後端配對
+- GCS 覆蓋舊圖不刷新 → path 加 Date.now() timestamp
+- HeyGen 400 `Extra inputs are not permitted` → dimension 欄位不合法，改回 resolution 字串
+- 口播音檔品質差 → speech-02-turbo 換 speech-2.6-hd
+- 影片尺寸不跟圖片走 → image-size probe + fal.ai aspect_ratio / HeyGen portrait_720p
+
+### ⚠️ 尚未解決
+- HeyGen `portrait_720p` resolution 字串是否真的被接受：今天修完後還沒有新任務跑過，未驗證
+- 若 `portrait_720p` 也不被接受，需查 HeyGen v3 文件的正確 portrait resolution 字串
+
+### 待執行
+- [ ] 等 Lulu 跑一次新的 HeyGen 任務，確認 portrait_720p 被接受
+- [ ] 若失敗，查 HeyGen v3 API 文件確認正確的 resolution 字串
+
+---
+
 ## 2026-06-22b — ailivex 第十四 session：品牌素材庫 Phase 1+2 實作
 
 ### 背景 / WHY
