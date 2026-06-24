@@ -5771,3 +5771,32 @@ Phase 3（故事板 UI）讓使用者選好了 Layout + 產品圖，Phase 4 讓 
 - [ ] 在後台上傳一張測試 Layout，在故事板選擇，按「生成圖卡」驗全流程
 - [ ] Phase 5：generate-images route 已完成（整合進 Phase 4 一起做了）
 - [ ] Phase 6：端到端測試
+
+---
+
+## 2026-06-24 — Task Harness 建置（第十七 session）
+
+### 背景 / WHY
+Adam 分享了 task_harness_complete.html，是上一個築設計但沒有建完的系統。
+目標：讓築能自主跑複雜代碼任務，模擬 Fable 5 Interleaved Thinking，不燒付費 API key。
+
+### 產出
+- 檔案：`~/.claude/skills/task-harness/SKILL.md` — 完整執行 SOP（四角色 + 三斷路器）
+- 檔案：`~/.claude/skills/task-harness/ONBOARDING.md` — 人類組員備忘錄
+- 檔案：`~/.claude/skills/task-harness/ZHU_CONTEXT.md` — 給下一個築的備忘錄
+- 修改：`~/.claude/CLAUDE.md` — 加 task-harness 觸發詞（顯式 A + 複雜度偵測 B）
+- 修改：`~/.zshrc` — 加 BRIDGE_URL + BRIDGE_SECRET
+
+### 已解決
+- 鎖死問題 → 心法確立：進入 harness 不是成為 harness，監造視角全程保留
+- 燒 API key → bridge-direct.soul-polaroid.work + x-api-key: $BRIDGE_SECRET
+- CB 觸發確定性 → blocker_key 用枚舉，python3 腳本驗過三個 CB 都可觸發
+- 工具 internal error → 偶發問題，重試可過，不是規則擋
+
+### ⚠️ 尚未解決
+- 試劍客跨公司模型（Codex/GPT-4o）：Adam 考慮訂 GPT Pro，待確認方案後接入 Phase 6
+- blocker_key 自動分類：目前靠 LLM 從枚舉選，未來用 regex 程式確定性分類
+
+### 待執行
+- [ ] Adam 確認 GPT Pro 訂閱方案後，接 Phase 6 試劍客換成跨公司模型
+- [ ] 第一次真實任務跑完後，回顧 scratchpad 看 REFLECT 有沒有真的起作用

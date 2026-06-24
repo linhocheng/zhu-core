@@ -26,13 +26,11 @@
 
 ## 最新完成（2026-06-24）
 
-- 修品牌素材中文上傳 → HTTP header encodeURIComponent 前後端配對
-- HeyGen 分身照快取不刷新 → GCS path 加 timestamp
-- 口播音檔 speech-02-turbo → speech-2.6-hd（media-worker deploy）
-- 影片尺寸跟圖片走 → image-size probe；Kling 傳 aspect_ratio；HeyGen 傳 portrait_720p
-- HeyGen dimension 400 爆雷修復 → 改回 resolution 字串
-- 品牌素材後端加 content-type 驗證、delete/setDefault error handling、tags?.防禦
-- stories 頁加「不用生圖」跳過按鈕（skipImages PATCH）
+- 建立 Task Harness 完整系統（SKILL.md + 三斷路器 + bridge 接線）
+- 確立心法：進入 harness 不是成為 harness，監造視角全程保留
+- 驗證三個 CB 均可確定性觸發（CB1 對話層、CB2 python3 驗、CB3 python3 驗）
+- 寫 ONBOARDING.md（組員備忘錄）+ ZHU_CONTEXT.md（給下一個築）
+- 寫技術分享文章（供 Adam 團隊傳閱）
 
 ---
 
@@ -40,28 +38,37 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/src/app/api/tasks/[id]/generate-video-kling/route.ts` | probe ratio → aspect_ratio 傳 fal.ai |
-| `media-worker/src/providers/heygen-video.ts` | probe ratio → portrait_720p/720p/square_720p，移除 dimension |
-| `media-worker/src/providers/minimax-audio.ts` | speech-02-turbo → speech-2.6-hd |
-| `ailivex-platform/src/app/api/admin/characters/[id]/heygen-avatar/route.ts` | GCS path 加 timestamp |
-| `ailivex-platform/src/app/api/admin/characters/[id]/brand-layouts/route.ts` | decodeURIComponent + content-type 驗證 |
-| `ailivex-platform/src/app/api/admin/characters/[id]/brand-products/route.ts` | 同上 |
-| `ailivex-platform/src/app/admin/characters/page.tsx` | encodeURIComponent + 6 個 bug 修復 |
-| `ailivex-platform/src/app/stories/[id]/page.tsx` | 加「不用生圖」跳過按鈕 |
-| `ailivex-platform/src/app/api/stories/[id]/route.ts` | skipImages PATCH 邏輯 |
+| `~/.claude/skills/task-harness/SKILL.md` | 新建，完整 SOP |
+| `~/.claude/skills/task-harness/ONBOARDING.md` | 新建，組員備忘錄 |
+| `~/.claude/skills/task-harness/ZHU_CONTEXT.md` | 新建，給築的備忘錄 |
+| `~/.claude/CLAUDE.md` | 加 task-harness 觸發詞 |
+| `~/.zshrc` | 加 BRIDGE_URL + BRIDGE_SECRET |
 
 ---
 
 ## 下一步
 
-1. 等 Lulu 跑一次 HeyGen 任務，確認 `portrait_720p` 被接受（admin → 生成影片 → 看 task error）
-2. 若 portrait_720p 失敗 → 查 HeyGen v3 文件，改 `media-worker/src/providers/heygen-video.ts` ratioToResolution()，重新 Cloud Build
+1. **等 Adam 確認 GPT Pro 方案** → 接 Phase 6 試劍客換成跨公司模型（改 SKILL.md Phase 6 curl）
+2. **第一次真實任務** → 用 harness 跑一個真實代碼任務，收尾後看 scratchpad，確認 REFLECT 有沒有真的起作用
+3. **ailivex 品牌素材庫** → 上次遺留：後台上傳測試 Layout → 故事板選擇 → 按「生成圖卡」驗全流程
 
 ---
 
 ## 卡住 / 未解
 
-- HeyGen `portrait_720p` resolution 字串未驗證（今天修完後沒有新任務跑過）
+- 試劍客跨公司模型：Adam 考慮 GPT Pro，確認訂閱方案後接入
+- blocker_key 自動分類：目前 LLM 主觀選枚舉，未來改程式 regex 確定性分類
+
+---
+
+## Task Harness 快速啟動
+
+```
+說：「用 harness 跑這個任務」
+讀：~/.claude/skills/task-harness/SKILL.md
+Bridge：bridge-direct.soul-polaroid.work，x-api-key: $BRIDGE_SECRET
+env：BRIDGE_URL + BRIDGE_SECRET 已在 ~/.zshrc
+```
 
 ---
 
@@ -71,14 +78,14 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
+| Task Harness SOP | `~/.claude/skills/task-harness/SKILL.md` |
+| Task Harness 給築 | `~/.claude/skills/task-harness/ZHU_CONTEXT.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailivex 平台 | `~/.ailive/ailivex-platform/` |
-| media-worker | `~/.ailive/media-worker/` |
 
 ---
 
+*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
 *2026-06-24 · 築*
