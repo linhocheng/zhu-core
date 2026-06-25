@@ -26,10 +26,16 @@
 
 ## 最新完成（2026-06-25）
 
-- 修復 ailivex admin 後台 `voiceSettings.emotion` 存檔 bug（JSX `??` fallback 沒寫進 state）
-- 直接 Firestore PATCH 達賴角色 `voiceSettings.emotion = 'neutral'`，即時生效
-- Deploy admin UI fix 到 Vercel
-- 確認 Task Harness 完整就位（前 session 2026-06-24 完成，本 session 延伸驗證）
+- Task Harness 首次真實執行——目標：ailivex 技術債審計，一輪跑完
+- 寫出 `TECH_DEBT.md`（15 條：6 高 / 4 中 / 5 低）
+- H1：CLAUDE.md 5 處 v10→v14，補版本表 v11-v14
+- H2：README.md 加 stale 警告（內容停在 v2–v4 時期）
+- H4：刪除 `src/lib/enqueue.ts`（廢棄 Cloud Tasks，零 import）
+- M1：10 個舊版頁面（base, v2-v11）加 `[封存]` 備註
+- M3：chat 頁、admin/access 頁 silent catch → console.error
+- M5：cloud-run/agent/ 加 LEGACY.md
+- L3：刪除 scripts/test-enqueue.mjs（廢棄測試腳本）
+- 驗明 H5/L2/L5 不成立
 
 ---
 
@@ -37,33 +43,31 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/app/admin/characters/page.tsx` | `setEditing` 初始化補 `{emotion:'neutral', ...voiceSettings}`，修復 emotion 存檔 bug |
-| Firestore `characters/e4LWiHK0bMB45h0vhTN9` | 直接 PATCH `voiceSettings.emotion = 'neutral'` |
+| `~/.ailive/ailivex-platform/TECH_DEBT.md` | 新建，15 條技術債報告 |
+| `~/.ailive/ailivex-platform/CLAUDE.md` | H1：v10→v14，版本表補齊 |
+| `~/.ailive/ailivex-platform/README.md` | H2：加 stale 警告 |
+| `~/.ailive/ailivex-platform/src/lib/enqueue.ts` | H4：刪除 |
+| `~/.ailive/ailivex-platform/src/app/realtime*/page.tsx`（×10）| M1：加封存備註 |
+| `~/.ailive/ailivex-platform/src/app/chat/[characterId]/page.tsx` | M3：catch → console.error |
+| `~/.ailive/ailivex-platform/src/app/admin/access/page.tsx` | M3：catch → console.error |
+| `~/.ailive/ailivex-platform/cloud-run/agent/LEGACY.md` | M5：新建 legacy 說明 |
+| `~/.ailive/ailivex-platform/scripts/test-enqueue.mjs` | L3：刪除 |
 
 ---
 
 ## 下一步
 
-1. **驗證達賴聲音** → 去 `https://ailivex-platform.vercel.app/realtime-v14/e4LWiHK0bMB45h0vhTN9` 實測一通，確認不再出現女聲。若仍不穩，下一步查 MiniMax 克隆管理後台重製音色。
-2. **Codex 接 Task Harness Phase 6 試劍客** → 等 Adam 確認 GPT Pro 訂閱後，改 `~/.claude/skills/task-harness/SKILL.md` Phase 6 curl 格式為 OpenAI `/v1/chat/completions`
+1. `gcloud run services list --region=asia-east1` 確認哪些 ailivex CR services 還活著
+2. 依結果決定 Python v2-v11 封存範圍（建 `agent/_archive/`）
+3. 跟 Adam 確認 H3：text dialogue 路徑的 `writing`/`web_search` task dispatch 是否計劃接通
 
 ---
 
 ## 卡住 / 未解
 
-- 達賴聲音 emotion=neutral 是否真的根治——需要 Adam 打一通電話驗證
-- 若仍不穩：懷疑是 MiniMax 克隆訓練音訊情緒範圍不足（克隆只有平靜說話的音訊，情緒濃時走調）
-
----
-
-## Task Harness 快速啟動
-
-```
-說：「用 harness 跑這個任務」
-讀：~/.claude/skills/task-harness/SKILL.md
-Bridge：bridge-direct.soul-polaroid.work，x-api-key: $BRIDGE_SECRET
-env：BRIDGE_URL + BRIDGE_SECRET 已在 ~/.zshrc
-```
+- **H3 範圍不清**：task dispatch `writing`/`web_search` 拋錯是已知，Adam 說「基本上通了」可能是指 voice URL reading 那條。待確認。
+- **M2+L1+L2**：靜態掃描無法知道 CR service 是否還在 dispatch，只能 gcloud 確認。
+- **H6 長期解法**：Python 和 TS 的 DEFAULT_GLOBAL_PROMPTS 目前一致，長期應廢棄 Python 端改走 Firestore init。
 
 ---
 
@@ -74,11 +78,11 @@ env：BRIDGE_URL + BRIDGE_SECRET 已在 ~/.zshrc
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| Task Harness SOP | `~/.claude/skills/task-harness/SKILL.md` |
-| Task Harness 給築 | `~/.claude/skills/task-harness/ZHU_CONTEXT.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
+| ailivex 技術債 | `~/.ailive/ailivex-platform/TECH_DEBT.md` |
+| Task Harness SOP | `~/.claude/skills/task-harness/SKILL.md` |
 
 ---
 
