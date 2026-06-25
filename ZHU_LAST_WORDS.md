@@ -24,13 +24,12 @@
 
 ---
 
-## 最新完成（2026-06-24）
+## 最新完成（2026-06-25）
 
-- 建立 Task Harness 完整系統（SKILL.md + 三斷路器 + bridge 接線）
-- 確立心法：進入 harness 不是成為 harness，監造視角全程保留
-- 驗證三個 CB 均可確定性觸發（CB1 對話層、CB2 python3 驗、CB3 python3 驗）
-- 寫 ONBOARDING.md（組員備忘錄）+ ZHU_CONTEXT.md（給下一個築）
-- 寫技術分享文章（供 Adam 團隊傳閱）
+- 修復 ailivex admin 後台 `voiceSettings.emotion` 存檔 bug（JSX `??` fallback 沒寫進 state）
+- 直接 Firestore PATCH 達賴角色 `voiceSettings.emotion = 'neutral'`，即時生效
+- Deploy admin UI fix 到 Vercel
+- 確認 Task Harness 完整就位（前 session 2026-06-24 完成，本 session 延伸驗證）
 
 ---
 
@@ -38,26 +37,22 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.claude/skills/task-harness/SKILL.md` | 新建，完整 SOP |
-| `~/.claude/skills/task-harness/ONBOARDING.md` | 新建，組員備忘錄 |
-| `~/.claude/skills/task-harness/ZHU_CONTEXT.md` | 新建，給築的備忘錄 |
-| `~/.claude/CLAUDE.md` | 加 task-harness 觸發詞 |
-| `~/.zshrc` | 加 BRIDGE_URL + BRIDGE_SECRET |
+| `src/app/admin/characters/page.tsx` | `setEditing` 初始化補 `{emotion:'neutral', ...voiceSettings}`，修復 emotion 存檔 bug |
+| Firestore `characters/e4LWiHK0bMB45h0vhTN9` | 直接 PATCH `voiceSettings.emotion = 'neutral'` |
 
 ---
 
 ## 下一步
 
-1. **等 Adam 確認 GPT Pro 方案** → 接 Phase 6 試劍客換成跨公司模型（改 SKILL.md Phase 6 curl）
-2. **第一次真實任務** → 用 harness 跑一個真實代碼任務，收尾後看 scratchpad，確認 REFLECT 有沒有真的起作用
-3. **ailivex 品牌素材庫** → 上次遺留：後台上傳測試 Layout → 故事板選擇 → 按「生成圖卡」驗全流程
+1. **驗證達賴聲音** → 去 `https://ailivex-platform.vercel.app/realtime-v14/e4LWiHK0bMB45h0vhTN9` 實測一通，確認不再出現女聲。若仍不穩，下一步查 MiniMax 克隆管理後台重製音色。
+2. **Codex 接 Task Harness Phase 6 試劍客** → 等 Adam 確認 GPT Pro 訂閱後，改 `~/.claude/skills/task-harness/SKILL.md` Phase 6 curl 格式為 OpenAI `/v1/chat/completions`
 
 ---
 
 ## 卡住 / 未解
 
-- 試劍客跨公司模型：Adam 考慮 GPT Pro，確認訂閱方案後接入
-- blocker_key 自動分類：目前 LLM 主觀選枚舉，未來改程式 regex 確定性分類
+- 達賴聲音 emotion=neutral 是否真的根治——需要 Adam 打一通電話驗證
+- 若仍不穩：懷疑是 MiniMax 克隆訓練音訊情緒範圍不足（克隆只有平靜說話的音訊，情緒濃時走調）
 
 ---
 
@@ -88,4 +83,4 @@ env：BRIDGE_URL + BRIDGE_SECRET 已在 ~/.zshrc
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-24 · 築*
+*2026-06-25 · 築*

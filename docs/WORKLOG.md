@@ -2,6 +2,42 @@
 
 ---
 
+## 2026-06-25 — ailivex 第十八 session：Task Harness 首次真實執行 + 技術債審計
+
+### 背景 / WHY
+Adam 問能不能用 Task Harness 跑一個真實任務。選「ailivex 技術債審計（輸出 TECH_DEBT.md）」作為目標，同時驗收 Harness 流程。
+
+### 產出
+- 檔案：`~/.ailive/ailivex-platform/TECH_DEBT.md` — 15 條技術債（H1-H6 高 / M1-M5 中 / L1-L5 低）
+- 檔案：`~/.ailive/ailivex-platform/CLAUDE.md` — H1：5 處 v10→v14，補版本表 v11-v14
+- 檔案：`~/.ailive/ailivex-platform/README.md` — H2：加 stale 警告
+- 刪除：`~/.ailive/ailivex-platform/src/lib/enqueue.ts` — H4：廢棄 Cloud Tasks 路徑，零 import
+- 改動：`src/app/realtime*/[characterId]/page.tsx`（base, v2-v11）— M1：加 [封存] 備註
+- 改動：`src/app/chat/[characterId]/page.tsx`、`src/app/admin/access/page.tsx` — M3：silent catch → console.error
+- 新建：`~/.ailive/ailivex-platform/cloud-run/agent/LEGACY.md` — M5：說清楚 legacy 快照
+- 刪除：`~/.ailive/ailivex-platform/scripts/test-enqueue.mjs` — L3：廢棄測試腳本
+
+### 已解決
+- H1/H2 文件真相分裂 → 代碼確認後直接改文件
+- H4 enqueue.ts 靜默 no-op → 確認零 import，整檔刪除
+- H5 Admin auth → 閱讀 middleware.ts 後確認不成立（Edge 層統一守護）
+- L2 source_intake.py → 確認是 v12/v13/v14 live 模組，非技術債
+- L5 docs 時效 → 確認所有文件 < 3 週，不成立
+
+### ⚠️ 尚未解決
+- H3（writing/web_search task dispatch 拋錯）— Adam 說「基本上通了」但代碼顯示沒接，範圍待確認
+- H6（global prompts 兩源）— 兩邊目前同步，長期單源化需規劃
+- M2（26 份 Python 歷史版本）— 需 `gcloud run services list --region=asia-east1` 確認哪些 CR 還活著
+- L1+L2（voiceprint/audio_tap 封存）— 依 v11 CR 狀態決定
+
+### 待執行
+- [ ] `gcloud run services list --region=asia-east1` 確認 ailivex CR services 存活狀態
+- [ ] 依結果決定 Python v2-v11 封存範圍（建 agent/_archive/）
+- [ ] H3 跟 Adam 確認：text dialogue 路徑的 writing/web_search 是否計劃接通？
+- [ ] H6 長期解法：廢棄 Python 端的 DEFAULT_GLOBAL_PROMPTS，改全走 Firestore
+
+---
+
 ## 2026-06-24 — ailivex 第十六 session：品牌素材 bug 修復 + TTS 升級 + HeyGen dimension 爆雷修復
 
 ### 背景 / WHY
@@ -5800,3 +5836,28 @@ Adam 分享了 task_harness_complete.html，是上一個築設計但沒有建完
 ### 待執行
 - [ ] Adam 確認 GPT Pro 訂閱方案後，接 Phase 6 試劍客換成跨公司模型
 - [ ] 第一次真實任務跑完後，回顧 scratchpad 看 REFLECT 有沒有真的起作用
+
+---
+
+## 2026-06-25 — ailivex 達賴語音 emotion bug 修復
+
+### 背景 / WHY
+Adam 反映跟達賴對話時語音會突然不穩、變成女聲。懷疑是 MiniMax emotion 自動推斷在情緒濃時讓克隆音色走調。
+
+### 產出
+- `src/app/admin/characters/page.tsx` — 修復 voiceSettings.emotion 存檔 bug（display fallback ≠ state）
+- Firestore `characters/e4LWiHK0bMB45h0vhTN9` — 直接 PATCH voiceSettings.emotion = 'neutral'
+- Vercel deploy — admin UI fix 上線
+
+### 已解決
+- **bug**：admin 後台 `<select value={vs.emotion??'neutral'}>` 只是 display fallback，用戶不動 dropdown 就存檔 → emotion 永遠 undefined → Firestore 裡 voiceSettings 是空 `{}` → agent 不傳 emotion → MiniMax 自動推斷
+- **根因**：`??` fallback 不寫進 React state；`sanitizeVoiceSettings` 看到 undefined 就跳過
+- **修法**：`setEditing` 初始化時預填 `{emotion:'neutral', ...c.voiceSettings}`，確保預設值進 state
+
+### ⚠️ 尚未解決
+- 達賴聲音不穩是否真的因為 emotion=neutral 修好——需要 Adam 實測一通電話驗證
+- 若仍不穩，下一步懷疑是 MiniMax 克隆音色訓練資料情緒範圍不足（需重新製作克隆）
+
+### 待執行
+- [ ] Adam 實測達賴一通電話，確認聲音穩定
+- [ ] 如仍有問題，查 MiniMax 克隆管理後台重製音色
