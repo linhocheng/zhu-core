@@ -24,18 +24,12 @@
 
 ---
 
-## 最新完成（2026-06-25）
+## 最新完成（2026-06-26）
 
-- Task Harness 首次真實執行——目標：ailivex 技術債審計，一輪跑完
-- 寫出 `TECH_DEBT.md`（15 條：6 高 / 4 中 / 5 低）
-- H1：CLAUDE.md 5 處 v10→v14，補版本表 v11-v14
-- H2：README.md 加 stale 警告（內容停在 v2–v4 時期）
-- H4：刪除 `src/lib/enqueue.ts`（廢棄 Cloud Tasks，零 import）
-- M1：10 個舊版頁面（base, v2-v11）加 `[封存]` 備註
-- M3：chat 頁、admin/access 頁 silent catch → console.error
-- M5：cloud-run/agent/ 加 LEGACY.md
-- L3：刪除 scripts/test-enqueue.mjs（廢棄測試腳本）
-- 驗明 H5/L2/L5 不成立
+- 找出並修復六個覆蓋角色靈魂的根因（realtime_agent_v14.py、firestore_loader.py、source_intake.py 三檔）
+- 把聖嚴角色全部 9 個 voice/conv 參數從後台 admin 同步寫入 Firestore
+- 刪除 3 條簡體中文汙染記憶
+- 部署 ailivex v14.4.0 / v14.4.1 / v14.4.2 三個版本上線
 
 ---
 
@@ -43,31 +37,23 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/ailivex-platform/TECH_DEBT.md` | 新建，15 條技術債報告 |
-| `~/.ailive/ailivex-platform/CLAUDE.md` | H1：v10→v14，版本表補齊 |
-| `~/.ailive/ailivex-platform/README.md` | H2：加 stale 警告 |
-| `~/.ailive/ailivex-platform/src/lib/enqueue.ts` | H4：刪除 |
-| `~/.ailive/ailivex-platform/src/app/realtime*/page.tsx`（×10）| M1：加封存備註 |
-| `~/.ailive/ailivex-platform/src/app/chat/[characterId]/page.tsx` | M3：catch → console.error |
-| `~/.ailive/ailivex-platform/src/app/admin/access/page.tsx` | M3：catch → console.error |
-| `~/.ailive/ailivex-platform/cloud-run/agent/LEGACY.md` | M5：新建 legacy 說明 |
-| `~/.ailive/ailivex-platform/scripts/test-enqueue.mjs` | L3：刪除 |
+| `agent/realtime_agent_v14.py` | 移除【在場與口氣】個性塊 → 改為格式中性【語音格式】；開場問候不再強制老朋友語氣 |
+| `agent/firestore_loader.py` | voiceRules 移除「說人話像朋友」「問問題讓話題有來有往」，只留格式規則；保留簡體中文（MiniMax TTS 音準） |
+| `agent/source_intake.py` | 讀網址後 generate_reply 改為角色中性（原：口氣平實像聊天） |
 
 ---
 
 ## 下一步
 
-1. `gcloud run services list --region=asia-east1` 確認哪些 ailivex CR services 還活著
-2. 依結果決定 Python v2-v11 封存範圍（建 `agent/_archive/`）
-3. 跟 Adam 確認 H3：text dialogue 路徑的 `writing`/`web_search` task dispatch 是否計劃接通
+**Adam 做的事**：進 admin UI → 聖嚴角色 → soulCore → 只保留第九節「# Role: 鍛魂師・聖嚴法師...」的第一人稱角色指令，刪掉前八節第三人稱設計文件（「此角色善用...」「設計意圖是...」之類）。改完後跑一次通話驗收。
+
+**築接棒時**：先確認 soulCore 已改（在 Firestore 或 admin UI 查 `characters/8mCpOmbJalsvdUxGRFzn.soulCore`），再考慮是否要在 `enhanceSoul()` 加強制第一人稱輸出的 prompt，讓其他角色也不會踩相同問題。
 
 ---
 
 ## 卡住 / 未解
 
-- **H3 範圍不清**：task dispatch `writing`/`web_search` 拋錯是已知，Adam 說「基本上通了」可能是指 voice URL reading 那條。待確認。
-- **M2+L1+L2**：靜態掃描無法知道 CR service 是否還在 dispatch，只能 gcloud 確認。
-- **H6 長期解法**：Python 和 TS 的 DEFAULT_GLOBAL_PROMPTS 目前一致，長期應廢棄 Python 端改走 Firestore init。
+**soulCore 格式問題**：soulCore 現在是 8 節設計文件 + 第九節角色指令，agent 把整個 soulCore 注入 instructions，AI 拿到的是「規格書」不是「我是誰」。根治需 Adam 手動改，或修 `enhanceSoul()` 強制輸出第一人稱格式。
 
 ---
 
@@ -77,14 +63,16 @@
 |---|---|
 | 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
+| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailivex 技術債 | `~/.ailive/ailivex-platform/TECH_DEBT.md` |
-| Task Harness SOP | `~/.claude/skills/task-harness/SKILL.md` |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ailivex agent（live） | `~/.ailive/ailivex-platform/agent/` |
+| ailivex admin | https://ailivex-platform.vercel.app/admin/characters |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-25 · 築*
+*2026-06-26 · 築*

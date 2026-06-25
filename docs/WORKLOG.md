@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-06-26 — ailivex 第十九 session：角色靈魂保真度全棧審計與修復
+
+### 背景 / WHY
+Adam 問聖嚴的語音設定是否真的吃到 MiniMax 參數、主動性設定是否同步後台。全面追查後發現「沒有捕捉到角色的靈魂」，有六個根因。
+
+### 產出
+- 檔案：`agent/realtime_agent_v14.py` — 移除硬碼個性塊【在場與口氣】，改為格式中性的【語音格式】；開場問候不再強制「老朋友/口氣平實」
+- 檔案：`agent/firestore_loader.py` — voiceRules 移除「說人話像朋友」「問問題讓對話有來有往」，只保留格式規則；保留簡體中文（MiniMax TTS 音準需要）
+- 檔案：`agent/source_intake.py` — 讀網址後 generate_reply 改為角色中性，不再強制「口氣平實像聊天」
+- Firestore `characters/8mCpOmbJalsvdUxGRFzn`（聖嚴）— 全部 9 個 voice/conv 參數從後台同步寫入（之前 pitch/vol/responseSpeed/interruptThreshold 靠 code default）
+- Firestore memories — 刪除 3 條簡體中文汙染記憶
+- 部署：v14.4.0（移除靈魂覆蓋）, v14.4.1（補回簡體中文 TTS 規則）, v14.4.2（參數全同步）
+
+### 已解決
+- 【在場與口氣】硬碼蓋靈魂 → 根因消除（改為格式規則，不含個性）
+- 開場問候強制老朋友語氣 → 改為角色中性
+- voiceRules 強制聊天個性 → 移除，只留格式
+- source_intake.py 強制口氣 → 改為角色中性
+- 4 個 conv/voice 參數沒同步後台 → 全部 9 個寫入 Firestore
+- 3 條簡體中文汙染記憶 → 已刪
+
+### ⚠️ 尚未解決
+- soulCore 格式問題：目前 soulCore=設計文件（8 節第三人稱描述 + 第九節第一人稱指令），AI 注入的是規格書而不是角色信念。需 Adam 在 admin UI 手動把 soulCore 改成只含第一人稱角色指令（第九節的「# Role: 鍛魂師・聖嚴法師」內容）
+
+### 待執行
+- [ ] Adam 在 admin UI 改聖嚴 soulCore，只保留第一人稱角色指令，移除前八節設計文件
+- [ ] 跑一次通話確認靈魂保真度（改完 soulCore 後）
+- [ ] 考慮在 `enhanceSoul()` 層面強制輸出第一人稱格式，避免其他角色也有同樣問題
+
+---
+
 ## 2026-06-25 — ailivex 第十八 session：Task Harness 首次真實執行 + 技術債審計
 
 ### 背景 / WHY
