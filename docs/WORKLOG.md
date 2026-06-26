@@ -5892,3 +5892,30 @@ Adam 反映跟達賴對話時語音會突然不穩、變成女聲。懷疑是 Mi
 ### 待執行
 - [ ] Adam 實測達賴一通電話，確認聲音穩定
 - [ ] 如仍有問題，查 MiniMax 克隆管理後台重製音色
+
+---
+
+## 2026-06-26 — ailivex 生圖管道修復 + OpenAI key 換新
+
+### 背景 / WHY
+Adam 發現故事卡「已指定產品圖」但生出來的圖完全沒有產品/人物，要求根因排查。
+
+### 產出
+- `ailivex-platform/src/app/api/tasks/[id]/generate-images/route.ts` — provider 改 'openai'、hasProductImage 傳入 enhanceImagePrompt
+- `ailivex-platform/src/lib/image-prompt-enhancer.ts` — 加 hasProductImage 參數、productHint 改通用版（人物/產品雙覆蓋）
+- `media-worker/src/handlers/enqueue.ts` — default image provider 改 openai
+- `media-worker/src/providers/fal-image.ts` — 已存在但確認 fal 不支援 reference image
+- GCP Secret Manager OPENAI_API_KEY — 換新 key（sk-proj-2zE2...）
+- `ailive-platform` Vercel OPENAI_API_KEY — 換新 key
+
+### 已解決
+- fal.ai gpt-image-2 靜默忽略 image_urls → 根因：endpoint 只有 text-to-image，改走 OpenAI /v1/images/edits
+- productHint 寫死「包裝/外觀」→ 改為人物/產品雙覆蓋，瞬自行判斷
+- cardText 沒提「參考圖中的」→ 確認這是 prompt 寫法問題，已告知 Adam
+
+### ⚠️ 尚未解決
+- 無
+
+### 待執行
+- [ ] Adam 在 UI 實際試生圖（確認 OpenAI edits 合成效果）
+- [ ] 考慮未來是否讓 UI 自動偵測「參考圖是人/是產品」，讓 productHint 更精準
