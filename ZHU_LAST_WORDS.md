@@ -24,14 +24,19 @@
 
 ---
 
-## 最新完成（2026-06-27）
+## 最新完成（2026-06-27 · 兩個 session）
 
+**Session A（HeyGen pipeline）**
 - HeyGen resolution bug 修復並 deploy（portrait_720p → 720p）
-- HeyGen pipeline 全面升級：`type: "image"` → `type: "avatar"` + `avatar_id` + Avatar IV 引擎
+- `type: "image"` → `type: "avatar"` + `avatar_id` + Avatar IV 引擎
 - Gallery UI 加 motion prompt 可編輯欄位
-- `aspect_ratio: "auto"` 全面開啟（上傳什麼比例輸出什麼比例）
+- `aspect_ratio: "auto"` 全面開啟
 - MVP 測試腳本驗通全鏈路（Firestore → MiniMax TTS → GCS → HeyGen）
-- 預設 fallback avatar ID：`4ff5316df3734ebd897609d2d391dbb8`
+
+**Session B（意川_WEB + 閒聊）**
+- 意川_WEB 靜態前台部署到 Vercel（https://web-tawny-six-67.vercel.app），臨時對外可看
+- 全檢通過（reflex ok / launchd ok）
+- 建立意川_WEB 部署記憶
 
 ---
 
@@ -44,19 +49,25 @@
 | `media-worker/src/handlers/worker.ts` | 傳 avatarId + motionPrompt |
 | `ailivex-platform/.../generate-video/route.ts` | 用 heygenAvatarId，fallback 預設 ID |
 | `ailivex-platform/src/app/gallery/page.tsx` | HeyGen 按鈕上方加 motion prompt textarea |
-| `ailivex-platform/scripts/test-lulu-video.mts` | MVP 測試腳本 |
+| `~/Downloads/意川_WEB/vercel.json` | 靜態部署設定（framework: null） |
+| `~/.claude/projects/-Users-adamlin/memory/project_yichuan_web_deploy.md` | 新建意川部署記錄 |
 
 ---
 
 ## 下一步
 
-進 `~/.ailive/ailivex-platform`，考慮讓角色後台設定支援多個 `heygenAvatarId`（不同場景/服裝），或直接讓 Adam 在 gallery 生影片後確認品質。
+1. 確認 ailivex soulCore 是否已在 admin UI 改為第一人稱角色指令
+   - Firestore：`characters/8mCpOmbJalsvdUxGRFzn.soulCore`
+   - 若已改 → 跑一次通話驗收
+   - 若未改 → 考慮在 `enhanceSoul()` 加自動轉換邏輯
+2. 讓 Adam 在 gallery 生影片後確認 HeyGen 品質，再考慮多 avatar_id 支援
 
 ---
 
 ## 卡住 / 未解
 
-無
+- ailivex soulCore 仍是第三人稱設計文件，待 Adam 手動改
+- 意川_WEB 為臨時部署，撤下時刪 Vercel `web` 專案 deployment
 
 ---
 
@@ -73,6 +84,7 @@
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | HeyGen fallback avatar ID | `4ff5316df3734ebd897609d2d391dbb8` |
 | Lulu avatar ID | `f987bd3ce34047c08d356930a409b184` |
+| 意川_WEB URL | https://web-tawny-six-67.vercel.app（臨時） |
 
 ---
 
