@@ -5919,3 +5919,53 @@ Adam 發現故事卡「已指定產品圖」但生出來的圖完全沒有產品
 ### 待執行
 - [ ] Adam 在 UI 實際試生圖（確認 OpenAI edits 合成效果）
 - [ ] 考慮未來是否讓 UI 自動偵測「參考圖是人/是產品」，讓 productHint 更精準
+
+---
+
+## 2026-06-27 — HeyGen pipeline 升級（resolution fix + avatar_id + motion prompt）
+
+### 背景 / WHY
+ailivex gallery 影片生成失敗（HeyGen 400）+ 想要更高品質的影片引擎
+
+### 產出
+- `media-worker/src/providers/heygen-video.ts` — resolution 改 720p → 加 aspect_ratio:auto → 改 type:avatar + avatar_iv
+- `media-worker/src/providers/types.ts` — VideoInput 加 motionPrompt，avatarUrl → avatarId
+- `media-worker/src/handlers/worker.ts` — 傳 avatarId + motionPrompt 給 provider
+- `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` — 改用 heygenAvatarId，fallback 預設 ID `4ff5316d...`
+- `ailivex-platform/src/app/gallery/page.tsx` — HeyGen 按鈕上方加 motion prompt textarea，預填預設值
+- `ailivex-platform/scripts/test-lulu-video.mts` — MVP 測試腳本（Firestore → MiniMax TTS → GCS → HeyGen）
+
+### 已解決
+- HeyGen 400 invalid resolution → `portrait_720p` 不合法，改 `720p`
+- HeyGen engine 參數在 image 路線被拒 → 改走 avatar_id 路線，engine: avatar_iv 通了
+- env file 含引號 JSON 解析截斷 → 測試腳本改手動 readFile + split 解析
+
+### ⚠️ 尚未解決
+- 無
+
+### 待執行
+- [ ] 考慮讓角色設定支援多個 heygenAvatarId（不同場景/服裝切換）
+
+---
+
+## 2026-06-27 — 意川_WEB 靜態前台部署 + 閒聊 session
+
+### 背景 / WHY
+Adam 想把下載區的意川_WEB 靜態網站前台放到雲端，讓外部可暫時連結觀看。
+
+### 產出
+- `~/Downloads/意川_WEB/vercel.json` — 靜態部署設定（framework: null）
+- `~/Downloads/意川_WEB/.vercel/output/config.json` — prebuilt 結構
+- `~/.claude/projects/-Users-adamlin/memory/project_yichuan_web_deploy.md` — 部署記錄 memory
+- **URL**：https://web-tawny-six-67.vercel.app（production，臨時）
+
+### 已解決
+- Vercel 框架誤判（舊 web 專案 Next.js 綁住）→ 用 `--prebuilt` + `.vercel/output/static/` 繞過 build
+
+### ⚠️ 尚未解決
+- ailivex soulCore 仍為第三人稱設計文件（上 session 遺留），待 Adam 在 admin UI 手動改
+- 意川_WEB 部署為臨時性，之後可能撤下
+
+### 待執行
+- [ ] 確認 ailivex soulCore 是否已改（Firestore `characters/8mCpOmbJalsvdUxGRFzn.soulCore`），若改完跑通話驗收
+- [ ] 意川_WEB 撤下時：Vercel dashboard 刪 `web` 專案 deployment
