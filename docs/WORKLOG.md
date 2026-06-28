@@ -2,6 +2,35 @@
 
 ---
 
+## 2026-06-28 — UDN NEWS 平台 Nav 連結 + Cloud Run 部署 + UI/UX 規格文件
+
+### 背景 / WHY
+UDN NEWS 議題工作台上個 session 完成 P1-P4，本 session 補足 Nav 連結（角色庫 ↔ 新增專案），讓用戶從任何頁面都能快速跳轉；另外輸出完整 UI/UX 規格文件，供 Adam 設計新版介面後回來套用。
+
+### 產出
+- `~/Documents/UDN NEWS/platform/app/projects/page.tsx` — header 加「角色庫」link（border style）
+- `~/Documents/UDN NEWS/platform/app/characters/page.tsx` — header 加「新增專案」link（border style）
+- Cloud Run 重部署（3M49S，SUCCESS）→ https://udnnews-platform-62w6sp6iba-de.a.run.app
+- `UDNNEWS_PLATFORM_UIUX_SPEC.docx` — 5 章節完整 UI/UX 規格（設計師套版用）
+
+### 已解決
+- /projects 和 /characters 之間沒有互相連結 → 在各自 header 加按鈕組（flex gap-3）
+- Task Harness Phase 6 試劍客只看到截斷代碼 → 已記錄為 LESSON，下次分段送
+
+### ⚠️ 尚未解決
+- 試劍客標記三個隱患（低優先，不影響 nav 目標）：
+  1. `.catch(() => [])` 吞掉 Firestore 錯誤，用戶看空畫面不知系統死了
+  2. `project.sources.length` 若欄位 undefined 整頁崩潰（舊資料 schema 漂移風險）
+  3. Cloud Run cold start × force-dynamic 無 loading skeleton，體感差
+- Adam 要拿 UI/UX 規格設計全新版面，設計稿未到，套版待執行
+
+### 待執行
+- [ ] Adam 發回新版 UI/UX 設計稿後，逐頁套進 Next.js 代碼
+- [ ] 處理 project.sources 防禦（若欄位 undefined 補 fallback `[]`）
+- [ ] 考慮 .catch(() => []) 改為記 error state 顯示給用戶
+
+---
+
 ## 2026-06-26 — ailivex 第十九 session：角色靈魂保真度全棧審計與修復
 
 ### 背景 / WHY

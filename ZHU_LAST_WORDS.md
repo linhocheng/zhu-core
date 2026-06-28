@@ -24,19 +24,13 @@
 
 ---
 
-## 最新完成（2026-06-27 · 兩個 session）
+## 最新完成（2026-06-28）
 
-**Session A（HeyGen pipeline）**
-- HeyGen resolution bug 修復並 deploy（portrait_720p → 720p）
-- `type: "image"` → `type: "avatar"` + `avatar_id` + Avatar IV 引擎
-- Gallery UI 加 motion prompt 可編輯欄位
-- `aspect_ratio: "auto"` 全面開啟
-- MVP 測試腳本驗通全鏈路（Firestore → MiniMax TTS → GCS → HeyGen）
-
-**Session B（意川_WEB + 閒聊）**
-- 意川_WEB 靜態前台部署到 Vercel（https://web-tawny-six-67.vercel.app），臨時對外可看
-- 全檢通過（reflex ok / launchd ok）
-- 建立意川_WEB 部署記憶
+- 加 /projects header「角色庫」nav link → /characters
+- 加 /characters header「新增專案」nav link → /projects/new
+- Task Harness 跑 Cloud Run 部署，1 輪完成，閻羅 DONE，試劍客三隱患記錄在案
+- 輸出完整 UIUX 規格 DOCX（5章節，供 Adam 設計新版介面）
+- 更新 MEMORY.md（P1-P4 記憶完整）
 
 ---
 
@@ -44,30 +38,30 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `media-worker/src/providers/heygen-video.ts` | 改 type:avatar + avatar_id + avatar_iv + aspect_ratio:auto |
-| `media-worker/src/providers/types.ts` | VideoInput: avatarUrl → avatarId, 加 motionPrompt |
-| `media-worker/src/handlers/worker.ts` | 傳 avatarId + motionPrompt |
-| `ailivex-platform/.../generate-video/route.ts` | 用 heygenAvatarId，fallback 預設 ID |
-| `ailivex-platform/src/app/gallery/page.tsx` | HeyGen 按鈕上方加 motion prompt textarea |
-| `~/Downloads/意川_WEB/vercel.json` | 靜態部署設定（framework: null） |
-| `~/.claude/projects/-Users-adamlin/memory/project_yichuan_web_deploy.md` | 新建意川部署記錄 |
+| `~/Documents/UDN NEWS/platform/app/projects/page.tsx` | header 加「角色庫」button（border style）|
+| `~/Documents/UDN NEWS/platform/app/characters/page.tsx` | header 加「新增專案」button（border style）|
 
 ---
 
 ## 下一步
 
-1. 確認 ailivex soulCore 是否已在 admin UI 改為第一人稱角色指令
-   - Firestore：`characters/8mCpOmbJalsvdUxGRFzn.soulCore`
-   - 若已改 → 跑一次通話驗收
-   - 若未改 → 考慮在 `enhanceSoul()` 加自動轉換邏輯
-2. 讓 Adam 在 gallery 生影片後確認 HeyGen 品質，再考慮多 avatar_id 支援
+**等 Adam 發回新版 UI/UX 設計稿**，收到後逐頁套進 `~/Documents/UDN NEWS/platform/` 的 Next.js 代碼。
+
+接棒後先確認：
+1. 讀 `project_udnnews_platform.md` memory 確認 P1-P4 已上線
+2. 確認 Cloud Run URL https://udnnews-platform-62w6sp6iba-de.a.run.app 還活著
+3. 等 Adam 貼設計稿，問清楚「全新還是局部調整」後動手
 
 ---
 
 ## 卡住 / 未解
 
-- ailivex soulCore 仍是第三人稱設計文件，待 Adam 手動改
-- 意川_WEB 為臨時部署，撤下時刪 Vercel `web` 專案 deployment
+試劍客標記三個技術隱患（低優先，不阻塞 nav 功能）：
+1. `.catch(() => [])` 吞錯誤 → 用戶看空畫面不知系統死了
+2. `project.sources.length` 若欄位 undefined → 整頁崩潰（舊資料風險）
+3. Cold start × force-dynamic 無 loading skeleton → 體感差
+
+Adam 的新 UI/UX 設計稿未到，套版工作等待中。
 
 ---
 
@@ -79,14 +73,13 @@
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| HeyGen fallback avatar ID | `4ff5316df3734ebd897609d2d391dbb8` |
-| Lulu avatar ID | `f987bd3ce34047c08d356930a409b184` |
-| 意川_WEB URL | https://web-tawny-six-67.vercel.app（臨時） |
+| UDN NEWS 平台 | `~/Documents/UDN NEWS/platform/` |
+| UDN NEWS Cloud Run | https://udnnews-platform-62w6sp6iba-de.a.run.app |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-27 · 築*
+*2026-06-28 · 築*
