@@ -24,13 +24,12 @@
 
 ---
 
-## 最新完成（2026-06-28）
+## 最新完成（2026-06-29）
 
-- 加 /projects header「角色庫」nav link → /characters
-- 加 /characters header「新增專案」nav link → /projects/new
-- Task Harness 跑 Cloud Run 部署，1 輪完成，閻羅 DONE，試劍客三隱患記錄在案
-- 輸出完整 UIUX 規格 DOCX（5章節，供 Adam 設計新版介面）
-- 更新 MEMORY.md（P1-P4 記憶完整）
+- ailivex working tree 整批 commit（v14.6.0）：品牌素材批量上傳、故事卡刪除確認、Kling 長寬比偵測、enqueue.ts 技術債清除
+- 新增「素材轉換區」（v14.7.0）：/convert 頁 + 3 支 API（characters/audio/video），部署 Vercel
+- HeyGen 模型三/四切換（v14.7.1）：media-worker Cloud Run 重部署 + Vercel 更新
+- 更新 documents/stories/gallery 頁 nav：補齊素材轉換區入口
 
 ---
 
@@ -38,30 +37,36 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/Documents/UDN NEWS/platform/app/projects/page.tsx` | header 加「角色庫」button（border style）|
-| `~/Documents/UDN NEWS/platform/app/characters/page.tsx` | header 加「新增專案」button（border style）|
+| `ailivex-platform/src/app/convert/page.tsx` | 素材轉換區主頁（新建） |
+| `ailivex-platform/src/app/api/convert/characters/route.ts` | 用戶角色清單 API（新建） |
+| `ailivex-platform/src/app/api/convert/audio/route.ts` | 口播稿→TTS API（新建） |
+| `ailivex-platform/src/app/api/convert/video/route.ts` | 上傳音檔→HeyGen API（新建） |
+| `ailivex-platform/src/app/gallery/page.tsx` | HeyGen 模型切換 UI + nav |
+| `ailivex-platform/src/app/documents/page.tsx` | 補齊 nav |
+| `ailivex-platform/src/app/stories/page.tsx` | 加素材轉換區 nav |
+| `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` | 接收 heygenEngine |
+| `media-worker/src/providers/types.ts` | VideoInput 加 heygenEngine |
+| `media-worker/src/providers/heygen-video.ts` | engine.type 動態化 |
+| `media-worker/src/handlers/worker.ts` | 傳遞 heygenEngine |
 
 ---
 
 ## 下一步
 
-**等 Adam 發回新版 UI/UX 設計稿**，收到後逐頁套進 `~/Documents/UDN NEWS/platform/` 的 Next.js 代碼。
-
-接棒後先確認：
-1. 讀 `project_udnnews_platform.md` memory 確認 P1-P4 已上線
-2. 確認 Cloud Run URL https://udnnews-platform-62w6sp6iba-de.a.run.app 還活著
-3. 等 Adam 貼設計稿，問清楚「全新還是局部調整」後動手
+等 Adam 測試素材轉換區：
+1. `/convert` 頁面口播稿生成音檔（輸入文字 → 選角色 → 生成音檔）
+2. 上傳音檔生成 HeyGen 影片（選模型三/四）
+3. 確認達賴聲音穩定度（06-25 emotion bug 修復後未驗收）
+4. 確認生圖 OpenAI edits 合成效果（06-26 切換後未驗收）
+5. ailivex soulCore 第三人稱問題：Firestore `characters/8mCpOmbJalsvdUxGRFzn.soulCore` 待確認
 
 ---
 
 ## 卡住 / 未解
 
-試劍客標記三個技術隱患（低優先，不阻塞 nav 功能）：
-1. `.catch(() => [])` 吞錯誤 → 用戶看空畫面不知系統死了
-2. `project.sources.length` 若欄位 undefined → 整頁崩潰（舊資料風險）
-3. Cold start × force-dynamic 無 loading skeleton → 體感差
-
-Adam 的新 UI/UX 設計稿未到，套版工作等待中。
+- 達賴聲音穩定度未驗收（emotion=neutral 修復後待測）
+- 生圖 OpenAI edits 合成效果未驗收（06-26 切換後待測）
+- ailivex soulCore 第三人稱：Firestore `characters/8mCpOmbJalsvdUxGRFzn.soulCore` 待確認是否已改
 
 ---
 
@@ -76,10 +81,11 @@ Adam 的新 UI/UX 設計稿未到，套版工作等待中。
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| UDN NEWS 平台 | `~/Documents/UDN NEWS/platform/` |
-| UDN NEWS Cloud Run | https://udnnews-platform-62w6sp6iba-de.a.run.app |
+| ailivex 平台 | `~/.ailive/ailivex-platform/` |
+| ailivex 生產 | https://ailivex-platform.vercel.app |
+| 素材轉換區 | https://ailivex-platform.vercel.app/convert |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-28 · 築*
+*2026-06-29 · 築*
