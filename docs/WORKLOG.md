@@ -2,6 +2,39 @@
 
 ---
 
+## 2026-07-01 — UDN NEWS 懶人包 bodyText + 圖片風格 + 版型圖參考生成
+
+### 背景 / WHY
+懶人包三階段流程做完後，用戶反饋：文案在進圖卡階段後消失、圖片生成沒有吃到版型圖、缺少內文欄位（bodyText）、刪除會跳警告視窗
+
+### 產出
+- `platform/app/projects/[id]/assets/AssetsClient.tsx` — bodyText 顯示/編輯、文案在 b_done 保留、刪除不跳 confirm、角色選擇器、圖片風格 UI
+- `platform/app/api/tasks/[id]/generate-card-image/route.ts` — 有版型圖走 /v1/images/edits，無版型走 /generations
+- `platform/app/api/tasks/[id]/analyze-cards/route.ts` — Phase B 生成 bodyText + IMAGE_STYLE_PROMPTS
+- `platform/lib/firestore.ts` — createLayout 接 imageSize
+- `platform/app/api/layouts/route.ts` — POST 接 imageSize
+- `platform/lib/types.ts` — LazypakCard 加 bodyText、LazypakImageStyle type、Layout 加 imageSize
+- Firestore 手補：UDN標準版型 `imageSize: "1024x1024"`
+- 部署：00041（bodyText）→ 00042（b_done 保留文案 + edits）→ 00043（imageSize fix）
+
+### 已解決
+- bodyText 欄位遺失 → Phase B prompt 生成 + API route 傳遞 + UI 顯示/編輯
+- 版型圖未吃進 → 改用 /v1/images/edits + layout.imageUrl 當 image[] 參數
+- imageSize 未存 → layouts POST API 補欄位，createLayout 函數補簽名
+- 刪除跳 confirm → 移除 4 處 window.confirm()
+- b_done 文案消失 → Phase B 區塊補文案唯讀顯示
+- git add 方括號路徑 zsh glob 爆 → 改用雙引號
+
+### ⚠️ 尚未解決
+- /v1/images/edits 版型參考效果待實際驗證（Card 2/3 還沒試）
+- 生成中 UI 反饋不夠明顯（Adam 說「卡住」其實是在等 bridge），評估加 spinner/progress
+
+### 待執行
+- [ ] 讓 Adam 試生 Card 2/3 確認版型圖效果
+- [ ] 評估 Phase A 改 fire-and-forget + 輪詢，改善 UX「卡住感」
+
+---
+
 ## 2026-06-28 — UDN NEWS 平台 Nav 連結 + Cloud Run 部署 + UI/UX 規格文件
 
 ### 背景 / WHY

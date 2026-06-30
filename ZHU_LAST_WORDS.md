@@ -24,12 +24,17 @@
 
 ---
 
-## 最新完成（2026-06-29）
+## 最新完成（2026-07-01）
 
-- ailivex working tree 整批 commit（v14.6.0）：品牌素材批量上傳、故事卡刪除確認、Kling 長寬比偵測、enqueue.ts 技術債清除
-- 新增「素材轉換區」（v14.7.0）：/convert 頁 + 3 支 API（characters/audio/video），部署 Vercel
-- HeyGen 模型三/四切換（v14.7.1）：media-worker Cloud Run 重部署 + Vercel 更新
-- 更新 documents/stories/gallery 頁 nav：補齊素材轉換區入口
+- 懶人包 `bodyText`（3-5 句內文）全流程：Phase B 生成、卡片顯示、編輯儲存
+- 圖片風格選擇器（真實照片/資訊圖表/插畫圖文/AI決定）接線到 Phase B IMAGE_STYLE_PROMPTS
+- 對話角色選擇器（懶人包可獨立選角色，不綁對話角色）
+- Phase B done 後文案保留（唯讀顯示在圖卡格網上方）
+- 刪除不跳 confirm 警告視窗（移除 4 處 window.confirm）
+- 有版型圖 → `/v1/images/edits`（layout.imageUrl 當 image[] 參數）；無版型 → /generations
+- layouts POST API + createLayout 補 imageSize 欄位
+- 現有 UDN標準版型 Firestore doc 手補 imageSize: "1024x1024"
+- 部署至 Cloud Run：00041 → 00042 → 00043
 
 ---
 
@@ -37,36 +42,30 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/src/app/convert/page.tsx` | 素材轉換區主頁（新建） |
-| `ailivex-platform/src/app/api/convert/characters/route.ts` | 用戶角色清單 API（新建） |
-| `ailivex-platform/src/app/api/convert/audio/route.ts` | 口播稿→TTS API（新建） |
-| `ailivex-platform/src/app/api/convert/video/route.ts` | 上傳音檔→HeyGen API（新建） |
-| `ailivex-platform/src/app/gallery/page.tsx` | HeyGen 模型切換 UI + nav |
-| `ailivex-platform/src/app/documents/page.tsx` | 補齊 nav |
-| `ailivex-platform/src/app/stories/page.tsx` | 加素材轉換區 nav |
-| `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` | 接收 heygenEngine |
-| `media-worker/src/providers/types.ts` | VideoInput 加 heygenEngine |
-| `media-worker/src/providers/heygen-video.ts` | engine.type 動態化 |
-| `media-worker/src/handlers/worker.ts` | 傳遞 heygenEngine |
+| `platform/app/projects/[id]/assets/AssetsClient.tsx` | bodyText 顯示/編輯、b_done 保留文案、刪除不跳 confirm、角色選擇器、圖片風格 UI |
+| `platform/app/api/tasks/[id]/generate-card-image/route.ts` | 有版型走 edits、無版型走 generations |
+| `platform/app/api/tasks/[id]/analyze-cards/route.ts` | Phase B 生成 bodyText + IMAGE_STYLE_PROMPTS |
+| `platform/lib/firestore.ts` | createLayout 接 imageSize |
+| `platform/app/api/layouts/route.ts` | POST 接 imageSize |
+| `platform/lib/types.ts` | LazypakCard 加 bodyText、LazypakImageStyle type |
 
 ---
 
 ## 下一步
 
-等 Adam 測試素材轉換區：
-1. `/convert` 頁面口播稿生成音檔（輸入文字 → 選角色 → 生成音檔）
-2. 上傳音檔生成 HeyGen 影片（選模型三/四）
-3. 確認達賴聲音穩定度（06-25 emotion bug 修復後未驗收）
-4. 確認生圖 OpenAI edits 合成效果（06-26 切換後未驗收）
-5. ailivex soulCore 第三人稱問題：Firestore `characters/8mCpOmbJalsvdUxGRFzn.soulCore` 待確認
+1. **讓 Adam 試生 Card 2/3**，確認 `/v1/images/edits` 版型參考效果是否符合預期
+2. **評估 Phase A UX**：同步等待 30–90 秒讓 Adam 感覺「卡住」→ 考慮 fire-and-forget + 前端輪詢
+
+主戰場：`~/Documents/UDN NEWS/platform/`
+Git remote：`https://github.com/linhocheng/udnnews-platform`
+Cloud Run：`udnnews-platform`，`asia-east1`，project `udnnews`
 
 ---
 
 ## 卡住 / 未解
 
-- 達賴聲音穩定度未驗收（emotion=neutral 修復後待測）
-- 生圖 OpenAI edits 合成效果未驗收（06-26 切換後待測）
-- ailivex soulCore 第三人稱：Firestore `characters/8mCpOmbJalsvdUxGRFzn.soulCore` 待確認是否已改
+- `/v1/images/edits` 版型參考效果待實際驗證（Card 1 是舊版生成的，Card 2/3 還沒試）
+- Phase A 同步等待 UX 反饋不夠（spinner/progress 待評估）
 
 ---
 
@@ -78,14 +77,12 @@
 | 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
 | 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份）|
+| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| ailivex 平台 | `~/.ailive/ailivex-platform/` |
-| ailivex 生產 | https://ailivex-platform.vercel.app |
-| 素材轉換區 | https://ailivex-platform.vercel.app/convert |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-06-29 · 築*
+*2026-07-01 · 築*
