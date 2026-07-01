@@ -6069,3 +6069,31 @@ Adam 要增加「素材轉換區」功能：口播稿生成音檔、上傳音檔
 - [ ] Adam 測試素材轉換區：上傳音檔生成 HeyGen 分身影片（模型三/四皆測）
 - [ ] 確認達賴聲音穩定度
 - [ ] 確認生圖合成效果
+
+---
+
+## 2026-07-01 — ailivex 影片生成 avatar_not_found 根治
+
+### 背景 / WHY
+素材轉換區上傳音檔後點「生成影片」，HeyGen 回傳 `avatar_not_found: 42a7099cd5fc41f6a48ba4d536ccd919`。前批已修 makePublic crash 和 heygenAvatarIdV3 UI，但 avatar ID 本身就是無效的。
+
+### 產出
+- `media-worker/src/providers/types.ts` — `avatarId` 改為 optional，新增 `avatarUrl?: string`
+- `media-worker/src/providers/heygen-video.ts` — 加 avatarUrl 即時 upload talking_photo 路徑
+- `media-worker/src/handlers/worker.ts` — VideoInput 解構補上 `avatarUrl`（第二輪修）
+- `ailivex-platform/src/app/api/convert/video/route.ts` — 改用 `heygenAvatarUrl || avatarUrl` 送 media-worker
+- `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` — 同上
+
+### 已解決
+- avatar_not_found → 根因：`talking_photo_id` 是短效 ID，存起來幾天就失效 → 修法：每次用圖片 URL 即時 upload 拿新鮮 ID → 馬上生成
+- worker.ts 靜默丟棄 avatarUrl → 根因：input 解構只取 avatarId → 修法：補上 avatarUrl
+
+### ⚠️ 尚未解決
+- 達賴聲音穩定度（06-25 emotion bug fix 後待測）
+- 生圖 OpenAI edits 效果（06-26 switch 後待測）
+- soulCore third-person issue（characters/8mCpOmbJalsvdUxGRFzn.soulCore）
+
+### 待執行
+- [ ] Adam 實際測試 /convert 完整流程（音檔生成 + 上傳影片生成）確認沒有其他斷點
+- [ ] 達賴聲音穩定度測試
+- [ ] soulCore third-person 問題診斷

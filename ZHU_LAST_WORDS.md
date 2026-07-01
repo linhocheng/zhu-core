@@ -26,15 +26,9 @@
 
 ## 最新完成（2026-07-01）
 
-- 懶人包 `bodyText`（3-5 句內文）全流程：Phase B 生成、卡片顯示、編輯儲存
-- 圖片風格選擇器（真實照片/資訊圖表/插畫圖文/AI決定）接線到 Phase B IMAGE_STYLE_PROMPTS
-- 對話角色選擇器（懶人包可獨立選角色，不綁對話角色）
-- Phase B done 後文案保留（唯讀顯示在圖卡格網上方）
-- 刪除不跳 confirm 警告視窗（移除 4 處 window.confirm）
-- 有版型圖 → `/v1/images/edits`（layout.imageUrl 當 image[] 參數）；無版型 → /generations
-- layouts POST API + createLayout 補 imageSize 欄位
-- 現有 UDN標準版型 Firestore doc 手補 imageSize: "1024x1024"
-- 部署至 Cloud Run：00041 → 00042 → 00043
+- 修正 ailivex `/convert` 素材轉換區影片生成 `avatar_not_found` — 根治並驗證通過
+- 根因：HeyGen `talking_photo_id` 是短效 ID，存起來幾天就失效；應每次用圖片 URL 即時 upload
+- media-worker 3 個檔（types.ts + heygen-video.ts + worker.ts）+ ailivex-platform 2 個路由改用 `avatarUrl` 路徑
 
 ---
 
@@ -42,30 +36,26 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `platform/app/projects/[id]/assets/AssetsClient.tsx` | bodyText 顯示/編輯、b_done 保留文案、刪除不跳 confirm、角色選擇器、圖片風格 UI |
-| `platform/app/api/tasks/[id]/generate-card-image/route.ts` | 有版型走 edits、無版型走 generations |
-| `platform/app/api/tasks/[id]/analyze-cards/route.ts` | Phase B 生成 bodyText + IMAGE_STYLE_PROMPTS |
-| `platform/lib/firestore.ts` | createLayout 接 imageSize |
-| `platform/app/api/layouts/route.ts` | POST 接 imageSize |
-| `platform/lib/types.ts` | LazypakCard 加 bodyText、LazypakImageStyle type |
+| `media-worker/src/providers/types.ts` | `avatarId` 改 optional，加 `avatarUrl?: string` |
+| `media-worker/src/providers/heygen-video.ts` | 加 avatarUrl 即時 upload talking_photo 路徑 |
+| `media-worker/src/handlers/worker.ts` | VideoInput 解構補上 `avatarUrl` |
+| `ailivex-platform/src/app/api/convert/video/route.ts` | 改用 `heygenAvatarUrl || avatarUrl` |
+| `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` | 同上 |
 
 ---
 
 ## 下一步
 
-1. **讓 Adam 試生 Card 2/3**，確認 `/v1/images/edits` 版型參考效果是否符合預期
-2. **評估 Phase A UX**：同步等待 30–90 秒讓 Adam 感覺「卡住」→ 考慮 fire-and-forget + 前端輪詢
-
-主戰場：`~/Documents/UDN NEWS/platform/`
-Git remote：`https://github.com/linhocheng/udnnews-platform`
-Cloud Run：`udnnews-platform`，`asia-east1`，project `udnnews`
+`/convert` 完整流程已通（上傳音檔 → HeyGen 影片生成 ✅）。
+接棒第一件：測試 /convert 口播稿生成音檔是否也通，或處理 `soulCore` third-person 問題（Firestore doc `characters/8mCpOmbJalsvdUxGRFzn`，field `soulCore` 有第三人稱指涉）。
 
 ---
 
 ## 卡住 / 未解
 
-- `/v1/images/edits` 版型參考效果待實際驗證（Card 1 是舊版生成的，Card 2/3 還沒試）
-- Phase A 同步等待 UX 反饋不夠（spinner/progress 待評估）
+- 達賴聲音穩定度（06-25 emotion bug fix 後待驗）
+- 生圖 OpenAI edits 效果（06-26 switch 後待驗）
+- soulCore third-person issue（characters/8mCpOmbJalsvdUxGRFzn）
 
 ---
 
@@ -80,7 +70,8 @@ Cloud Run：`udnnews-platform`，`asia-east1`，project `udnnews`
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| ailiveX 平台 | `~/.ailive/ailivex-platform/`，repo: linhocheng/ailivex-platform |
+| media-worker | `~/.ailive/media-worker/`（Cloud Run，無 git，改完要 Cloud Build） |
 
 ---
 
