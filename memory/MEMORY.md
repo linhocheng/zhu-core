@@ -2,6 +2,10 @@
 - [全局 prompt 不能編碼個性，只能管格式](feedback_global_prompt_must_not_encode_personality.md) — 語音 agent voiceRules/hardcoded塊含個性句會蓋所有角色靈魂；每條規則問「格式還是個性？」個性刪掉
 - [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
+- [模稜兩可的信號不能當成功證據](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」並確認看到；驗證失守第三張臉
+- [Cloud Run 後台長任務三旗標 SOP](reference_cloudrun_background_task_sop.md) — fire-and-forget worker 必帶 --no-cpu-throttling + --min-instances=1 + 先回202；client 斷線＝request 結束，保持 request open 擋不住 throttle
+- [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
+- [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
 - [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
 - [前沿學習筆記 RAG/MCP/Skills/記憶](reference_frontier_rag_mcp_skills_memory.md) — 重設計 ailive 記憶/RAG 前先讀；前沿+對照+階梯，最該先動 rerank
 - [StraTA 三個可搬的 agentic 編排模式](reference_strata_agentic_design_patterns.md) — 設計 MACS/ailivex fan-out/評分/自審時讀；Top-δ評分+最遠點多樣性+校準自審，RL訓練半部不適用

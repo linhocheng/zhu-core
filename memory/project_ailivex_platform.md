@@ -28,7 +28,13 @@ UI：`minutes` 選項 [3/5/8/12]，後台換算 minutes × 500 = wordCount（300
 
 壓測結果：2500 字 / 23 輪 / 585 秒（9.7 分鐘）全程完成，exit 0。LLM 成本走 bridge（Max 月費）。Cloud Run 固定費 ~$25-35/月（--no-cpu-throttling always-on billing）。
 
-**待辦（兩個微調，Adam 尚未說內容）。**
+**2026-07-02 續：語感微調定版（Adam 驗收通過）。** worker 加三種輪次（機制全用程式定，不丟 LLM）：①開場輪（turn 0，`kindHint` 讓開場者自然帶「跟誰碰面、聊什麼」，開場輪放寬「不介紹自己」規則）②短反應輪（中段 `turn % 5 === 3`，20-40 字簡短回應，節奏有呼吸）③強制收尾輪（主迴圈 break 後程式加一輪，開場者收尾、若他是最後講者則換人）。聖嚴×達賴喇嘛 600 字驗證：開場「喇嘛，我們又坐在一起了」/短反應「看見，就夠了」/收尾祝福送別，全部貼角色語感。
+
+**音檔層現況**：generate-audio 已端到端通（角色各自 LLM 貼情緒標記 → MiniMax `speech-2.8-hd` 逐句 TTS → buffer concat → GCS → audioUrl）；句間停頓已有（同角色 0.3s / 換人 0.5s，塞 `<#N#>` 標記讓 MiniMax 產靜音）。**結構隱憂**：同步跑在 Vercel route（300s 上限）逐句序列 TTS，12 分鐘腳本（30+ 句）很可能超時卡 running — 之後要搬去 podcast-worker 同款 fire-and-forget。
+
+**2026-07-02 三：文字過濾器 v1 上線**（`cloud-run/podcast-worker/src/text-filter.ts`）。設計原則（跟 Adam 對齊過）：①單位是**句型不是單字**（「好像有什麼鬆了一下」抓，「螺絲鬆了」「那個『我』鬆了」放行——模糊主語才是 AI 味）②抓到後 LLM 只重寫踩雷句、指令=「找出背後的具體事件用角色的話直說」，其他字不准動（保護角色感）③每輪入史前過濾，污染不擴散到後續輪次 ④詞庫 7 條內建 pattern + Firestore `config/podcastTextFilter` 可擴充（同 id 覆蓋、enabled:false 可關）。21 個單元測試全過（11 抓 10 放行）。**雷**：worker 是 Node ESM，相對 import 必帶 `.js` 副檔名（`moduleResolution: bundler` 編譯期不報錯、runtime 才炸 ERR_MODULE_NOT_FOUND）。Adam 之後會補文件陸續擴充詞庫。
+
+**待辦**：①音檔生成搬 Cloud Run（現在同步跑 Vercel 300s 上限，12 分鐘腳本會超時）②接收 Adam 的文字過濾器文件、灌詞庫（可考慮加 admin 管理頁）。
 **2026-07-01：素材轉換區 /convert 影片生成根治。** HeyGen `avatar_not_found` 根因：`talking_photo_id`（存在 `heygenAvatarId`）是短效 ID，上傳後過幾天就失效；舊成功 job 都是用 `avatarUrl`（GCS 圖片 URL）即時 upload 拿新鮮 ID。修：media-worker `types.ts`/`heygen-video.ts`/`worker.ts` 加 `avatarUrl` 路徑，ailivex-platform 兩條路由改送 `heygenAvatarUrl || avatarUrl`。兩輪 Cloud Build（第一輪漏 worker.ts），驗通 ✅。另附：uniform bucket-level access 導致 `makePublic()` crash 已修（上批）。`CharacterDoc` 加 `heygenAvatarIdV3`、UI avatar_iii greyed when no V3。**現役語音版本 v14**（script_draft + story_draft dispatch）。
 
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
