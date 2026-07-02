@@ -2,6 +2,32 @@
 
 ---
 
+## 2026-07-02（續）— Harness v2.2：driver 控制權反轉 + ledger + goal 審查 + 預授權
+
+### 背景 / WHY
+v2.1 合併後 Adam 問「更深一層的思考」，我提六點，Adam 核准四項動工（六出列：任務指派本來就走對話）。核心矛盾：用機率引擎執行確定性流程——修法是反轉控制權，程式持有迴圈。
+
+### 產出
+- `skills/task-harness/scripts/harness_driver.py` — driver：跑測試→classify→判 CB/政策→claude -p→diff 上限檢查，熔斷落地 HARNESS_STATE.md 五段+餵 ledger。沙箱：git repo 必須、模型禁 Bash、SIGINT=CB1
+- `skills/task-harness/scripts/harness_ledger.py` — scratchpad 聚合 ledger.jsonl + --stats
+- `SKILL.md` v2.2.0 — Driver 模式節（能用 driver 就用）、Goal 對抗審查三問、Phase 7 餵 ledger
+- `ledger.jsonl` — 已吃 11 筆（8 筆 UDN NEWS 歷史 + 3 筆今日驗證跑）
+- commit 9bb2316 已 push
+
+### 已解決
+- 驗證三條路徑全綠：mock 收斂（1 輪修復→exit 0 判 DONE）、mock 卡死（3 輪 TEST_FAIL→CB2 熔斷+HARNESS_STATE 五段落地）、真實 claude -p 端到端（toy bug 1 輪修復）
+- ledger 第一手訊號：歷史 8 筆 blocker 一半是 UNKNOWN → 印證破綻四（LLM 選枚舉不可靠）修對了
+
+### ⚠️ 尚未解決
+- driver 只跑過 toy 一輪收斂，真實多輪任務的 findings 傳遞品質未驗
+- 「要不要進 driver」的入口決策仍在對話層——結構到不了的最後一層，靠觸發詞+抽查
+
+### 待執行
+- [ ] 首個真實任務走 driver，觀察多輪 findings 累積 + 預授權政策實戰
+- [ ] ledger 累積 30+ 筆後回頭讀 stats，決定 SOP 下一輪修訂
+
+---
+
 ## 2026-07-02 — Task Harness v2.1 合併：v1 原檔入 repo + 四破綻修復
 
 ### 背景 / WHY
