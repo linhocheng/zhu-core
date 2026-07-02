@@ -2,6 +2,37 @@
 
 ---
 
+## 2026-07-02 — Task Harness v2.1 合併：v1 原檔入 repo + 四破綻修復
+
+### 背景 / WHY
+Task Harness v1（06-24 建）只活在 Mac `~/.claude/skills/`，從未進 git（血管孤島）。遠端 Code 築考古重建了 v2 草稿 + Adam 核准四破綻修復，但 v2 沒有 v1 原檔、多處靠猜。本窗接手 HANDOFF_20260702，以 v1 為本體合併。
+
+### 產出
+- `zhu-core/skills/task-harness/SKILL.md` — v2.1.0 合併版（v1 本體 + 四破綻修復）
+- `zhu-core/skills/task-harness/scripts/blocker_classify.py` — regex 六值分類器 + cb2/cb3 判定 + --self-test（全綠）
+- `zhu-core/skills/task-harness/{ONBOARDING,ZHU_CONTEXT}.md` — v1 原文入 repo（加 canonical 註記）
+- Mac `~/.claude/skills/task-harness/` — 只剩指標檔
+- `~/.claude/CLAUDE.md` — 觸發指向改 zhu-core 路徑
+- `zhu-core/CLAUDE.md` — 目錄圖補 skills/
+- `memory/project_task_harness.md` — canonical 位置更新
+
+### 已解決（v2 草稿猜錯、以 v1 原檔蓋掉的）
+- 四角色真名：執劍者/破幻者/閻羅/試劍客（v2 猜「監造/匠」）
+- 六值枚舉：TEST_FAIL/TYPE_ERROR/IMPORT_ERR/LOGIC_ERR/ENV_ERR/UNKNOWN（v2 猜 auth/network/…）
+- Phase 結構：閻羅在迴圈內每輪判（v2 移到迴圈外）
+- CB3 = iter>=5（v2 草稿內文自相矛盾寫 iter==3）
+- 分類器踩雷：裸 `typeerror` regex 把 runtime TypeError 攔進 TYPE_ERROR，實為 LOGIC_ERR——self-test 抓到，改優先級修復
+
+### ⚠️ 尚未解決
+- 試劍客跨公司模型（Codex/GPT-4o）——等 Adam 確認 GPT Pro
+- v2.1 尚未跑過真實任務，REFLECT 四問效果待首跑驗證
+
+### 待執行
+- [ ] 下次複雜代碼任務用 v2.1 首跑，驗證熔斷接手協議
+- [ ] ailivex 戰場待驗收（達賴聲音穩定度、生圖合成、soulCore 第三人稱）——見 07-01 條目
+
+---
+
 ## 2026-07-01 — UDN NEWS 懶人包 bodyText + 圖片風格 + 版型圖參考生成
 
 ### 背景 / WHY

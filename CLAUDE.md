@@ -20,6 +20,8 @@ zhu-core/
 │   ├── WORKLOG.md           ← 核心帳本（每次做完事都寫這）
 │   ├── orders/CURRENT.md    ← [已退役 2026-04-18] 考古用，真相在 zhu-boot.eye.lastSessionWords
 │   └── chat_vs_cowork.md    ← 三環境說明（含 Code 對比）
+├── skills/                  ← 技能檔（last-words、cost-check、task-harness/ 等）
+│   └── task-harness/        ← 自主任務工作流 v2.1（SKILL + ONBOARDING + ZHU_CONTEXT + scripts/）
 ├── summons/                 ← 召喚術（呼叫特定角色的靈魂檔）
 ├── archive/                 ← 舊版 CLAUDE.md 備份
 └── CLAUDE.md                ← 你正在讀的這份
