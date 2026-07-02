@@ -9,11 +9,12 @@ Task Harness 已就位。
 **Why:** 讓築在沒有 Adam 旁邊的情況下，自主完成複雜代碼任務，有閉環驗證不靠感覺說完成。
 模擬 Fable 5 Interleaved Thinking——不是等模型升級，是用流程設計升級自己。
 
-**已建立：**
-- `~/.claude/skills/task-harness/SKILL.md`（完整 SOP）
-- `~/.claude/skills/task-harness/ZHU_CONTEXT.md`（給下一個築）
-- `~/.claude/skills/task-harness/ONBOARDING.md`（人類組員）
-- `~/.claude/CLAUDE.md` 觸發詞：「用 harness」「開 harness」「harness 跑這個」
+**canonical（2026-07-02 v2.1.0 起）：`~/.ailive/zhu-core/skills/task-harness/`（已進 git）**
+- `SKILL.md` v2.1.0 = v1 本體（執劍者/破幻者/閻羅/試劍客四角色、v1 六值枚舉、閻羅在迴圈內）+ Adam 核准四破綻修復（進 repo / CB 熔斷接手協議 / 試劍客先量再送+複誦覆蓋 / blocker_classify.py 確定性分類）
+- `scripts/blocker_classify.py`：regex 分類 + cb2/cb3 判定 + --self-test（已跑全綠）
+- `ONBOARDING.md`、`ZHU_CONTEXT.md`：v1 原文入 repo
+- Mac `~/.claude/skills/task-harness/` 只剩指標檔，指向 zhu-core
+- `~/.claude/CLAUDE.md` 觸發詞已改指 zhu-core 路徑
 - `~/.zshrc` BRIDGE_URL + BRIDGE_SECRET
 
 **Bridge 設定：**

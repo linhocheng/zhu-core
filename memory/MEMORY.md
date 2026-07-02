@@ -1,3 +1,5 @@
+- [意川_WEB Vercel 部署（臨時）](project_yichuan_web_deploy.md) — https://web-tawny-six-67.vercel.app，純靜態前台，可能撤下，重部署 SOP 在記憶裡
+- [全局 prompt 不能編碼個性，只能管格式](feedback_global_prompt_must_not_encode_personality.md) — 語音 agent voiceRules/hardcoded塊含個性句會蓋所有角色靈魂；每條規則問「格式還是個性？」個性刪掉
 - [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
 - [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
@@ -123,3 +125,6 @@
 - [共用 loader 的 NameError 被吞→全版本靜默斷靈魂(244字fallback)](feedback_shared_loader_nameerror_silent_soulless.md) — build_system_prompt(共用)被vN新功能塞了不在scope的user_id→NameError→except吞→FALLBACK_PROMPT;連預設v12一起中招;log簽名=using fallback+soul=244;text路徑不受影響
 - [語音讀網址「讀不到/沒收到」三根因(機房IP擋/base頁非vN頁/plugin空格400)](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — ①fetch失敗=站擋機房IP(同UA本機curl比對) ②用戶在/realtime/base頁但agent是v13,改vN頁等於沒改 ③抓成功卻不開口=plugin對sonnet-4-6在assistant結尾注入純空格user撞400,override llm_node補(empty)
 - [Task Harness 系統上線（2026-06-24）](project_task_harness.md) — 代碼自主任務工作流：三斷路器+bridge接線+CB驗證全通；bridge-direct+x-api-key；心法：進harness不是成為harness
+- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；P1-P4全修完部署；林子宜+CoWoS首次端對端測試通；latestConvId/optimistic tasks/brief citations/角色試說話
+- [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
+- [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑

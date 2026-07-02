@@ -1,9 +1,36 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音版本 v2-v13、media-worker 任務派發系統、後台指派版本、v12 讀網址工作臺（2026-06-18）
+description: ailiveX 語音版本 v2-v14（v14=LIVE）、Podcast 腳本生成器（Cloud Run podcast-worker 已驗通 2500 字 9.7 分鐘）
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-02：Podcast 腳本生成器上線（/convert 頁面）。**
+
+架構：Vercel `/api/convert/podcast/generate-script` fire-and-forget（10s AbortSignal） → Cloud Run `ailivex-podcast-worker`（asia-east1） → 場控 Haiku + 角色 Sonnet × N 輪 → Firestore `tasks` 寫回 → 前端 5s 輪詢 20 分鐘。
+
+Cloud Run 關鍵設定（踩過三次雷才定的）：
+- `--no-cpu-throttling`：Vercel 10s 後斷線，Cloud Run 仍需全速跑後台任務，若 throttle 則 ~14 分鐘後 container 被清掉
+- `--min-instances=1`：無 active request 時 container 不被 scale-down（2500字需 ~10 分鐘）
+- `--timeout=3600`：Cloud Run request timeout 夠長
+- `--memory=512Mi`（從 256Mi 升）
+- firebase-admin ADC 不注 SA JSON（天條）
+- `BRIDGE_URL=bridge-direct.soul-polaroid.work`（繞開 Cloudflare CDN 低延遲）
+
+Worker 架構模式（最終正確版）：
+1. 收到 POST → 驗 auth → 冪等檢查 → 讀角色資料 → **立即回 202**
+2. `setImmediate(() => generateScript(...))` 在背景跑
+3. 完成後 `taskRef.update({ status: 'scripted', podcastScript: [...] })`
+
+UI：`minutes` 選項 [3/5/8/12]，後台換算 minutes × 500 = wordCount（3000字≈6分鐘，修正前是 3000字≈10分鐘）。
+
+腳本庫（/api/convert/podcast/scripts GET）：列出所有 scripted tasks，支援 inline 編輯（PATCH /api/tasks/[id]）/ 刪除（DELETE）。
+
+壓測結果：2500 字 / 23 輪 / 585 秒（9.7 分鐘）全程完成，exit 0。LLM 成本走 bridge（Max 月費）。Cloud Run 固定費 ~$25-35/月（--no-cpu-throttling always-on billing）。
+
+**待辦（兩個微調，Adam 尚未說內容）。**
+**2026-07-01：素材轉換區 /convert 影片生成根治。** HeyGen `avatar_not_found` 根因：`talking_photo_id`（存在 `heygenAvatarId`）是短效 ID，上傳後過幾天就失效；舊成功 job 都是用 `avatarUrl`（GCS 圖片 URL）即時 upload 拿新鮮 ID。修：media-worker `types.ts`/`heygen-video.ts`/`worker.ts` 加 `avatarUrl` 路徑，ailivex-platform 兩條路由改送 `heygenAvatarUrl || avatarUrl`。兩輪 Cloud Build（第一輪漏 worker.ts），驗通 ✅。另附：uniform bucket-level access 導致 `makePublic()` crash 已修（上批）。`CharacterDoc` 加 `heygenAvatarIdV3`、UI avatar_iii greyed when no V3。**現役語音版本 v14**（script_draft + story_draft dispatch）。
+
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
 **2026-06-10 更新：語音已能用且順**（下方 06-08「沒聲音」斷點已解）。改 MiniMax TTS 串流降延遲後曾「角色說兩次」，根因是串流最後一塊 status==2 整句重送，已修。
