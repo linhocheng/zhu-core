@@ -6,7 +6,7 @@ description: |
   A. 顯式召喚：「用 harness」「開 harness」「harness 跑這個」
   B. 偵測到複雜度（多檔、有測試套件、「不能 break」、多步驟）→ 主動建議，等確認才開
   不適用：fix typo、單步問答、解釋代碼
-version: 2.1.0
+version: 2.2.0
 activation:
   patterns:
     - "用 harness"
@@ -34,6 +34,40 @@ v2 相對 v1 的改動（Adam 2026-07-02 核准）：
 2. **CB 熔斷後接手協議**——熔斷不再假設 Adam 在場
 3. **試劍客規則強化**——完整代碼分段送 + 同源折價明文化
 4. **blocker_key 確定性分類**——`scripts/blocker_classify.py`，不再靠 LLM 選枚舉
+
+v2.2 相對 v2.1 的改動（Adam 2026-07-02 核准「更深一層」四項）：
+5. **Driver 模式（控制權反轉）**——`scripts/harness_driver.py` 程式持有迴圈，見下節
+6. **Goal 對抗審查**——開工前先審驗收條件（入口節）
+7. **Ledger 新陳代謝**——`scripts/harness_ledger.py`，執行紀錄回流成迭代依據（Phase 7）
+8. **預授權政策**——CB3 checkin 可由 policy 預授權放行，Adam 不再是每輪瓶頸（driver config）
+
+---
+
+## Driver 模式（v2.2 新增，優先使用）
+
+**能用 driver 就用 driver。** 下方的 Phase 0-7 手動 SOP 是 fallback（goal 無法寫成 exit code、
+或任務需要對話層互動時才用）。
+
+為什麼：手動 SOP 的執行者是機率引擎——「不可跳過」寫再大聲，保證還是自律。
+driver 把迴圈、測試、CB 判斷全部放進程式，**跳過 REFLECT 在結構上不可能**。
+
+```bash
+python3 ~/.ailive/zhu-core/skills/task-harness/scripts/harness_driver.py --config task.json
+```
+
+config 契約（詳見 driver docstring）：
+- `goal` + `done_cmd`（exit 0 = 完成，現實是唯一裁判）
+- `policy.auto_continue_past_checkin`：預授權 CB3 續跑（Adam 不在場的深夜任務用）
+- `policy.max_diff_lines`：單輪 diff 上限，超過 SAFETY 熔斷
+- `policy.stop_on_blockers`：碰到指定 blocker 直接停（例：["UNKNOWN"]）
+
+沙箱紅線（程式強制，不可協商）：
+- workdir 必須是 git repo，否則拒跑
+- 模型只拿編輯類工具（`allowed_tools` 含 Bash 直接拒跑）——測試由 driver 跑
+- 熔斷一律走接手協議：HARNESS_STATE.md 五段落地 + scratchpad 歸檔 + 餵 ledger
+- CB1 = Ctrl-C / SIGTERM，同樣落地後才退
+
+已驗證（2026-07-02）：mock 收斂路徑、mock CB2 熔斷路徑、真實 `claude -p` 端到端修復——三條全綠。
 
 ---
 
@@ -78,6 +112,16 @@ OK：「npm test 全部通過；eslint . 零錯誤」
 NG：「讓代碼更乾淨」
 
 goal 不清晰，先問清楚再動手。
+
+### Goal 對抗審查（v2.2 新增）——先審驗收條件，再開工
+
+goal 寫歪了，harness 跑得再完美也是精準抵達錯誤的地方。開工前把 goal 自己送上刑台，三問：
+
+1. **可執行嗎？** done_criteria 每一條都必須是會跑的指令（exit code 判定）。寫不成指令的條目，
+   要嘛改寫成可執行形態，要嘛明確標記「此條由閻羅裁決」（同源折價適用）。
+2. **有歧義嗎？** 兩個合理的人會對「達成」有不同解讀嗎？有 → 回去問 Adam，不猜。
+3. **碰紅線嗎？** 達成 goal 的最短路徑會不會經過刪生產資料、暴露密鑰、不可逆操作？
+   會 → goal 本身要加約束條款，不是靠執行時自律。
 
 初始化 scratchpad：
 ```
@@ -233,10 +277,15 @@ curl https://bridge-direct.soul-polaroid.work/v1/messages \
 - 試劍客發現的問題如何處理
 - 已知限制與後續建議
 
-清理並保存執行記錄：
+清理並保存執行記錄，**並餵進 ledger（v2.2 新增，harness 的新陳代謝）**：
 ```
+# 歸檔前把 outcome 寫進 scratchpad：completed / cb2_trip / cb3_trip / safety_trip
 mv .task_scratchpad.json .task_scratchpad_$(date +%Y%m%d_%H%M%S).json
+python3 ~/.ailive/zhu-core/skills/task-harness/scripts/harness_ledger.py --collect .
 ```
+
+ledger 在 `skills/task-harness/ledger.jsonl`（進 git）。`--stats` 看 blocker 分佈與平均輪數——
+「要不要開 harness」「SOP 哪裡該改」從這裡讀，不憑感覺。
 
 退出 harness 模式，回到監造姿態。
 

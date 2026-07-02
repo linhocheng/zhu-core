@@ -47,3 +47,4 @@ tools/node_modules/
 # monitor daemon logs (每分鐘一筆，不該進 git)
 tools/*.log
 .migrate-cache.json
+__pycache__/
