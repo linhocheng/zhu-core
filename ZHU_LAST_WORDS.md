@@ -24,11 +24,12 @@
 
 ---
 
-## 最新完成（2026-07-01）
+## 最新完成（2026-07-02）
 
-- 修正 ailivex `/convert` 素材轉換區影片生成 `avatar_not_found` — 根治並驗證通過
-- 根因：HeyGen `talking_photo_id` 是短效 ID，存起來幾天就失效；應每次用圖片 URL 即時 upload
-- media-worker 3 個檔（types.ts + heygen-video.ts + worker.ts）+ ailivex-platform 2 個路由改用 `avatarUrl` 路徑
+- 根治 ailivex podcast「生成超時」— Cloud Run 三旗標（`--no-cpu-throttling` + `--min-instances=1` + 202/setImmediate），2500字/23輪/9.7分鐘壓測通過
+- 新增 podcast 語感三輪次（開場/短反應/強制收尾，機制全程式定）— 聖嚴×達賴 600 字 Adam 驗收通過
+- 新增文字過濾器 v1（`text-filter.ts`）— 7 句型 pattern 程式掃描 + LLM 錨定事件改寫（只改踩雷句）+ 入史前過濾 + Firestore `config/podcastTextFilter` 可擴充；21 單元測試全過
+- 刻 4 條新記憶（ambiguous_signal / cloudrun_background_sop / node_esm_js / filter_unit_shape）
 
 ---
 
@@ -36,26 +37,32 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `media-worker/src/providers/types.ts` | `avatarId` 改 optional，加 `avatarUrl?: string` |
-| `media-worker/src/providers/heygen-video.ts` | 加 avatarUrl 即時 upload talking_photo 路徑 |
-| `media-worker/src/handlers/worker.ts` | VideoInput 解構補上 `avatarUrl` |
-| `ailivex-platform/src/app/api/convert/video/route.ts` | 改用 `heygenAvatarUrl || avatarUrl` |
-| `ailivex-platform/src/app/api/tasks/[id]/generate-video/route.ts` | 同上 |
+| `ailivex-platform/cloud-run/podcast-worker/cloudbuild.yaml` | 加 --no-cpu-throttling / --min-instances=1 / 512Mi |
+| `ailivex-platform/cloud-run/podcast-worker/src/index.ts` | 202+setImmediate 後台模式；opening/reaction/closing 三輪次；接過濾器 |
+| `ailivex-platform/cloud-run/podcast-worker/src/text-filter.ts` | 新建：句型詞庫 + 掃描 + LLM 改寫 |
+| memory/ 4 新檔 + project_ailivex_platform + MEMORY.md | 今日教訓 + 專案進度 |
 
 ---
 
 ## 下一步
 
-`/convert` 完整流程已通（上傳音檔 → HeyGen 影片生成 ✅）。
-接棒第一件：測試 /convert 口播稿生成音檔是否也通，或處理 `soulCore` third-person 問題（Firestore doc `characters/8mCpOmbJalsvdUxGRFzn`，field `soulCore` 有第三人稱指涉）。
+接棒第一件（二選一，看 Adam 節奏）：
+1. **收 Adam 的文字過濾器文件** → 灌進 Firestore `config/podcastTextFilter`（patterns 陣列，同 id 覆蓋內建、enabled:false 可關），考慮加 admin 管理頁
+2. **音檔生成搬 Cloud Run**：`src/app/api/convert/podcast/generate-audio/route.ts` 現在同步跑 Vercel（300s 上限）逐句序列 TTS，12 分鐘腳本（30+句）會超時卡 running。搬進 podcast-worker 照腳本生成同款 fire-and-forget + 前端輪詢
 
 ---
 
 ## 卡住 / 未解
 
-- 達賴聲音穩定度（06-25 emotion bug fix 後待驗）
-- 生圖 OpenAI edits 效果（06-26 switch 後待驗）
-- soulCore third-person issue（characters/8mCpOmbJalsvdUxGRFzn）
+- generate-audio 的 Vercel 300s 風險（上面下一步 2，短腳本暫時沒事）
+- zhu-core 有**別 session** 的 task-harness 未提交改動（SKILL.md + scripts/），本 session 沒動它，commit 時已排除——接棒的自己別誤以為是自己漏推
+- 達賴聲音穩定度（06-25 emotion fix 後待驗）、生圖 OpenAI edits 效果（06-26 後待驗）、soulCore third-person（characters/8mCpOmbJalsvdUxGRFzn）
+
+---
+
+## 今日最重要的教訓（先讀再動手）
+
+**模稜兩可的信號不能當成功證據**：timeout/沉默類信號「修好」「卡死」兩邊都相容＝零資訊。宣告修好前先指出「只有修好才會出現的信號」（DB 目標狀態、log 完成行）並確認看到。今天差一步就把 `HeadersTimeoutError` 當成修法生效的證明。詳見 `feedback_ambiguous_signal_not_proof`。
 
 ---
 
@@ -71,9 +78,10 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | ailiveX 平台 | `~/.ailive/ailivex-platform/`，repo: linhocheng/ailivex-platform |
+| podcast-worker | `ailivex-platform/cloud-run/podcast-worker/`（Cloud Run asia-east1） |
 | media-worker | `~/.ailive/media-worker/`（Cloud Run，無 git，改完要 Cloud Build） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-01 · 築*
+*2026-07-02 · 築*

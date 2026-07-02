@@ -6128,3 +6128,30 @@ Adam 要增加「素材轉換區」功能：口播稿生成音檔、上傳音檔
 - [ ] Adam 實際測試 /convert 完整流程（音檔生成 + 上傳影片生成）確認沒有其他斷點
 - [ ] 達賴聲音穩定度測試
 - [ ] soulCore third-person 問題診斷
+
+---
+
+## 2026-07-02 — ailivex podcast 生產線：超時根治 + 語感微調 + 文字過濾器 v1
+
+### 背景 / WHY
+接前日 compacted session：podcast 腳本生成「生成超時」。修完後 Adam 加兩個微調（自然開場/結尾、接話節奏），再聊出文字過濾器（擋「鬆了一點」類 AI 詞）並授權做 v1。
+
+### 產出
+- 檔案：`~/.ailive/ailivex-platform/cloud-run/podcast-worker/cloudbuild.yaml` — 加 `--no-cpu-throttling` + `--min-instances=1` + memory 512Mi
+- 檔案：`~/.ailive/ailivex-platform/cloud-run/podcast-worker/src/index.ts` — 202/setImmediate 後台模式；三種輪次（opening turn0 / reaction 中段每5輪 / closing 強制收尾輪，機制全程式定）；接 text-filter 入史前過濾
+- 檔案：`~/.ailive/ailivex-platform/cloud-run/podcast-worker/src/text-filter.ts` — 新建：7 句型 pattern 掃描（程式）+ LLM 錨定事件改寫（只改踩雷句）+ Firestore `config/podcastTextFilter` 可擴充
+- 記憶：4 新條（ambiguous_signal / cloudrun_background_sop / node_esm_js / filter_unit_shape）+ project_ailivex_platform 三段更新 + MEMORY.md 索引
+
+### 已解決
+- 生成超時 → Cloud Run client 斷線＝request 結束→throttle + min-instances=0 回收跑一半的 container → 三旗標 + 202/setImmediate；2500字/23輪/585s 壓測通過
+- 開場太客套或沒開場 → opening 輪專屬提示（跟誰碰面聊什麼，角色自己的話）；結尾戛然而止 → 程式強制 closing 輪；節奏太密 → 中段每 5 輪穿插 20-40 字短反應輪。聖嚴×達賴 600 字 Adam 驗收通過
+- AI 味詞 → text-filter v1：21 單元測試全過（11 抓 10 放行），端到端不打壞生成
+- Node ESM import 無 .js 副檔名 container 起不來 → 補 .js 重部署
+
+### ⚠️ 尚未解決
+- 音檔生成（generate-audio）同步跑在 Vercel route（300s 上限）逐句序列 TTS——12 分鐘腳本（30+句）大概率超時卡 running。短腳本沒事。方向：搬進 podcast-worker 同款 fire-and-forget
+- zhu-core 有別 session 的 task-harness 未提交改動（SKILL.md modified + 新 scripts），不是本 session 的，未動
+
+### 待執行
+- [ ] 收 Adam 文字過濾器文件 → 灌 Firestore `config/podcastTextFilter`（考慮加 admin 管理頁）
+- [ ] 音檔生成搬 Cloud Run podcast-worker
