@@ -6237,3 +6237,27 @@ Adam 要求檢查 ailive-platform 角色記憶哪裡可優化。對標 ailiveX �
 - [ ] runner/sleep 邏輯收斂成單一 lib
 - [ ] 白皮書 P1：status 軸 + resolved 判定
 - [ ] 白皮書 P2：七區塊注入 + 動態想起移植
+
+## 2026-07-03（續）— ailive-platform 記憶第二批：sleep 收斂 + 檢索升級
+
+### 產出
+- `src/lib/sleep-engine.ts` — sleep 邏輯唯一真相（/api/sleep 薄殼 + runner 直呼），getMemoryType 四份分裂收斂（sleep/runner/cleanup 各自缺不同來源）
+- `src/lib/text-similarity.ts` — 加 bigramTokens/bm25Scores，knowledge-search 與 episodic 共用
+- `src/lib/episodic-memory.ts` — query 分支改 BM25+cosine RRF（2:1）+ 保底補位 + 命中計數；Python loader 鏡像 bump
+- Vercel prod 部署 ×2 + realtime agent Cloud Run revision 00069
+
+### 已解決
+- runner 每小時跑的是舊腦（hitCount>=5 舊規則+cosine 0.88 硬刪）→ 引擎收斂，prod dryRun 驗過
+- 專名檢索：純 cosine 加法計分救不了坍縮（無關記憶 cos 0.86）→ RRF；踩到「BM25 全 0 並列拿好名次」陷阱，修為無命中不給貢獻；「雪玉如初」實測命中 ✅
+- 被動注入不 bump hitCount → 常用記憶 30 天被 archive 判死；TS/Python 雙路徑都補了
+- 發現 resolved 機制已存在（promise-reflection，比白皮書版完整）——先前 P1 診斷過重
+
+### ⚠️ 尚未解決
+- episodic limit(50) 無 orderBy＝Firestore doc ID 序的任意 50 條，角色記憶多於 50 會漏；正解 orderBy createdAt 需 composite index（characterId+createdAt），下次動
+- agent revision 00069 容器 Ready 但 LiveKit worker 註冊要真實撥號才能確認；回滾＝切流量回 00068
+- 白皮書 P2 未動：type 六型七區塊、通話中動態想起（v15）
+
+### 待執行
+- [ ] platform_insights composite index + episodic 改 orderBy createdAt desc
+- [ ] Adam 真機撥號驗語音注入 + hitCount bump（Firestore 看 lastHitAt 更新）
+- [ ] P2 動態想起移植評估
