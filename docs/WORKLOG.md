@@ -6357,3 +6357,29 @@ Adam 要 UDN 議題工作台從「後台感」升級成對外正式產品（參�
 - [ ] Adam 驗收 UDN 新設計（手機底部分頁＋收集頁分診）與 ailiveX 新增角色流程
 - [ ] Adam 點頭後：防洩漏格式層禁令＋Tracy 防背誦補丁落地
 - [ ] 兩 repo 收版控（等指令）
+
+---
+
+## 2026-07-04 — ailiveX 評測衝刺晚場（補記：文案商務化＋UI/UX 商用化）
+
+> 接 7/3 用量管制三批之後、同日日場（soulCore 退役+UDN）之前的晚場，補記歸檔。
+
+### 背景 / WHY
+評測用戶將至，Adam 要求：全站文案商務正式化、UI/UX 從「自家工具感」拉到「對外正式產品」，手機端要好用。
+
+### 產出（全部已 commit + push + Vercel 部署）
+- v15.1.0 文案商務化：稱謂統一「您」、刪 v1.0/pipeline/進房等黑話、登入頁「與記得您的 AI 團隊共事」、空狀態補引導句、額度口徑統一「時數已用罄/服務窗口」
+- v15.2.0 UI/UX：FrontNav 手機 <768px 收底部 tab bar（大廳/文件/媒體庫/更多 bottom sheet，safe-area 適配）；大廳角色卡加「上次聊到」脈絡行（characters API 附 lastTopic/lastAt）；admin 首屏健康度摘要列（/api/admin/overview，count() 聚合，額度告警亮紅直達 users）；admin users 手機 grid 重排
+- v15.2.1 對話頁 header 重構：語音通話升 accent 主 CTA、媒體庫/故事板/文件收 ⋯ 溢出選單（原本無標籤 icon 與對話動作混排）；「記得你」→「記得您」
+- 撥號頁點數用盡文案卡（角色名下方琥珀卡＋按鈕停用＋開頁主動檢查）；期滿警示面板納入文件額度（加購份數）
+
+### 已解決
+- Adam 真機驗證：語音時數到點自動掛斷 ✅（Phase 2 計費鏈全通）
+- voice_quota_exhausted 生碼露出 → 根因是只修了 v14 頁、用戶走 v15 頁 → v15 頁修好＋改為開頁即知
+
+### ⚠️ 尚未解決
+- 語音文件 job 走 legacy Cloud Run doc-worker 時失敗不退額度（退量只在 Vercel doc-process）
+- admin 對 admin 帳號設額度無效但 UI 未擋（小瑕疵）
+
+### 待執行
+- [ ] 評測回饋進來後的 UI 微調（Adam 手機實走）
