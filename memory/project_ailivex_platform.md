@@ -5,6 +5,13 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-03/04：用量管制＋UI 商用化上線（v15.0.0→v15.2.1，已 commit）。**
+- 用量管制（總量制、user 層全角色共用）：UserDoc 四欄（voiceSecondsLimit/Used、docsLimit/Used，留空=不限、used 只加不減）；收斂點 `src/lib/quota.ts`＋`agent/quota_meter.py`
+- 語音三執法點：token route 403 → agent heartbeat 30s 計量＋到點 delete_room 直斷（Adam 真機驗過）→ participant_disconnected 無人即結算+關房（根治空房計費）；文件＝createDocumentJob transaction 扣、失敗退、語音 write_document 同閘
+- admin 用戶頁：剩餘顯示、期滿警示面板（加值=已用+新增）、密碼直改、刪除用戶（級聯 access、admin 不可刪）；admin 首屏健康度摘要（/api/admin/overview）
+- UI/UX：手機底部 tab bar＋更多 sheet（FrontNav）、大廳卡「上次聊到」、chat header 語音通話主 CTA＋溢出選單、全站文案商務化（您/時數已用罄/服務窗口）
+- 邊界記帳：legacy Cloud Run doc-worker 失敗不退額度；同用戶並行通話總超用 <2 分鐘
+
 **2026-07-04：soulCore 全退役（鑄造靈魂功能取消，Adam 指示）。**
 - 背景：讀路徑一直是 soulCore 優先 soul fallback → 雙真相分裂：吳念真上場用 540 字舊摘要（完整 2499 字在 soul 被忽略）、Echo 用半套 1712/3424。Adam 改 soul 沒生效卻不自知
 - 遷移：14 角色合併單一 soul 欄位（吳念真/Echo 依 Adam 拍板用完整長版，其他沿用線上版），淘汰版備份 `soulLegacy`，`soulCore` 欄位刪除 → **已部署 v15 靠 fallback 鏈立即吃到新靈魂，免重部署**（資料層修法）
