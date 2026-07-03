@@ -6315,3 +6315,45 @@ Adam 要用戶端用量管制：語音總時數 + 文件生成上限。拍板：
 ### 計費路徑四象限（稽核結論）
 - 正常掛斷/重整/斷線/離線：participant 離房 → 立即 flush（精確到秒）
 - agent 硬 crash：heartbeat 30s，最多漏 30 秒且方向是少算（用戶有利）
+
+---
+
+## 2026-07-04 — UDN 產品化大改版 + ailiveX soulCore 退役（接 7/3 深夜至 7/4）
+
+### 背景 / WHY
+Adam 要 UDN 議題工作台從「後台感」升級成對外正式產品（參考 Claude Design）；ailiveX 取消鑄造靈魂；診斷 v15 反應慢。
+
+### 產出
+**ailiveX（已部署 Vercel，未 commit）：**
+- v15 反應慢根因＝Anthropic 付費 key 餘額見底（400 credit too low），Adam 儲值後解
+- soulCore 全退役：14 角色遷移單一 soul 欄位（吳念真 540→2499、Echo 1712→3424 依 Adam 拍板用完整版；淘汰版備份 soulLegacy；soulCore 欄位刪除→已部署 v15 靠 fallback 立即生效不用重部署）
+- 刪：`src/lib/soul.ts`、`api/admin/soul-enhance/`、管理頁鑄造/提煉 UI（編輯視窗合併單一靈魂框）
+- 讀路徑統一讀 soul：dialogue / doc-process / text-filter rewrite / generate-story / `agent/firestore_loader.py`（additive）
+
+**UDN platform（已部署 Cloud Run rev 00060-00066，未 commit 66 檔）：**
+- Podcast 分鐘制（1/2/3/5 分 ×400字）＋腳本逐行 TextFilterBadge；破音字管道確認本來就通
+- Brief 人工編輯：`components/BriefContent.tsx`（檢視↔編輯、存新版本走 server transaction）；「文稿階段必可編輯」刻 memory＋盤點五處全通過
+- 全站去冗 8 處：素材 6→3 鈕、概覽進度條退役（WorkflowSteps 刪）、假時間排序修真、收集假進度條拆、「重新生成Brief」假鈕刪、雙 CTA 合一、聊天側欄 Avatar ID/對話 ID 收掉、Brief 生成鈕收斂到 autoGenerate 血管
+- Claude Design token 換血：`globals.css` 調色盤重映射（陶土 #C96442／鼠尾草／磚紅，舊變數名收斂點一次換全站）＋宋體 display＋圓角陰影表＋`lib/ui.ts` 按鈕三階
+- AppShell 大改版：`components/AppShell.tsx`（桌機側欄／手機抽屜）＋ ProjectNav 雙態（桌機頂 tab／手機底部分頁列）＋全頁單欄化（十頁全搬）＋聊天/素材側面板收掉
+- 收集頁重生＝分診收件匣：狀態分段（全部/待決定/已採用/已排除）、已排除壓縮細列可還原、sticky「彙整成 Brief」CTA、宋體標題卡
+- 破格掃描：body `overflow-wrap: break-word` 全站保險＋3 處 flex ellipsis 補 `minWidth:0`（Brief 來源／收集細列／手機頂欄標題）
+
+**討論（未實作，等 Adam 指令）：**
+- 角色防洩漏三層設計：Tracy 錨點守則 review（讚＋防背誦補丁草稿）＋格式層薄禁令四條＋確定性出戲保險絲 pattern——具體文字都在對話裡給過
+
+### 已解決
+- 「福哥反應慢」→ API 餘額臨界（部分請求 400）→ 儲值
+- 吳念真/Echo 一直用縮水靈魂 → soulCore 優先於 soul 的雙真相分裂 → 單一欄位化
+- Brief 來源長網址破格 → flex ellipsis 少 minWidth:0 ＋全站無斷點字串 → body overflow-wrap＋逐點修
+
+### ⚠️ 尚未解決
+- **ailiveX 別名輸入疑似 bug**：Adam 說先不用修。已排除資料形狀問題；指紋＝腳本種的有值、手動輸入的全空。本機重現環境 SOP 已驗通（escaped SA env + lsof 清 port + SESSION_SECRET 自簽 cookie），下次直接用
+- **兩 repo 未 commit**：ailivex-platform（soulCore 退役 8 檔，v15.2.1 之後）；UDN platform（66 檔全部改版）。Adam 未說收版控，線上比 git 新
+- UDN 四張表單頁（角色/版型 新增/編輯）只套殼未細修（輸入框還是舊直角）；素材頁卡片細節未掃
+- 角色防洩漏三層：文字都擬好，等 Adam 說上
+
+### 待執行
+- [ ] Adam 驗收 UDN 新設計（手機底部分頁＋收集頁分診）與 ailiveX 新增角色流程
+- [ ] Adam 點頭後：防洩漏格式層禁令＋Tracy 防背誦補丁落地
+- [ ] 兩 repo 收版控（等指令）
