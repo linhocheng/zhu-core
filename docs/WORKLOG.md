@@ -6211,3 +6211,29 @@ Adam：「掃描優化 ailiveX 的角色記憶，文字與語音，看現場再�
 - [ ] Adam 測 v15（開場接尾 + 動態想起）
 - [ ] 接手工程師移植 ailive-platform 時支援答疑（白皮書 §7 checklist / §8 雷區）
 - [ ] 兩 repo commit（等 Adam 說收版控）
+
+## 2026-07-03 — ailive-platform 記憶系統止血（白皮書對標第一批）
+
+### 背景 / WHY
+Adam 要求檢查 ailive-platform 角色記憶哪裡可優化。對標 ailiveX 白皮書掃出兩個正在出血的 P0，當天修完上線。
+
+### 產出
+- 檔案：`src/lib/text-similarity.ts` — 去重雙門檻判準收斂點（cosine>=0.9 AND CJK bigram>=0.5）
+- 檔案：`src/app/api/sleep/route.ts` + `runner/route.ts` — 兩份 merge 邏輯都切到共用判準；硬刪改 archive+mergedInto 可溯；加同 userId 限制
+- 檔案：`src/app/api/dialogue/route.ts` — inline episodic 舊版（73行）切到 lib loadEpisodicBlock
+- 驗證：`scripts/_zhu_verify_episodic.ts`、`scripts/_zhu_verify_dedup.ts`（未 commit，本機 replay 工具）
+
+### 已解決
+- sleep/runner 純 cosine 0.88 硬刪＝記憶殺手 → 真實資料實測 191 對中 163 對誤殺（cos 0.95+ 但零詞彙重疊，「夢境自我洞察」vs「漸進式微調」差點被合併）→ 雙門檻後只判 28 對真重複
+- dialogue inline IDENTITY_SOURCES 白名單復辟：voice/auto_extract 來源在 sleep 補標 memoryType 前對文字對話 100% 隱形（聖嚴 bug 在未同步副本裡復活）→ 切 lib 滅真相分裂，順帶拿到 query 語義排序（驗證：不同 query 撈不同記憶集 ✅）
+- 搭車上線：匿名 session 不持久化 user profile（金星事件防護，之前 session 改的未 commit）
+- v0.0.0.001 + v0.0.0.002 已 commit + push + Vercel prod 部署 + prod dryRun sleep 煙霧測試過
+
+### ⚠️ 尚未解決（技術債，主動標記）
+- **runner runSleepTask 整段仍是 sleep route 的舊版複製體**（hitCount>=5 舊升級規則、無 rootRelevance/memoryType）——這次只收斂了去重判準，整段邏輯的真相分裂還在。正解：抽 lib/sleep-engine.ts 兩邊共用
+- 白皮書 P1/P2 未動：status 軸（resolved/stale）、episodic 被動注入的詞彙混合計分、type 六型七區塊、通話中動態想起（v15）
+
+### 待執行
+- [ ] runner/sleep 邏輯收斂成單一 lib
+- [ ] 白皮書 P1：status 軸 + resolved 判定
+- [ ] 白皮書 P2：七區塊注入 + 動態想起移植
