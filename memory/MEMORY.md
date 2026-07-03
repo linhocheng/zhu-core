@@ -133,3 +133,4 @@
 - [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
 - [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑
 - [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版
+- [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本

@@ -121,10 +121,21 @@ metadata:
 
 **懶人包卡住事故（2026-07-02 晚，Adam 實測抓到）**：素材區點生成懶人包卡 a_pending。根因＝批次二的「dispatch fire-and-forget 呼叫自己」在**主平台這台有 CPU throttling 的 Cloud Run 上必死**（10s abort 斷線→CPU 掐掉→生成死；log 零蹤跡=請求根本沒到或到了就被殺）——同款病早上在 ailivex 修對了、這裡重犯。**正解＝Phase A 丟給 always-on 的 podcast-worker**（新端點 `/run-lazypak`：讀 task/character/brief/messages → bridge → 寫回 a_done/failed）。教訓刻死：**有 throttling 的 Cloud Run 上不能 fire-and-forget（不管呼叫自己或被呼叫），背景工作一律進 no-throttle worker**。連帶雷：worker cloudbuild 的 `--set-env-vars` 是整組替換，重部署會洗掉 update 注入的機密——已改 `--update-env-vars`（合併）。驗證：卡住的 FKZN 重派 9 秒完成 a_done。
 
+## 產品化大改版（2026-07-03/04，rev 00060→00066 全上線）
+
+- **Podcast 分鐘制**：UI 選 1/2/3/5 分鐘（×400字/分折 wordCount），worker 零改動；podcast 腳本逐行編輯區掛 TextFilterBadge
+- **Brief 人工編輯**：`components/BriefContent.tsx` 檢視↔編輯切換，儲存走既有 transaction 存新版本；「文稿階段必可編輯」鐵律（見 [[udnnews-drafts-must-be-editable]]），五處文稿全可編輯
+- **全站去冗 8 處**：素材選擇 6→3 鈕（audio/video/image 是下游產物不派工）、概覽進度條退役（WorkflowSteps 刪除，assets_pending/done 狀態程式裡根本不會寫入）、收集「時間」排序修真、假掃描進度條拆、「重新生成 Brief」假鈕刪、收集雙 CTA 合一、聊天側欄 Avatar ID（舊欄位）/對話 ID 收掉、Brief 頁生成鈕只在 ?autoGenerate=1 出現（收集頁重彙整血管）
+- **Claude Design 換血**：globals.css 調色盤重映射（--cyan→陶土 #C96442、--lime→鼠尾草 #7D9464、--red→磚紅 #B3402E，舊變數名=收斂點一次換全站）＋ Noto Serif TC display ＋ radius/shadow token ＋ `lib/ui.ts` 按鈕三階（btn.primary/secondary/ghost/danger + card + displayTitle）
+- **AppShell 大改版**：`components/AppShell.tsx` 桌機常駐側欄（議題/角色庫/版型庫）、手機漢堡抽屜；ProjectNav 雙態＝桌機頂 tab＋手機固定底部分頁列（.proj-page 留底部空間）；各頁自建 header/麵包屑全退役；全頁單欄化（max 860，根治手機破版）
+- **收集頁重生＝分診收件匣**：狀態分段（全部/待決定/已採用/已排除+計數）、已排除壓縮成虛線細列可還原、sticky「彙整成 Brief」CTA（手機讓開底部分頁列 .collect-cta）、宋體標題決定卡
+- **破格修**：body `overflow-wrap: break-word` 全站保險（繼承屬性，蓋 pre-wrap）＋3 處 flex ellipsis 補 minWidth:0（flex 子元素不加 minWidth:0 時 ellipsis 靜默失效）
+- 未細修：四張表單頁（角色/版型 新增/編輯）只套殼、素材頁卡片舊直角殘留
+
 ## 部署狀態
 
-- Cloud Run 主平台：00060（2026-07-02 健檢四批+lazypak worker 化）；worker 00004（/run-lazypak）；Scheduler `podcast-watchdog` ENABLED
-- **未 commit**：今天全部改動（podcast 移植 + 過濾器 + 健檢四批 + lazypak 修）
+- Cloud Run 主平台：**00066**（2026-07-04 產品化改版全上線）；worker 00004（/run-lazypak）；Scheduler `podcast-watchdog` ENABLED
+- **未 commit**：66 檔（7/2 健檢＋7/3-04 整個產品化改版）——線上比 git 新
 
 ## Nav 連結（2026-06-28 補）
 

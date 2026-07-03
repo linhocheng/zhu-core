@@ -1,9 +1,16 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音版本 v2-v14（v14=LIVE）、Podcast 腳本生成器（Cloud Run podcast-worker 已驗通 2500 字 9.7 分鐘）
+description: ailiveX 語音 v2-v15（v15=DEFAULT）、Podcast 腳本生成器、soulCore 已退役（2026-07-04 單一 soul 欄位）
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-04：soulCore 全退役（鑄造靈魂功能取消，Adam 指示）。**
+- 背景：讀路徑一直是 soulCore 優先 soul fallback → 雙真相分裂：吳念真上場用 540 字舊摘要（完整 2499 字在 soul 被忽略）、Echo 用半套 1712/3424。Adam 改 soul 沒生效卻不自知
+- 遷移：14 角色合併單一 soul 欄位（吳念真/Echo 依 Adam 拍板用完整長版，其他沿用線上版），淘汰版備份 `soulLegacy`，`soulCore` 欄位刪除 → **已部署 v15 靠 fallback 鏈立即吃到新靈魂，免重部署**（資料層修法）
+- 代碼：刪 `lib/soul.ts`＋`api/admin/soul-enhance`＋管理頁鑄造/提煉 UI（編輯視窗只剩單一靈魂框「直接吃這個」）；讀路徑統一讀 soul：dialogue/doc-process/text-filter rewrite/generate-story/`firestore_loader.py`。Vercel 已部署，**未 commit**（v15.2.1 之後 8 檔）
+- 新增角色流程＝貼靈魂→建立→即上場；別名/能力建立後在編輯視窗補
+- **別名輸入疑似 bug 未修**（Adam：先不用）：資料形狀正常；指紋＝腳本種的（聖嚴/星雲/達賴）有值、手動輸入的全空。本機重現 SOP 已通：escaped SA 走系統 env 起 dev、lsof -ti :3000 清殘留、SESSION_SECRET 自簽 admin cookie、puppeteer-core+系統 Chrome
 
 **2026-07-02：Podcast 腳本生成器上線（/convert 頁面）。**
 
