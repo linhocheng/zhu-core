@@ -6299,3 +6299,19 @@ Adam 要用戶端用量管制：語音總時數 + 文件生成上限。拍板：
 ### 已知邊界（記帳）
 - 語音文件 job 若走 legacy Cloud Run doc-worker 路徑，生成失敗不會退額度（退量只釘在 Vercel /api/doc-process）
 - 同用戶兩通並行通話：各自計量都會寫、斷線判斷各自算，總超用上限 < 2 分鐘（可接受）
+
+## 2026-07-03（五）— ailiveX 用戶管理頁全面整修 + 計費防呆 + v15.0.0 收版控
+
+### 產出
+- admin/users：剩餘時間直接顯示（剩 45m/時間已用完紅標）、期滿警示面板（開頁即見+加值時數確認，新上限=已用+加值）、密碼直改即生效（PATCH newPassword）、刪除用戶（DELETE 級聯清 access、admin 不可刪）
+- 計費防呆：heartbeat 60s→30s；v15 agent 補 participant_disconnected → 無人立即 flush 結算+關房（根治空房繼續計費+flush 延遲）；room disconnected/job shutdown 雙 belt；flush idempotent
+- **ailivex repo 收版控：v15.0.0 單 commit 53 檔（7/2 戰役+用量管制全部），push 完成，git=prod 缺口關閉**
+
+### 驗證
+- E2E 帳號生命週期六步全過（建→舊密登入→改密→舊失效/新生效→刪→登入失敗）
+- VoiceMeter 單元測試重跑過；agent quota-p3 revision registered worker
+- 推前安檢：dist/ 不入庫、無密鑰、無 node_modules
+
+### 計費路徑四象限（稽核結論）
+- 正常掛斷/重整/斷線/離線：participant 離房 → 立即 flush（精確到秒）
+- agent 硬 crash：heartbeat 30s，最多漏 30 秒且方向是少算（用戶有利）
