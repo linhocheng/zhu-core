@@ -85,10 +85,46 @@ metadata:
 - /v1/images/edits 版型參考效果：Card 1 是舊版本生成的，Card 2/3 要試
 - Phase A 同步 UX：30-90s 等待讓 Adam 感覺「卡住」→ 評估 fire-and-forget + 輪詢
 
+## Podcast 全套移植（2026-07-02，從 ailivex 搬入，E2E 通）
+
+- **新服務 `udnnews-podcast-worker`**（Cloud Run asia-east1，三旗標 no-cpu-throttling/min-instances=1/timeout=3600，SA 同主平台，ADC）。`cloud-run/podcast-worker/`：index.ts（/run 腳本 + /run-audio 音檔，202+setImmediate）+ rhythm/text-filter/tts-normalize/audio 模組
+- **UDN 適配**：Character.prompt=靈魂、voiceId、日期 ISO 字串（touch helper）、失敗寫 resultContent、音檔寫 resultUrl（audio/{taskId}.mp3 + ?v= 防快取）；**節目識別保留**（主持人=characters[0] 開場歡迎聽眾介紹來賓、來賓首輪自介 guestIntro kind、主持人收尾道別）+ 議題 Brief 打底（dispatch 讀 latest brief 傳 briefContent 給 worker，每輪 prompt 帶前 2000 字）
+- **品質全家桶生效**：場控逐輪+接話動作盤+節奏禁令+角色自審（拿程式統計照鏡子）+文字過濾器
+- routes：dispatch podcast 分支改 dispatchPodcastScript 派工（15s timeout）；podcast/generate-audio 改 202 派工；PodcastPhase 加 'audio_pending'；Character 加 voiceSettings 欄位（worker 已讀，編輯 UI 待加）
+- 前端：PodcastTaskCard 加 8s 輪詢（script_pending/audio_pending）+ 兩種生成中狀態
+- **機密 env 不進 repo**：worker 的 WORKER_SECRET/BRIDGE_SECRET/MINIMAX_* 用 gcloud run services update 注入（沿用本 project env 直塞慣例）；主平台加 PODCAST_WORKER_URL/PODCAST_WORKER_SECRET
+- 踩雷重演：--allow-unauthenticated 沒設 IAM → add-iam-policy-binding allUsers 補（同 ailivex）
+- E2E（真實 API）：林子宜×張立「毒駕法令」600字，腳本 284s/8輪（節目開場+真反駁+Brief 事實），音檔 53s/2.6MB GCS HEAD 200
+- worker URL: https://udnnews-podcast-worker-62w6sp6iba-de.a.run.app
+
+## 文字過濾器（2026-07-02，接續 podcast 移植同日）
+
+- **`lib/text-filter.ts` 唯一真相源**：三分類詞庫（ai-flavor 7 條句型 + clickbait 4 條農場詞 + style-guide 預留）；Firestore `config/textFilter` 可擴充（同 id 覆蓋、enabled:false 關內建）；scanText 回位置供 UI 標記；rewriteFlagged 只改踩雷句（可帶 characterPrompt 保語氣）
+- **兩種模式看出口**：出口是機器（口播稿→TTS）＝dispatch 內自動改寫；出口是人（懶人包文案）＝`components/TextFilterBadge.tsx` 標記模式（debounce 掃描 + 踩雷 chips + 一鍵改寫由編輯決定）。podcast 腳本在 worker 內已有自己的過濾（生成時逐輪）
+- API：`/api/text-filter/scan`（純掃描）+ `/api/text-filter/rewrite`（LLM 改寫，回 before/after 數）
+- 11 個單元測試全過（震驚了所有人✓抓/股價震盪✓放、小編✓抓/編輯部✓放）；prod scan API 驗通（三類混合句全中）
+- 接入點現況：口播稿✅自動、懶人包 Phase A copy✅標記、Phase B bodyText/cardText 未接（TextFilterBadge 可直接重用）、chat 未接（刻意，即時性）
+
+## 全站健檢修理（2026-07-02 四批全上線）
+
+三路審計（議題流/素材流/角色+動線）+ 現場對賬（抓到 3 筆卡 53-58h 的殭屍懶人包）後，四批修完：
+
+**批次一（P0 資料完整性）**：`deleteProject` 級聯（recursiveDelete 子集合 + conversations/tasks by projectId + GCS）；`deleteTaskWithAssets`（audio/podcast→audio/{id}.mp3、summary_card→lazypak/{id}/ prefix）；**watchdog `/api/tasks/watchdog`**（分類型門檻：podcast 40-45分/video 30分+HeyGen主動收斂/其餘15分，Cloud Scheduler `podcast-watchdog` 每5分，**第一發清掉 3 筆殭屍**）；`saveBrief` 改 transaction（版本 server 決定，回 {id,version}，兩分頁不撞號）。
+
+**批次二**：懶人包 Phase A 改 fire-and-forget（dispatch→generate-lazypak 死碼復活，失敗自標 failed）+ LazypakTaskCard 6s 輪詢；TTS 統一 `speech-2.8-hd`（generate-audio + /api/tts，原 speech-02-turbo）；**voiceSettings 全鏈打通**（edit 頁語音設定區塊 slider+select → PATCH clamp 驗證 → updateCharacter → 兩條 TTS 讀取）。
+
+**批次三**：時間範圍/收集模式假控制項接通（Project 存 collectMode/timeRange，mode 決定每源篇數 3/5/8，timeRange 映射 Tavily day/week/month）；Brief scrape 改 allSettled 逐源容錯（全掛才報錯）+ 進度條補 scraping 段；collect 期間 status='collecting' 結束回歸；chat route 加 maxDuration=300 + **先存訊息再派工**（派工失敗降級回 dispatchError，不吞 AI 回覆）。
+
+**批次四**：角色軟刪除（archived 旗標，DELETE API=封存，列表過濾，歷史引用仍可取回；edit 頁「封存角色」按鈕）；prompt <80 字黃色非阻擋提示（new+edit）；建角色 returnTo 動線（聊天頁跳建角色帶 `?returnTo=`，建完送回原對話；useSearchParams 需 Suspense 包裹）；dispatch 不支援類型標 failed 不留永久 pending。
+
+**未修（記錄在案）**：RWD 手機版（固定欄 grid 不塌陷）、全站頂欄、scrape SPA 站殘骸無警示、Tavily 錯誤原文直穿、生圖串行無重試、msg.id retry 重複、「試說話」不出聲。
+
+**懶人包卡住事故（2026-07-02 晚，Adam 實測抓到）**：素材區點生成懶人包卡 a_pending。根因＝批次二的「dispatch fire-and-forget 呼叫自己」在**主平台這台有 CPU throttling 的 Cloud Run 上必死**（10s abort 斷線→CPU 掐掉→生成死；log 零蹤跡=請求根本沒到或到了就被殺）——同款病早上在 ailivex 修對了、這裡重犯。**正解＝Phase A 丟給 always-on 的 podcast-worker**（新端點 `/run-lazypak`：讀 task/character/brief/messages → bridge → 寫回 a_done/failed）。教訓刻死：**有 throttling 的 Cloud Run 上不能 fire-and-forget（不管呼叫自己或被呼叫），背景工作一律進 no-throttle worker**。連帶雷：worker cloudbuild 的 `--set-env-vars` 是整組替換，重部署會洗掉 update 注入的機密——已改 `--update-env-vars`（合併）。驗證：卡住的 FKZN 重派 9 秒完成 a_done。
+
 ## 部署狀態
 
-- Cloud Run 目前版本：**00043-lx8（2026-07-01，懶人包完整 + imageSize fix）**
-- 本機與 Cloud Run 同步
+- Cloud Run 主平台：00060（2026-07-02 健檢四批+lazypak worker 化）；worker 00004（/run-lazypak）；Scheduler `podcast-watchdog` ENABLED
+- **未 commit**：今天全部改動（podcast 移植 + 過濾器 + 健檢四批 + lazypak 修）
 
 ## Nav 連結（2026-06-28 補）
 

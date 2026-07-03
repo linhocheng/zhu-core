@@ -34,7 +34,36 @@ UI：`minutes` 選項 [3/5/8/12]，後台換算 minutes × 500 = wordCount（300
 
 **2026-07-02 三：文字過濾器 v1 上線**（`cloud-run/podcast-worker/src/text-filter.ts`）。設計原則（跟 Adam 對齊過）：①單位是**句型不是單字**（「好像有什麼鬆了一下」抓，「螺絲鬆了」「那個『我』鬆了」放行——模糊主語才是 AI 味）②抓到後 LLM 只重寫踩雷句、指令=「找出背後的具體事件用角色的話直說」，其他字不准動（保護角色感）③每輪入史前過濾，污染不擴散到後續輪次 ④詞庫 7 條內建 pattern + Firestore `config/podcastTextFilter` 可擴充（同 id 覆蓋、enabled:false 可關）。21 個單元測試全過（11 抓 10 放行）。**雷**：worker 是 Node ESM，相對 import 必帶 `.js` 副檔名（`moduleResolution: bundler` 編譯期不報錯、runtime 才炸 ERR_MODULE_NOT_FOUND）。Adam 之後會補文件陸續擴充詞庫。
 
-**待辦**：①音檔生成搬 Cloud Run（現在同步跑 Vercel 300s 上限，12 分鐘腳本會超時）②接收 Adam 的文字過濾器文件、灌詞庫（可考慮加 admin 管理頁）。
+**2026-07-02 四：節奏+自審系統上線（A/B 驗證過）+ 全站修理批 + Podcast 素材頁兩端。**
+
+**節奏+自審**（Adam 核心要求：角色要有立場有稜角，不是模型）：`rhythm.ts`（21 測試全過）＝逐輪禁令（語氣詞冷卻/複述開場禁止/程式保底刪除）+ 場控升導演（七動作盤含「直接反駁」「堅持不讓步」，程式否決連用）+ 收尾前先判斷已收束否 + **殺青後角色自審**（角色拿靈魂檔+全場逐字稿+程式算好的統計回看「這像不像我」，雙向：改口頭禪也改讓步太快處；只准改自己的句子、過文字過濾器、程式複數驗收）。A/B 同題 2500 字：達賴（呵呵呵）開頭 12/14→5/13（自審保留 5 次=靈魂判斷「笑是我」）、真吵起來了（兩次正面反對+1959 流亡/閉關六年人生事件+互相將軍）、收尾結在正拍。**代價：2500 字 9.7 分→18 分**，4000/6000 字會超前端 20 分輪詢——超時訊息已改「仍在生成中會自動出現在腳本庫」不算失敗。設計心法：頻率歸程式、像不像我歸靈魂；自審成立的前提=程式把鏡子擦亮（模型不會數數、對自己偏寬容）。
+
+**全站修理批**（盤點三路調查→Adam 核准逐項修完）：①podcast DELETE 連帶刪 GCS ②realtime-v14 掛斷後「返回對話」按鈕 ③用戶端導航統一 `_components/FrontNav.tsx`（五份複製體收斂成唯一真相源，NAV_ITEMS 加一條全站生效）④stories/[id] 六寫入點+documents 刪除補錯誤提示 ⑤admin 語音測試指 v14/音檔 URL ?v= 防快取/下載按鈕 ⑥「回到腳本清掉音檔」bug（回不去根因=setAudioUrl('')）。
+
+**Podcast 素材頁兩端**：`/podcasts`（客戶端，PodcastLibrary 抽成 `_components/PodcastLibrary.tsx` 共用）+ `/admin/podcasts`（跨用戶總表含歸屬帳號，admin API 避 composite index 用 JS 排序，admin DELETE 連帶 GCS）。**「後台看不見素材」根因=素材綁生成帳號（user-centric），admin 帳號名下零筆**——不是資料丟失。**「背景任務前端隱形」已修**：scripts API 連 running/failed 一起回，腳本庫顯示「生成中」（每 10 秒自動刷新）/「失敗」（可清除）卡片。
+
+**2026-07-02 五：音檔生成搬 Cloud Run 完成（300s 撞牆根治）+ voiceSettings 全管道打通。**
+
+**voiceSettings 查核**（Adam 問音量有沒有帶到）：即時語音 v14 ✅ 本來就帶（realtime_agent_v14.py）、/api/tts ✅；**Podcast 音檔 ❌ vol 寫死 1.0、口播稿 ❌ 全寫死**——都修了，逐句 TTS 帶各角色 speed/vol/pitch/emotion（達賴 vol=3、聖嚴 speed=0.9 實資料）。行為變化：podcast speed 角色有設就以角色為準，沒設維持 1.05。
+
+**音檔搬遷**：worker 加 `/run-audio`（202+setImmediate 同款）+ `audio.ts`（標記/TTS/GCS 整段搬）+ `tts-normalize.ts` vendor copy + opencc-js 依賴；cloudbuild 加 `FIREBASE_STORAGE_BUCKET` env + `MINIMAX_API_KEY/GROUP_ID` secrets。Vercel generate-audio 瘦身成派工（202，maxDuration 30）；tasks GET 補回 audioUrl/podcastPhase；前端 PodcastPanel 輪詢 30 分鐘、PodcastLibrary 派工後卡片轉「音檔生成中」靠 hasRunning 自動刷新接手。E2E：7 輪腳本 58 秒完成、GCS HEAD 200 / 3.2MB、audioUrl 帶 ?v=。部署前本機 `node dist/index.js` boot 過（Node ESM .js 教訓）。
+
+**2026-07-02 六：文字過濾器擴展到全站文稿出口**（與 UDN 同源基因：`src/lib/text-filter.ts` 三分類詞庫 ai-flavor/clickbait/style-guide + Firestore `config/textFilter` 擴充）。接入盤點結論（出口是機器→自動改寫；出口是人→標記給編輯）：①文件生成（doc-process）＝自動改寫（md 生成後渲染前，帶 soulCore 保語氣）②故事劇情 storyText＋圖卡 cardText＝`_components/TextFilterBadge.tsx` 標記模式（debounce 掃描+chips+一鍵改寫）③script_draft 確認卡（gallery）＝標記模式 ④podcast＝worker 內已有 ⑤chat/即時語音＝刻意不接 ⑥convert 口播稿＝用戶手寫不用。API：`/api/text-filter/scan`+`/rewrite`（帶 session auth）。
+
+**2026-07-03：記憶系統四批強化全上線（v15 = DEFAULT）。**
+
+三方審計（文字機制/語音機制/現場資料）發現：語音記憶是二等公民（119/149 無 embedding、無 status、hitCount 凍 0、去重全逃）、檢索只有 fact 走語義、resolved 從未實作、歸檔靠手動按鈕、兩邊 15 項不一致。
+
+**批次一（對等性）**：loader `load_memories` 補 createdAt/status/hitCount（救活 stale/active-recall/時間感死碼）+ core 優先排序；`write_memory` 加 embedding（Python Vertex REST via SA token）+去重+importance 參數；save_conversation 不再空字串蓋 summary；**回填 125 筆 embedding 全成**。
+**批次二（檢索）**：memory.ts 六型全參與混合計分（cosine×0.7 + 詞彙重疊×0.3 + core/importance 加成，保底補位）；lexTerms=CJK bigram+拉丁詞。
+**批次三（生命週期）**：萃取時順判 question 已解→resolved（TS+Py 鏡像，LLM 回編號程式映射）；`/api/cron/memory-maintenance`（Vercel cron 每日，CRON_SECRET，晉升/歸檔/stale 全自動）。
+**批次四（v15）**：`main_v15/realtime_agent_v15/cloudbuild-v15`＋頁面＋registry；**通話中動態想起**（用戶發言→節流 45s/前2句不觸發→背景 embedding→cosine≥0.5 top2→update_instructions 注入【此刻想起】+ bump hits）；開場 bump hits（語音記憶能升 core）；remember importance=6。`DEFAULT_VOICE_VERSION='v15'`，**回滾=切回 v14 重部 Vercel**（v14 服務未動）。
+
+**去重的兩課（重要）**：①0.85 純 cosine 大誤殺（75 筆，「牧羊人」被「用戶叫Adam」吸走）——紅線沒刪全部救回；②同型+0.92 仍誤殺（長篇敘事同人物同語域 embedding 天生擠）——**正解=雙門檻 cosine≥0.9 AND CJK bigram 重疊≥0.5**（真重複必然逐字近似）。兩邊寫入路徑已同步雙門檻。最終 123 筆活躍、26 筆真重複歸檔（dedupOf 可溯）。
+
+**終極鑑別信號驗過**：「還記得咖啡館手沖」「牧羊人的旅程」（皆語音來源、修復前無 embedding）文字檢索都撈到＋時間前綴；無關 query 不硬塞。v15 `registered worker` ✅。
+
+**待辦**：①v15 真機撥打驗動態想起（CLI 驗不了語音迴圈；log 信號=`[v15 recall] 想起 N 條`）②Adam 過濾器文件 ③兩 repo 未 commit ④文字路徑缺 globalPrompts/lastSession 注入（15 項不一致的反向項，記帳未修）⑤120 條撈取無 orderBy（池最大 38 條未達上限，緩）。
 **2026-07-01：素材轉換區 /convert 影片生成根治。** HeyGen `avatar_not_found` 根因：`talking_photo_id`（存在 `heygenAvatarId`）是短效 ID，上傳後過幾天就失效；舊成功 job 都是用 `avatarUrl`（GCS 圖片 URL）即時 upload 拿新鮮 ID。修：media-worker `types.ts`/`heygen-video.ts`/`worker.ts` 加 `avatarUrl` 路徑，ailivex-platform 兩條路由改送 `heygenAvatarUrl || avatarUrl`。兩輪 Cloud Build（第一輪漏 worker.ts），驗通 ✅。另附：uniform bucket-level access 導致 `makePublic()` crash 已修（上批）。`CharacterDoc` 加 `heygenAvatarIdV3`、UI avatar_iii greyed when no V3。**現役語音版本 v14**（script_draft + story_draft dispatch）。
 
 ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。

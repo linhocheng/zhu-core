@@ -2,8 +2,8 @@
 - [全局 prompt 不能編碼個性，只能管格式](feedback_global_prompt_must_not_encode_personality.md) — 語音 agent voiceRules/hardcoded塊含個性句會蓋所有角色靈魂；每條規則問「格式還是個性？」個性刪掉
 - [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
-- [模稜兩可的信號不能當成功證據](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」並確認看到；驗證失守第三張臉
-- [Cloud Run 後台長任務三旗標 SOP](reference_cloudrun_background_task_sop.md) — fire-and-forget worker 必帶 --no-cpu-throttling + --min-instances=1 + 先回202；client 斷線＝request 結束，保持 request open 擋不住 throttle
+- [模稜兩可的信號不能當成功證據（天條）](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」；差點對 Adam 說謊，已刻全局 CLAUDE.md 天條
+- [Cloud Run 後台長任務三旗標 SOP（天條級）](reference_cloudrun_background_task_sop.md) — 有 throttling 的 Cloud Run 上不存在 fire-and-forget（呼叫自己也一樣），背景工作一律進 no-throttle worker；同日踩兩次已刻全局 CLAUDE.md 天條；--set-env-vars 洗機密用 --update-env-vars
 - [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
 - [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
 - [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
@@ -132,3 +132,4 @@
 - [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；P1-P4全修完部署；林子宜+CoWoS首次端對端測試通；latestConvId/optimistic tasks/brief citations/角色試說話
 - [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
 - [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑
+- [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版

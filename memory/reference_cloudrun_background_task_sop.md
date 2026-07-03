@@ -1,11 +1,13 @@
 ---
 name: cloud-run-sop
-description: fire-and-forget worker 必帶 --no-cpu-throttling + --min-instances=1 + 先回202；client 斷線＝request 結束，「保持 request open」擋不住 throttle
+description: 天條級：有 throttling 的 Cloud Run 上不存在 fire-and-forget（呼叫自己也一樣）；背景工作一律進 no-throttle worker；--set-env-vars 會洗機密用 --update-env-vars
 metadata: 
   node_type: memory
   type: reference
   originSessionId: 8ef8c0e1-e3c6-4a5a-b395-90a13805cb5c
 ---
+
+**⚠️ 2026-07-02 晚同日重犯後升天條（已刻入 ~/.claude/CLAUDE.md 全局）**：早上在 ailivex worker 修對了這個病，晚上在 UDN 主平台（throttled）寫了「dispatch fire-and-forget 呼叫自己另一條 route + 10s abort」——同款死法：abort 斷線→CPU 掐掉→生成死、log 零蹤跡。**教訓的完整形狀：不是「worker 要開旗標」，是「throttled service 上任何形式的背景工作都不存在」——呼叫自己也不行。** 長活只有一條路：丟給 no-throttle worker（主平台只做驗證＋標狀態＋派工等 202）。連帶雷：worker cloudbuild `--set-env-vars` 整組替換會洗掉 update 注入的機密，一律 `--update-env-vars`。
 
 **Cloud Run 上跑「回應後繼續算」的後台任務（fire-and-forget worker），deploy 必帶三件套**：
 

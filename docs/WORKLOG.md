@@ -6181,3 +6181,33 @@ Adam 要增加「素材轉換區」功能：口播稿生成音檔、上傳音檔
 ### 待執行
 - [ ] 收 Adam 文字過濾器文件 → 灌 Firestore `config/podcastTextFilter`（考慮加 admin 管理頁）
 - [ ] 音檔生成搬 Cloud Run podcast-worker
+
+---
+
+## 2026-07-03 — ailiveX 記憶系統四批強化 + 白皮書交棒
+
+### 背景 / WHY
+Adam：「掃描優化 ailiveX 的角色記憶，文字與語音，看現場再聊」→ 三方審計（文字機制/語音機制/Firestore 資料體檢）→ 授權整晚四批連跑 → v15 上線 → 寫白皮書給接手工程師（記憶功能將移植到 ailive-platform）。
+
+### 產出
+- `ailivex-platform/agent/firestore_loader.py` — 讀補 3 欄位+core排序、寫加 embedding/雙門檻去重/importance、resolved、recall 三函數（全 additive）
+- `ailivex-platform/src/lib/memory.ts` — 六型混合檢索（cosine×0.7+詞彙×0.3+tier/imp）、雙門檻 isDuplicate、resolved 判定
+- `ailivex-platform/src/app/api/cron/memory-maintenance/` + `vercel.json` — 生命週期每日自動化
+- `ailivex-platform/agent/{main_v15,realtime_agent_v15,cloudbuild-v15}` + `/realtime-v15/` 頁（含 v15 徽章）— 通話中動態想起，DEFAULT 切 v15
+- `ailivex-platform/docs/MEMORY_SYSTEM_WHITEPAPER.md` — 移植白皮書（設計規範+踩雷紀錄+checklist），已交 Adam
+- 資料手術：125 筆 embedding 回填、26 筆真重複歸檔（兩輪誤殺全救回）、123 筆活躍
+
+### 已解決
+- 語音記憶二等公民（無embedding/無status/hitCount凍0）→ 根治+回填；終極信號驗過：語音講的「咖啡館手沖」「牧羊人」文字檢索撈得到
+- 檢索與話題脫鉤 → 六型全語義+詞彙救援
+- question 永不 resolved / 歸檔靠手按 → 萃取判 resolved + 每日 cron
+- 通話中不會想起舊記憶 → v15 動態想起（節流45s/floor0.5/top2，log 信號 `[v15 recall]`）
+
+### ⚠️ 尚未解決
+- v15 真機撥打驗收（Adam 晚點測）；文字路徑缺 globalPrompts/lastSession 注入（反向不對等項）；120 條撈取無 orderBy（池未達上限，緩）
+- **ailivex + UDN 兩 repo 大量未 commit**（7/2-7/3 全部改動）
+
+### 待執行
+- [ ] Adam 測 v15（開場接尾 + 動態想起）
+- [ ] 接手工程師移植 ailive-platform 時支援答疑（白皮書 §7 checklist / §8 雷區）
+- [ ] 兩 repo commit（等 Adam 說收版控）
