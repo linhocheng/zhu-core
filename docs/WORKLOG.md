@@ -6279,3 +6279,23 @@ Adam 要用戶端用量管制：語音總時數 + 文件生成上限。拍板：
 - **語音通話中計量還沒有**：現在只擋「開始新通話」，通話中不扣不斷（agent heartbeat + 到點直斷 = Phase 2，要動 v15 agent——v15 尚未真機驗，疊改動有風險，等 Adam 排）
 - **語音 write_document 不經 createDocumentJob**（agent 原生 tool 直寫 Firestore）→ 語音生成文件目前不吃額度，Phase 2 一併堵
 - admin 對自己設額度不會生效（admin 全免管制），UI 沒擋 admin 列——小瑕疵
+
+## 2026-07-03（四）— ailiveX 用量管制 Phase 2（語音側上線）
+
+### 產出（ailivex-platform，未 commit）
+- `agent/quota_meter.py`（新共用模組）：VoiceMeter（heartbeat 每 60s 寫實際秒數回 users doc；到點呼叫 on_timeout）+ consume_doc_quota（Python transaction 版，對齊 TS）
+- `agent/realtime_agent_v15.py`：metadata 讀 voiceSecondsRemaining；session.start 後啟動計量，到點 delete_room 直斷；flush 走獨立 shutdown callback（不掛 _finalize 的早退邏輯）；write_document 加額度閘
+- Cloud Build quota-p2-07032001 → v15 revision 00003-v22 ACTIVE，log 見 registered worker
+
+### 驗證
+- VoiceMeter 單元測試：remaining=3s 在 3.0s 觸發 kick、回報 3s；不限量 cancel+flush 回報=經過秒數
+- Python consume_doc_quota 真 Firestore：limit=1 第 1 次 True 第 2 次 False；add_voice_seconds 45 秒正確落庫
+
+### ⚠️ 待真機驗（Adam）
+- 設一個測試用戶語音額度 0.05h（180s）→ 撥打 → 預期 3 分鐘整通話被直接斷房
+- log 鑑別信號：`[quota] voice meter started remaining=180s` → `[quota] room deleted (voice quota exhausted)`
+- 通話後 admin 用戶管理頁該用戶語音已用應顯示 ~3m
+
+### 已知邊界（記帳）
+- 語音文件 job 若走 legacy Cloud Run doc-worker 路徑，生成失敗不會退額度（退量只釘在 Vercel /api/doc-process）
+- 同用戶兩通並行通話：各自計量都會寫、斷線判斷各自算，總超用上限 < 2 分鐘（可接受）
