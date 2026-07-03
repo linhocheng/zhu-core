@@ -6261,3 +6261,21 @@ Adam 要求檢查 ailive-platform 角色記憶哪裡可優化。對標 ailiveX �
 - [ ] platform_insights composite index + episodic 改 orderBy createdAt desc
 - [ ] Adam 真機撥號驗語音注入 + hitCount bump（Firestore 看 lastHitAt 更新）
 - [ ] P2 動態想起移植評估
+
+## 2026-07-03（三）— ailiveX 用量管制 Phase 1（Vercel 側全上線）
+
+### 背景 / WHY
+Adam 要用戶端用量管制：語音總時數 + 文件生成上限。拍板：總量制（不重置）、user 層總額（全角色共用）、時數用完直接斷。
+
+### 產出（ailivex-platform，未 commit——repo 慣例只在被要求時 commit）
+- `src/lib/quota.ts` — 收斂點：checkVoiceQuota / addVoiceSeconds / consumeDocQuota(transaction) / refundDocQuota
+- `collections.ts` UserDoc + 4 欄（voiceSecondsLimit/Used、docsLimit/Used；缺省不限、used 只加不減）
+- token route：非 admin 發 token 前查額度，403 voice_quota_exhausted；剩餘秒數塞 room metadata（Phase 2 agent 用）
+- `documents.ts` createDocumentJob 進 transaction 扣量；dialogue 額度滿誠實告知；doc-process 終局 failed 退量
+- admin users API GET+PATCH（limit null=清除、used 只能歸零）+ admin UI 用量列編輯 + /api/me 帶 quota + documents 頁額度顯示 + realtime 頁 403 人話
+- 驗證：`scripts/_zhu_verify_quota.ts` 五項全過（真 Firestore）；prod PATCH 往返煙霧測試過（設 7200/5 → 讀回 → 還原 null）
+
+### ⚠️ 尚未解決 / Phase 2 待做
+- **語音通話中計量還沒有**：現在只擋「開始新通話」，通話中不扣不斷（agent heartbeat + 到點直斷 = Phase 2，要動 v15 agent——v15 尚未真機驗，疊改動有風險，等 Adam 排）
+- **語音 write_document 不經 createDocumentJob**（agent 原生 tool 直寫 Firestore）→ 語音生成文件目前不吃額度，Phase 2 一併堵
+- admin 對自己設額度不會生效（admin 全免管制），UI 沒擋 admin 列——小瑕疵
