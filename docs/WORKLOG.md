@@ -6413,3 +6413,33 @@ Adam 要求「弱掃」找平台漏洞（評測用戶即將進場、有真實付
 ### 待執行
 - [ ] **部署**（未做，等 Adam）：web `npx vercel --prod --yes`（H1/H2/H4-web 上線）；v15 agent Cloud Build（H3/H4-python 上線，影響 live voice 較高風險）。H5 密碼已即時生效。
 - [ ] collections.ts media 已 commit、soulCore 退役仍未 commit（維持 Adam 狀態，git HEAD 為 pre-soulCore+media 可 build）
+
+---
+
+## 2026-07-04 — ailiveX 營運日（第四場）：存檔診斷+語音頓修+文件簡繁+文字對話額度
+
+### 背景 / WHY
+Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒語音、語音很頓、文件是簡體；後追加文字對話額度管制與對話頁指引。全部當場診斷＋修＋部署。
+
+### 產出（ailivex-platform v15.3.1→v15.5.0 已 commit+push+部署）
+- **存檔卡住診斷**（未動手修）：實測 413（頭像 base64 >3.4MB 撞 Vercel 4.5MB 上限，前端只顯示「建立失敗」）；三斷面欄位對賬 POST/PATCH/GET 14 欄全一致——API 無斷點；真兇候選=編輯視窗預載競態（fetch 失敗/未回就存 → 別名/能力/圖片風格/HeyGen 被空值洗掉）
+- **v15.3.1 語音頓**：log 實證 TTS 串流 15-34KB/s < 播放 48KB/s（PCM 24kHz）+ silero `slower than realtime`=CPU 滿載；cloudbuild `--cpu=2` 持久化；H3 語音多開修法+H4 python 媒體計量隨此部署上線（revision 00007-zth）
+- **v15.4.0 文件簡→繁**：機制級 opencc（字元級 s2tw+「发文」覆寫表），釘三產生點（agent 建檔）+兩出口收斂（Vercel doc-process / Cloud Run doc-worker，title 寫回）；26 份既有簡體標題轉繁（dry-run 抽查抓到 s2twp 兩處錯轉）；養生茶文件內文繁體重生成
+- **v15.5.0 文字對話額度**：textLimit/textUsed 則數總量制；dialogue 入口 transaction 扣量+LLM 失敗退量+用罄誠實回覆；admin users API/UI 全鏡射（設限/歸零/期滿紅卡/快速加購）；/api/me 透出；對話頁「對話剩 N 則」指引（≤10 琥珀）+用罄系統卡+輸入停用+氣泡收回
+- **驗證**：quota 8/8 斷言（含並發 10 扣上限 5 恰好成功 5）；e2e 上限 2 → 剩1/剩0/被擋 一格不差；簡繁 e2e 簡體 brief 進繁體出；外科分離 ×3（loader/collections/dialogue）+ stash 驗提交樹 build 綠
+
+### 已解決
+- 語音頓 → v15 cpu=1 扛不住 VAD+embedding+TTS 疊加 → cpu=2（待 Adam 重撥實測收尾）
+- 文件簡體 → 語音鏈 STT/LLM 簡體語境 → 出口機制轉換不靠 prompt
+- 文字對話零管制 → 則數制全鏈上線（token 計量分析後棄用：bridge 月費+context 佔 95%，精準但無意義）
+
+### ⚠️ 尚未解決
+- **角色管理前端三修（方案已定，等 GO）**：①編輯視窗預載改「載入中」擋存檔（根治欄位被洗）②頭像 canvas 壓縮 512px+413 訊息講人話 ③建立表單補能力/別名欄位（產品決定）
+- 語音頓是否根治：等 Adam 重撥，log 盯 `slower than realtime` + TTS KB/s
+- 25 份舊文件內文仍簡體（Adam 已決定不改）；audit MEDIUM/LOW 未修（清單見前場）
+- admin 對 admin 設額度無效（Adam 說忽略）
+
+### 待執行
+- [ ] Adam 重撥語音實測頓感（收 v15.3.1 的尾）
+- [ ] 角色管理三修等 Adam GO
+- [ ] soulCore 8 檔 + UDN 66 檔仍未 commit（線上比 git 新，維持 Adam 狀態）
