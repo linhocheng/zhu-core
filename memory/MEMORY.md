@@ -117,6 +117,7 @@
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
 - [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；四種額度管制全上線(語音/文件/媒體/對話)；v15 cpu=2；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailivex doc-worker 真身與死副本](reference_ailivex_doc_worker_true_source.md) — 真身=~/.ailive/ailivex-doc-worker（asia-east1、POST /），repo cloud-run/doc-worker+us-central1 是死副本；改文件生成去真身
 - [opencc 簡繁轉換三顆雷](reference_opencc_s2t_pitfalls.md) — s2twp 會修壞已繁體文本、发文誤斷成髮文要覆寫表、驗證用冪等性不用手寫黑名單
 - [LiveKit Agents 1.5.1 語音中途控制四原語](reference_livekit_agents_voice_control_api.md) — 通話中暫停聽/打斷/改context/收前端RPC：set_audio_enabled/interrupt/update_instructions/register_rpc_method
 - [MiniMax 串流 TTS status==2 重複整句](reference_minimax_streaming_dup_audio.md) — 即時語音 stream:true 降延遲，最後一塊整句重送→角色說兩次；exclude_aggregated_audio+硬擋status==2

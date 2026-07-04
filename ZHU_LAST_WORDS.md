@@ -30,6 +30,8 @@
 - **v15.5.0 文字對話額度**：則數總量制（token 分析後棄用：bridge 月費+context 佔 95%）；dialogue 入口扣量+失敗退量；admin 全鏡射；對話頁「剩 N 則」指引+用罄琥珀系統卡+輸入停用。8/8 斷言+e2e 上限2→剩1/剩0/擋 全中
 - 外科分離 ×3（loader/collections/dialogue 與 soulCore 批切開）+ **stash --keep-index 首次真驗提交樹 build**
 
+**收尾後追記：doc-worker 雙城殭屍**——生產文件真身在 `~/.ailive/ailivex-doc-worker/`（asia-east1、POST /、非 git），repo `cloud-run/doc-worker`+us-central1 是死副本；真身已補 s2tw 轉換（rev 00005-wcc）、生產鏈 e2e 過、Adam 的品牌文件已確定性轉繁。詳見記憶 ailivex-doc-worker-true-source + LESSONS L-M。
+
 **前三場（安全弱掃批等）已收，帳在 WORKLOG。**
 
 ---

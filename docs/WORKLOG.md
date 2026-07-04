@@ -6443,3 +6443,9 @@ Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒
 - [ ] Adam 重撥語音實測頓感（收 v15.3.1 的尾）
 - [ ] 角色管理三修等 Adam GO
 - [ ] soulCore 8 檔 + UDN 66 檔仍未 commit（線上比 git 新，維持 Adam 狀態）
+
+### 收尾後追記（同日）：文件簡繁的真正破口——doc-worker 雙城殭屍
+- Adam 回報對話生成的文件仍簡體 → 追查發現 **ailivex-doc-worker 有兩台**：生產流量在 asia-east1（源碼 `~/.ailive/ailivex-doc-worker/`，POST /，非 git），我修＋部署的 repo `cloud-run/doc-worker`→us-central1 是死副本；昨晚 e2e 只打了 Vercel doc-process，漏了真身
+- 已修：真身加同一套 s2tw+发文覆寫＋title 寫回，deploy.sh 部署（rev 00005-wcc）；生產鏈 e2e（dialogue→asia worker）內文冪等性 OK；Adam 的「品牌思考架構」用確定性轉換修復（GCS HTML+mdContent 直轉，保留原文措辭，繞開 bridge CF 524）
+- 教訓刻進 [[ailivex-doc-worker-true-source]] 記憶＋LESSONS L-M；諷刺點：真身 prompt 本來就寫了「一律用繁體」，模型照吐簡體——天條活教材
+- 遺留：真身 secret 檢查 fail-open 寫法（env 有設未爆）；us-central1 死副本服務要不要刪等 Adam
