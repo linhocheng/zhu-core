@@ -5,6 +5,12 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-04 第四場：營運日四連修（v15.3.1→v15.5.0 已 commit+部署）。**
+- 語音頓根因=cpu=1 扛不住 VAD+embedding+TTS（silero slower-than-realtime 實證）→ v15 `--cpu=2` cloudbuild 持久化；H3 語音多開修法+H4 python 媒體計量隨此上線
+- 文件簡→繁：機制級 opencc（見 [[opencc-s2t-pitfalls]]），釘 agent 建檔+雙 worker 出口（title 寫回）；26 份舊標題已轉
+- 文字對話額度：textLimit/textUsed 則數制（token 分析後棄用），dialogue 入口扣量+失敗退量；對話頁「剩 N 則」指引+用罄琥珀卡；admin 全鏡射
+- 頭像 >3.4MB 撞 Vercel 4.5MB=413 只顯示「建立失敗」；編輯視窗預載競態會把別名/能力洗空——三修方案已定待 GO
+
 **2026-07-03/04：用量管制＋UI 商用化上線（v15.0.0→v15.2.1，已 commit）。**
 - 用量管制（總量制、user 層全角色共用）：UserDoc 四欄（voiceSecondsLimit/Used、docsLimit/Used，留空=不限、used 只加不減）；收斂點 `src/lib/quota.ts`＋`agent/quota_meter.py`
 - 語音三執法點：token route 403 → agent heartbeat 30s 計量＋到點 delete_room 直斷（Adam 真機驗過）→ participant_disconnected 無人即結算+關房（根治空房計費）；文件＝createDocumentJob transaction 扣、失敗退、語音 write_document 同閘
