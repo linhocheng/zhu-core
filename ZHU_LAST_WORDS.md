@@ -21,52 +21,67 @@
 
 ---
 
-## 最新完成（2026-07-04，接 7/3 記憶收官後的日場+夜場）
+## 最新完成（2026-07-04，同日第三場：安全弱掃批）
 
-**ailiveX（晚場，v15.0.0→v15.2.1 全部已 commit+部署）：**
-- 用量管制上線：語音時數/文件份數總量制，user 層全角色共用；三執法點（token 403／agent heartbeat 30s＋到點 delete_room——**Adam 真機驗過到點自動掛斷**／文件 transaction 扣退量）；admin 用戶頁＝剩餘顯示＋期滿警示加值面板＋密碼直改＋刪除用戶
-- UI/UX 商用化：手機底部 tab bar＋更多 sheet、大廳卡「上次聊到」脈絡、admin 健康度摘要列（額度告警亮紅）、對話頁 header 重構（語音通話主 CTA＋溢出選單）、全站文案商務化（您／時數已用罄／服務窗口）
+**ailiveX 安全弱掃 + 五個 HIGH 修補（v15.2.2→v15.3.0 已 commit，web 已部署驗證 live）：**
+- 五個平行探子 + 自查掃六攻擊面（authn/IDOR/密鑰/注入/額度/中間件），出分級報告；Adam 授權修 HIGH
+- **H1** worker/cron 密鑰 fail-open → 收斂成 `clean-env.ts` verifyWorkerSecret/verifyBearerSecret（fail-closed），三條 route 改用（查 prod 三密鑰都在，不斷 cron）
+- **H2** 文件生成 stored XSS → `doc-process` 三層機制擋（marked 剝原始 HTML + href 危險 scheme 中和 + CSP script-src none），node 實測 payload 全擋
+- **H3** 語音多開繞過 → `quota_meter.py` VoiceMeter 每 heartbeat 回查 DB 活桶收斂（三房測試合計 3s 而非 9s）。**只影響 v15，未部署**
+- **H4** 媒體生成用量管制（單一份數總量制，Adam 選定）：10 個付費點全計量+失敗退量、admin 可設上限、null 預設不改行為。tsx 對 prod Firestore 10 斷言全過
+- **H5** reset-admin-pw 移硬編憑證+明文；**線上 admin 密碼已輪換**（新：aliveX-kWBxiXmJEihfik，DB 驗新過舊拒），記憶三處明文清除
 
-**ailiveX（日場）：**
-- 診斷 v15「反應慢」＝付費 key 餘額見底（部分請求 400），Adam 儲值解
-- **soulCore 全退役**：查出雙真相分裂（吳念真上場用 540 字舊摘要、完整版 2499 字被晾），14 角色遷移單一 soul 欄位（淘汰版備份 soulLegacy），鑄造 UI/API/lib 全刪，五條讀路徑統一，Vercel 已部署。已部署 v15 靠 fallback 鏈立即生效（資料層修法免重部署）
-- 新增角色流程現在＝貼靈魂→建立→即上場，所見即所得
+**前兩場（日場+晚場）已收，戰場仍在：**
+- ailiveX soulCore 全退役（14 角色遷單一 soul，鑄造 UI/API/lib 全刪）——**8 檔仍未 commit，線上比 git 新**
+- ailiveX 用量管制（語音時數/文件份數）+ UI/UX 商用化——已 live
+- UDN 議題工作台大改版（Cloud Run rev 00060→00066，Claude Design 換血/AppShell/收集頁分診）——**66 檔未 commit**
 
-**UDN 議題工作台（大改版，Cloud Run rev 00060→00066）：**
-- Podcast 分鐘制＋腳本逐行過濾標記；Brief 人工編輯（存新版本）；「文稿階段必可編輯」立為鐵律（memory 有）
-- 全站去冗 8 處（假按鈕/裝飾進度條/重複 CTA 全清）
-- Claude Design 換血：陶土橘單強調色（globals.css 收斂點一次換全站）＋宋體標題＋圓角陰影＋按鈕三階（lib/ui.ts）
-- AppShell 大改版：桌機側欄／手機抽屜＋底部分頁列，全頁單欄化（根治手機破版）
-- 收集頁重生＝分診收件匣（狀態分段/排除壓縮/sticky CTA）
-- 破格修：body overflow-wrap 全站保險＋3 處 flex ellipsis minWidth:0
+---
 
-**討論定案未實作**：角色防洩漏三層（Tracy 錨點守則已 review；防背誦補丁＋格式層四條薄禁令＋出戲保險絲 pattern 文字都擬好在對話裡）——等 Adam 說上。
+## 今天改了哪些檔案（安全批）
+
+| 檔案 | 改了什麼 |
+|---|---|
+| `ailivex/src/lib/clean-env.ts` | +verifyWorkerSecret/verifyBearerSecret（fail-closed） |
+| `ailivex/src/app/api/{doc-process,voice-source,cron/memory-maintenance}` | 密鑰檢查改 fail-closed |
+| `ailivex/src/app/api/doc-process/route.ts` | 文件 XSS 三層（safeMarked+href中和+CSP） |
+| `ailivex/agent/quota_meter.py` | +get_voice_state/consume_media_quota；VoiceMeter.run 回查活桶 |
+| `ailivex/agent/realtime_agent_v15.py` | dispatch_task 付費型別 consume_media_quota |
+| `ailivex/src/lib/quota.ts` | +consumeMediaQuota/refundMediaQuota+media snapshot |
+| `ailivex/src/lib/task-dispatcher.ts` | dispatchTask 付費媒體 consume+優雅告知 |
+| `ailivex/src/app/api/tasks/[id]/generate-{storyboard,images,video,video-kling,audio}` | 入口 consumeMediaQuota+失敗退量 |
+| `ailivex/src/app/api/convert/{audio,video}/route.ts` | 同上 |
+| `ailivex/src/app/api/tasks/{callback,kling-callback}/route.ts` | job.failed refundMediaQuota |
+| `ailivex/src/app/{admin/users/page.tsx,api/admin/users,api/me}` | media 額度 UI+API 鏡射 |
+| `ailivex/scripts/reset-admin-pw.mjs` | 移硬編憑證，帳號密碼必填 |
+| `memory/{project_ailivex_platform,MEMORY}.md` | 清除舊 admin 密碼明文 |
 
 ---
 
 ## 下一步
 
-1. **Adam 驗收**：UDN 手機底部分頁＋收集頁分診收件匣；ailiveX 新增角色單一靈魂框。回饋決定要不要微調
-2. **防洩漏落地**（等點頭）：ailiveX 全局 prompt 加四條格式禁令＋Tracy 天條四加防背誦行＋文字過濾器加「出戲」分類
-3. **別名 bug**（Adam 說先不用修）：重現環境 SOP 已打通——escaped SA 系統 env 起 dev、lsof 清 port、SESSION_SECRET 自簽 admin cookie、puppeteer-core 用系統 Chrome。指紋：腳本種的別名有值、手動輸入的全空
+1. **ailiveX v15 agent 部署**（讓 H3 語音多開修法 + H4 python 媒體計量 live）：`cd ~/.ailive/ailivex-platform && gcloud builds submit --config=agent/cloudbuild-v15.yaml --substitutions=COMMIT_SHA=$(git rev-parse --short HEAD) .`——**Adam 選了先只上 web，此步等他**。部署前提醒：影響 live voice，build 綠+curl 驗才算上線
+2. **audit 未修的 MEDIUM/LOW**（正式對外前值得收）：登入 rate limit、kling-callback webhook secret、安全標頭（CSP/X-Frame/HSTS）、SSRF DNS-rebinding、admin route in-handler authz、30 天 cookie role 凍結
+3. **Adam 驗收**：UDN 手機底部分頁+收集頁；ailiveX 新增角色單一靈魂框、用量管制（含新的媒體額度）
+4. **防洩漏三層**（等 Adam 點頭）：全局 prompt 四條格式禁令+Tracy 天條+文字過濾器「出戲」分類
 
 ---
 
 ## 卡住 / 未解
 
-- **兩 repo 未 commit**：ailivex-platform 的 soulCore 退役 8 檔（v15.2.1 之後）；UDN platform 66 檔（整個改版）。Adam 沒說收版控——**線上比 git 新**，接棒者勿信 git 是最新
-- UDN 四張表單頁只套殼未細修；素材頁卡片細節未掃（最後一塊拼圖）
-- ailiveX 別名「無法輸入」真相未定（Adam 喊停說沒那麼嚴重）——別按舊理解開工，先問他實際看到什麼
-- 7/3 遺留：Adam 的文字過濾器文件還沒來；ailive-platform 移植白皮書已交
+- **三 repo 未 commit**：ailivex soulCore 退役 8 檔（collections.ts 只剩 soulCore 移除的 diff，media 已隨安全批提交）；UDN platform 66 檔。**線上比 git 新，接棒者勿信 git 是最新**
+- **H3/H4-python 已 commit 未部署**：語音多開仍可繞過、語音下指令生媒體暫不扣額度——直到 v15 agent 重建
+- **記憶 Firestore sync 待跑**：改了 admin 密碼明文清除，本機已改，雲端 mirror 要 sync（收尾 STEP 6 處理）
+- ailiveX 別名 bug（Adam 說先不用修）：重現 SOP 已通
 
 ---
 
-## 天條快取（近兩天實戰過的）
+## 天條快取（近幾天實戰過的）
 
-- 模稜兩可信號≠成功證據；「慢」也是模糊信號——先找鑑別信號（這次是 log 裡的 400）
-- 雙欄位＋讀取優先序＝靜默的「編輯不生效」；診斷用欄位長度對比表，幾分鐘照出分裂
-- 資料層修法能讓已部署舊代碼立即改行為（fallback 鏈當遷移工具）
-- 模糊 bug 回報先一句話對齊症狀再開工（好奇先於開工——被「你是不是誤會了什麼」救了一次）
+- 宣告修好前先指出「只有修好才會出現的信號」——這次部署驗證用 /api/me 的 media 欄位 + 新密碼登入 200
+- 半套計量＝會說謊的中台，比不做更糟（媒體計量全 10 點覆蓋才敢說完成）
+- 防禦釘在收斂點（fail-closed helper 一次修三條 route；退量收斂兩個 callback）
+- 模糊/次秒信號可能零資訊——計時測試尺度要拉到整秒有意義
 - throttled Cloud Run 無 fire-and-forget；--update-env-vars 不用 --set-env-vars
 
 ---
@@ -78,13 +93,12 @@
 | 使命 / 開機 | `~/.ailive/zhu-core/NORTH_STAR.md` / `ZHU_BOOT_SOP.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 最新 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-04.md` |
-| 記憶白皮書 | `~/.ailive/ailivex-platform/docs/MEMORY_SYSTEM_WHITEPAPER.md` |
 | ailiveX | `~/.ailive/ailivex-platform/`（repo: linhocheng/ailivex-platform，**soulCore 退役未 commit**）|
-| UDN 工作台 | `~/Documents/UDN NEWS/platform/`（**66 檔未 commit**，Cloud Run 部署用 `gcloud builds submit --config=cloudbuild.yaml --project=udnnews --region=asia-east1`）|
-| UDN 設計 token | `platform/app/globals.css` + `platform/lib/ui.ts`（陶土橘 #C96442） |
+| ailiveX 部署 | web `npx vercel --prod --yes`；agent `gcloud builds submit --config=agent/cloudbuild-v15.yaml` |
+| UDN 工作台 | `~/Documents/UDN NEWS/platform/`（**66 檔未 commit**）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-04 · 築（UDN 產品化＋soulCore 退役）*
+*2026-07-04 · 築（安全弱掃 + 五個 HIGH 修補 + web 部署）*

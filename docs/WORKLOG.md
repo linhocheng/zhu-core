@@ -6383,3 +6383,33 @@ Adam 要 UDN 議題工作台從「後台感」升級成對外正式產品（參�
 
 ### 待執行
 - [ ] 評測回饋進來後的 UI 微調（Adam 手機實走）
+
+## 2026-07-04 — ailiveX 安全弱掃 + 五個 HIGH 修補（評測前硬化）
+
+### 背景 / WHY
+Adam 要求「弱掃」找平台漏洞（評測用戶即將進場、有真實付費 key）。五個平行探子 + 自查掃六攻擊面，出分級報告；Adam「動 聽你的」授權修 HIGH。
+
+### 產出（ailivex-platform，v15.2.2→v15.3.0 已 commit，未部署）
+- **H1** `src/lib/clean-env.ts` +verifyWorkerSecret/verifyBearerSecret（fail-closed）；doc-process/voice-source/cron-memory-maintenance 三條收斂改用。查 prod 三密鑰都在，不會斷 cron。
+- **H2** `doc-process/route.ts` 文件 XSS 三層：marked 剝原始 HTML（safeMarked html:()=>''）+ href 危險 scheme regex 中和 + 模板 CSP script-src 'none'。node 實測三種 payload 全擋、正常 md 保留。
+- **H3** `agent/quota_meter.py` 語音多開繞過：VoiceMeter.run 每 heartbeat 回查 DB 活狀態（get_voice_state），並發房收斂單一共用桶；保留本房快照上限當 DB 讀失敗兜底。三房測試合計用 3s（舊碼 9s）全斷。**只影響 v15。**
+- **H5** `scripts/reset-admin-pw.mjs` 移硬編 doc id+預設密碼+明文 log，帳號密碼改必填。**線上 admin 密碼已輪換**（DB 層驗證新過舊拒），記憶三處明文清除。
+- **H4** 媒體生成用量管制（單一份數總量制，Adam 選定）：collections UserDoc +mediaLimit/mediaUsed；quota.ts +consumeMediaQuota/refundMediaQuota（transaction，fan-out count）；quota_meter.py +consume_media_quota；admin/users GET+PATCH+UI 鏡射；/api/me 透出。10 個付費點全計量（8 TS route + task-dispatcher + Python voice），退量收斂 tasks/callback + kling-callback（與同步 .catch 互斥）。tsx 對 prod Firestore 10 項斷言全過。
+
+### 已解決
+- fail-open 密鑰（env drift → 無認證付費口）→ 收斂 fail-closed helper
+- 文件 stored XSS（marked 不消毒）→ 機制級三層擋，不靠模型自律
+- 語音多開繞過（mint-time 快照各算各）→ heartbeat 回查活桶收斂
+- 付費媒體零計量（財務 DoS 面）→ 全 10 點計量、admin 可設上限、null 預設不改行為
+
+### ⚠️ 尚未解決（audit 的 MEDIUM/LOW，未修）
+- 登入無 rate limit（暴力破解）
+- kling-callback 無 webhook secret（fal.ai 簽章驗證未接，taskId 隨機為緩解）
+- 無安全標頭 next.config（CSP/X-Frame/HSTS 全站層級）
+- url-reader SSRF DNS-rebinding TOCTOU（驗證與 fetch 各自解析）
+- 連結內容二階 prompt injection、admin route 無 in-handler authz（靠 middleware 單點）
+- 30 天無狀態 cookie role 凍結、voice-end 信任 client userId、doc-id 路徑注入
+
+### 待執行
+- [ ] **部署**（未做，等 Adam）：web `npx vercel --prod --yes`（H1/H2/H4-web 上線）；v15 agent Cloud Build（H3/H4-python 上線，影響 live voice 較高風險）。H5 密碼已即時生效。
+- [ ] collections.ts media 已 commit、soulCore 退役仍未 commit（維持 Adam 狀態，git HEAD 為 pre-soulCore+media 可 build）
