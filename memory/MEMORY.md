@@ -116,7 +116,7 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；語音版本 v2-v12，後台指派版本+v12讀網址(2026-06-17)；repo=linhocheng/ailivex-platform，admin=ailiveX2026
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；語音版本 v2-v12，後台指派版本+v12讀網址(2026-06-17)；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
 - [LiveKit Agents 1.5.1 語音中途控制四原語](reference_livekit_agents_voice_control_api.md) — 通話中暫停聽/打斷/改context/收前端RPC：set_audio_enabled/interrupt/update_instructions/register_rpc_method
 - [MiniMax 串流 TTS status==2 重複整句](reference_minimax_streaming_dup_audio.md) — 即時語音 stream:true 降延遲，最後一塊整句重送→角色說兩次；exclude_aggregated_audio+硬擋status==2
 - [MiniMax 即時語音語氣優化（WS串流+opencc+emotion）](reference_minimax_realtime_voice_quality.md) — 語氣連貫=streaming=True走WS、口音=opencc餵簡體、情緒=voiceSettings.emotion三旋鈕分開調

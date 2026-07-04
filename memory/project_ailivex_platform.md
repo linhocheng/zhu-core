@@ -112,7 +112,7 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 - 語音：LiveKit Cloud + Python agent（Cloud Run `ailivex-realtime-agent`）
 - 文件：Cloud Tasks → doc-worker（Cloud Run `ailivex-doc-worker`）→ GCS `ailivex-2026-assets`
 
-**已知帳號：** admin / ailiveX2026
+**已知帳號：** admin（密碼 2026-07-04 已輪換，不存記憶/repo，由 Adam 保管；舊密碼 ailiveX2026 已作廢。重設走 `node scripts/reset-admin-pw.mjs <username> <password>`）
 
 **語音斷點調查（2026-06-08，未解）：**
 - 第一根因已修：us-central1 有重複 `ailivex-realtime-agent` 服務（跨 region 殭屍，跑舊 code thrash 9h），偷一半 LiveKit dispatch → 一半通話沒聲音。已刪，現只剩 asia-east1 `00001-thj`（registered 乾淨，min-instances=1）。
@@ -131,4 +131,4 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
 **其他待完成：** ailiveX-platform git init + push GitHub；清 3 個 pending doc jobs。
 
-**How to apply:** 處理 ailiveX 相關問題時，認識這是全新 GCP 專案（ailivex-2026）與 ailive 完全隔離。admin / ailiveX2026。語音「沒聲音」先查 LLM/Bridge 串流斷點，不是 TTS 也不是 dispatch。
+**How to apply:** 處理 ailiveX 相關問題時，認識這是全新 GCP 專案（ailivex-2026）與 ailive 完全隔離。admin 密碼已輪換不存記憶（見上）。語音「沒聲音」先查 LLM/Bridge 串流斷點，不是 TTS 也不是 dispatch。
