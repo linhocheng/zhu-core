@@ -21,7 +21,19 @@
 
 ---
 
-## 最新完成（2026-07-04，同日第四場：ailiveX 營運日）
+## 最新完成（2026-07-04，UDN 線 · 與 ailiveX 營運日平行）
+
+**UDN 議題工作台：內部工具 → 可交付客戶產品（Cloud Run rev 00060→00072，全 commit+push `linhocheng/udnnews-platform`）**
+- **產品化**：Claude Design 換血（陶土橘 token/宋體/按鈕三階 lib/ui.ts）、AppShell（桌機側欄+手機抽屜+底部分頁）全頁單欄化、收集頁重生＝分診收件匣、去冗 8 處、破格修
+- **資安加固**（07355db）：`proxy.ts` 全站認證閘（HMAC cookie）+ `lib/ssrf.ts` 共用 SSRF 守衛套四路由 + watchdog CRON_SECRET。12 項鑑別驗證全過。**原本零認證+SSRF（Cloud Run 致命）**
+- **角色工作室隔離**（cadc448）：角色移 `/studio/characters/*`，雙 scope 密碼（base=客戶 `udn-aa742674-news`／studio=你 `studio-73f4bce7-udn`），全站模型/廠商字眼清零
+- **懶人包微調**（85c4a5d）：對話驅動補版型選擇、資訊圖表中文（生圖收斂點）、圖卡文字掛過濾 badge、手機切分頁 fetch 中斷友善化
+- **唯一缺口**：Brief 策略簡報無文字過濾（Adam 未決定補不補）
+- 密碼正本在 Cloud Run env（--update-env-vars），git 零機密
+
+---
+
+## （同日）第四場：ailiveX 營運日
 
 **Adam 實際使用回報四連修（v15.3.1→v15.5.0 全 commit+push+部署 live）：**
 - **存檔卡住診斷**：413（頭像 >3.4MB 撞 Vercel 上限）；三斷面欄位對賬 API 全乾淨；真兇=編輯視窗預載競態會把別名/能力/圖片風格洗成空——**三修方案已報 Adam，等 GO**
@@ -61,15 +73,17 @@
 2. **角色管理三修（方案已定，等 Adam GO）**：`src/app/admin/characters/page.tsx` ①編輯預載加載入中狀態擋存檔 ②onAvatar canvas 壓 512px+413 訊息 ③建立表單補能力/別名（產品決定）
 3. audit MEDIUM/LOW（正式對外前）：登入 rate limit、kling-callback secret、安全標頭、SSRF DNS-rebinding
 4. Adam 驗收：文字額度 UI（admin 設限→對話頁指引）、A.Two 語音（voiceId 已補）
+5. **（UDN）Adam 真機測**：懶人包版型選擇、資訊圖表中文字、手機 FETCH 友善化；**Brief 過濾器補不補待決定**（唯一缺口，建議標記模式）
 
 
 ---
 
 ## 卡住 / 未解
 
-- **三 repo 未 commit 維持原樣**：ailivex soulCore 退役 8 檔、UDN platform 66 檔。**線上比 git 新，接棒者勿信 git 是最新**。外科分離 SOP 見 LESSONS L-E+L-K
+- **ailivex 仍有未 commit 改動**（別 session 動的 soulCore 等，我這 session 沒碰）；**UDN 已全部 commit+push 追平**（線上=git）
 - 25 份舊文件內文仍簡體（Adam 決定不改）；admin 對 admin 設額度無效（Adam 說忽略）
-- ailiveX 別名 bug（先不修）；UDN 手機版驗收未做
+- ailiveX 別名 bug（先不修）；UDN 三項下午改動+Brief 缺口待 Adam 定
+- UDN 密碼正本只在 Cloud Run env（--update-env-vars）；`/tmp/udn-secrets.txt` session 結束會消失，正本安全
 
 ---
 
@@ -89,10 +103,11 @@
 |---|---|
 | 使命 / 開機 | `~/.ailive/zhu-core/NORTH_STAR.md` / `ZHU_BOOT_SOP.md` |
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 最新 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-04.md`（L1-L5+L-A~L-L 四場） |
+| 最新 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-04.md`（L1-L5 + L-A~L-N ailiveX + L-O~L-S UDN 資安）|
 | ailiveX | `~/.ailive/ailivex-platform/`（repo: linhocheng/ailivex-platform，**soulCore 退役未 commit**）|
 | ailiveX 部署 | web `npx vercel --prod --yes`；agent `gcloud builds submit --config=agent/cloudbuild-vN.yaml`；**doc-worker 真身** `cd ~/.ailive/ailivex-doc-worker && bash scripts/deploy.sh`（獨立 repo linhocheng/ailivex-doc-worker） |
-| UDN 工作台 | `~/Documents/UDN NEWS/platform/`（**66 檔未 commit**）|
+| UDN 工作台 | `~/Documents/UDN NEWS/platform/`（**已全 commit**，repo linhocheng/udnnews-platform；部署 `gcloud builds submit --config=cloudbuild.yaml --project=udnnews --region=asia-east1`）|
+| UDN 認證/工作室 | `platform/proxy.ts`（雙 scope 閘）+ `lib/auth-gate.ts` + `lib/ssrf.ts`；密碼在 Cloud Run env |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 
 ---

@@ -6462,3 +6462,36 @@ Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒
 - us-central1 死副本服務已刪（刪前核流量證據：生產 job 全由 asia 處理）；repo `cloud-run/doc-worker` 目錄已刪（v15.5.2，-4289 行）
 - CLAUDE.md 拓樸修正：primary 文件路徑=Cloud Run asia-east1（原文寫反成 Vercel primary）
 - 文件生成線收斂為單一真相：一台服務/一份源碼/一個 repo/文件吻合現場
+
+---
+
+## 2026-07-04 — UDN 線：產品化大改版 + 資安加固 + 角色工作室隔離 + 懶人包微調（平行於 ailiveX 營運日）
+
+### 背景 / WHY
+UDN 議題工作台從內部工具升級成「可交付客戶」的產品：外觀商用化、補齊資安、把角色創建（含模型細節）藏起來、修使用回報的細節。
+
+### 產出（全部 Cloud Run rev 00060→00072，已 commit+push linhocheng/udnnews-platform）
+- **產品化**：podcast 分鐘制、Brief 人工編輯（存新版本）、全站去冗 8 處、Claude Design 換血（陶土橘 token + 宋體 + lib/ui.ts 按鈕三階）、AppShell（桌機側欄/手機抽屜+底部分頁）全頁單欄化、收集頁重生＝分診收件匣、破格修（overflow-wrap + flex minWidth:0）
+- **資安加固**（commit 07355db）：`proxy.ts` 全站認證閘（HMAC 簽章 cookie）、`lib/ssrf.ts` 共用 SSRF 守衛套 scrape/collect/layouts/generate-card-image、watchdog CRON_SECRET header（REST API 繞 gcloud 權限擋補上 Scheduler header）、錯誤脫敏。12 項鑑別驗證全過
+- **角色工作室隔離**（commit cadc448）：角色建/編/列表移 /studio/characters/*，雙 scope 密碼閘（base=客戶/studio=你），主導覽拿掉角色庫，全站模型/廠商字眼清零（HeyGen/MiniMax/OpenAI/Tavily/Claude）
+- **懶人包微調**（commit 85c4a5d）：對話驅動懶人包補版型選擇（analyze-cards 收 layoutId 持久化）、資訊圖表中文（生圖收斂點硬性指令）、圖卡內文/圖說掛 TextFilterBadge、friendlyFetchError 手機中斷 fetch 友善化
+
+### 已解決
+- 全站零認證 + SSRF（Cloud Run 致命）→ 認證閘 + 共用守衛
+- 客戶會看到角色創建/模型細節 → 雙密碼閘 + 字眼清零
+- 手機切分頁「FETCH」假失敗 → 辨識網路中斷改友善訊息
+- 對話驅動懶人包無法選版型 → 確認分析圖卡步驟補選
+
+### 密碼（Cloud Run env，不進 git）
+- 平台密碼（客戶）：APP_PASSWORD = udn-aa742674-news
+- 工作室密碼（Adam）：STUDIO_PASSWORD = studio-73f4bce7-udn
+- SESSION_SECRET / CRON_SECRET：長亂數（/tmp/udn-secrets.txt，session 結束會沒；正本在 Cloud Run env）
+
+### ⚠️ 尚未解決 / 待決定
+- **Brief 策略簡報無文字過濾**（唯一缺口，Adam 尚未決定要不要補；建議標記模式）
+- 資訊圖表中文字型正確度看模型（gpt-image 畫中文可能變形，備案=確定性壓文字層）
+- 三項下午改動（版型/中文/FETCH）Adam 尚未真機測回饋
+
+### 待執行
+- [ ] Adam 真機測懶人包版型選擇、資訊圖表中文、手機 FETCH 友善化
+- [ ] Brief 過濾器補不補（等 Adam 決定）

@@ -132,10 +132,32 @@ metadata:
 - **破格修**：body `overflow-wrap: break-word` 全站保險（繼承屬性，蓋 pre-wrap）＋3 處 flex ellipsis 補 minWidth:0（flex 子元素不加 minWidth:0 時 ellipsis 靜默失效）
 - 未細修：四張表單頁（角色/版型 新增/編輯）只套殼、素材頁卡片舊直角殘留
 
+## 資安加固 + 角色工作室隔離（2026-07-04，rev 00067→00072，已全 commit）
+
+- **全站認證閘**（原本零認證+Cloud Run --allow-unauthenticated=任何人讀光/刪/燒錢）：`proxy.ts`（Next 16 middleware 更名 proxy）+ `lib/auth-gate.ts` HMAC 簽章 cookie。base 密碼 APP_PASSWORD 進全站；未過→頁面轉 /login、API 401
+- **SSRF 守衛**：`lib/ssrf.ts`（isPrivateIp/assertSafeUrl/safeFetch，擋私有+metadata IP+逐跳驗 redirect），套 scrape/collect/layouts/generate-card-image；url-reader 收斂共用不留兩份。錯誤脫敏（scrape/collect 不當 SSRF oracle）
+- **watchdog 機器閘**：CRON_SECRET header（route 自驗，proxy 放過）；Cloud Scheduler 補 header——**gcloud scheduler update 被權限層擋，改 curl PATCH cloudscheduler REST API 繞過**（headers map PATCH 整組替換，先讀舊值合併）
+- **角色工作室雙 scope 閘**：角色建/編/列表移 `/studio/characters/*`；auth-gate 升雙 scope（udn_gate base / udn_studio studio 獨立 cookie）；proxy 對 /studio/* + 角色寫入 API（POST/PATCH/DELETE、上傳分身）要 studio scope，GET 維持 base（選角要用）；主導覽拿掉角色庫；`/studio/login` 專頁
+- **模型/廠商字眼清零**：客戶端「HeyGen 生成中」→「分身影片」；工作室標籤 MiniMax/HeyGen/talking_photo→語音/數位分身；全站可見文字零廠商名
+- **密碼**（Cloud Run env，git 零機密）：APP_PASSWORD=udn-aa742674-news（客戶）、STUDIO_PASSWORD=studio-73f4bce7-udn（Adam）、SESSION_SECRET/CRON_SECRET=長亂數
+- 驗證：認證 5 項+SSRF 對照組（example.com 200 / 內網 log「指向私有/內網 IP」）+雙閘 9 項全過
+
+## 懶人包微調（2026-07-04，rev 00071-00072）
+
+- **對話驅動懶人包補版型**（原本只有素材頁派工表單有；對話路徑 chat/route.ts 從不帶 layoutId）：在「確認分析圖卡」步驟加版型選擇器，analyze-cards 收 body.layoutId 持久化到 lazypakParams，Phase B(hint)+Phase C(壓版) 都吃
+- **資訊圖表中文**：imagePrompt 是英文→圖表文字變英文/亂碼。修在生圖收斂點 generate-card-image 依 cardType(infographic/quote_card) 硬 append「文字必繁中」+ analyze-cards prompt 同步。⚠️ 字型正確度仍看模型（gpt-image 畫中文會變形，備案=確定性壓文字層）
+- **圖卡文字掛過濾**：bodyText/cardText 兩 textarea 各掛 TextFilterBadge（帶 characterId 保語氣），與文案一致
+- **手機 fetch 中斷友善化**：`friendlyFetchError` 辨識 Failed to fetch/Load failed/AbortError（手機切分頁 abort in-flight fetch，任務其實已送出）→ 改「動作可能已送出，請重新整理查看」，套 dispatch+5 處
+
+## 文字過濾器覆蓋現況（2026-07-04 盤點）
+
+- ✅ 口播稿（後端自動改寫 dispatch）、Podcast 腳本（worker 逐行+前端逐行 badge）、懶人包文案+圖卡內文+圖說（標記 badge）
+- ❌ **Brief 策略簡報無過濾（唯一缺口，Adam 未決定補；建議標記模式）**；chat 刻意不接（即時性）
+
 ## 部署狀態
 
-- Cloud Run 主平台：**00066**（2026-07-04 產品化改版全上線）；worker 00004（/run-lazypak）；Scheduler `podcast-watchdog` ENABLED
-- **未 commit**：66 檔（7/2 健檢＋7/3-04 整個產品化改版）——線上比 git 新
+- Cloud Run 主平台：**00072**（2026-07-04 懶人包微調全上線）；worker 00004（/run-lazypak）；Scheduler `podcast-watchdog` ENABLED（含 x-cron-secret header）
+- **已全 commit+push** `linhocheng/udnnews-platform`（線上=git 追平；85c4a5d 為最新）
 
 ## Nav 連結（2026-06-28 補）
 
