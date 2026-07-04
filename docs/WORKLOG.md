@@ -6449,3 +6449,9 @@ Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒
 - 已修：真身加同一套 s2tw+发文覆寫＋title 寫回，deploy.sh 部署（rev 00005-wcc）；生產鏈 e2e（dialogue→asia worker）內文冪等性 OK；Adam 的「品牌思考架構」用確定性轉換修復（GCS HTML+mdContent 直轉，保留原文措辭，繞開 bridge CF 524）
 - 教訓刻進 [[ailivex-doc-worker-true-source]] 記憶＋LESSONS L-M；諷刺點：真身 prompt 本來就寫了「一律用繁體」，模型照吐簡體——天條活教材
 - 遺留：真身 secret 檢查 fail-open 寫法（env 有設未爆）；us-central1 死副本服務要不要刪等 Adam
+
+### 追記二（同日）：文字過濾器接線補全（Adam GO）
+- 盤點：過濾器只接了 Vercel doc-process＋編輯 UI Badge；漏了真身 doc-worker（主文件路徑）、腳本→TTS、podcast→音檔
+- 已接（全部照「轉繁→句型過濾改寫→再轉繁收尾」鏈）：真身 doc-worker（vendored text-filter.ts，rev 00006-pw6）；generate-audio（params.text 存過濾後版本）；podcast generate-audio（逐句只改寫踩雷句、podcastScript 寫回過濾版、maxDuration 30→120）；Vercel doc-process 補第二道轉繁
+- 誘餌句 e2e：文件鏈（log 踩雷8殘留0、三句誘餌全滅）＋音檔鏈（誘餌改寫、正常句未誤動）全過；podcast 共用同套函數未跑真 e2e（音檔成本）
+- ailivex 4 檔＋真身 2 檔未 commit（等 Adam 說收）
