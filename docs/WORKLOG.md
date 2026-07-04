@@ -6455,3 +6455,4 @@ Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒
 - 已接（全部照「轉繁→句型過濾改寫→再轉繁收尾」鏈）：真身 doc-worker（vendored text-filter.ts，rev 00006-pw6）；generate-audio（params.text 存過濾後版本）；podcast generate-audio（逐句只改寫踩雷句、podcastScript 寫回過濾版、maxDuration 30→120）；Vercel doc-process 補第二道轉繁
 - 誘餌句 e2e：文件鏈（log 踩雷8殘留0、三句誘餌全滅）＋音檔鏈（誘餌改寫、正常句未誤動）全過；podcast 共用同套函數未跑真 e2e（音檔成本）
 - ailivex 4 檔＋真身 2 檔未 commit（等 Adam 說收）
+- 追記二收尾：ailivex commit e0a4ba8（v15.5.1，stash 驗提交樹綠）已 push；**真身 ~/.ailive/ailivex-doc-worker 不在任何版控**（同 zhu-bridge 型技術債，改動只活在本機+雲端）——待 Adam 決定要不要 git init + 建 repo

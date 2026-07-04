@@ -30,7 +30,9 @@
 - **v15.5.0 文字對話額度**：則數總量制（token 分析後棄用：bridge 月費+context 佔 95%）；dialogue 入口扣量+失敗退量；admin 全鏡射；對話頁「剩 N 則」指引+用罄琥珀系統卡+輸入停用。8/8 斷言+e2e 上限2→剩1/剩0/擋 全中
 - 外科分離 ×3（loader/collections/dialogue 與 soulCore 批切開）+ **stash --keep-index 首次真驗提交樹 build**
 
-**收尾後追記：doc-worker 雙城殭屍**——生產文件真身在 `~/.ailive/ailivex-doc-worker/`（asia-east1、POST /、非 git），repo `cloud-run/doc-worker`+us-central1 是死副本；真身已補 s2tw 轉換（rev 00005-wcc）、生產鏈 e2e 過、Adam 的品牌文件已確定性轉繁。詳見記憶 ailivex-doc-worker-true-source + LESSONS L-M。
+**收尾後追記一：doc-worker 雙城殭屍**——生產文件真身在 `~/.ailive/ailivex-doc-worker/`（asia-east1、POST /、非 git），repo `cloud-run/doc-worker`+us-central1 是死副本；真身已補 s2tw 轉換（rev 00005-wcc）、生產鏈 e2e 過、Adam 的品牌文件已確定性轉繁。詳見記憶 ailivex-doc-worker-true-source + LESSONS L-M。
+
+**收尾後追記二：文字過濾器接線補全（v15.5.1 已 commit+push+部署）**——原本只接 Vercel doc-process＋編輯 UI Badge；補接真身 doc-worker（rev 00006-pw6）、腳本→TTS、podcast 逐句，全鏈=轉繁→句型過濾→轉繁。誘餌句 e2e 兩鏈全過（文件：踩雷8殘留0；音檔：誘餌改寫正常句未動）。手法刻 LESSONS L-N。**真身目錄不在版控＝技術債待 Adam 決定**。
 
 **前三場（安全弱掃批等）已收，帳在 WORKLOG。**
 
@@ -57,6 +59,7 @@
 2. **角色管理三修（方案已定，等 Adam GO）**：`src/app/admin/characters/page.tsx` ①編輯預載加載入中狀態擋存檔 ②onAvatar canvas 壓 512px+413 訊息 ③建立表單補能力/別名（產品決定）
 3. audit MEDIUM/LOW（正式對外前）：登入 rate limit、kling-callback secret、安全標頭、SSRF DNS-rebinding
 4. Adam 驗收：文字額度 UI（admin 設限→對話頁指引）、A.Two 語音（voiceId 已補）
+5. 真身 ailivex-doc-worker 要不要 git init 建 repo（版控債）＋us-central1 死副本服務要不要刪
 
 ---
 

@@ -21,4 +21,5 @@ ailiveX 文件生成的 Cloud Run worker 有**兩台同名服務、兩份不同�
 **How to apply**：改文件生成邏輯改 `~/.ailive/ailivex-doc-worker/src/index.ts`；驗證必打真身（最穩=走生產鏈：dialogue 建文件→查 mdContent）；抓雙城殭屍用無 --region 的 `gcloud run services list`。
 **觸發信號**：改了 doc-worker 沒生效／log 簽名對不上源碼／revision 名不在 revision 列表裡。
 
-同型陷阱：[[reference-ailive-strategy-pipeline]]（strategy-worker Vercel route 死副本）、LiveKit 跨 region 殭屍。真身另有既知小債：secret 檢查是 fail-open 寫法（env 有設所以未爆）、本機跑會撞 bridge CF 524（生產 Secret Manager 的 BRIDGE_URL 疑似直連所以能跑長任務）。
+同型陷阱：[[reference-ailive-strategy-pipeline]]（strategy-worker Vercel route 死副本）、LiveKit 跨 region 殭屍。真身另有既知小債：secret 檢查是 fail-open 寫法（env 有設所以未爆）、本機跑會撞 bridge CF 524（生產 Secret Manager 的 BRIDGE_URL 疑似直連所以能跑長任務）、**整個目錄不在任何版控**（同 zhu-bridge 型債，patch SOP=先 cp 備份再改）。
+2026-07-04 晚：真身已接文字過濾器（vendored text-filter.ts，鏈=轉繁→句型過濾→轉繁，rev 00006-pw6 誘餌 e2e 過）。
