@@ -86,7 +86,7 @@
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 最新 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-04.md`（L1-L5+L-A~L-L 四場） |
 | ailiveX | `~/.ailive/ailivex-platform/`（repo: linhocheng/ailivex-platform，**soulCore 退役未 commit**）|
-| ailiveX 部署 | web `npx vercel --prod --yes`；agent `gcloud builds submit --config=agent/cloudbuild-vN.yaml`；doc-worker `--config=cloud-run/doc-worker/cloudbuild.yaml` |
+| ailiveX 部署 | web `npx vercel --prod --yes`；agent `gcloud builds submit --config=agent/cloudbuild-vN.yaml`；**doc-worker 真身** `cd ~/.ailive/ailivex-doc-worker && bash scripts/deploy.sh`（repo 的 cloud-run/doc-worker 是死副本勿用） |
 | UDN 工作台 | `~/Documents/UDN NEWS/platform/`（**66 檔未 commit**）|
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 
