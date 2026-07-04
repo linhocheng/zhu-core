@@ -6456,3 +6456,9 @@ Adam 實際使用中連續回報四件事：創建角色存檔卡住、A.Two 沒
 - 誘餌句 e2e：文件鏈（log 踩雷8殘留0、三句誘餌全滅）＋音檔鏈（誘餌改寫、正常句未誤動）全過；podcast 共用同套函數未跑真 e2e（音檔成本）
 - ailivex 4 檔＋真身 2 檔未 commit（等 Adam 說收）
 - 追記二收尾：ailivex commit e0a4ba8（v15.5.1，stash 驗提交樹綠）已 push；**真身 ~/.ailive/ailivex-doc-worker 不在任何版控**（同 zhu-bridge 型技術債，改動只活在本機+雲端）——待 Adam 決定要不要 git init + 建 repo
+
+### 追記三（同日，Adam「打鐵趁熱」）：真身版控＋死副本全清
+- 真身 git init → push `linhocheng/ailivex-doc-worker`（private；ls-files 驗無 node_modules/機密）
+- us-central1 死副本服務已刪（刪前核流量證據：生產 job 全由 asia 處理）；repo `cloud-run/doc-worker` 目錄已刪（v15.5.2，-4289 行）
+- CLAUDE.md 拓樸修正：primary 文件路徑=Cloud Run asia-east1（原文寫反成 Vercel primary）
+- 文件生成線收斂為單一真相：一台服務/一份源碼/一個 repo/文件吻合現場
