@@ -25,6 +25,7 @@
 - [心法天條：後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場；管道必活通；假中台必修（ANEWS 圖片/articlesDone 教訓）
 - [Async Worker 六問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease、taskId 確定性、父 doc 被刪回 200 不 throw
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
+- [醉酒指數自檢 protocol](skill_drunk_check_protocol.md) — context 退化用行為信號計分不靠感覺；4分報數降速、9分主動請 Adam 關 session/compact；完整版 zhu-core/skills/drunk-check.md
 - [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
 - [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST
 - [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因，第一層通了不算完成；5/11 aurae session 抓出 bridge findCount 既有 bug
