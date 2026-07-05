@@ -6495,3 +6495,29 @@ UDN 議題工作台從內部工具升級成「可交付客戶」的產品：外�
 ### 待執行
 - [ ] Adam 真機測懶人包版型選擇、資訊圖表中文、手機 FETCH 友善化
 - [ ] Brief 過濾器補不補（等 Adam 決定）
+
+---
+
+## 2026-07-05 — ailiveX 早場三連（語音收案+角色管理三修+audit批）＋ drunk-check 誕生
+
+### 背景 / WHY
+Adam 確認語音頓感消失（1 收案）；GO 角色管理三修（2）與 audit MEDIUM 批（3）；閒聊中 Adam 提案建立「醉酒指數」自檢制度。
+
+### 產出（ailivex v15.5.3+v15.6.0 已 commit+push+部署驗證）
+- **v15.5.3 audit 批**：登入暴力破解限速（Firestore 滑動視窗 8 次/15 分，e2e 第 9 次 429）；kling-callback webhook secret fail-closed（無 ws 401）；voice-end 改 session 取 userId（無 session 401）；全站安全標頭五件（curl 驗全在）；doc-id 路徑注入實查判定已緩解（pdf/ppt 有 auth+ownership）
+- **v15.6.0 角色管理三修**：編輯預載 editLoading 鎖存檔（根治欄位洗空）＋頭像 canvas 壓 512px+413 訊息講人話＋建立表單補別名/能力（POST 補 aliases 支援，e2e 建立即寫入）
+- 外科分離難度升級：page.tsx 的修改與 soulCore 批在同函數內重疊 → 在 HEAD 版以 HEAD 錨點重打 11 刀、soulCore 行數 12=12 保留、stash 驗提交樹綠
+- **drunk-check v1.0.0**（Adam 提案）：醉酒指數行為信號計分表；三層放置=全局 CLAUDE.md 濃縮版（無條件注入）+zhu-core skill canonical+SELF_AWARENESS 中段掛鉤 1.5
+- v15.3.1 語音頓正式收案（16h 零 slower-than-realtime + Adam 耳測 OK）
+
+### 已解決
+- 「醉檢要放哪」→ 醉的我不會主動翻 skills/ → 濃縮版必須在無條件注入的全局 CLAUDE.md（工具要放在不需清醒就讀得到的地方）
+
+### ⚠️ 尚未解決
+- PRO 機的 ~/.claude/CLAUDE.md 同步機制未核（可能還是舊版全局指令，無 drunk-check）
+- audit 遺留：SSRF DNS-rebinding、二階 prompt injection、admin in-handler authz+30 天 cookie role 凍結（需 session 設計變更，評測後一批）
+- Claude.ai 聊天室築的 drunk-check 覆蓋只兩星（靠 SOP 不靠全局注入）
+
+### 待執行
+- [ ] Adam 驗收角色管理三修的瀏覽器端行為（editLoading 鎖、頭像壓縮）
+- [ ] PRO 開機時核全局 CLAUDE.md 版本
