@@ -28,6 +28,7 @@
 - **資安加固**（07355db）：`proxy.ts` 全站認證閘（HMAC cookie）+ `lib/ssrf.ts` 共用 SSRF 守衛套四路由 + watchdog CRON_SECRET。12 項鑑別驗證全過。**原本零認證+SSRF（Cloud Run 致命）**
 - **角色工作室隔離**（cadc448）：角色移 `/studio/characters/*`，雙 scope 密碼（base=客戶 `udn-aa742674-news`／studio=你 `studio-73f4bce7-udn`），全站模型/廠商字眼清零
 - **懶人包微調**（85c4a5d）：對話驅動補版型選擇、資訊圖表中文（生圖收斂點）、圖卡文字掛過濾 badge、手機切分頁 fetch 中斷友善化
+- **watchdog b_done 修法**（11e36a0，7/5 晨，rev 00073）：懶人包停 b_done（圖卡已好、使用者逐張生圖）掛 running 被 watchdog 15 分誤掃 failed → 加 guard 跳過 summary_card+b_done；被誤判的任務 vBGfxZFPjJnfu7MHIcmT 已改回 running（1/3 圖）；鑑別驗證設 40 分前觸發 watchdog→swept:[] 未掃
 - **唯一缺口**：Brief 策略簡報無文字過濾（Adam 未決定補不補）
 - 密碼正本在 Cloud Run env（--update-env-vars），git 零機密
 
