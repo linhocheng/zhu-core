@@ -7,6 +7,7 @@
  */
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore } from '@/lib/firebase-admin';
+import { hasHubAccess } from '@/lib/write-auth';
 
 export const maxDuration = 30;
 
@@ -123,6 +124,7 @@ export async function GET(req: NextRequest) {
 
 export async function POST(req: NextRequest) {
   try {
+    if (!hasHubAccess(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     const db = getFirestore();
     const body = await req.json();
     const { id, ...data } = body;
@@ -142,6 +144,7 @@ export async function POST(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   try {
+    if (!hasHubAccess(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     const db = getFirestore();
     const { id, content, warningNote, description } = await req.json();
     if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });

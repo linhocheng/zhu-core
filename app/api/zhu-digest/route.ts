@@ -15,6 +15,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import Anthropic from '@anthropic-ai/sdk';
 import { getFirestore } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
+import { hasHubAccess } from '@/lib/write-auth';
 
 export const maxDuration = 60;
 
@@ -86,6 +87,7 @@ soil = 今日觀察（短期，可能升級）
 
 export async function POST(req: NextRequest) {
   try {
+    if (!hasHubAccess(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     const body = await req.json();
     const { conversation, confirm = false, items } = body;
 
