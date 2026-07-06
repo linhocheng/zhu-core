@@ -16,6 +16,7 @@
 import { NextResponse } from 'next/server';
 import { getFirestore } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
+import { hasWriteSecret } from '@/lib/write-auth';
 import Anthropic from '@anthropic-ai/sdk';
 
 
@@ -30,7 +31,8 @@ async function getSoulPrefix(): Promise<string> {
 
 export const maxDuration = 30;
 
-export async function POST() {
+export async function POST(req: Request) {
+  if (!hasWriteSecret(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
   try {
     const db = getFirestore();
 

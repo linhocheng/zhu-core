@@ -10,6 +10,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getFirestore, getFirebaseAdmin } from '@/lib/firebase-admin';
 import { generateEmbedding, docToText } from '@/lib/embeddings';
+import { hasWriteSecret } from '@/lib/write-auth';
 
 const VALID_MODULES = ['soil', 'root', 'bone', 'eye', 'seed'] as const;
 type Module = typeof VALID_MODULES[number];
@@ -170,6 +171,7 @@ export async function PATCH(req: NextRequest) {
 
 export async function DELETE(req: NextRequest) {
   try {
+    if (!hasWriteSecret(req)) return NextResponse.json({ error: 'unauthorized' }, { status: 401 });
     const db = getFirestore();
     const { id } = await req.json();
     if (!id) return NextResponse.json({ error: 'id 必填' }, { status: 400 });
