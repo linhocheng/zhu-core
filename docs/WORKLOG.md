@@ -6555,3 +6555,34 @@ Adam 確認語音頓感消失（1 收案）；GO 角色管理三修（2）與 au
 - [ ] ailivex commit（等 Adam GO）
 - [ ] v16 實戰幾天後看：搶話回報、道別卡頓（有記憶寫入的通話）、記憶體水位（prewarm idle process）
 - [ ] 開新版 checklist 化（L3/L4：歷代修法沉澱＋收案降常駐）
+
+---
+
+## 2026-07-06（第二場）— 費用治理收官：常駐歸零＋語音開關＋podcast 搬 Jobs
+
+### 背景 / WHY
+Adam 指定今天清平台不必要費用。從 Cloud Run 常駐掃起，一路做到功能開關、架構搬遷、天條沉澱、預算警報。
+
+### 產出
+- 費用：抓漏 ailive-realtime-agent（流量釘舊 revision min=1）＋v16/兩台 podcast-worker 降 0 → **全帳戶 Cloud Run 常駐 $0/月**（含上場累計砍 ~$1,200/月）
+- ailivex：語音電源開關（後台 `/admin/voice` 按鈕 → min-instances 0/1）＋token route 咽喉閘（config/voicePower）＋前台「現在無法撥號」擋板＋3h 無通話自動關機 cron；commits `f858122`/`d556332`/`c78b243`/`0832797`/`bea812e` 已 push
+- podcast 搬 Cloud Run Jobs（兩平台同構）：worker 抽共用函數＋job.ts 入口（TASK_ID+JOB_ACTION 讀 task doc）、平台派工切 Jobs API（env 開關可回退）、cloudbuild 加 job 步驟＋min 1→0；UDN commit `b0373fb`/`dc1ab9c`
+- 真實驗收：UDN 腳本 2147 字（25 分）＋音檔 MP3 落 GCS；ailivex 腳本 2616 字（22 分）——全是舊架構必死單
+- 天條 ×3 刻入全局 CLAUDE.md＋記憶庫：①長任務進 Jobs（判準：閒著時有沒有人下一秒需要它）②驗錢看計費錶不看設定 ③手動改雲端資源同日改部署腳本
+- 破音字：飛彈→飞蛋 六落點同步（含 UDN lib 漂移補齊——lastwords 說八落點全同步但現場少一點）
+- 預算警報：全帳戶 $150＋四 project 各 $50（50/90/100% 寄信）；發現既有兩條 TWD 3000（先前斷言「沒設過」是錯的）
+
+### 已解決
+- 「關了還能通話」→ 三層：min 是錢的開關不是功能開關＋部署驗證實例 15 分＋graceful drain → 咽喉閘釘 token route
+- 部署破音字時 v16 cloudbuild 把語音無聲重開 → 拔掉寫死的 min-instances（省略=保留現值）
+
+### ⚠️ 尚未解決
+- UDN 7/18 上市前：生成額度閘＋防連按（MiniMax 按字計費無上限，連按=多台 Job 並行）
+- ailivex soulCore 批（別 session）未 commit；v16 log 每行×2（觀測噪音）；ailivex podcast 無 watchdog
+- zhu-dev VM e2-standard-2 規格審視（CPU 長期低載可降半）；Cloud Tasks maxAttempts 巡檢；GCS lifecycle
+- 語音自動關機的「真實觸發」未實測（需開著閒置 3h，自然驗證）
+
+### 待執行
+- [ ] UDN 生成額度閘＋防連按（7/18 前）
+- [ ] podcast 舊 worker service 觀察 1-2 週後刪除（現為回退門，min=0 不燒錢）
+- [ ] Anthropic console 用量月巡（語音 turn-path 直連 key，GCP 帳單看不到）
