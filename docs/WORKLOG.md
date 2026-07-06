@@ -6586,3 +6586,34 @@ Adam 指定今天清平台不必要費用。從 Cloud Run 常駐掃起，一路�
 - [ ] UDN 生成額度閘＋防連按（7/18 前）
 - [ ] podcast 舊 worker service 觀察 1-2 週後刪除（現為回退門，min=0 不燒錢）
 - [ ] Anthropic console 用量月巡（語音 turn-path 直連 key，GCP 帳單看不到）
+
+---
+
+## 2026-07-07 — Vercel 全平台安全掃描與加固
+
+### 背景 / WHY
+Adam：「幫我看 Vercel 有沒有漏洞、或在燒錢卻不自知，全面掃一次。」從掃描一路做到三平台修復上線＋記憶落點。
+
+### 產出
+- `ailive-platform/`：8 路由鎖 operator＋4 付費路由 IP 限流（新 `src/lib/rate-limit.ts`＋`redis.incr`）＋design-x 鎖＋strategist-review worker-secret＋CRON_SECRET。commit 8b8bc72，push。
+- `anews-platform/`：新 `lib/admin-auth.ts`＋middleware 種 cookie，12 危險路由鎖（debug LLM 油井/editorial-jobs 產線觸發/settings PUT）；auto-kick watchdog 加重派上限堵無限燒 web_search。commit be223f4 + b6620f6，push。
+- `zhu-core/`：刪幽靈 project zhu-core-full（省雙倍 cron）＋CRON_SECRET＋新 `lib/write-auth.ts`＋`middleware.ts`（/hub Basic→cookie 閘門）＋9 個 hub-only 端點鎖。commit a3c364c + c7ec5cb，push。ZHU_HUB_PASSWORD=19770705。
+- 三 repo `SECURITY.md` 防線地圖＋各 CLAUDE.md/AGENTS.md 指標。
+- 全局記憶 2 條：`feedback_one_repo_multi_vercel_project_multiplies_cost`、`skill_public_page_open_api_hardening`。
+
+### 已解決
+- 匿名可觸發的付費 LLM/TTS/web_search 路由 → 全關或限流（實測 401/429）。
+- 跨租戶 PII 外洩（ailive user-observations）→ 401。
+- zhu-core /hub 裸奔 CRUD → Basic auth cookie 閘門。
+- 幽靈雙胞胎 zhu-core-full 每日雙倍 Haiku → 刪除。
+
+### ⚠️ 尚未解決
+- ailive IDOR 讀取（conversations/insights/knowledge/characters GET）仍匿名可讀，只鎖了 user-observations，其餘讀取端點是下一輪。
+- zhu-core 匿名讀取（使命/靈魂/私訊/system prompt）刻意留開——Adam 選「先堵毀滅性的」，讀取不鎖是明確決定。
+- anews auto-kick 恢復路徑（達上限標 needs_repair）休眠中無 active issue，未實戰驗。
+- ailive runner 無程式層 directive 早退（P1，價值低，現已只讀 Firestore 沒燒 LLM）。
+
+### 待執行
+- [ ] （若 Adam 要）ailive IDOR 讀取端點加 assertCharAccess/operator。
+- [ ] （若 Adam 要）zhu-core 讀取端點加認證（第二輪）。
+- [ ] anews 有 active issue 時驗 auto-kick 恢復路徑。
