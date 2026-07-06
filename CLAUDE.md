@@ -120,6 +120,7 @@ git config user.name 'adamlin'
 
 本目錄補充（zhu-core 特有）：
 - 記憶庫檔案異動要同時寫 WORKLOG（`docs/WORKLOG.md`）
+- **動 `app/api/` 的 auth/寫入端點前，先讀 `SECURITY.md`**（防線地圖：/hub cookie 閘門、哪些鎖了、哪些刻意留開；讀取刻意不鎖是 Adam 的決定）
 - 改 API 路由（`app/api/zhu-*`）後 → 等 Vercel deploy → curl 驗一下再算完成
 - 改 `ZHU_BOOT_SOP.md` 視為架構變更，必須記入 `bone` 一條洞察
 
