@@ -1,11 +1,13 @@
 ---
 name: cloud-run-sop
-description: 天條級：有 throttling 的 Cloud Run 上不存在 fire-and-forget（呼叫自己也一樣）；背景工作一律進 no-throttle worker；--set-env-vars 會洗機密用 --update-env-vars
+description: 天條級：有 throttling 的 Cloud Run 上不存在 fire-and-forget（呼叫自己也一樣）；2026-07-06 升級——長任務正解是 Cloud Run Jobs 不是 min=1 常駐 worker；--set-env-vars 會洗機密用 --update-env-vars
 metadata: 
   node_type: memory
   type: reference
   originSessionId: 8ef8c0e1-e3c6-4a5a-b395-90a13805cb5c
 ---
+
+**⚠️ 2026-07-06 升級：no-throttle worker + min=1 已退役，長任務正解是 Cloud Run Jobs**（跑到完成才結束、按執行時間計費、零常駐）。本檔的三件套 SOP 保留為「必須秒級待命的常駐」場景（如 LiveKit 語音）與歷史脈絡；podcast/文件類長任務見 [[standing-cost-only-for-instant-readiness]]。ailivex/UDN podcast 已於 2026-07-06 全搬 Jobs 並實測收案。
 
 **⚠️ 2026-07-02 晚同日重犯後升天條（已刻入 ~/.claude/CLAUDE.md 全局）**：早上在 ailivex worker 修對了這個病，晚上在 UDN 主平台（throttled）寫了「dispatch fire-and-forget 呼叫自己另一條 route + 10s abort」——同款死法：abort 斷線→CPU 掐掉→生成死、log 零蹤跡。**教訓的完整形狀：不是「worker 要開旗標」，是「throttled service 上任何形式的背景工作都不存在」——呼叫自己也不行。** 長活只有一條路：丟給 no-throttle worker（主平台只做驗證＋標狀態＋派工等 202）。連帶雷：worker cloudbuild `--set-env-vars` 整組替換會洗掉 update 注入的機密，一律 `--update-env-vars`。
 

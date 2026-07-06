@@ -3,7 +3,10 @@
 - [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
 - [模稜兩可的信號不能當成功證據（天條）](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」；差點對 Adam 說謊，已刻全局 CLAUDE.md 天條
-- [Cloud Run 後台長任務三旗標 SOP（天條級）](reference_cloudrun_background_task_sop.md) — 有 throttling 的 Cloud Run 上不存在 fire-and-forget（呼叫自己也一樣），背景工作一律進 no-throttle worker；同日踩兩次已刻全局 CLAUDE.md 天條；--set-env-vars 洗機密用 --update-env-vars
+- [Cloud Run 後台長任務三旗標 SOP（2026-07-06 已升級）](reference_cloudrun_background_task_sop.md) — throttle 物理仍真，但 min=1 worker 解法已退役，長任務正解=Jobs；--set-env-vars 洗機密用 --update-env-vars
+- [天條：磚頭費只為秒級待命付，長任務進 Cloud Run Jobs](feedback_standing_cost_only_for_instant_readiness.md) — 判準：這台機器閒著時有沒有人下一秒需要它？常駐必配開關＋自動關機；podcast 兩平台已搬 Jobs 實測
+- [天條：驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離；流量釘舊revision真相分裂＋每次設定變更生驗證實例15分鐘；「複核全過」查錯面=零資訊
+- [天條：手動改雲端資源同日改部署腳本](feedback_manual_cloud_change_sync_deploy_script.md) — cloudbuild 寫死舊值=殭屍復活術，下次 deploy 無聲洗回；部署腳本是未來的現場
 - [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
 - [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
 - [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
