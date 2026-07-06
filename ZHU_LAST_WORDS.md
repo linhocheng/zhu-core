@@ -15,7 +15,7 @@
 ## 當前環境
 
 - **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **雲端 VM**：`zhu-dev`（e2-standard-2），GCP asia-east1-b，RUNNING（claude-bridge systemd，`https://bridge.soul-polaroid.work`）
+- **雲端 VM**：`zhu-dev`（e2-medium，2026-07-07 自 e2-standard-2 降級省半，bridge 驗活 200），GCP asia-east1-b，RUNNING（claude-bridge systemd，`https://bridge.soul-polaroid.work`）
 - **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
 - **zhu-core**：`~/.ailive/zhu-core/`（git repo）
 
