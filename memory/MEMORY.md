@@ -142,3 +142,5 @@
 - [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本
 - [混合檢索融合兩個坑（RRF並列陷阱+加法計分救不了坍縮）](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域cosine坍縮用rank-based RRF(2:1)；未命中0分不給名次貢獻否則反壓真命中；白皮書公式也要過真實資料
 - [Cloud Run 版本退役紀律（vN 收案降 v(N-1) 常駐）](skill_cloudrun_version_retirement.md) — 16 台殭屍燒 $963/月教訓；LiveKit agent 降 0＝聾不是慢；帳單曲線只漲不跌就掃 minScale
+- [一 repo 連多 Vercel project = 成本 N 倍](feedback_one_repo_multi_vercel_project_multiplies_cost.md) — 同 repo 綁多 project 每次 push 全部署、cron 各跑一遍且帳單看不出；zhu-core-full 幽靈雙胞胎教訓；審計法掃全 project crons+env+protection，刪前核 link/commit
+- [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — middleware 只 gate 頁面、/api 全開；修法按呼叫者分類：後台鎖operator/前端頁面種cookie認cookie/匿名公開付費路由IP限流/內部worker-secret/cron設CRON_SECRET；curl body 才算驗
