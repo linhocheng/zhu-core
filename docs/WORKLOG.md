@@ -6521,3 +6521,37 @@ Adam 確認語音頓感消失（1 收案）；GO 角色管理三修（2）與 au
 ### 待執行
 - [ ] Adam 驗收角色管理三修的瀏覽器端行為（editLoading 鎖、頭像壓縮）
 - [ ] PRO 開機時核全局 CLAUDE.md 版本
+
+---
+
+## 2026-07-06 — v16 語音延遲迭代三連修＋Tracy 靈魂改寫＋雙平台過濾器同步＋殭屍常駐大清洗
+
+### 背景 / WHY
+從「cpu=2 之後語音還有什麼優化空間」的監造討論開場，Adam GO 開 v16；撥測揪出兩顆老雷連修；Tracy 本尊校準紀錄蒸餾進靈魂；UDN podcast 體驗回饋觸發破音字/過濾器新增與雙平台同步；帳單討論延伸成全 GCP 常駐掃描，清出 16 台殭屍。
+
+### 產出（ailivex v16→v16.3 全部署；UDN commit 743175f push；zhu 省 ~$963/月）
+- **v16 延遲三件**：VAD prewarm（prewarm_fnc + num_idle_processes=1，省每通 1-3s）＋ min_silence 0.4→0.3 ＋ TTS 首段 16 字/逗號提早 flush（`minimax_tts.py` 加法改 `first_segment_max_chars` 預設 0，舊版位元級不變）；web 接線 `/realtime-v16` + `DEFAULT_VOICE_VERSION='v16'`（token route 已是 DEFAULT+access 覆寫制，access 25 docs 全未釘選＝用戶端自動同步）
+- **v16.1 說再見卡頓**：log 對時破案 `Memory saved` 與 `slower than realtime` 同毫秒——`remember`/`create_document_job`/`dispatch_*` 六處裸同步呼叫堵 event loop → 全下放 `asyncio.to_thread`
+- **v16.2 3a 殭屍 timer**：掛斷後對空房評估燒 LLM（v6-v10 老雷復活）→ stopped 旗標＋三退出路徑（人走光/room gone/finalize）＋兩入口自檢＋早期 no-op holder 防 NameError
+- **v16.3 語音破音字**：`_normalize_pronunciation` 釘在 `_to_simplified` 收斂點（混淆→混摇、划→画 兩條半規則）
+- **Tracy 靈魂**：兩場校準紀錄蒸餾（引擎三段煙火氣原文/口氣校準 catch→我想確認一件事/教練姿態給不給判準/收尾雙原則），調和「截斷 vs 看見」「不收尾 vs 動能」兩張力；Adam 自存 4147 字，soulCore 維持空（不跑 enhanceSoul 護煙火氣）
+- **UDN 過濾器驗證＋新增**：本機重放證兩功能正常（5 句乾淨＋誘餌自證＋TTS 正規化輸出可見）；新增破音字 3 條＋語意 pattern `spatial-interrogate`（往前一步追你）；抓/放六案全過；worker rev 00005-g8w＋主平台部署
+- **ailivex 八落點同步**：lib text-filter/tts-normalize、podcast-worker 兩檔、doc-worker vendored、minimax_tts.py——兩平台詞庫沒有分家
+- **殭屍大清洗**：全五 project 常駐掃描→ailivex 14 台舊版語音＋jiangbin-agent＋ailive-realtime-agent 共 16 台 min-instances 降 0（複核全過），省 ~$963/月 ≈ NT$30 萬/年；留三台有理由的常駐（v16 現役／兩台 podcast-worker 背景肌肉天條）
+- 文件：`ailivex-platform/docs/voice-v16-iteration.md`（改動帳＋P1-P8 問題）
+
+### 已解決
+- 說再見卡頓 → event-loop 堵塞（非 CPU）→ to_thread 下放（L1/L2）
+- 3a 空轉 → lifecycle 停止條件補齊（L3）
+- 舊版燒錢 → 版本紀律補「收案降常駐」步（L4）
+- 破音字 → 借音法＋雙向測試（L5）
+
+### ⚠️ 尚未解決
+- **ailivex 兩 repo 未 commit**：platform（v16 五件套＋lib 同步＋minimax_tts＋collections 等）＋ doc-worker（text-filter 1 檔）——Adam 說收才收；soulCore 批（別 session）依舊未 commit 不碰
+- v16 實戰觀察中：P6 搶話風險（min_silence 0.3 對慢語者）、v16.1 卡頓修復的鑑別信號未在真實通話驗到（簡報王那通零記憶寫入沒觸發）、P7 log 重複兩行未修
+- UDN Brief 過濾器缺口依舊待 Adam 決定；audit MEDIUM/LOW 遺留同前
+
+### 待執行
+- [ ] ailivex commit（等 Adam GO）
+- [ ] v16 實戰幾天後看：搶話回報、道別卡頓（有記憶寫入的通話）、記憶體水位（prewarm idle process）
+- [ ] 開新版 checklist 化（L3/L4：歷代修法沉澱＋收案降常駐）
