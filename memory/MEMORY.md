@@ -117,7 +117,7 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；四種額度管制全上線(語音/文件/媒體/對話)；v15 cpu=2；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；四種額度管制全上線(語音/文件/媒體/對話)；語音現役 v16（延遲三件+to_thread+3a停止+破音字，2026-07-06）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
 - [ailivex doc-worker 真身](reference_ailivex_doc_worker_true_source.md) — 唯一 worker=~/.ailive/ailivex-doc-worker（asia-east1、POST /、repo linhocheng/ailivex-doc-worker）；死副本已全清（2026-07-04）
 - [opencc 簡繁轉換三顆雷](reference_opencc_s2t_pitfalls.md) — s2twp 會修壞已繁體文本、发文誤斷成髮文要覆寫表、驗證用冪等性不用手寫黑名單
 - [LiveKit Agents 1.5.1 語音中途控制四原語](reference_livekit_agents_voice_control_api.md) — 通話中暫停聽/打斷/改context/收前端RPC：set_audio_enabled/interrupt/update_instructions/register_rpc_method
@@ -138,3 +138,4 @@
 - [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版
 - [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本
 - [混合檢索融合兩個坑（RRF並列陷阱+加法計分救不了坍縮）](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域cosine坍縮用rank-based RRF(2:1)；未命中0分不給名次貢獻否則反壓真命中；白皮書公式也要過真實資料
+- [Cloud Run 版本退役紀律（vN 收案降 v(N-1) 常駐）](skill_cloudrun_version_retirement.md) — 16 台殭屍燒 $963/月教訓；LiveKit agent 降 0＝聾不是慢；帳單曲線只漲不跌就掃 minScale
