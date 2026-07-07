@@ -6617,3 +6617,38 @@ Adam：「幫我看 Vercel 有沒有漏洞、或在燒錢卻不自知，全面�
 - [ ] （若 Adam 要）ailive IDOR 讀取端點加 assertCharAccess/operator。
 - [ ] （若 Adam 要）zhu-core 讀取端點加認證（第二輪）。
 - [ ] anews 有 active issue 時驗 auto-kick 恢復路徑。
+
+---
+
+## 2026-07-07（第二場）— 費用巡檢收官＋bridge IP 事故＋podcast 任務控制
+
+### 背景 / WHY
+Adam：「檢視還有哪些漏油（錢）或磚」→ 全帳戶掃描＋拆磚；中途發現凌晨 VM 換型引發 bridge IP 漂移事故，修復＋加固；再往下修 podcast 腳本庫斷點＋任務生命週期控制。
+
+### 產出
+1. **拆磚（~$105-120/月 → 常駐只剩 zhu-dev ~$25/月）**
+   - tiered-web-app 整套（GCP 官方教學範例燒 14 個月）→ Infra Manager destroy 三敗（SA 權限殘缺）→ 改刪整個 `arched-sunbeam-457702-g5` 專案（DELETE_REQUESTED，30 天可 undelete；已驗專案內無其他資產；fe URL 503 實證斷氣）
+   - zhu-dev e2-standard-2 → **e2-medium**（CPU 均 1.6%/RAM 677MB 佐證；bridge /health 200 驗活）
+   - toget-there-db / jiangbin-db 停機（STOPPED/NEVER，重開一條 patch 指令）
+   - udnnews-workflow maxAttempts 100→3；anews 十佇列 PAUSED＋auto-kick cron 從 vercel.json 拔除（anews commit 15b86ea，乾淨 worktree 部署，crons definitions=[] 驗證）
+   - AR cleanup policy ×11 repo（留 5 版/30 天；首輪清掃 24h 內，**容量下降未驗**）
+2. **bridge IP 漂移事故（我埋的雷，當日抓回）**
+   - 根因：VM 停機換型 → 臨時外部 IP 35.236.185.222 → 35.229.132.42；`bridge-direct` A record＋三個釘 IP env 指向死地址；九服務 bridge 斷線（文件生成 fetch failed×3、兩平台 podcast、udnnews-api）
+   - 修復：IP 升靜態 `bridge-static`（永不漂）；CF A record 改新 IP（Adam 給 token，已存 Secret Manager `CF_DNS_TOKEN` @zhu-cloud-2026）；udnnews-api/anews×2 env 收斂 bridge-direct 域名；ANEWS_OPERATIONS.md 六處舊 IP 清掉（65034ec）
+   - 驗證：文件重派 3/3 done；podcast 腳本端到端 21.5 分（tracy×簡報王）；strategy 系走 VPC 內網 10.140.0.2 未變；Vercel 端 BRIDGE_URL＝tunnel 域名（時間線＋pull 副本佐證）從未斷
+   - **教訓（待刻天條變體）**：動 VM 前要掃「誰釘著這台機器的位址」——DNS record／釘 IP env／文件，三處都是「未來的現場」
+3. **ailivex podcast 腳本庫＋任務控制（commit 85ce085 + 92ca8a8，乾淨 worktree 部署 READY）**
+   - 「腳本消失」根因＝tasks 缺複合索引（userId+type+createdAt），列表 API 靜默 500 → 建索引＋寫回 firestore.indexes.json
+   - 刪 7/2 殭屍任務（舊 fire-and-forget 架構卡 running 五天）
+   - 新增：生成中卡片「刪除」鈕、失敗卡片「重啟」鈕（新 retry 路由，409 擋 running 防雙跑）、**45 分鐘讀取時驗屍**（running 逾時自動轉 failed，殭屍絕種）、phaseStartedAt 階段時鐘
+
+### ⚠️ 尚未解決（醉酒指數 16 停手，留給下一個築）
+- **retry 端點＋新 UI 按鈕部署後未實測**（部署 READY ≠ 功能通）——下一場第一件：failed 任務按一次「重啟」走完、生成中按「刪除」驗證
+- 卡片時間只顯示時分不顯示日期（舊任務偽裝成今天的）——Adam 已問「要嗎」，等他答
+- AR cleanup 首輪清掃後容量下降未驗（24h 後看）；語音 auto-off 自然觸發未驗
+- UDN 生成額度閘＋防連按（7/18 前，MiniMax 無錶）——仍是最高優先未動工
+
+### 待執行
+- [ ] retry/刪除按鈕實測（下一場第一件）
+- [ ] UDN 額度閘＋防連按
+- [ ] 卡片日期顯示（等 Adam 確認）
