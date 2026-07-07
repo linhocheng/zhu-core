@@ -6681,5 +6681,5 @@ Adam compact 重啟後「築心法劍法雷區全檢」；查核前兩場遺留�
 ### ⚠️ 尚未解決
 - **HOSS**：Adam 問「HOSS 關掉的事情是不是也關了」——全帳戶掃無此資源，已回問是指什麼，等回覆
 - retry「重啟」按鈕仍無 failed 任務可實測（乾淨到沒法測）；等自然失敗第一時間驗
-- UDN 部署後線上驗證（traffic revision 對齊）——本場結束前補
+- ~~UDN 部署後線上驗證~~ → Build SUCCESS 4m50s，traffic==latestReady（00079-jjd），quota 測試錶已歸零
 - ailivex 25.2GB AR repo 批次清掃容量下降（明天看）
