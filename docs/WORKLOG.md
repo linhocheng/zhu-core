@@ -6768,3 +6768,9 @@ Adam 拍板北極星路線：ailiveX 蓋記憶全景圖到最終態（四層：�
 ### 待執行
 - [ ] 索引 READY 後驗 loadDiaryBlock 讀取端 → commit（repo 慣例 vN 版號、無 footer）→ deploy → prod 鑑別信號（Adam 聊一場，diary collection 出現文件；下一場角色帶出惦記）
 - [ ] 第二期：夜間鞏固管線＋印象層（脊椎）
+
+### 第一期收案（同日）
+- 索引 READY 後讀取端驗過（組塊含日記/未說出口/想跟進三段）；本機端到端 3 信號全綠
+- commit c63301b（v16.3.0）推上＋Vercel prod deploy Ready＋DIARY_CANARY_USERS=Adam 帳號已進 prod env
+- **剩最後一個 prod 鑑別信號等 Adam**：他在 ailivex 跟任一角色聊一場 → diary collection 該配對出現文件 → 再聊一場角色帶出惦記。我無法代打（需他的 session）。
+- 語音路徑本期未接（留第五期 loader 收斂時一起），文字對話已全通
