@@ -6683,3 +6683,38 @@ Adam compact 重啟後「築心法劍法雷區全檢」；查核前兩場遺留�
 - retry「重啟」按鈕仍無 failed 任務可實測（乾淨到沒法測）；等自然失敗第一時間驗
 - ~~UDN 部署後線上驗證~~ → Build SUCCESS 4m50s，traffic==latestReady（00079-jjd），quota 測試錶已歸零
 - ailivex 25.2GB AR repo 批次清掃容量下降（明天看）
+
+---
+
+## 2026-07-07（第四場）— UDN 議題台四功能上線＋ailive 記憶調查（mem0 對比）
+
+### 背景 / WHY
+Adam 手機遙控：先修 MiniMax 防連按燒錢口，接著三個產品需求（純文字來源/回溯編輯/持續補充），再轉聊 ailive 記憶管理 vs mem0。
+
+### 產出（UDN repo linhocheng/udnnews-platform，rev 00078 已上雲驗證）
+- `705cf92` 防連按閘：dispatch 同 projectId+assetType running→409（`hasRunningTask`）；generate-audio 同 parentTaskId running audio→409（`hasRunningAudioForParent`）
+- `02875b0` 純文字來源：DataSourceType 加 `'text'`+`label?`，建立表單貼 FB 貼文，collect 跳 scrape 直送周映辰（syntheticUrl=`text://{id}`）
+- `12e1832` 議題回溯編輯：表單抽共用 `components/ProjectForm.tsx`（create/edit 雙模式），新 `/projects/[id]/edit`，PATCH 擴充收 title/description/sources/collectMode/timeRange
+- `52e99cc` 概覽快速補充：收集核心抽 `lib/collect-core.ts`，新端點 `POST /api/projects/[id]/sources`（append＋只收新來源，seenUrls 預載既有文章 URL 跨次去重），概覽掛 `QuickAddSources`
+- `b4bf903` AGENTS.md 刻雷區（部署 SOP/髒樹雷/git 結構/tsc 噪音/認證閘 401=存在）
+- 全局記憶 `project_udnnews_platform.md` 追加今日＋修正 Deploy SOP
+
+### 已解決
+- 「push 完沒上雲」→ repo 無 Cloud Build trigger → 手動 builds submit（COMMIT_SHA=git rev-parse HEAD），驗 traffic revision==latestReady＋curl 新端點 401
+- 連按燒 MiniMax → 後端 409 閘（前端 state 保護跨 tab/refresh 會失效，閘要在 server）
+
+### ailive 記憶調查結論（未動手，聊天＋現場勘查）
+- 睡眠引擎已有：雙門檻去重（cosine≥0.9 且 CJK bigram≥0.5）、fresh/core/archive 分級衰減（30/60/7 天）、rootRelevance≥0.5 升 core 護欄、mergedInto 審計鏈永不硬刪、hitCount/lastHitAt 統計
+- **不需要 mem0**；唯一值得偷=矛盾裁決（UPDATE 語義）：「住台北」vs「搬高雄」雙門檻抓不到（bigram 低）
+- 提案（Adam 未拍板）：sleep-engine 加一步——程式聚類 cosine 0.7-0.9 灰區配對→LLM 判斷題（矛盾嗎/哪條是現況）→程式寫 `supersededBy`＋降 archive
+- 順帶觀察兩個隱患：①`loadEpisodicBlock` 先撈最近 50 條再 RRF，老 core 記憶掉出窗即盲區（量大後要換 findNearest 真向量檢索）②task-run 走自己的舊撈法（最近 5 條），與 dialogue/voice 兩條讀路徑=真相分裂種子
+
+### ⚠️ 尚未解決
+- ailive 矛盾裁決未動手（等 Adam 拍板；建議新 session 做，生產睡眠引擎不宜今日尾盤動）
+- ailive 50 條檢索天花板＋task-run 讀路徑分裂（觀察在案，未修）
+- UDN working tree 有另一 session 額度閘工事（已見 commit a110efb 進倉，該線由另一場收）
+- 前場留的：podcast retry/刪除按鈕實測、AR cleanup 容量驗證、語音 auto-off 自然觸發
+
+### 待執行
+- [ ] （若 Adam GO）ailive sleep-engine 矛盾裁決：`src/lib/sleep-engine.ts` 加 supersededBy step
+- [ ] UDN 額度閘上線後確認與防連按閘不打架（409 vs 429 順序）
