@@ -192,10 +192,18 @@ metadata:
 - chat double-send 無 server 冪等 key
 - Brief 多版本無比較介面
 
+## 2026-07-07 追加（rev 00078，commit 52e99cc）
+
+- **防連按閘**（MiniMax 燒錢口）：dispatch 同 projectId+assetType running→409（`hasRunningTask`）；generate-audio 同 parentTaskId running audio→409（`hasRunningAudioForParent`）
+- **純文字來源**：DataSourceType 加 `'text'`+`label?`；建立表單/編輯頁可貼 FB 貼文，collect 跳 scrape 直送周映辰（syntheticUrl=`text://{id}`）
+- **議題可回溯編輯**：`/projects/[id]/edit`（共用 `components/ProjectForm.tsx` create/edit 雙模式）；PATCH 擴充收 title/description/sources/collectMode/timeRange
+- **概覽頁快速補充**：`QuickAddSources` 元件 + `POST /api/projects/[id]/sources` 增量端點（append＋只收新來源，seenUrls 預載既有文章 URL 跨次去重）；收集核心抽成 `lib/collect-core.ts` 兩入口共用
+- **踩雷刻進 platform/AGENTS.md**（下一棒必讀）：git push≠上雲（無 trigger，要手動 builds submit）；builds submit 打包工作目錄不是 commit（髒樹會把別 session 半成品上雲，部署前必 git status）；git root 在上層目錄 platform/ 是子目錄（git add 相對路徑勿帶 platform/ 前綴）；tsc 過濾 `.next/` 噪音；API 回「未授權」=端點存在非壞掉
+
 ## 環境資訊
 
 - Tavily key: tvly-dev-2iEczc-*（dev tier，1000次/月，上線前換）
 - Bridge secret: 在 .env.local
 - **Cloud Run URL**: https://udnnews-platform-62w6sp6iba-de.a.run.app
-- **Deploy SOP**: `cd "~/Documents/UDN NEWS/platform" && gcloud builds submit --config=cloudbuild.yaml --region=asia-east1 --project=udnnews --substitutions="COMMIT_SHA=v$(date +%Y%m%d%H%M%S)"`
+- **Deploy SOP**（無 auto trigger，push 後必手動）: `cd ~/Documents/UDN\ NEWS/platform && gcloud builds submit --config=cloudbuild.yaml --project=udnnews --substitutions=COMMIT_SHA=$(git rev-parse HEAD)`；部署前 `git status --short` 確認沒有別 session 的半成品；部署後驗 traffic revision=latestReady
 - **Env vars set**: TAVILY_API_KEY, BRIDGE_SECRET, BRIDGE_URL（via gcloud run services update）
