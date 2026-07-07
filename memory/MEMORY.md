@@ -112,7 +112,7 @@
 - [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
 - [ANEWS 平台進度](project_anews_platform.md) — 2026-06-01 source A/B 雙管道 + B 線打通乾淨 e2e；working tree 未提交保留勿洗；source-worker BRIDGE_URL 仍過 CF（524 根治待改直連 IP）
 - [ANEWS source-worker 部署拓樸 + A/B 雙管道](reference_anews_source_worker_deploy.md) — worker 在 zhu-cloud-2026 不在 moumou-os；A=Anthropic web_search / B=Tavily+Max(bridge)；2026-06-01 B 打通（兩-worker真相分裂/watchdog路由偷燒key/JSON照貼三修）
-- [bridge /v1/messages 契約 + --effort low](reference_bridge_v1messages_effort.md) — 只讀 model/system/messages/stream（忽略 max_tokens）；長輸出截斷修點在 bridge spawn args 不在 client；改 bridge 可手動回退
+- [bridge /v1/messages 契約 + --effort low](reference_bridge_v1messages_effort.md) — 只讀 model/system/messages/stream（忽略 max_tokens）；長輸出截斷修點在 bridge spawn args 不在 client；改 bridge 可手動回退；延遲實測冷34s/暖7.5s，短lambda連續call要時間預算
 - [molowe 技術打撈備忘](reference_molowe_tech_salvage.md) — molowe 2026-05-30 停止前打撈的可複用技術（語義去重/聲紋稽核/Threads發布）+ 檔案路徑
 - [dispatcher dependsOn 必須同步建立依賴節點](feedback_anews_dispatcher_dependsOn.md) — workflow_nodes pending 節點的 dependsOn 若引用不存在的節點，dispatcher 永遠不排隊
 - [blueprint prompt 的 result 範例必須含完整 sectionPlan 欄位](feedback_blueprint_schema_example.md) — `[...]` 省略欄位 → LLM 自創 key → Zod undefined，範例必須完整

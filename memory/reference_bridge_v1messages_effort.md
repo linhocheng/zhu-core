@@ -13,3 +13,5 @@ originSessionId: f2aa77cd-7ee6-4193-9e0b-b32c6caf3a70
 **改 bridge SOP**：先 `cp index.js index.js.bak-*` 備份 → sed 精確錨點（先 grep 確認字串唯一）→ `node -c` 語法檢查 → `sudo systemctl restart claude-bridge` → curl :3001 PONG 驗。**可手動回退**（備份檔還原 + restart）；reference_bridge_not_in_git 說的「無 rollback」指無 git 史，不是不能改回。
 
 **觸發信號**：① 走 bridge 的長輸出（綜述/報告/JSON）截斷、JSON 收不了尾 → 先確認 /v1/messages 有沒有 effort low、是不是 thinking 吃 budget。② 想從 client 調 bridge 輸出長度/thinking → 沒用，body 那些欄位被忽略，去改 bridge。③ 動 bridge 前先備份 + grep 唯一 + 改後 PONG 驗。
+
+**延遲實測（2026-07-07，Haiku 短判斷題）**：冷呼叫 ~34s（spawn claude CLI 起手）、暖呼叫 ~7.5s。短 lambda（60s）內連續多次 bridge call 必爆——要嘛升 maxDuration（Vercel 上限 300），要嘛加時間預算迴圈＋把 per-call bridgeTimeoutMs 縮到 40s 級（預設 280s，一次卡住吃光整個 lambda）。timeout 參數不要拍腦袋，先量冷/暖兩種。
