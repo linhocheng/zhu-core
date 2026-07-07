@@ -6745,3 +6745,26 @@ Adam GO 第四場提案：sleep-engine 缺的最後一塊園丁能力——「�
 
 ### 待執行
 - [ ] 幾天後掃 platform_contradiction_checks 看 contradictory=true 的首例，抽查判得對不對
+
+---
+
+## 2026-07-07（第五場續）— ailiveX 記憶全景圖開工：第一期角色日記
+
+### 背景 / WHY
+Adam 拍板北極星路線：ailiveX 蓋記憶全景圖到最終態（四層：情節/印象/關係/自我＋夜間鞏固），之後再議搬 ailive。全景施工計畫六期已立（task #1-#5）。第一期=角色日記（獨立空間第一口味道）。
+
+### 進行中（本段寫於索引建立等待中）
+- `src/lib/diary.ts` 新建：writeDiaryEntry（對話後 Sonnet via bridge 寫第一人稱日記＋unspoken＋nextTime＋mood，<result> JSON＋程式裁剪）＋ loadDiaryBlock（注入最近 3 篇）＋ DIARY_CANARY_USERS canary 閘（未設=全關/*=全開/逗號白名單）
+- collections.ts 加 diary collection＋DiaryDoc；dialogue route 接線（Promise.all 載入＋after() 寫入）
+- 複合索引 diary(userId,characterId,createdAt DESC) 已宣告進 firestore.indexes.json＋gcloud 建立中
+- Vercel prod env DIARY_CANARY_USERS=mX56wM0CxRIMHlKgs2d0（Adam 帳號 canary）
+- 本機驗證：寫入端 3/3 信號過（canary 閘 true/false 正確、日記寫入成功、蔣勳聲音品質驚人——「體面二字是他爸說的還是他自己說的？我想知道」）；讀取端等索引 READY
+- 順手修文件漂移：CLAUDE.md cheat-sheet 與 firestore_loader.py 的「0.85 cosine」→ 實況 0.9 雙門檻
+
+### 現場事實（本場勘查確立）
+- ailive（moumou-os）與 ailiveX（ailivex-2026）完全獨立：不同 GCP 專案、資料零共享；血緣只有共用 bridge＋設計 DNA＋五個同名陌生人角色（聖嚴/達賴/星雲/憲哥/tracy 兩邊各自重建）
+- ailiveX 15 角色；Adam 的 userId=mX56wM0CxRIMHlKgs2d0（admin）
+
+### 待執行
+- [ ] 索引 READY 後驗 loadDiaryBlock 讀取端 → commit（repo 慣例 vN 版號、無 footer）→ deploy → prod 鑑別信號（Adam 聊一場，diary collection 出現文件；下一場角色帶出惦記）
+- [ ] 第二期：夜間鞏固管線＋印象層（脊椎）
