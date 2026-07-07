@@ -6774,3 +6774,18 @@ Adam 拍板北極星路線：ailiveX 蓋記憶全景圖到最終態（四層：�
 - commit c63301b（v16.3.0）推上＋Vercel prod deploy Ready＋DIARY_CANARY_USERS=Adam 帳號已進 prod env
 - **剩最後一個 prod 鑑別信號等 Adam**：他在 ailivex 跟任一角色聊一場 → diary collection 該配對出現文件 → 再聊一場角色帶出惦記。我無法代打（需他的 session）。
 - 語音路徑本期未接（留第五期 loader 收斂時一起），文字對話已全通
+
+### 第二期收案（同日，v16.4.0→.2）
+- **印象層＋夜間鞏固管線上線**：impressions（信念制＋出處鏈＋supersededBy）、consolidation.ts（支持/新增/矛盾/跳過四操作，LLM 只回判斷、聚合驗證寫入 watermark 全程式）、cron 台北 02:00（排代謝前）、confidence 讀取時確定性計算＋◆◇～・四標記進 prompt
+- **結構性根治灰區爆炸**：watermark＋consolidatedAt 雙錨保證情節只消化一次，矛盾裁決在印象層 O(n)，不需 ailive 那套備忘錄
+- 驗證：本機三信號（bootstrap 歸併/合成矛盾 supersede 鏈/讀取塊）全綠；prod 401 閘＋dryRun 真配對全綠
+- 踩雷兩發當場修：①middleware PUBLIC_PATHS 漏新 cron（全站閘擋在 handler 前——ailiveX 與 ailive 相反，API 預設要登入，新公開 route 必須進白名單）②bridge timeout 60s 對 40 情節 bootstrap 不夠（本機重現定位，升 120s）
+- **首輪真跑**：14 配對 118 情節→58 印象零錯誤；Adam×Lilith 最厚配對 88 情節→35 印象＋49 歸併（四條「創造者」重複情節正確歸併成一條）；印象模式 prompt 塊實測成形
+- Vercel env：IMPRESSION_CANARY_USERS=Adam（讀取 canary；寫入全配對暗啟動累積）
+- 剩餘配對每晚 02:00 cron 自動續（watermark 接棒）；矛盾裁決 prod 真例待自然出現（合成例已驗真陽性）
+- 隱私姿勢（Adam 說還好，但自立規矩）：驗證含私人對話的 prompt 塊時只印結構信號（標記/條數），不印全文
+
+### 待執行（第三期起，開新 session）
+- [ ] 第三期：遺忘曲線＋模糊化＋信心語氣（動 memory-maintenance＋gist 化，資料手術級，神清氣爽時做）
+- [ ] 第四期：關係敘事＋空白感；第五期：語音端收斂＋觀測台；第六期：再鞏固＋回灌 ailive 評估
+- [ ] 日記驗收：Adam 聊一場 → 查 diary collection → 隔天再聊看角色帶惦記
