@@ -6580,7 +6580,7 @@ Adam 指定今天清平台不必要費用。從 Cloud Run 常駐掃起，一路�
 - UDN 7/18 上市前：生成額度閘＋防連按（MiniMax 按字計費無上限，連按=多台 Job 並行）
 - ailivex soulCore 批（別 session）未 commit；v16 log 每行×2（觀測噪音）；ailivex podcast 無 watchdog
 - zhu-dev VM e2-standard-2 規格審視（CPU 長期低載可降半）；Cloud Tasks maxAttempts 巡檢；GCS lifecycle
-- 語音自動關機的「真實觸發」未實測（需開著閒置 3h，自然驗證）
+- ~~語音自動關機的「真實觸發」未實測~~ → 2026-07-07 Adam 確認驗證通過
 
 ### 待執行
 - [ ] UDN 生成額度閘＋防連按（7/18 前）
@@ -6652,3 +6652,34 @@ Adam：「檢視還有哪些漏油（錢）或磚」→ 全帳戶掃描＋拆磚
 - [ ] retry/刪除按鈕實測（下一場第一件）
 - [ ] UDN 額度閘＋防連按
 - [ ] 卡片日期顯示（等 Adam 確認）
+
+---
+
+## 2026-07-07（第三場）— 全檢＋UDN 額度閘＋收尾銷項
+
+### 背景 / WHY
+Adam compact 重啟後「築心法劍法雷區全檢」；查核前兩場遺留工作是否真的做完（他的擔心對了一半），然後「去做吧」。
+
+### 全檢結果
+- self-check 18/18 pass；bridge 雙域名 /health 200（IP 事故修法過夜仍活）；podcast 任務零殭屍
+- 昨天的「聊說服」任務 done/audio_done——**新 Job 派工路徑被 Adam 自然驗收跑通**（音檔半條）
+- retry/scripts 端點 401 閘正常；SQL 兩台仍 STOPPED；zhu-dev 保持 e2-medium；AR zhu-cloud-2026 縮到 ~1.5GB（ailivex 25.2GB policy 掛著待批次清）
+
+### 產出
+1. **化石 order 關閉**：MOLOWE 5c（N7poWLOs6JdfgI5pWQ4o）PATCH done
+2. **ailivex 卡片日期**（db9bd41，乾淨 worktree 部署 riwvrrrey Ready）：生成中卡片補日期（腳本卡片 92ca8a8 已有，這場補齊 running 卡）
+3. **UDN 生成額度閘**（a110efb，push + gcloud builds submit）：
+   - 新 `lib/quota.ts`——一個錢源一個錶：MiniMax 計字（tts/口播稿/podcast 共用 ttsChars，預設 100k/日）、OpenAI 計張（40/日）、HeyGen 計支（10/日）；Firestore `quota_usage/{台北日期}` 交易制，超限 429，env 可覆寫上限
+   - 防連按補齊：podcast generate-audio（running+audio_pending → 409）、generate-video（hasRunningChildTask → 409）
+   - 本機實測：低 cap 下第二筆消費確實丟 QuotaExceededError（60/100 擋下）
+   - 修正探子誤報：UDN **不是**全裸——Next 16 middleware 改名 proxy.ts，全站頁面+API 都在 base cookie 閘後（四路由 curl 401 實證）
+4. WORKLOG 銷項：語音 auto-off Adam 確認驗證通過
+
+### 已解決
+- 前兩場遺留查核：防連按已由平行 session 做（705cf92），額度閘缺→本場補齊；卡片日期半殘→補齊
+
+### ⚠️ 尚未解決
+- **HOSS**：Adam 問「HOSS 關掉的事情是不是也關了」——全帳戶掃無此資源，已回問是指什麼，等回覆
+- retry「重啟」按鈕仍無 failed 任務可實測（乾淨到沒法測）；等自然失敗第一時間驗
+- UDN 部署後線上驗證（traffic revision 對齊）——本場結束前補
+- ailivex 25.2GB AR repo 批次清掃容量下降（明天看）
