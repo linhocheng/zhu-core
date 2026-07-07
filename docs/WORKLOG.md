@@ -6718,3 +6718,30 @@ Adam 手機遙控：先修 MiniMax 防連按燒錢口，接著三個產品需求
 ### 待執行
 - [ ] （若 Adam GO）ailive sleep-engine 矛盾裁決：`src/lib/sleep-engine.ts` 加 supersededBy step
 - [ ] UDN 額度閘上線後確認與防連按閘不打架（409 vs 429 順序）
+
+---
+
+## 2026-07-07（第五場）— ailive 睡眠引擎矛盾裁決上線
+
+### 背景 / WHY
+Adam GO 第四場提案：sleep-engine 缺的最後一塊園丁能力——「住台北」vs「搬高雄」這種事實矛盾，雙門檻去重抓不到（語義近、字面遠），兩條並存=角色精神分裂。
+
+### 產出（ailive-platform f996da7，prod 已驗）
+- **step 2b 矛盾裁決**：去重迴圈順手收集灰區配對（同 userId、cosine≥0.7、未觸發雙門檻、雙方 identity、跳過 self）→ Haiku 判斷題（同件事實嗎/矛盾嗎/哪條現況）→ 程式驗格式後寫 `supersededBy`＋輸家降 archive（仿 mergedInto，永不硬刪）。分工守天條：只有判斷題丟 LLM。
+- **裁決備忘錄** `platform_contradiction_checks`：一對判一次。Vivi 實測揭露窄域坍縮——200 條記憶生 649 對 cosine>0.7（不相關的也 0.98+），無備忘錄會每晚重審同批配對。
+- **排序改新舊不改 cosine**：坍縮下 cosine 無鑑別力；矛盾裁決本意=新事實推翻舊事實，配對中較新記憶的時間排序。
+- **lambda 防線**：實測 bridge 冷呼叫 34s/暖 7.5s → 裁決總預算 60s＋單次 40s timeout；runner、sleep maxDuration 60→300。
+- **補鎖 /api/sleep**（第一輪加固漏網的匿名付費 LLM 路由）：worker-secret 或 operator；task-run 內部 fetch 同步帶 header；SECURITY.md 已更新。
+
+### 驗證（鑑別信號）
+- 合成配對 4/4：經典矛盾抓到、時間線索反向陷阱題判對（沒無腦選新）、兩題不該裁的放行
+- Vivi 200 條真實記憶 dry-run：零誤殺（12 對全正確判「非同件事」）
+- prod：匿名 401；帶 secret dryRun 200 且回 contradictionArbitration 欄位，線上判決正確
+
+### ⚠️ 尚未解決
+- 真實矛盾的自然案例還沒出現過（合成驗證過真陽性，等生產第一個 superseded 出現再看一眼）
+- 窄域坍縮根因未動（text-embedding-004 同角色記憶 cosine 全 0.9+）——檢索天花板、task-run 讀路徑分裂同在觀察案
+- 驗證腳本 scripts/_zhu_dryrun_contradiction.ts、_zhu_verify_contradiction_judge.ts 未進 git（沿 repo 慣例 untracked）
+
+### 待執行
+- [ ] 幾天後掃 platform_contradiction_checks 看 contradictory=true 的首例，抽查判得對不對
