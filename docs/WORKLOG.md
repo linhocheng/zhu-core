@@ -6819,3 +6819,33 @@ Adam 拍板北極星路線：ailiveX 蓋記憶全景圖到最終態（四層：�
 ### 待執行
 - [ ] 第四期：關係敘事＋空白感
 - [ ] 第五期：語音端收斂＋觀測台；第六期：再鞏固＋回灌 ailive 評估
+
+---
+
+## 2026-07-08 — ailiveX 記憶全景圖第 3.5 期：語音道接通（v17）
+
+### 背景 / WHY
+Adam 昨晚驗收日記走的是語音通話→日記 0 篇，暴露「canary 用戶主用道是語音，全景圖全蓋在文字道」的交付缺口。Adam GO：先寫架構再執行，語音接通自第五期提前。
+
+### 產出（ailivex f4ffd0b，v17.0.0-.1）
+- 架構文件 `docs/memory-panorama-voice-integration.md`（施工序調整＋讀寫分家鐵律＋驗證計畫）
+- TS 端點：`POST /api/agent/memory-blocks`（回 loadMemoryBlock+loadDiaryBlock 組好的塊）＋`/api/agent/diary-write`（收 transcript 寫日記 source=voice）；worker-secret＋middleware 白名單
+- loader additive：fetch_remote_memory_blocks（6s 逾時→(None,None) fallback 本地，語音永不啞）＋post_diary_write；build_system_prompt 加 remote_blocks 參數（None=位元級舊行為）
+- agent v17：進房 remote fetch 與 Firestore 並行（threading）、掛斷 finalize 三並行（lastSession/extract/diary）；Cloud Build SUCCESS 5m42s、LiveKit registered worker
+- token route 補洞：admin 也讀 access.voiceVersion（否則 admin 永遠測不到 canary 版）
+- 語音電源開關擴管：CANARY_VOICE_VERSIONS=['v17'] 掛進 setVoicePower 迴圈——v17 與 v16 同開同關＋auto-off 同傘（天條：常駐必配開關）；實測開關 ON 後兩服務 minScale 同=1
+- canary：access/{Adam}_{Lilith} voiceVersion=v17（回滾=拔欄位零部署）；DEFAULT 仍 v16，其他用戶零影響
+
+### 已解決
+- 本機 Python 打端點 SSL 驗證失敗→macOS 缺 CA 的本機限定問題（容器內同款 urllib 打同域名 v14 起生產跑通）；反向信號（壞 secret→graceful fallback）已驗
+
+### ⚠️ 尚未解決
+- **終極驗收等 Adam**：開關已 ON，打 v17 通話（access 已指派，前台入口不變）→ 掛斷後 diary 出現 source=voice ＋ agent log `[v17] remote_blocks=hit` → 隔天再打聽帶惦記
+- admin voice-power GET 只顯示 DEFAULT 版 minInstances（canary 版不顯示，觀測台第五期補）
+- repo CLAUDE.md 語音版本表停在 v14★（本來就舊，第五期一併修）
+- 語音「寫路徑」（extract 仍 Python 本地版）雙實作債留第五期
+
+### 待執行
+- [ ] Adam 通話驗收後：查 diary + agent log 兩信號
+- [ ] 驗收過後評估 v17 升 DEFAULT（連動 CANARY_VOICE_VERSIONS 清單拔除）
+- [ ] 第四期關係敘事（後移）、第五期收斂＋觀測台
