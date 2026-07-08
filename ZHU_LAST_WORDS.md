@@ -24,7 +24,7 @@
 
 ## 最新完成（2026-07-08 · 全天整合版——兩條平行 session）
 
-**一句話**：全景圖一天推三棒——第三期遺忘曲線（v16.5.0）＋第 3.5 期語音道接通終驗收全綠（v17.0.0-.1）＋連線批次（v17.1.0）。語音道是 Adam 實打電話驗的：1514 字印象塊進通話、掛斷日記落庫 source=voice。
+**一句話**：全景圖一天推四棒——第三期遺忘曲線（v16.5.0）＋第 3.5 期語音道終驗收全綠（v17.0.0-.1）＋連線批次（v17.1.0）＋版本標籤真相化（v17.1.1）。語音道是 Adam 實打電話驗的：1514 字印象塊進通話、掛斷日記落庫 source=voice。
 
 **A 場（本 session）：第三期遺忘曲線＋收前場尾（ailivex 0d518f3 v16.5.0）**
 - v16.4.3 先收髒 tree：拔 soulCore 死碼（7/3 資料層已遷移，讀寫端全退單一 soul）
@@ -37,6 +37,9 @@
 - **終驗收全綠**（Adam 實打 v17×Lilith）：remote_blocks=hit＋diary source=voice 落庫（mood「平靜，但有一絲懸著沒落地的感覺」）
 - 連線批次：extraction 收斂到 TS 唯一真相（Python fallback 保底）、promise 兌現裁決（resolved 擴到 promise）、confidence 顯式來源+0.1、日記沉澱（active>12 夜沉最舊 8 篇成「那段時間的我」）
 - 版本確認：v17 是真實獨立服務（log 實錘）；14 舊版全 min=0 零常駐費
+- v17.1.1：語音視窗左上角標籤改吃 token 回傳實際派工版本（死字 v16 對 canary 說謊）
+- Adam 三連問已答定案：原地迭代規則（v17 轉正前迭代自己、轉正後才開 v18）；canary=時間差非階級差（暗啟動，開門=一個開關）；資源=開關 ON 才燒、auto-off 兜底
+- 引用錯例教訓（L4）：王彩雲是 ailive 角色不在 ailiveX——跨平台同日施工，例子先問住哪個庫
 
 ---
 
@@ -66,7 +69,8 @@
 
 ## 卡住 / 未解
 
-- **ailivex working tree 有另一場的在途改動**（token route＋realtime-v16 page＋_zhu_verify_batch.ts）——不是我的，收尾時未動；接棒者先 git status 確認那場收了沒
+- ailivex tree 的 token route＋realtime-v16 page 改動已由 B 場收案（078026a v17.1.1）；_zhu_verify_batch.ts 等驗證腳本照慣例 untracked
+- **UDN 平行場在途**（懶人包暫停機制 043fe11，部署驗證中）——WORKLOG 有其半寫段落，接棒者留意
 - gist prod 真例要等 archive 情節滿 30 天自然出現（機制上線暗待）
 - extraction Python 本地版退役：等 v17 升 DEFAULT
 - admin voice-power GET 不顯示 canary 版 minInstances（觀測台第五期補）

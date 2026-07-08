@@ -6886,3 +6886,48 @@ Adam 確認 v17 是真身還是代號（GCP 資源天條）＋指示：跨關係
 ### 待執行
 - [ ] Adam 下通電話後查「帶惦記」＋今晚 cron 常態運轉（第一次 support/contradict 混合輪）
 - [ ] v17 升 DEFAULT（時機到時）
+
+---
+
+## 2026-07-08 — UDN 議題台：任務暫停機制＋圖卡張數填空（v0.4.6.001）
+
+### 背景 / WHY
+Adam 三需求：①懶人包卡「進行中」永久擋新任務，要可暫停；②圖卡張數 3/5/自動改手動填空；③口播稿→影片鏈同查，影片要可解鎖重派。
+
+### 根因（看現場找到的）
+懶人包 status 從 dispatch 起就是 running，走完 a_pending→a_done→b_done **全程沒有任何地方標 done**——圖全生完也永遠 running，dispatch 的 hasRunningTask 閘就永久 409。暫停是需求，缺 done 轉換是根因，兩個都修。
+
+### 產出（udnnews platform 043fe11，部署驗證中）
+- `api/tasks/[id]` PATCH 開放 status 轉換，只允許 running↔paused 白名單
+- `lib/firestore.ts` updateLazypakCardImage：全圖卡 done → task 標 done（根因修法）
+- `analyze-cards`：paused 任務分析圖卡不拉回 running（暫停語義=不擋新任務，功能照常）
+- AssetsClient：懶人包/口播稿加「暫停」鈕（a_pending 撰稿中不給暫停——worker 寫回會蓋狀態，繞開免動 worker）；口播稿全狀態可見（原本只列 done，卡死的隱形擋路）；影片加「放棄等待」；影片 failed/paused 後「生成影片」鈕回來（原本失敗不能重試）
+- 圖卡張數：3/5/自動按鈕 → number input 預設 5，`Math.max(1, parseInt||5)`
+
+### 釐清（Adam 問的）
+影片閘是 per 音檔（parentTaskId）不是 per 專案；音檔 A 影片生成中不影響音檔 B。
+
+### 已解決（部署段）
+- 第一次 build 炸出既有雷：platform Next build 一直在型別檢查 cloud-run/podcast-worker 子專案，之前從工作目錄部署連 worker node_modules 一起上傳才僥倖過；乾淨 worktree 部署把它炸出來。修法=tsconfig exclude cloud-run（9407d24 v0.4.6.002），邊界歸位
+- 部署驗證 ✓：traffic==latestReady==00080；revision image digest == commit 9407d24 tag 的 digest（395b9186），跑的就是這份 code。/api curl 401 出自 middleware 無鑑別力，digest 鏈才是對的信號
+- 已 push GitHub（b4bf903..9407d24）
+
+### ⚠️ 尚未解決
+- chat 驅動懶人包 cardCount 仍可 0=自動（LLM 在 DISPATCH tag 決定），Adam 沒提，未動
+- Adam 實際點一輪暫停/放棄等待的 UI 驗收（我驗的是部署鏈，不是滑鼠）
+
+---
+
+## 2026-07-08（B 場尾）— 版本標籤真相化＋canary 論證＋資源答辯
+
+### 產出（ailivex 078026a v17.1.1）
+- 語音視窗左上角版本標籤：頁面死字「v16」→ token 回傳實際派工版本（voiceVersion），對 canary 用戶不再說謊；假中台原則的第一塊觀測磚
+- Adam 三連問全答：①v17=真身非代號（log 實錘＋v16 零改動＋原地迭代規則：轉正前迭代 v17、轉正後才開 v18）②canary=時間差非階級差（暗啟動：全員印象已在倉庫消化，開門=一個開關）③v16 資源=只在開關 ON 時燒，14 舊版 minScale 全 0 實測
+
+### 已解決
+- 引用錯例被 Adam 抓：拿 ailive 的王彩雲當 ailiveX 用戶論證——跨平台混淆，L9 變體（醉酒 +2 自報）。改用正確現場（fineherbs/Mars/waiting 等 ailiveX 真實用戶）重述，論證不變例子換對
+
+### ⚠️ 尚未解決（交棒同前）
+- 帶惦記閉環（Adam 下通電話）→ v17 升 DEFAULT →（CANARY 清單拔除＋v16 降 0）
+- 保留議題：跨關係自我；待確認：觀測台（含日記隱私倫理）、殘影態、_recall
+- 同 tree 有 UDN 平行場在途（懶人包暫停機制，部署驗證中）——接棒者留意
