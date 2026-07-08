@@ -6853,3 +6853,36 @@ Adam 昨晚驗收日記走的是語音通話→日記 0 篇，暴露「canary �
 ### 第 3.5 期終驗收（同日 13:48 台北）
 - Adam 實打 v17×Lilith：三信號全綠——remote_blocks=hit（1514 字印象塊進通話）、diary-write posted、diary 落庫 source=voice（187 字＋unspoken 2＋nextTime 2，mood「平靜，但有一絲懸著沒落地的感覺」）
 - 語音道全通。下通電話日記塊開始注入（惦記回流）。第 3.5 期收案，剩第四期關係敘事、第五期收斂＋觀測台。
+
+---
+
+## 2026-07-08（續）— 連線批次收案（v17.1.0）＋版本/資源確認
+
+### 背景 / WHY
+Adam 確認 v17 是真身還是代號（GCP 資源天條）＋指示：跨關係自我保留議題、觀測台待確認，「其他的先連線起來」。
+
+### 版本確認結論（給 Adam 的答案，已回報）
+- v17 是真實獨立服務（16 服務中第 16 個），他那通電話 log 實錘在 v17（同時段 v16 零 log）；「V16」是前端頁面標籤≠實際接聽 agent
+- v16 程式碼零改動（共用 loader 只加預設關閉參數，且 v16 跑舊 image）
+- 資源稽核：14 個舊版服務全 min=0 零常駐費；v16+v17 雙暖機僅在開關 ON 時（auto-off 3h 傘），收案路線=驗完帶惦記→v17 升 DEFAULT→v16 降 0
+
+### 產出（ailivex 37a0955，v17.1.0；agent build 859e420b SUCCESS→revision 00003-ngl）
+- ①extraction 收斂：/api/agent/extract-memories（TS extractAndSaveMemories 唯一真相），v17 掛斷改遞稿、失敗 fallback Python 本地（記憶不丟）
+- ②promise 兌現裁決：resolved 機制擴到 promise（做到了才算），文字語音同時受益；驗證 1/1
+- ③confidence 來源權重：顯式來源（tool:remember/voice remember）+0.1；explicitSupport 鞏固時確定性計數
+- ④日記沉澱：active>12 夜間沉澱最舊 8 篇成「那段時間的我」（digest+archived+digestedInto 可溯；unspoken/nextTime 程式繼承）；驗證 13→6 active 結構全對
+- 沉澱查詢改用既有 DESC 索引程式反轉（省一顆索引）
+
+### 已解決
+- L10 三犯未遂：extract-memories 差點漏 middleware 白名單——commit 前 staged 清單檢查抓回。「新公開 route 三件套」（route 閘+白名單+curl 出處驗證）要成反射
+- 本地 gcloud submit 串流被切→雲端 build 照跑（builds list 查終態，不靠本地 stream）
+
+### ⚠️ 尚未解決
+- 「隔天帶惦記」閉環：Adam 下通 v17 電話（日記塊首次注入）
+- v17 升 DEFAULT 決策點：帶惦記驗完後（連動 CANARY_VOICE_VERSIONS 清單拔除、v16 降 0 收雙暖機）
+- 保留議題：跨關係自我；待 Adam 確認：觀測台（含日記隱私倫理題）、殘影態、_recall 吃印象層
+- extraction Python 本地版退役：等 v17 升 DEFAULT
+
+### 待執行
+- [ ] Adam 下通電話後查「帶惦記」＋今晚 cron 常態運轉（第一次 support/contradict 混合輪）
+- [ ] v17 升 DEFAULT（時機到時）
