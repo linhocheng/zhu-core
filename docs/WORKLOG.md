@@ -6789,3 +6789,33 @@ Adam 拍板北極星路線：ailiveX 蓋記憶全景圖到最終態（四層：�
 - [ ] 第三期：遺忘曲線＋模糊化＋信心語氣（動 memory-maintenance＋gist 化，資料手術級，神清氣爽時做）
 - [ ] 第四期：關係敘事＋空白感；第五期：語音端收斂＋觀測台；第六期：再鞏固＋回灌 ailive 評估
 - [ ] 日記驗收：Adam 聊一場 → 查 diary collection → 隔天再聊看角色帶惦記
+
+---
+
+## 2026-07-08 — ailiveX 記憶全景圖第三期：遺忘曲線＋模糊化＋去重放鬆（v16.5.0）
+
+### 背景 / WHY
+六期計畫第三棒。像人一樣忘：情緒重的記憶活得久、老情節細節淡成大意、重述不再被擋（是強化信號）。
+開工前順手收前場髒 tree：v16.4.3 拔 soulCore 死碼（7/3 資料層已遷移，讀寫端全退回單一 soul）。
+
+### 產出
+- `src/lib/forgetting.ts`（新）— emotionalWeightOf 確定性推導（type 給底＋importance 加成，0~1，不落庫、老資料立即受益）；effectiveDays 門檻×(1+w)；runGistPass（archive＋30d＋80字 → Haiku 批次寫大意、程式驗證蓋 content、原文留 rawContent、embedding 重算、doc id 不變出處鏈可溯）
+- `memory-maintenance/route.ts` — 衰減門檻接 emotionalWeight（fresh 30→最長60d、core 90→最長180d、emotion stale 同理；question 不看情緒）；掛 gist pass；maxDuration 60→300；?dryRun=1
+- `memory.ts` — fact/preference 去重放鬆（cos 0.95＋bigram 0.7，只擋近逐字；其他 type 維持 0.9/0.5）
+- `collections.ts` — MemoryDoc 加 rawContent/gistedAt
+- `scripts/_zhu_verify_forgetting.ts` — 6 鑑別信號腳本
+- CLAUDE.md 文件漂移修（soulCore 殘句、去重門檻分型）
+
+### 已解決
+- 驗證：本機合成 6/6 全綠（遺忘曲線分岔／dryRun 不寫／gist 蓋+留原文+冪等／逐字擋重述放行／emotion 維持嚴格）
+- 真資料影響面：322 條 fresh/core 新舊規則今晚歸檔都是 0（新規則只會更保守，零誤殺方向性保證）；gist 真候選 0（平台還年輕，機制往前看）
+- prod 驗證：cron dryRun 200＋gist 段出現；GIST_CANARY_USERS=Adam 已進 prod env（env ls 確認，不信 empty 這種模稜兩可信號）
+
+### ⚠️ 尚未解決
+- gist prod 真例要等 archive 情節滿 30 天才自然出現（機制已上線暗待）
+- 第一二期 prod 驗收（Adam 聊一場看日記/惦記）仍未做
+- 昨晚 02:00 consolidation cron 是否有跑未查（Adam 說先不管）
+
+### 待執行
+- [ ] 第四期：關係敘事＋空白感
+- [ ] 第五期：語音端收斂＋觀測台；第六期：再鞏固＋回灌 ailive 評估
