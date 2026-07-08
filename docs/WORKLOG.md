@@ -6931,3 +6931,63 @@ Adam 三需求：①懶人包卡「進行中」永久擋新任務，要可暫停
 - 帶惦記閉環（Adam 下通電話）→ v17 升 DEFAULT →（CANARY 清單拔除＋v16 降 0）
 - 保留議題：跨關係自我；待確認：觀測台（含日記隱私倫理）、殘影態、_recall
 - 同 tree 有 UDN 平行場在途（懶人包暫停機制，部署驗證中）——接棒者留意
+
+---
+
+## 2026-07-08（續）— UDN 議題台：檔案來源＋懶人包參考圖（v0.5.0.001）
+
+### 背景 / WHY
+Adam 要建議題支援上傳 docx/PDF/圖檔給角色讀。討論後定案：入口在建議題來源區（非聊天夾檔）；圖檔雙軌=vision 說明進 Brief＋原圖 URL 當懶人包生圖參考圖（ailivex 故事卡 referenceImageUrls→edits 同機制，已到 ailivex 現場核實 generate-images route）。
+
+### 產出（udnnews platform c500e9a，部署驗證中）
+- DataSource 第五型 `file`（fileKind/fileUrl）；`/api/uploads`：magic bytes 驗檔→GCS→抽取
+- 抽取天條分工：docx=mammoth、PDF=unpdf 文字層（掃描檔誠實報錯）、圖片=gpt-4o-mini vision 說明（上傳抽一次終身重用，vision 額度錶 60/日）
+- collect-core `processFileSource` 照 text:// 模式；建議題表單＋概覽快速補充兩入口
+- 參考圖：project.sources 的圖片=參考圖庫；派工/a_done 兩處 RefImagePicker 手動選；generate-card-image 有參考圖走 images/edits（抓不到參考圖退回純 prompt 不擋生圖）；版型 sharp 壓版不動
+- 三套件本機真驗：mammoth/unpdf 抽中文 ✓、vision 上紅下藍描述正確 ✓（key 從 Cloud Run env 取）
+
+### 已解決（順手修的既有雷）
+- analyze-cards `lazypakParams:{layoutId:undefined}` 潛在炸點（Firestore 沒開 ignoreUndefinedProperties）→ 清除欄位改 delete
+
+### ⚠️ 尚未解決
+- 部署中；上線後 Adam 實測：上傳一份 docx＋一張圖→收集→Brief→對話問角色檔案內容；生懶人包選參考圖看成圖效果
+- gpt-image-2 edits 的參考圖遵循度未實測（API 形狀對，效果要真圖驗）
+- chat 驅動懶人包無參考圖入口（a_done 補選可救），未做自動判斷（Adam 拍板手動選）
+
+---
+
+## 2026-07-08（續2）— UDN 議題台：漏財稽核＋中風險三項修復（v0.6.0.001）
+
+### 背景 / WHY
+Adam 要求全面稽核安全漏洞/漏財/CRUD 問題（先查不動手）。稽核發現一項高風險（podcast worker 完全繞過額度錶，未修，待 Adam 指示）+ 三項中風險，Adam 拍板先處理中風險。
+
+### 產出（udnnews platform ada3fa5，部署驗證全綠：digest cba28ca 與 commit tag 一致）
+1. **防連按競態**：`createTaskGated`（`lib/firestore.ts`）用 Firestore transaction 把「查有無進行中任務」+「建立」包成原子動作，取代四處「先查後寫」的舊 `hasRunningTask`/`hasRunningAudioForParent`/`hasRunningChildTask`（已刪除死碼）。套用四處：dispatch route、chat 對話驅動懶人包（**原本零檢查**，比派工頁本身還嚴重）、generate-audio、generate-video。
+   - generate-video 額外根因：舊碼是打完 HeyGen 之後才建任務紀錄，閘門查的時候貴呼叫已經發生——改成先佔位（transaction 建 running）再花錢，HeyGen 失敗才收斂 failed。
+   - 本機真實併發驗證：10 個模擬同時請求 → 1 成功 9 個 `TaskConflictError`，不是理論推導。
+2. **上傳孤兒檔案**：`deleteProject` 級聯清 file 來源 GCS 原檔；PATCH 編輯專案時 diff 移除的來源同步清；新增 `/api/uploads/sweep`（CRON_SECRET，跟 watchdog 同款式）掃「上傳未送出表單」的孤兒，6 小時寬限期。
+3. **Tavily 來源上限**：`checkExtendedSourceCap`（keyword+domain 合計 20/議題，env 可覆寫），三入口（建立/編輯/增量補充，累加後總數不是單批）全擋。
+
+### ⚠️ 尚未解決
+- **高風險未修**：podcast worker（`cloud-run/podcast-worker/src/audio.ts`）MiniMax TTS 呼叫完全沒有 `consumeQuota`，`ttsChars` 日錶管不到——podcast 音檔通常是最貴的一條，目前唯一沒有錢包上限。Adam 只要求先處理中風險，這條待後續指示。
+- `/api/uploads/sweep` 需要 Adam 去 Cloud Scheduler 手動排程才會真的執行——我沒有自己開新排程資源（基礎設施變更）。
+- 其餘低風險項（generate-card-image 同卡雙重生成無鎖、referenceImageUrl 未驗證屬於本議題、上傳大小檢查在 body 解析後才生效、HeyGen 分身上傳無額度錶）未處理，Adam 未要求。
+
+## 2026-07-09 — ailiveX 知識庫/方法論兩個 skill 建檔
+
+### 背景 / WHY
+ailivex v17.2.0 知識庫＋方法論功能上線後，入庫與共創流程已實戰跑通（孫武《孫子兵法》27 塊＋「廟算問診法」6 步）。Adam 要求把流程固化成 skill，讓下一個什麼都不知道的築免翻 code、免踩雷直接執行。
+
+### 產出
+- 檔案：`skills/ailivex-knowledge-ingest.md` — 知識庫入庫 SOP（環境地圖/開場三問/素材取得/入庫雙路徑含完整腳本模板/驗收三件套/雷區 8 條）
+- 檔案：`skills/ailivex-methodology-cocreate.md` — 方法論共創 SOP（請教角色腳本模板含問題五件套/schema 翻譯規則/Adam 過目硬步驟/入庫驗證腳本/雷區 7 條）
+- `~/.claude/CLAUDE.md` 技能觸發區註冊兩組觸發詞（入庫/加知識庫/餵知識；建方法論/共創方法論/問他方法論）
+
+### 設計要點
+- 腳本模板全部是當日實戰驗證過的原碼（env raw 解析迴圈、bridge client、冪等檢查、methodologyCount increment）
+- 「Adam 過目才入庫」設為硬步驟（方法論 skill STEP 3）
+- 驗收寫死：知識庫三件套（完整度/無gist=0/檢索三題）、方法論三題（遞招/問書不誤觸/閒聊不誤觸）
+
+### ⚠️ 尚未解決
+- 語音道（v17 agent）尚未接 knowledgeBlock——等 v17 canary 收案後接線
+- 方法論一輪最多推一步（已知限制，兩份 skill 都有標注）
