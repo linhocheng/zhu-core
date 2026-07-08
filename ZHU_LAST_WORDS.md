@@ -22,58 +22,56 @@
 
 ---
 
-## 最新完成（2026-07-07 第五場 · 一天三案）
+## 最新完成（2026-07-08 · 全天整合版——兩條平行 session）
 
-**一句話**：上午修 ailive 矛盾裁決，下午 Adam 拍板北極星路線——ailiveX 記憶全景圖六期施工計畫，當天連打兩期上線。
+**一句話**：全景圖一天推三棒——第三期遺忘曲線（v16.5.0）＋第 3.5 期語音道接通終驗收全綠（v17.0.0-.1）＋連線批次（v17.1.0）。語音道是 Adam 實打電話驗的：1514 字印象塊進通話、掛斷日記落庫 source=voice。
 
-**1. ailive 睡眠引擎矛盾裁決（f996da7，prod 驗證全綠）**
-- step 2b：灰區配對→Haiku 判斷題→supersededBy 降 archive；備忘錄防重審；/api/sleep 補鎖（worker-secret/operator）
-- 合成 4/4（含時間線索反向陷阱）＋Vivi 200 條零誤殺
+**A 場（本 session）：第三期遺忘曲線＋收前場尾（ailivex 0d518f3 v16.5.0）**
+- v16.4.3 先收髒 tree：拔 soulCore 死碼（7/3 資料層已遷移，讀寫端全退單一 soul）
+- `forgetting.ts`：emotionalWeight 確定性推導（type＋importance，不落庫、老資料立即受益）、門檻×(1+w)（情緒重的活兩倍長）、runGistPass（archive+30d+80字→Haiku 大意、程式蓋 content、原文留 rawContent、doc id 不變出處鏈可溯）
+- memory-maintenance 接遺忘曲線＋gist pass（maxDuration 300、?dryRun=1）；fact/preference 去重放鬆（0.95/0.7 只擋近逐字，重述=強化信號給鞏固管線吸收）
+- 驗證：合成 6/6 全綠、真資料 322 條零誤殺方向確認、prod dryRun 200、GIST_CANARY_USERS=Adam（env ls 驗存在，不信 empty 模稜兩可信號）
 
-**2. ailiveX 記憶全景圖（北極星設計＋六期計畫，task #1-#5）**
-- 終態四層：情節（episodes）→印象（impressions 信念制）→關係敘事→角色自我；夜間鞏固管線像人睡覺消化
-- **第一期✅ 角色日記**（c63301b v16.3.0）：對話後角色第一人稱寫日記＋沒說出口＋想跟進，下次注入——「上次我就想問你」。DIARY_CANARY_USERS=Adam
-- **第二期✅ 印象層＋鞏固管線**（50e9945→8110f07 v16.4.0-.2）：情節消化成信念、confidence 確定性計算、◆◇～・信心口吻進 prompt、矛盾裁決在信念層 O(n)（不需備忘錄）、cron 台北 02:00。首輪真跑 14 配對 118 情節→58 印象零錯誤；Adam×Lilith 88 情節→35 印象。IMPRESSION_CANARY_USERS=Adam
-- 現場事實：ailive（moumou-os）與 ailiveX（ailivex-2026）完全獨立，資料零共享；Adam userId=mX56wM0CxRIMHlKgs2d0
-
-**3. 醉酒指數 4-6 主動停手**：第三期是資料手術（改寫記憶內容），留給神清氣爽的築。
+**B 場（平行 session）：第 3.5 期語音道＋連線批次（ailivex 37a0955 v17.1.0；agent v17）**
+- 語音道：`/api/agent/memory-blocks`＋`/api/agent/diary-write` 端點；loader additive remote fetch（6s 逾時 fallback 本地，語音永不啞）；agent v17 進房並行 fetch＋掛斷三並行 finalize；電源開關擴管 CANARY_VOICE_VERSIONS=['v17']
+- **終驗收全綠**（Adam 實打 v17×Lilith）：remote_blocks=hit＋diary source=voice 落庫（mood「平靜，但有一絲懸著沒落地的感覺」）
+- 連線批次：extraction 收斂到 TS 唯一真相（Python fallback 保底）、promise 兌現裁決（resolved 擴到 promise）、confidence 顯式來源+0.1、日記沉澱（active>12 夜沉最舊 8 篇成「那段時間的我」）
+- 版本確認：v17 是真實獨立服務（log 實錘）；14 舊版全 min=0 零常駐費
 
 ---
 
-## 今天改了哪些檔案（第五場）
+## 今天改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailive `src/lib/sleep-engine.ts` | step 2b 矛盾裁決＋judgeContradiction 抽出 |
-| ailive `api/sleep`+`runner` route | maxDuration 300＋sleep 補鎖＋task-run 帶 worker-secret |
-| ailiveX `src/lib/diary.ts`（新） | 角色日記讀寫＋canary |
-| ailiveX `src/lib/impressions.ts`（新） | 印象讀取＋confidence＋信心標記 |
-| ailiveX `src/lib/consolidation.ts`（新） | 夜間鞏固引擎（四操作＋watermark） |
-| ailiveX `cron/memory-consolidation`（新） | 02:00 管線＋dryRun＋單配對參數 |
-| ailiveX `memory.ts`/`collections.ts`/`middleware.ts`/`vercel.json`/`firestore.indexes.json` | 印象模式接線＋schema＋PUBLIC_PATHS＋排程＋兩顆複合索引 |
-| 全局記憶 `reference_bridge_v1messages_effort.md` | 補 bridge 延遲實測（冷34s/暖7.5s） |
+| ailiveX `src/lib/forgetting.ts`（新） | 遺忘曲線＋gist 化引擎 |
+| ailiveX `cron/memory-maintenance` | 接 emotionalWeight＋gist pass |
+| ailiveX `src/lib/memory.ts` | fact/preference 去重放鬆＋extraction 收斂（B 場） |
+| ailiveX `src/lib/collections.ts` | MemoryDoc +rawContent/gistedAt；VOICE_VERSIONS +v17 |
+| ailiveX `api/agent/*`（新，B 場） | memory-blocks / diary-write / extract-memories 端點 |
+| ailiveX `agent/main_v17.py` 等（B 場） | v17 語音 agent（remote 記憶塊＋掛斷日記） |
+| ailiveX `scripts/_zhu_verify_forgetting.ts`（新） | 第三期 6 鑑別信號 |
+| zhu-core `docs/LESSONS/LESSONS_2026-07-08.md` | L1 empty 模稜兩可設計預防、L2 平行 session 收尾要讀全天 WORKLOG、L3 白名單三犯未遂 |
 
 ---
 
 ## 下一步
 
-**第三期：遺忘曲線＋模糊化＋信心語氣（開新 session，資料手術級）**
-1. `cd ~/.ailive/ailivex-platform`，讀 `src/lib/impressions.ts`（confidence 公式在此）＋`api/cron/memory-maintenance/route.ts`（衰減 cron）
-2. 施工項：①emotionalWeight 進衰減公式（情緒記憶衰減慢）②老情節 gist 化（LLM 寫大意、程式蓋 content、原文留出處鏈不硬刪）③寫入去重可放鬆（鞏固管線會吸收近似重複）
-3. 全景計畫全文在 WORKLOG 2026-07-07「記憶全景圖施工計畫」段；task 工具裡 #3-#5 排隊中
-4. 姿勢沿用：canary env、合成資料驗真陽性、真資料驗零誤殺、私人內容只印結構信號（L13）
-
-**日記/印象驗收（Adam 的作業）**：ailivex 跟 Lilith 文字聊一場→查 diary collection 出現文件→隔天再聊看她帶惦記。
+**1. Adam 的驗收作業（最優先，只有他能做）**：再打一通 v17×Lilith——這通日記塊首次注入，驗「帶惦記」閉環。過了之後：v17 升 DEFAULT（連動 CANARY_VOICE_VERSIONS 拔除、v16 降 0 收雙暖機）。
+**2. 明天查今晚 cron**：02:00 consolidation 第一次 support/contradict 混合輪＋03:00 maintenance 第一次帶遺忘曲線跑。
+**3. 第四期：關係敘事＋空白感**（`cd ~/.ailive/ailivex-platform`，計畫在 WORKLOG 2026-07-07 全景圖段）。
+**4. 待 Adam 確認的保留議題**：跨關係自我、觀測台（含日記隱私倫理題）、殘影態、_recall 吃印象層。
 
 ---
 
 ## 卡住 / 未解
 
-- ailiveX 第三～六期未動工（遺忘/關係敘事/語音收斂/再鞏固＋回灌 ailive 評估）
-- 矛盾裁決 prod 真例未自然出現（兩平台合成例都驗過真陽性）
-- 語音路徑的日記/印象未接（留第五期 loader 收斂時一起）
+- **ailivex working tree 有另一場的在途改動**（token route＋realtime-v16 page＋_zhu_verify_batch.ts）——不是我的，收尾時未動；接棒者先 git status 確認那場收了沒
+- gist prod 真例要等 archive 情節滿 30 天自然出現（機制上線暗待）
+- extraction Python 本地版退役：等 v17 升 DEFAULT
+- admin voice-power GET 不顯示 canary 版 minInstances（觀測台第五期補）
+- repo CLAUDE.md 語音版本表停在 v14★（第五期一併修）
 - 前場遺留：podcast retry 按鈕實測、AR cleanup 容量驗證、UDN 429vs409 互動確認
-- 今晚 02:00 ailiveX 鞏固 cron 首次自動跑（剩餘配對接棒），明天可查 log 確認
 
 ---
 
@@ -89,10 +87,9 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| 記憶全景圖計畫 | WORKLOG 2026-07-07 第五場「施工計畫 v1.0」段 |
-| 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-07.md`（L1-L13） |
+| 全景圖語音道架構 | ailivex `docs/memory-panorama-voice-integration.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-07 · 築*
+*2026-07-08 · 築*
