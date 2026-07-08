@@ -6849,3 +6849,7 @@ Adam 昨晚驗收日記走的是語音通話→日記 0 篇，暴露「canary �
 - [ ] Adam 通話驗收後：查 diary + agent log 兩信號
 - [ ] 驗收過後評估 v17 升 DEFAULT（連動 CANARY_VOICE_VERSIONS 清單拔除）
 - [ ] 第四期關係敘事（後移）、第五期收斂＋觀測台
+
+### 第 3.5 期終驗收（同日 13:48 台北）
+- Adam 實打 v17×Lilith：三信號全綠——remote_blocks=hit（1514 字印象塊進通話）、diary-write posted、diary 落庫 source=voice（187 字＋unspoken 2＋nextTime 2，mood「平靜，但有一絲懸著沒落地的感覺」）
+- 語音道全通。下通電話日記塊開始注入（惦記回流）。第 3.5 期收案，剩第四期關係敘事、第五期收斂＋觀測台。
