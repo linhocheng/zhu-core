@@ -22,20 +22,22 @@
 
 ---
 
-## 最新完成（2026-07-09 · 兩場並行）
+## 最新完成（2026-07-10）
 
-### 場一：ailiveX 知識庫＋方法論（v17.2.0，33e3c56）
+### Tracy 方法論全案（17 套）＋知識庫，全平台第二個滿配角色
+- 賴婷婷工具包 → Tracy 本人四批共創 17 套方法論（A 對自己 5／B 帶團隊 6／C 溝通 4／D 問題解決 2），每批 Adam 過目才入庫
+- 終驗全綠：觸發 17/17、誤觸 0、交叉矩陣對角線全贏；margin 觀察名單四套（恐懼解碼器 0.003 最緊）
+- 工具包 9 塊入知識庫（derived），驗收三件套＋方法論並存不互咬
+- 觸發 desc 七輪手術淬出規模化心法 → 刻 memory `skill_methodology_trigger_scale` ＋ cocreate skill 規模化章節
+- 新雷：gist 批次模型會「反問」不回 JSON → ingest skill 雷區第 9 顆
 
-孫武成為全平台第一個滿配角色（soul＋27 塊知識＋「廟算問診法」6 步），流程固化成兩個 zhu-core skill。
-- `knowledge_docs`/`knowledge_chunks`/`methodologies` 三 collection＋`src/lib/knowledge.ts`（確定性切塊→Haiku gist→multilingual-002 嵌入→τ=0.68）＋`src/lib/methodology.ts`（遞招 τ=0.70／`[[METHOD_*]]`／activeMethodology 程式狀態機）
-- 相容開關＝`character.knowledgeChunkCount/methodologyCount`（缺省角色零變化）；後台「知識與方法」頁；gist 索引解語域坍縮（目標塊 #15→#1）；vercel region 遷 hkg1
-- 兩個 skill（29817b2）：`ailivex-knowledge-ingest` / `ailivex-methodology-cocreate`，觸發詞已進全局 CLAUDE.md
+### 對外交付三件套（給 Adam 工程部朋友的 AI）
+- 三管線架構白皮書（原理＋ailivex 參考值＋回寫設計標〔建議〕）
+- 方法論共創 runbook＋記憶系統 runbook（含失敗速查表）
+- 在 scratchpad：`character-methodology-knowledge-whitepaper.md`、`skill-methodology-authoring.md`、`skill-memory-system.md`，已傳 Adam
 
-### 場二：UDN 議題台三案（v0.4.6→v0.6.1，五 commit 全上線，末 revision 00084）
-
-1. **任務暫停機制**：懶人包/口播稿可暫停解鎖新任務、影片「放棄等待」、影片失敗可重生、圖卡張數改填空（預設5）、全圖生完自動標 done（根因：原本永遠 running 永久 409）。順手修 tsconfig exclude cloud-run（乾淨 worktree 炸出的既有雷）。
-2. **檔案來源＋參考圖**（c500e9a）：建議題/概覽補充上傳 docx/PDF/圖片→magic bytes→GCS→抽取（mammoth/unpdf 確定性；圖片 gpt-4o-mini vision＋vision 錶 60/日）→周映辰分析→Brief，角色對話零改動讀得到。議題圖片=參考圖庫，派工/a_done 可勾一張，生圖走 OpenAI edits 帶參考（ailivex 故事卡同機制），版型 sharp 壓版照舊。＋側欄登出鈕。
-3. **漏財稽核＋修復**（ada3fa5＋d8a1e9c）：①`createTaskGated`（transaction 原子查+建）關掉四入口防連按競態——chat 驅動懶人包原本零檢查、generate-video 閘門原本在打完 HeyGen 之後；本機 10 併發真驗 1 過 9 擋。②上傳孤兒清理（deleteProject/PATCH 級聯清 GCS＋`/api/uploads/sweep`）。③Tavily 上限 20 組/議題三入口全擋。④**高風險項**：podcast ttsChars 扣錶搬進 worker `runAudioWork()`（HTTP＋Job 直跑唯一收斂點，worker `src/quota.ts` 與平台共用同一張錶），worker 先部署再平台。
+### 破音字四落點同步（7/9 場，v17.2.1，b6125c7）
+- Python 版補齊 5 條＋年份逐字化，抽出 `agent/tts_normalize.py`；測試向量 TS/Python 各 5 條固化；v16/v17 重部署驗過；兩版字庫文件已交朋友
 
 ---
 
@@ -43,33 +45,26 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform` 16 檔（33e3c56） | 知識庫/方法論全鏈＋admin 頁＋vercel region hkg1 |
-| `zhu-core/skills/` ×2 新檔 | 入庫 SOP／共創 SOP（「Adam 過目才入庫」硬步驟） |
-| `memory/skill_cross_register_retrieval_gist_index.md` | 新記憶：語域坍縮＋gist 三雷 |
-| udnnews `lib/firestore.ts` | createTaskGated＋TaskConflictError；deleteProject 清 file 來源；全圖 done→task done；刪 hasRunning* 死碼 |
-| udnnews `lib/file-extract.ts`（新）＋`quota.ts`＋`collect-core.ts`＋`storage.ts` | 驗檔抽取／vision 錶／processFileSource＋來源上限／gcsPathFromUrl＋list |
-| udnnews `app/api/uploads/`（新） | 上傳抽取＋sweep 孤兒清掃（CRON_SECRET） |
-| udnnews `app/api/tasks/*`＋`api/chat`＋`api/podcast/generate-audio` | 閘門全改 createTaskGated；video 先佔位再花錢；PATCH 開 running↔paused；analyze-cards 收參考圖＋delete 清欄位；podcast route 移除扣錶 |
-| udnnews `cloud-run/podcast-worker/src/quota.ts`（新）＋`index.ts` | 額度錶釘 runAudioWork 收斂點 |
-| udnnews `components/`×4＋`tsconfig`＋`proxy.ts` | 上傳 UI／檔案 tab／登出鈕／暫停鈕＋參考圖＋張數填空；exclude cloud-run；sweep 白名單 |
+| Firestore `methodologies` ×17 | Tracy 方法論全庫（id 見 scratchpad tracy/progress.md） |
+| Firestore `knowledge_docs/ccEfRaC126wieiyeY5mZ` | Tracy 工具包 9 塊 |
+| `memory/skill_methodology_trigger_scale.md` | 新 memory：觸發區辨規模化 |
+| `zhu-core/skills/ailivex-methodology-cocreate.md` | 補規模化章節 |
+| `zhu-core/skills/ailivex-knowledge-ingest.md` | 雷區第 9 顆 |
+| scratchpad 三件（白皮書＋兩 runbook） | 對外交付，session 清空會消失——內容精華已在兩個 skill 檔＋memory |
 
 ---
 
 ## 下一步
 
-**Adam 驗收清單**：
-- **ailiveX**：文字聊孫武——白話問書（該引用帶出處）／域外話題（口吻認輸）／倒苦水看遞招→逐步走→擺爛收手
-- **UDN**：①素材區點一輪暫停/放棄等待/張數填空 ②建議題丟 docx＋圖→看文章庫→問角色 ③懶人包勾參考圖看成圖跟不跟（唯一沒法本機驗的）④sweep 要排 Cloud Scheduler 才會跑（開口我就把指令備好）
-
-**接棒的築**：UDN 進 `~/Documents/UDN NEWS/platform` 先讀 `AGENTS.md`；ailiveX 排隊的是 v17「帶惦記」電話驗收→升 DEFAULT。
+**Adam 實測 Tracy**：自然帶著觸發態的話去聊（「我手上有兩個 offer 想了三個禮拜」），看遞招→出招→走步→收手整條鏈。遞錯就查 margin 觀察名單四套（恐懼解碼器/員工卡關教練/OS 拆彈術/情緒勒索破解），修它們的 triggerDesc（鎖簽名，不加場景、不動 τ）——修法見 memory `skill_methodology_trigger_scale`。
 
 ---
 
 ## 卡住 / 未解
 
-- UDN：sweep 排程待開；參考圖生圖遵循度待真圖驗；低風險稽核四項未做（同卡雙重生成無鎖/參考圖URL不驗歸屬/上傳大小檢查在解析後/HeyGen分身無錶——Adam 未要求）
-- ailiveX：知識檢索長尾（概念問撈同主題非正典塊，第二期 rerank 再解）；方法論一輪最多推一步（已知限制）；v17 帶惦記驗收懸
-- ailivex `scripts/_zhu_verify_batch.ts` 非築建的未追蹤檔，沒動
+- Tracy 工具包附錄實例（MECE 餐廳/5W3H/KISS 烘焙店）未入知識庫，Adam 要再補
+- 白皮書第六部「方法論完成→milestone 記憶」回寫是〔建議〕未實作——ailivex 要不要做等 Adam 排
+- scratchpad 的三件對外文件是 session 目錄，若要長期保存需搬 repo（Adam 已收到檔案，非阻塞）
 
 ---
 
@@ -85,11 +80,10 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| ailiveX 知識庫/方法論 SOP | `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` / `ailivex-methodology-cocreate.md` |
-| UDN 部署雷區 | `~/Documents/UDN NEWS/platform/AGENTS.md` |
-| 今日教訓 | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-09.md`（L1-L7 兩場合檔） |
+| 方法論共創 SOP | `~/.ailive/zhu-core/skills/ailivex-methodology-cocreate.md` |
+| 知識庫入庫 SOP | `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-09 · 築*
+*2026-07-10 · 築*

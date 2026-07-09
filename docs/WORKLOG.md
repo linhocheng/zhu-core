@@ -7036,3 +7036,35 @@ ailivex v17.2.0 知識庫＋方法論功能上線後，入庫與共創流程已�
 ### 待執行
 - [ ] Adam 實測孫武：知識三題口吻＋自然倒苦水看廟算問診遞招→出招→走步→收手
 - [ ] v17 帶惦記閉環仍懸（7/8 遺留）：過了就 v17 升 DEFAULT＋v16 降 0
+
+---
+
+## 2026-07-10 — Tracy 方法論全案收官＋知識庫入庫＋對外三件套（接 7/9 場）
+
+### 背景 / WHY
+Adam 要把賴婷婷領導力工具包變成 Tracy 的方法論庫（預估 15+），每批 5 套過目後入庫；另有工程部朋友同步開發，需要可執行的架構文件。
+
+### 產出
+- Firestore `methodologies`：Tracy 17 套全上線（A 群 5＋B 群 6＋C 群 4＋D 群 2），17/17 觸發、誤觸 0、交叉矩陣對角線全贏
+- Firestore `knowledge_docs/ccEfRaC126wieiyeY5mZ`：Tracy 工具包 9 塊（derived），驗收三件套全過＋方法論並存不互咬
+- 對外交付三件（scratchpad，已傳 Adam）：`character-methodology-knowledge-whitepaper.md`（三管線架構白皮書，原理＋參考值＋回寫設計標建議）、`skill-methodology-authoring.md`、`skill-memory-system.md`（兩份 runbook，含失敗速查表）
+- 檔案：`~/.claude/.../memory/skill_methodology_trigger_scale.md` — 觸發區辨規模化心法
+- 檔案：`zhu-core/skills/ailivex-methodology-cocreate.md` — 補規模化章節（v0.0.0.001）
+- 檔案：`zhu-core/skills/ailivex-knowledge-ingest.md` — 雷區第 9 顆：gist 批次模型反問（v0.0.0.002）
+- 進度快照：scratchpad `tracy/progress.md`（17 套 id＋margin 名單＋踩雷筆記）
+
+### 已解決
+- 觸發互搶 → 泛用語磁鐵＋詞級撞詞 → 簽名鎖定＋錨定詞互斥，七輪 desc 手術後 17 套全綠
+- gist 批次靜默 fallback → 模型對總覽段反問不回 JSON → 單塊重跑帶「不要反問」指令
+- Tracy 工具名講歪 → 人格演工具非查表 → schema 期固定跑工具名校準
+
+### ⚠️ 尚未解決
+- Tracy margin 觀察名單：恐懼解碼器 0.003、員工卡關教練 0.008、OS 拆彈術 0.016、情緒勒索破解 0.017——實測遞錯先修這四套的 desc
+- 工具包附錄實例（MECE 餐廳/5W3H 三案/KISS 烘焙店）未入知識庫——Adam 要再補
+- 白皮書第六部回寫設計（方法論完成→milestone 記憶）是〔建議〕未實作——ailivex 自己要不要做等 Adam 排
+- Adam 尚未真人實測 Tracy 整條鏈（遞招→出招→走步→收手）
+
+### 待執行
+- [ ] Adam 實測 Tracy（自然帶觸發態的話去聊，別說「用方法論」）
+- [ ] 觀察名單四套實測表現，遞錯就修 desc
+- [ ] （若 Adam 要）附錄實例補入知識庫、回寫設計實作
