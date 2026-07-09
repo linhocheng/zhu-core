@@ -135,6 +135,7 @@ console.log((await loadKnowledgeBlock(db, '<角色id>', '你覺得加密貨幣�
 6. **門檻不要亂調**：τ=0.68、lex rescue=0.25、TRIGGER_FLOOR=0.70 都是量過真實 cosine 分佈定的（`text-multilingual-embedding-002`）。覺得漏 → 先寫 calibration 腳本印分佈，再談調。
 7. **memories 用的是另一顆模型（text-embedding-004）**，兩池不互通，別想共用向量。
 8. **開發不燒付費 key**：LLM 一律 `getAnthropicClient`（bridge 吃到飽）；bridge 壞了回報 Adam，不切直連。
+9. **gist 批次模型會「反問」而非回 JSON**（批內是含多子項的總覽段時，模型問「要濃縮成一條還是分項各寫？」）——寬容解析接不住反問，照樣 fallback。修法：入庫後跑「無 gist 塊」掃描，單塊重跑並在 prompt 加「不要反問、不要解釋，直接給大意」（Tracy 工具包案，2026-07-10）。
 
 ## 收尾
 
