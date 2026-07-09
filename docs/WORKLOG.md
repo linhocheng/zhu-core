@@ -6991,3 +6991,48 @@ ailivex v17.2.0 知識庫＋方法論功能上線後，入庫與共創流程已�
 ### ⚠️ 尚未解決
 - 語音道（v17 agent）尚未接 knowledgeBlock——等 v17 canary 收案後接線
 - 方法論一輪最多推一步（已知限制，兩份 skill 都有標注）
+
+---
+
+## 2026-07-09 — UDN 議題台：podcast 額度錶釘到收斂點（高風險稽核項收尾，v0.6.1.001）
+
+### 背景 / WHY
+前日稽核唯一未修的高風險項。討論後更正原判斷：平台 /api/podcast/generate-audio 其實已有扣錶，真正的洞是 ①worker 本身不驗（信任呼叫者）②Cloud Run Job 直跑（TASK_ID+JOB_ACTION=audio）完全繞過平台 route。Adam 拍板方案 A（單層，錶搬收斂點）。
+
+### 產出（d8a1e9c，worker+平台雙部署驗證全綠）
+- worker 新增 `src/quota.ts`：與平台 lib/quota.ts 共用同一張 quota_usage 錶（同欄位/台北日界/交易制/env 同名同預設 100k）
+- 扣錶釘進 `runAudioWork()`（HTTP /run-audio 與 Job 直跑的唯一交會點）；超限 → QuotaExceededError → catch 寫 task failed，卡片顯示額度訊息
+- 平台 route 移除扣錶（防重複扣）；部署順序 worker 先上（過渡期最多重複扣不漏扣）
+- 本機真跑驗證：扣 1 字錶 +1、超限丟錯且錶不動、還原乾淨；worker service+job 均指 d8a1e9c image、平台 00084 digest 對齊
+
+### 稽核系列收尾狀態
+高風險 ✅（本場）｜中風險三項 ✅（前場 ada3fa5）｜低風險四項未做（Adam 未要求）｜/api/uploads/sweep 仍待 Adam 排 Cloud Scheduler
+
+---
+
+## 2026-07-09 — ailiveX 知識庫＋方法論全鏈上線（v17.2.0）＋孫武滿配＋TTS 斷句說明
+
+### 背景 / WHY
+7/8 全盤討論定案後 Adam 說 GO：為 ailiveX 加「角色知識庫（著作層）」與「方法論（教練框架層）」，三約束：留空可填、零回歸、通用機制角色語氣。孫武為第一個實戰角色。
+
+### 產出
+- ailivex-platform `33e3c56` v17.2.0（16 檔）：`src/lib/knowledge.ts`（切塊/gist索引/τ檢索）、`src/lib/methodology.ts`（遞招/狀態機）、tool-tags METHOD 標記、dialogue/memory-blocks 接線、admin「知識與方法」頁、vercel region hkg1
+- 孫武 `ymfYwuSDuxIXhXunP2tV`：知識 27 塊（孫子兵法+吳王問對，gist 索引版）＋方法論「廟算問診法」`Nq7Y6CwNVSkArU5VlPZs`（他本人設計，6 步含收手條件）
+- zhu-core `29817b2`：兩個 skill（ailivex-knowledge-ingest / ailivex-methodology-cocreate，含可跑腳本原碼）＋全局 CLAUDE.md 觸發詞
+- 記憶：`skill_cross_register_retrieval_gist_index.md`（已進 MEMORY.md）
+- 口頭交付：TTS 斷句設計說明（agent/minimax_tts.py `_should_flush`，五根柱子＋三顆雷，給外部工程師）
+
+### 已解決
+- 白話 query 撈不到文言原文（#15）→ 庫內 cosine 坍縮 → gist 白話索引（#15→#2→#1 命中）
+- τ=0.35 漏水 → 憑感覺定門檻 → calibration 量真實分佈定 0.68/0.70/lex 0.25
+- gist 批次靜默歸零 → Haiku 格式漂移（```json 圍欄/{"result":}包裝/截斷）→ 程式級寬容解析＋加大 max_tokens
+- 004 中文短句坍縮 → 知識層換 text-multilingual-embedding-002＋task_type 不對稱嵌入（memories 004 池不動）
+
+### ⚠️ 尚未解決
+- 知識檢索長尾：概念問「將領最重要特質」撈到同主題塊但非正典塊（將之五德 #15）——可接受的 grounded 行為，要更準走第二期 rerank/query 擴寫
+- 語音道 knowledgeBlock 供給端已備（memory-blocks 回應含），v17 agent 未接線——等 v17 canary（帶惦記電話）收案後動
+- 方法論一輪最多推進一步（已知限制，非 bug）
+
+### 待執行
+- [ ] Adam 實測孫武：知識三題口吻＋自然倒苦水看廟算問診遞招→出招→走步→收手
+- [ ] v17 帶惦記閉環仍懸（7/8 遺留）：過了就 v17 升 DEFAULT＋v16 降 0

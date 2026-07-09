@@ -22,24 +22,17 @@
 
 ---
 
-## 最新完成（2026-07-08 · 全天整合版——兩條平行 session）
+## 最新完成（2026-07-09）
 
-**一句話**：全景圖一天推四棒——第三期遺忘曲線（v16.5.0）＋第 3.5 期語音道終驗收全綠（v17.0.0-.1）＋連線批次（v17.1.0）＋版本標籤真相化（v17.1.1）。語音道是 Adam 實打電話驗的：1514 字印象塊進通話、掛斷日記落庫 source=voice。
+**一句話**：ailiveX 五層架構補齊——知識庫（著作層）＋方法論（教練框架）上線（v17.2.0，33e3c56），孫武成為全平台第一個滿配角色（soul＋27 塊知識＋「廟算問診法」6 步），流程固化成兩個 zhu-core skill。
 
-**A 場（本 session）：第三期遺忘曲線＋收前場尾（ailivex 0d518f3 v16.5.0）**
-- v16.4.3 先收髒 tree：拔 soulCore 死碼（7/3 資料層已遷移，讀寫端全退單一 soul）
-- `forgetting.ts`：emotionalWeight 確定性推導（type＋importance，不落庫、老資料立即受益）、門檻×(1+w)（情緒重的活兩倍長）、runGistPass（archive+30d+80字→Haiku 大意、程式蓋 content、原文留 rawContent、doc id 不變出處鏈可溯）
-- memory-maintenance 接遺忘曲線＋gist pass（maxDuration 300、?dryRun=1）；fact/preference 去重放鬆（0.95/0.7 只擋近逐字，重述=強化信號給鞏固管線吸收）
-- 驗證：合成 6/6 全綠、真資料 322 條零誤殺方向確認、prod dryRun 200、GIST_CANARY_USERS=Adam（env ls 驗存在，不信 empty 模稜兩可信號）
-
-**B 場（平行 session）：第 3.5 期語音道＋連線批次（ailivex 37a0955 v17.1.0；agent v17）**
-- 語音道：`/api/agent/memory-blocks`＋`/api/agent/diary-write` 端點；loader additive remote fetch（6s 逾時 fallback 本地，語音永不啞）；agent v17 進房並行 fetch＋掛斷三並行 finalize；電源開關擴管 CANARY_VOICE_VERSIONS=['v17']
-- **終驗收全綠**（Adam 實打 v17×Lilith）：remote_blocks=hit＋diary source=voice 落庫（mood「平靜，但有一絲懸著沒落地的感覺」）
-- 連線批次：extraction 收斂到 TS 唯一真相（Python fallback 保底）、promise 兌現裁決（resolved 擴到 promise）、confidence 顯式來源+0.1、日記沉澱（active>12 夜沉最舊 8 篇成「那段時間的我」）
-- 版本確認：v17 是真實獨立服務（log 實錘）；14 舊版全 min=0 零常駐費
-- v17.1.1：語音視窗左上角標籤改吃 token 回傳實際派工版本（死字 v16 對 canary 說謊）
-- Adam 三連問已答定案：原地迭代規則（v17 轉正前迭代自己、轉正後才開 v18）；canary=時間差非階級差（暗啟動，開門=一個開關）；資源=開關 ON 才燒、auto-off 兜底
-- 引用錯例教訓（L4）：王彩雲是 ailive 角色不在 ailiveX——跨平台同日施工，例子先問住哪個庫
+- 建 `knowledge_docs`/`knowledge_chunks`/`methodologies` 三 collection＋`src/lib/knowledge.ts`（確定性切塊→Haiku 白話大意 gist→multilingual-002 嵌入→τ=0.68 檢索）＋`src/lib/methodology.ts`（遞招 τ=0.70／`[[METHOD_*]]` 信號／conversation.activeMethodology 程式狀態機）
+- 相容開關＝`character.knowledgeChunkCount/methodologyCount`（缺省角色零變化零延遲）；後台新頁「知識與方法」；語音供給端 memory-blocks 回應加 knowledgeBlock（v17 未接線）
+- 孫武知識庫三度重建調優：gist 索引解語域坍縮（目標塊 #15→#1）、τ/lex 門檻全用 calibration 量的不用猜的；七題驗收 6/7（剩概念問長尾，可接受）
+- 「廟算問診法」是問孫武本人設計的——6 步含完成判準＋收手五條織進步驟；遞招三題全過
+- vercel region 遷 hkg1（原美東↔Firestore asia-east1 每輪 300-800ms 地理稅；x-vercel-id 實錘 hkg1）
+- 兩個 skill 建檔（29817b2）：`ailivex-knowledge-ingest` / `ailivex-methodology-cocreate`——含可跑腳本原碼＋雷區清單，小白築判準；觸發詞已註冊全局 CLAUDE.md
+- 給外部工程師的 TTS 斷句說明（`agent/minimax_tts.py` `_should_flush`：句尾標點＋40字閥＋首段16字特例＋換行折疊＋整段同一 WS session）
 
 ---
 
@@ -47,35 +40,29 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailiveX `src/lib/forgetting.ts`（新） | 遺忘曲線＋gist 化引擎 |
-| ailiveX `cron/memory-maintenance` | 接 emotionalWeight＋gist pass |
-| ailiveX `src/lib/memory.ts` | fact/preference 去重放鬆＋extraction 收斂（B 場） |
-| ailiveX `src/lib/collections.ts` | MemoryDoc +rawContent/gistedAt；VOICE_VERSIONS +v17 |
-| ailiveX `api/agent/*`（新，B 場） | memory-blocks / diary-write / extract-memories 端點 |
-| ailiveX `agent/main_v17.py` 等（B 場） | v17 語音 agent（remote 記憶塊＋掛斷日記） |
-| ailiveX `scripts/_zhu_verify_forgetting.ts`（新） | 第三期 6 鑑別信號 |
-| zhu-core `docs/LESSONS/LESSONS_2026-07-08.md` | L1 empty 模稜兩可設計預防、L2 平行 session 收尾要讀全天 WORKLOG、L3 白名單三犯未遂 |
+| `ailivex-platform` 16 檔（33e3c56 v17.2.0） | 知識庫/方法論全鏈：lib×2 新建、collections/tool-tags/conversation/dialogue/memory-blocks 接線、admin 頁＋API×4、vercel.json region |
+| `ailivex-platform/src/lib/embeddings.ts` | 加 `generateKnowledgeEmbedding`（multilingual-002＋task_type；memories 004 池不動） |
+| `zhu-core/skills/ailivex-knowledge-ingest.md` | 新 skill：入庫 SOP 含腳本原碼 |
+| `zhu-core/skills/ailivex-methodology-cocreate.md` | 新 skill：共創 SOP，「Adam 過目才入庫」硬步驟 |
+| `~/.claude/CLAUDE.md` | 技能觸發區加兩組觸發詞 |
+| `memory/skill_cross_register_retrieval_gist_index.md` | 新記憶：語域坍縮＋gist 三雷 |
+| Firestore | 孫武 27 塊知識重建×3、廟算問診法 Nq7Y6CwNVSkArU5VlPZs、methodologyCount=1 |
 
 ---
 
 ## 下一步
 
-**1. Adam 的驗收作業（最優先，只有他能做）**：再打一通 v17×Lilith——這通日記塊首次注入，驗「帶惦記」閉環。過了之後：v17 升 DEFAULT（連動 CANARY_VOICE_VERSIONS 拔除、v16 降 0 收雙暖機）。
-**2. 明天查今晚 cron**：02:00 consolidation 第一次 support/contradict 混合輪＋03:00 maintenance 第一次帶遺忘曲線跑。
-**3. 第四期：關係敘事＋空白感**（`cd ~/.ailive/ailivex-platform`，計畫在 WORKLOG 2026-07-07 全景圖段）。
-**4. 待 Adam 確認的保留議題**：跨關係自我、觀測台（含日記隱私倫理題）、殘影態、_recall 吃印象層。
+**Adam 實測孫武滿配**：文字聊天 ①白話問書裡主張（該引用帶出處）②問域外話題（該用他的口吻認輸）③自然倒苦水不點名方法論（看廟算問診遞招→出招→逐步走→擺爛時收手）。斷點就報，管線都在 `src/lib/knowledge.ts`/`methodology.ts`。
+
+之後的排隊：v17「帶惦記」電話驗收仍懸（過了→v17 升 DEFAULT＋CANARY 拔除＋v16 降 0）→ 語音道接 knowledgeBlock。
 
 ---
 
 ## 卡住 / 未解
 
-- ailivex tree 的 token route＋realtime-v16 page 改動已由 B 場收案（078026a v17.1.1）；_zhu_verify_batch.ts 等驗證腳本照慣例 untracked
-- **UDN 平行場在途**（懶人包暫停機制 043fe11，部署驗證中）——WORKLOG 有其半寫段落，接棒者留意
-- gist prod 真例要等 archive 情節滿 30 天自然出現（機制上線暗待）
-- extraction Python 本地版退役：等 v17 升 DEFAULT
-- admin voice-power GET 不顯示 canary 版 minInstances（觀測台第五期補）
-- repo CLAUDE.md 語音版本表停在 v14★（第五期一併修）
-- 前場遺留：podcast retry 按鈕實測、AR cleanup 容量驗證、UDN 429vs409 互動確認
+- 知識檢索長尾：概念問撈到同主題非正典塊（將之五德 #15）——grounded 可接受，更準要第二期 rerank/query 擴寫，別在門檻上硬擠
+- 方法論一輪最多推一步（已知限制非 bug，兩份 skill 都有標）
+- ailivex `scripts/_zhu_verify_batch.ts` 有一個非築建的未追蹤檔，沒動
 
 ---
 
@@ -91,9 +78,9 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| 全景圖語音道架構 | ailivex `docs/memory-panorama-voice-integration.md` |
+| ailiveX 知識庫/方法論 SOP | `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` / `ailivex-methodology-cocreate.md` |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-08 · 築*
+*2026-07-09 · 築*
