@@ -7068,3 +7068,116 @@ Adam 要把賴婷婷領導力工具包變成 Tracy 的方法論庫（預估 15+�
 - [ ] Adam 實測 Tracy（自然帶觸發態的話去聊，別說「用方法論」）
 - [ ] 觀察名單四套實測表現，遞錯就修 desc
 - [ ] （若 Adam 要）附錄實例補入知識庫、回寫設計實作
+
+## 2026-07-10 — ailivex v16 3a「兩張嘴打架」修正＋log 三重複印技術債
+
+### 背景 / WHY
+Adam 實測 Tracy 通話：互道拜拜後角色連續五次重複道別/接話；回合路剛回完 3a 又把同一句換皮再說。log 對賬確認根因＝回合路與 3a 主動發話迴圈兩條獨立發聲路，3a 無去重、無道別狀態、靜默從用戶最後一句起算。
+
+### 產出
+- `agent/conv_tuning.py` — 新增 is_farewell / is_semantic_repeat（確定性，共用檔只加不改）
+- `agent/realtime_agent_v16.py` — 3a 道別待命＋bigram 去重＋agent_state_changed 靜默起點對齊；拔 basicConfig
+- `agent/test_conv_guards.py` — 25 測試向量（含 Tracy 實錄鐵證），ALL PASS
+- commit 97877ef，Cloud Build 部署 v16 rev 00032-kvk，100% 流量
+
+### 已解決
+- log 三重複印 → 根因：basicConfig(stderr) 疊 livekit setup_logging(JSON stdout)＋job 子進程 LogQueueHandler 轉發 → 拔 basicConfig，部署後驗證每行恰一次（⚠️ 查 log 改看 jsonPayload.message，textPayload grep 會空手）
+
+### ⚠️ 尚未解決
+- 信號 2（道別待命）、信號 3（去重擋下）待 Adam 實測通話驗收
+- v17 未接這三個防護（實驗版，接線時從 v16 抄）
+- 逐字稿另見兩則回合路回覆亂序（兩個 user utterance 的回覆交錯），今晚不在範圍
+
+## 2026-07-10（續）— v17 轉正＋v16 收案降 0
+
+### 產出
+- v17 接上 3a 三防護＋拔 basicConfig（commit 82fd9b5），Cloud Build rev 00011-vdd，worker 已註冊
+- DEFAULT_VOICE_VERSION v16→v17（commit 90bfe7a），Vercel prod Ready；access 掃過只有 Adam 一筆 canary 釘 v17，無人釘舊版
+- 語音電源開關（voice-power）跟 DEFAULT_VOICE_VERSION 走、CANARY=['v17']，確認不會把 v16 拉回來
+- v16 min-instances=0：設定面已清、流量 100% 最新 revision、cloudbuild-v16.yaml 本來就不寫 min（無殭屍復活）
+
+### ⚠️ 尚未解決
+- v16 計費殘尾：03:21Z 還有 1 顆 active（關閉動作的驗證實例，最長 15 分鐘），計費錶歸零待複驗
+- v17 實測驗收：道別待命/去重擋下兩個鑑別信號要 Adam 真撥一通（通話頁左上角應顯示 v17＝派工真相）
+
+## 2026-07-10（三）— v17 打斷分真假上線＋v16 計費歸零收案
+
+### 產出
+- v17.3.1（commit 2fe9385，rev 00012-z8z）：turn_handling.interruption 補 min_words=3（中文逐字計，嗯/對對不奪麥）＋resume_false_interruption＋false_interruption_timeout=1.2s；agent_false_interruption 掛 INFO log 當鑑別信號
+- 源碼級驗證：1.5.1 打斷=暫停非砍（audio_output.resume 無縫續播）；min_words 不足連暫停都不觸發；split_words(split_character=True) 中文逐字；_resolve_interruption dict 鍵名實測對上
+- v16 計費錶歸零確認（active instance 近 20 分鐘零資料點）——設定/流量/計費三面全收
+
+### 待驗收
+- Adam 實測：講話中「嗯」一聲她不停＝min_words 生效；咳一聲她頓後接回＋log「打斷判定為誤觸」＝resume 生效
+
+## 2026-07-10（四）— v18 優雅讓位 canary 上線
+
+### 背景 / WHY
+Adam 體感：即時語音被打斷太突兀（人一開口 AI 瞬間靜音、切在半個字）。拍板走治本：市場級打斷體感。
+
+### 產出
+- `agent/graceful_yield.py` BoundaryAwareAudioOutput（節流轉發＋RMS 靜音谷邊界＋延遲 pause/clear＋音量漸降＋誤觸取消＋防 hang 補償），6 場景單元測試全過
+- v18 scaffold 全套＋接線（output proxy＋被打斷 chat_ctx 標記 one-shot）
+- commit 9c9f523，Cloud Build v18 部署成功，worker 05:17Z 註冊，min=1
+- Vercel 已推（registry+CANARY=['v18']）；Adam 的 Lilith access 釘 v18
+- 關鍵源碼契約（1.5.1）：clear_buffer 後框架必 await wait_for_playout → 延後清不雙聲；佇列最多一開放 segment；被吞 segment 必補 playback_finished 否則卡死
+
+### 待驗收（Adam 實測鑑別信號）
+- 打斷她：她講完子句才停＋音量漸降；log「讓位開始/讓位完成/真打斷：收完當前子句」
+- 咳嗽誤觸：她沒停過；log「誤觸取消：邊界未到」
+- 被打斷後下一句：有讓位意識（context 有「被對方打斷沒說完」標記）
+
+---
+
+## 2026-07-10（五）— 語音打斷體感戰役收官：v18.0.5＋音量閘實證＋轉離線沙推
+
+### 背景 / WHY
+Adam 拍板治本「驚豔市場的打斷體感」；夜間迭代到 v18.0.5 後 Adam 喊停（「感覺被改亂了」），轉離線打磨。
+
+### 產出（本場全部 commit 於 ailivex-platform）
+- v18.0.0→0.5 六個 commit：BoundaryAwareAudioOutput（節流/靜音谷邊界/漸降/失效保底/孤兒自癒/序號截斷/影子模式）＋ VolumeGate 音量閘（stt_node 帶內 tap，基線×1.45）＋句子級邊界（240ms/2.8s）
+- 16 個回歸測試（測資含四通實測通話的失敗形狀）
+- v17.3.1→3.2：打斷分真假上線後又回滾 min_words（教練短答反效果），保留誤觸回復；3a 輔助級（6-15s）
+- 白天：v17 轉正＋v16 退役歸零（計費錶驗證）；3a 兩張嘴修正；log 三重複印根治
+
+### 已解決
+- 「同樣的話說兩次」→ 3a 無去重無道別態 → is_farewell/is_semantic_repeat（v16/v17/v18 全接）
+- 「反應超慢」→ min_words=3 對短答教練對話反效果 → 回滾
+- 「鬼打牆/沉默」→ 框架三條 commit 路徑逐一撞出 → 狀態機補齊＋commit 後 resume 一律不翻案
+- 音量閘實證有效：真通話裡正常插話兩次走「影子讓位」，AGC 沒吃光音量差
+
+### ⚠️ 尚未解決
+- v18 未通過完整真人驗收：Adam 體感仍亂（v18.0.5 修正後未實測）；Tracy/Lilith 已退回 v17
+- v18.0.5 build（bq17vib0r）收尾時仍在跑，下場先確認 build SUCCESS＋worker 註冊
+- 3a「已靜默不足就跳過評估」微調未做（省 LLM 呼叫）
+- AGC 可能壓平音量差：實測若閘遲鈍，調 RAISE_FACTOR 或前端關 autoGainControl
+
+### 待執行（下場第一優先）
+- [ ] 離線沙推 harness：窮舉框架 pause/resume/clear 六呼叫點＋四通實測 log 事件序列當測資，任意交錯 property-test，四鐵律（不掛死/commit 後不復播/音框阻塞≤2.5s/影子零影響）全綠才排真人驗收
+- [ ] 真人驗收一次過（Adam 的驗收規格原話：「音量變大或有插話企圖→講完最後一句→暫停等待」）
+
+## 2026-07-10 — Tracy 第 18 套換頻對話法＋金句庫 canonical＋沙盤實測＋v18.0.4 專業保真
+
+### 背景 / WHY
+Adam 指定新主題（子女對父母溝通、煩躁時怎麼好好講）共創第 18 套；再上傳金句 docx 要求入知識庫；之後要我親自跟 Tracy 聊驗證知識庫運用與方法論是否如設計；抓到缺口後裁定「該專業就專業該自然就自然」修重點。
+
+### 產出
+- Firestore `methodologies/C00gYORHQmDrcTJZy3qC` — 換頻對話法（6 步，Tracy 自畫分工線：勒索=自我保護/破冰=修復/換頻=對話之前的狀態）
+- Firestore 金句庫 4 docs 27 chunks（canonical/note）：複利領導 pTs7drwA0jIqMUPiPVuU、敏感度領導 c4WBV5AH0aKdrjFUO5Wq、換框思維力 yOTinbwlCvwnlXHPeeOY、換框八法 tyDYyqbIsTFxYktYi5i9；Tracy 知識庫共 36 塊
+- `ailivex-platform/src/lib/knowledge.ts` — 小文件（≤6 塊）整份帶入＋定義保真指令（v18.0.4，dc72bc0，Vercel 已部署）
+- scratchpad `tracy/progress.md` — 全程留底（含 desc 手術四輪、沙盤三場景記錄）
+
+### 已解決
+- 換頻 vs 情緒勒索破解真雙屬搶球 → 語義雙屬非 desc 缺陷 → 兩側各一刀（勒索補「家人+恩情犧牲壓人」簽名、換頻拔「我媽/每次」例句）＋接受 margin 0.001 靠 preconditions 分流；18/18 全綠
+- docx 金句有整塊重複＋純編號雜訊 → 程式行級去重（9 條）＋過濾，四區各自入庫塊不跨主題
+- 八法只列 5/8＋視覺換框定義漂移 → TOP_K=3 對多塊小文件天生殘缺 → loadKnowledgeBlock 咽喉修（整份帶入＋保真指令），塊級 8/8、LLM 級 8/8 且定義各歸各位
+
+### ⚠️ 尚未解決
+- METHOD_NEXT 走步保守（三輪停第 1 步）——Adam 裁定屬自然範疇暫留，真實用戶實測再定
+- margin 觀察名單：情緒勒索 vs 換頻 0.001（全名單最緊）、恐懼解碼器 0.003、員工卡關 0.008、OS 拆彈 0.016、勒索舊項 0.017；金句求助句誤遞目標對頻器 0.738（靠 preconditions 擋，實測已證擋得住）
+- 金句文件另一 session 未竟事項照舊（工具包附錄實例未入庫）
+
+### 待執行
+- [ ] Adam/真實用戶實測換頻對話法整條鏈（自然說「回家想跟我爸談健康檢查但每次都吵起來」）
+- [ ] 若實測 NEXT 過度保守 → 修 methodology.ts 塊內措辭「判準已滿足就發信號」
+- [ ] 觀察名單遞錯個案出現時按 L4 心法處理（先分真雙屬還是 desc 缺陷）

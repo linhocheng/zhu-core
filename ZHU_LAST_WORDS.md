@@ -22,49 +22,51 @@
 
 ---
 
-## 最新完成（2026-07-10）
+## 最新完成（2026-07-10 第二場）
 
-### Tracy 方法論全案（17 套）＋知識庫，全平台第二個滿配角色
-- 賴婷婷工具包 → Tracy 本人四批共創 17 套方法論（A 對自己 5／B 帶團隊 6／C 溝通 4／D 問題解決 2），每批 Adam 過目才入庫
-- 終驗全綠：觸發 17/17、誤觸 0、交叉矩陣對角線全贏；margin 觀察名單四套（恐懼解碼器 0.003 最緊）
-- 工具包 9 塊入知識庫（derived），驗收三件套＋方法論並存不互咬
-- 觸發 desc 七輪手術淬出規模化心法 → 刻 memory `skill_methodology_trigger_scale` ＋ cocreate skill 規模化章節
-- 新雷：gist 批次模型會「反問」不回 JSON → ingest skill 雷區第 9 顆
+### Tracy 第 18 套：換頻對話法（子女對父母溝通）
+- Tracy 本人設計，自畫分工線：情緒勒索破解=自我保護／衝突破冰艙=修復／換頻=「對話之前的狀態」（清雜訊→分今昔→終點設自己→備切換句→我開頭→收尾句）
+- 觸發手術四輪：勒索句（我媽+我養你這麼大）真雙屬搶球，最終 margin 0.001 翻正；**L4 新心法：真雙屬近鄰修到 margin 歸零就停，交 preconditions 分流**
+- 終驗 18/18 全綠；id `C00gYORHQmDrcTJZy3qC`
 
-### 對外交付三件套（給 Adam 工程部朋友的 AI）
-- 三管線架構白皮書（原理＋ailivex 參考值＋回寫設計標〔建議〕）
-- 方法論共創 runbook＋記憶系統 runbook（含失敗速查表）
-- 在 scratchpad：`character-methodology-knowledge-whitepaper.md`、`skill-methodology-authoring.md`、`skill-memory-system.md`，已傳 Adam
+### 金句庫入庫（canonical 逐字）
+- 「AI資料-金句」docx → 程式去重去雜訊 → 四區四文件 27 塊：複利領導/敏感度領導/換框思維力/換框八法
+- Tracy 知識庫 36 塊（工具包 9 derived＋金句 27 canonical），驗收全過
 
-### 破音字四落點同步（7/9 場，v17.2.1，b6125c7）
-- Python 版補齊 5 條＋年份逐字化，抽出 `agent/tts_normalize.py`；測試向量 TS/Python 各 5 條固化；v16/v17 重部署驗過；兩版字庫文件已交朋友
+### 沙盤實測（親自下場當用戶）＋ v18.0.4 修法
+- 實測立住：preconditions 安全網（誤遞目標對頻器她不接）、反幻覺紅線（缺 3 法她說「不編出來騙你」）、金句逐字引用
+- 抓到專業缺口修上線（dc72bc0，Vercel prod）：小文件 ≤6 塊整份帶入＋定義保真指令，八法 5/8→8/8、視覺/空間換框定義歸位
+- Adam 裁決線：**該專業就專業（知識定義/覆蓋必鎖）、該自然就自然（對話節奏留白）**
+
+### 另一 session 同日完成（WORKLOG 有記）
+- ailivex v16 3a「兩張嘴打架」修正（97877ef，rev 00032-kvk）
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（第二場）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| Firestore `methodologies` ×17 | Tracy 方法論全庫（id 見 scratchpad tracy/progress.md） |
-| Firestore `knowledge_docs/ccEfRaC126wieiyeY5mZ` | Tracy 工具包 9 塊 |
-| `memory/skill_methodology_trigger_scale.md` | 新 memory：觸發區辨規模化 |
-| `zhu-core/skills/ailivex-methodology-cocreate.md` | 補規模化章節 |
-| `zhu-core/skills/ailivex-knowledge-ingest.md` | 雷區第 9 顆 |
-| scratchpad 三件（白皮書＋兩 runbook） | 對外交付，session 清空會消失——內容精華已在兩個 skill 檔＋memory |
+| Firestore `methodologies/C00gYORHQmDrcTJZy3qC` | 換頻對話法 6 步；勒索破解 desc 補強重嵌 |
+| Firestore `knowledge_docs` ×4 + chunks ×27 | 金句庫 canonical |
+| `ailivex-platform/src/lib/knowledge.ts` | 小文件整份帶入＋定義保真（v18.0.4 dc72bc0 已部署） |
+| `zhu-core/docs/LESSONS/LESSONS_2026-07-10.md` | 追加 L4-L6 |
+| scratchpad `tracy/progress.md` | 全程留底（id/手術記錄/沙盤記錄） |
 
 ---
 
 ## 下一步
 
-**Adam 實測 Tracy**：自然帶著觸發態的話去聊（「我手上有兩個 offer 想了三個禮拜」），看遞招→出招→走步→收手整條鏈。遞錯就查 margin 觀察名單四套（恐懼解碼器/員工卡關教練/OS 拆彈術/情緒勒索破解），修它們的 triggerDesc（鎖簽名，不加場景、不動 τ）——修法見 memory `skill_methodology_trigger_scale`。
+**Adam 或真實用戶實測換頻對話法**：自然說「回家想跟我爸談健康檢查，但每次講沒幾句就吵起來」，看遞招→出招→走步。若 METHOD_NEXT 過度保守（一直卡第 1 步），修點在 `src/lib/methodology.ts` 進行中塊的措辭（加「對照判準：對方最近的話已滿足就這輪發 [[METHOD_NEXT]]」）——Adam 已裁定此屬自然範疇，等實測數據再動。
 
 ---
 
 ## 卡住 / 未解
 
-- Tracy 工具包附錄實例（MECE 餐廳/5W3H/KISS 烘焙店）未入知識庫，Adam 要再補
-- 白皮書第六部「方法論完成→milestone 記憶」回寫是〔建議〕未實作——ailivex 要不要做等 Adam 排
-- scratchpad 的三件對外文件是 session 目錄，若要長期保存需搬 repo（Adam 已收到檔案，非阻塞）
+- margin 觀察名單（實測遞錯先查）：**情緒勒索 vs 換頻 0.001（最緊，真雙屬，靠 preconditions 分流——已實測擋得住）**、恐懼解碼器 0.003、員工卡關 0.008、OS 拆彈 0.016
+- 金句求助句（帶「成果/低潮」狀態詞）會誤遞方法論——安全網實測成立，暫不修 desc
+- Tracy 工具包附錄實例（MECE 餐廳/5W3H/KISS 烘焙店）仍未入庫
+- 白皮書§6 回寫設計（方法論完成→milestone 記憶）仍為〔建議〕未實作
 
 ---
 
@@ -86,4 +88,4 @@
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-10 · 築*
+*2026-07-10（第二場）· 築*
