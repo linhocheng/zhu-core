@@ -7181,3 +7181,36 @@ Adam 指定新主題（子女對父母溝通、煩躁時怎麼好好講）共創
 - [ ] Adam/真實用戶實測換頻對話法整條鏈（自然說「回家想跟我爸談健康檢查但每次都吵起來」）
 - [ ] 若實測 NEXT 過度保守 → 修 methodology.ts 塊內措辭「判準已滿足就發信號」
 - [ ] 觀察名單遞錯個案出現時按 L4 心法處理（先分真雙屬還是 desc 缺陷）
+
+---
+
+## 2026-07-10 第四場 — 刪一萬行＋v18 音量閘重生轉正
+
+### 背景 / WHY
+Adam 醒場即拍板：舊 v18 讓位層全刪重設計。接著從「3A 的目的是什麼」聊到本質——輪詢式填空與「活」相悖，3a 整組退役。清殼頁時發現 URL 訊息債。重設計 v18 從對抗框架改為合作：VolumeGate 當主角、只攔 pause 的 150 行薄閘。當天真人驗收有感、轉正上架。
+
+### 產出
+- 檔案：`ailivex-platform/agent/interrupt_gate.py` — 新 v18 核心：VolumeGate＋GatedPauseOutput 薄閘（音量沒提高吞 pause / 提聲暫停 / commit 直通；冪等）
+- 檔案：`ailivex-platform/agent/test_interrupt_gate.py` — 8 場景離線測試全綠
+- 檔案：`ailivex-platform/agent/{main_v18,realtime_agent_v18,cloudbuild-v18}.{py,yaml}` — v18 = v17.4 複製＋stt_node tap＋閘掛載
+- 檔案：`ailivex-platform/agent/realtime_agent_v17.py` — v17.4：3a 整組拆除（-146 行）＋(empty) 佔位累積修正
+- 檔案：`ailivex-platform/src/app/realtime/[characterId]/page.tsx` — v16 現役 UI 轉正；14 個 /realtime-vN 殼頁全刪（-8261 行）
+- 檔案：`ailivex-platform/src/lib/{collections,voice-power}.ts` — 登錄表只登活服務；DEFAULT=v18；v17 出開關名單
+- Cloud Run：舊 ailivex-realtime-agent-v18 服務刪除→新 v18 重建（min=1）；v17 降 0 冷備
+- commits：c7e22b0（舊v18清）→ dac2aae（v17.4 3a退役）→ c8627c7（殼頁清）→ 8c1cac8（新v18）→ c7df55b（冪等+轉正）→ 53357f2（v17出名單）
+
+### 已解決
+- v17 干擾源審計 → 3a 競速窗口（閘檢查與 say 之間隔 LLM call）等 8 項 → 3a 退役直接消滅最大宗
+- 應和/咳嗽讓角色卡 1.2s 死空氣 → 框架對任何聲音都 pause → 音量閘：沒提高就吞 pause（真人驗收有感）
+- 切 DEFAULT 差 15 分鐘全聾 → 新服務 minScale 缺席＋開關從沒碰過它 → v18 min=1 手動補；雷區已刻 LESSONS L7＋memory
+- v17 降 0 會被 power-on 復活 → 先移出 CANARY 名單再降（開關會把名單內全拉回 min=1）
+
+### ⚠️ 尚未解決
+- v17 干擾源清單剩五項未修：VAD 0.3s 換氣切句（全域值動全版本，要體感權衡）、誤觸恢復 1.2s 賭轉寫延遲、讀網址 generate_reply 與回合路無互斥、instructions 只增不減、被打斷 transcript 存完整句（記憶提煉失真——這是 v18 二期「講完子句才停＋interrupt_state 標記」的素材）
+- AGC 風險仍在：瀏覽器 autoGainControl 若壓平音量差，閘永不觸發提聲（退化=v17 減去 pause，不聾）；體感遲鈍再調 RAISE_FACTOR 或前端關 AGC
+- ailivex-platform 六個 commit 未 push GitHub（Adam 未指示）
+
+### 待執行
+- [ ] v18 跑幾天真實通話，觀察音量閘 log（吞 pause / 提聲比例）
+- [ ] 若用戶反映「她太安靜/不主動」→ 回合尾意圖設計（3a 的正確形狀，見 LESSONS L8）
+- [ ] v18 二期候選：講完子句才停（graceful stop，舊資產 git 4993b28 可撈）

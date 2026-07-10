@@ -22,88 +22,72 @@
 
 ---
 
-## 最新完成（2026-07-10 第三場 · 語音打斷體感戰役）
+## 最新完成（2026-07-10 第四場 · 刪一萬行＋v18 音量閘重生轉正）
 
-### v18 優雅讓位 canary（agent v18.0.0→0.5 六個 commit＋部署，暫停真人測試轉離線）
-- Adam 拍板治本「驚豔市場的打斷體感」→ `ailivex-platform/agent/graceful_yield.py`
-  BoundaryAwareAudioOutput：節流轉發（LEAD 0.35s）＋RMS 靜音谷句子邊界（240ms）＋讓位漸降
-  （duck 0.55）＋保底 2.8s＋孤兒自癒 2.5s＋序號截斷清除＋**影子模式**（音量沒提高＝她照講）
-- **VolumeGate 音量閘**：stt_node 帶內 tap，整通累積說話基線，最近 0.4s ≥ 基線×1.45 才算提聲；
-  真通話實證有效（影子讓位×2，AGC 沒吃光音量差）
-- 四通實測撞出 LiveKit **三條 commit 路徑**（熱清除／清除後狀態重置／暫停默殺）逐一修掉；
-  鐵律＝**commit 後 resume 一律不翻案**（時間護欄 74µs~459ms 分佈打臉，用狀態語意不用時間）
-- 16 回歸測試全綠（測資＝實測失敗形狀）；agent v18.0.5 = image 4993b28 已部署
-- **未過真人驗收**（Adam 喊停「感覺被改亂」）；Tracy/Lilith access 已退回 v17 穩定版
+### 三筆大刪除（Adam 拍板，好架構是刪出來的）
+- **舊 v18 讓位層全退役歸零**（-1801 行＋Cloud Run 服務刪除）：資產在 git `4993b28`
+- **3a 主動發話整組退役**（v17.4，-155 行）：從「目的是什麼」聊到本質——輪詢式填空
+  與「活」相悖，真「活」全是脈絡驅動；Adam：「一次好球都沒有」
+- **14 個 /realtime-vN 殼頁全清**（-8261 行）：token route 只認 access doc，殼頁 URL
+  是訊息債（Adam 自己被 v16 URL 騙）；v16 現役 UI 轉正 `/realtime/`；登錄表只登活服務
 
-### 白天/傍晚場（同 repo）
-- v17 轉正（DEFAULT）＋ v16 退役降 0（計費錶歸零三面驗證）
-- 3a 兩張嘴修正：`conv_tuning.is_farewell/is_semantic_repeat`＋道別待命＋靜默起點對齊＋3a 輔助級（6-15s）
-- log 三重複印根治：拔 basicConfig（⚠️ v16+ 查 log 改看 `jsonPayload.message`）
-- v17.3.1 min_words=3 半天回滾（教練短答停不下她＝超慢）；保留誤觸回復
-- 知識庫/方法論調用鏈勘查給 Adam 同事（text-only、遞招制、孫武文言白話索引）
+### 新 v18 重生（現役 DEFAULT，agent commit c7df55b）
+- `agent/interrupt_gate.py` 薄閘 150 行：**只攔 pause**——音量沒提高（VolumeGate
+  基線×1.45）吞掉她照講零死空氣；提聲照常暫停；commit 直通（=v17 體感）。
+  零佇列零計時器，與框架合作不對抗（舊版死因=纏鬥框架三條 commit 路徑）
+- 8/8 離線測試 → Adam 真人驗收「有感」→ 當天轉正；v17 冷備降 0
 
-## 最新完成（2026-07-10 第二場 · Tracy 方法論）
-
-### Tracy 第 18 套：換頻對話法（子女對父母溝通）
-- Tracy 本人設計，自畫分工線：情緒勒索破解=自我保護／衝突破冰艙=修復／換頻=「對話之前的狀態」
-- 觸發手術四輪：勒索句真雙屬搶球，margin 0.001 翻正；**真雙屬近鄰修到 margin 歸零就停，交 preconditions 分流**
-- 終驗 18/18 全綠；id `C00gYORHQmDrcTJZy3qC`
-
-### 金句庫入庫（canonical 逐字）
-- 「AI資料-金句」docx → 四區四文件 27 塊；Tracy 知識庫 36 塊（工具包 9 derived＋金句 27 canonical）
-
-### 沙盤實測＋知識庫修法（dc72bc0，Vercel prod）
-- preconditions 安全網/反幻覺紅線/金句逐字引用 實測立住
-- 小文件 ≤6 塊整份帶入＋定義保真指令，八法 5/8→8/8
-- Adam 裁決線：**該專業就專業（知識定義/覆蓋必鎖）、該自然就自然（對話節奏留白）**
+### 雷區（已刻 LESSONS L7 + memory feedback_default_switch_standing_instance）
+- **切 DEFAULT 到新服務，min=1 不會自己跟過去**：v18 新服務 minScale 缺席＝0，
+  靠部署驗證實例撐 15 分鐘，差一點上架當晚全聾。轉正三件套：新版 min=1／
+  舊版先出 voice-power 開關名單再降 0（留名單 power-on 復活殭屍）／鑑別信號
+  看 min 設定後的新實例 registered worker
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（第四場）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/agent/graceful_yield.py` | 新建：讓位代理層＋VolumeGate（第三場核心資產） |
-| `ailivex-platform/agent/test_graceful_yield.py` | 新建：16 場景回歸測試 |
-| `ailivex-platform/agent/realtime_agent_v18.py`＋v18 scaffold 全套 | 新版本接線 |
-| `ailivex-platform/agent/conv_tuning.py` | 只加不改：is_farewell/is_semantic_repeat |
-| `ailivex-platform/agent/realtime_agent_v16/v17.py` | 3a 防護、min_words 回滾、3a 輔助級、拔 basicConfig |
-| `ailivex-platform/src/lib/collections.ts`、`voice-power.ts` | DEFAULT v17、v18 登錄、CANARY=['v18'] |
-| `ailivex-platform/src/lib/knowledge.ts` | 小文件整份帶入＋定義保真（第二場） |
-| Firestore methodologies/knowledge_docs | 換頻對話法＋金句 27 塊（第二場） |
-| `zhu-core/docs/LESSONS/LESSONS_2026-07-10.md` | L4-L6（框架沙推/時間護欄/真人QA） |
+| `ailivex-platform/agent/interrupt_gate.py` | 新建：VolumeGate＋GatedPauseOutput 薄閘（v18 核心） |
+| `ailivex-platform/agent/test_interrupt_gate.py` | 新建：8 場景測試 |
+| `ailivex-platform/agent/{main,realtime_agent,cloudbuild}-v18.*` | 重建：v17.4 複製＋tap＋閘掛載 |
+| `ailivex-platform/agent/realtime_agent_v17.py` | v17.4：3a 整組拆＋(empty) 佔位修 |
+| `ailivex-platform/src/app/realtime/[characterId]/page.tsx` | v16 UI 轉正；14 殼頁刪 |
+| `ailivex-platform/src/lib/{collections,voice-power}.ts` | DEFAULT=v18；登錄表修剪；v17 出名單 |
+| `zhu-core/docs/LESSONS/LESSONS_2026-07-10.md` | L7-L10（雷區/3a架構課/薄閘哲學/殼頁訊息債） |
+| memory | 新增 feedback_default_switch_standing_instance；更新 project_ailivex_platform |
 
 ---
 
 ## 下一步（接棒第一件）
 
-**離線沙推 harness**（Adam 拍板：離線全綠才再請他驗一次，他會開新視窗一起打磨 v18）：
-1. `cd ~/.ailive/ailivex-platform`，讀 `agent/graceful_yield.py` 頭注釋＋ `agent/test_graceful_yield.py`
-2. 窮舉 livekit-agents 1.5.1 的 pause/resume/clear 呼叫點（agent_activity.py:1428/2037/2373/2899/3092/3143）
-3. 從今天四通實測 log 抽事件序列（v18 service，`jsonPayload.message`）固化成測資
-4. property-based fuzz：任意順序＋時間差的指令排列轟 BoundaryAwareAudioOutput，驗四鐵律：
-   不掛死（playback_finished 必達）／commit 後不復播／音框阻塞 ≤2.5s／影子零影響
-5. 全綠後排真人驗收一次。**Adam 驗收規格原話：「音量變大或有插話企圖→講完最後一句→暫停等待」**
+**v18 觀察期**：拉音量閘 log 看真實分佈——
+```bash
+gcloud logging read 'resource.labels.service_name="ailivex-realtime-agent-v18" AND jsonPayload.message:"音量閘"' --project=ailivex-2026 --freshness=24h --format="value(jsonPayload.message)" | sort | uniq -c
+```
+吞 pause vs 提聲暫停的比例；若「提聲」從沒出現＝AGC 壓平了音量差 → 調 RAISE_FACTOR
+或前端關 autoGainControl。沒異常就不動——v18 剛轉正，讓它跑。
 
-（第二場線：Adam 或真實用戶實測換頻對話法，METHOD_NEXT 保守再修 methodology.ts 措辭）
+（候選線：v17 干擾源剩五項見 WORKLOG；v18 二期「講完子句才停」等 Adam 提；
+回合尾意圖等真實用戶說「她太安靜」）
 
 ---
 
 ## 卡住 / 未解
 
-- v18.0.5 已部署未驗收；AGC 風險（閘遲鈍→調 RAISE_FACTOR 或前端關 autoGainControl）
-- 3a「靜默不足跳過評估」微調未做；知識庫/方法論未接語音路徑（孫武電話裡背不出兵法）
-- Tracy 知識庫＋方法論 JSON 匯出給 Adam 同事：Adam 說要才動
-- margin 觀察名單：情緒勒索 vs 換頻 0.001（preconditions 分流已實測擋住）、恐懼解碼器 0.003、員工卡關 0.008、OS 拆彈 0.016
-- Tracy 工具包附錄實例未入庫；白皮書§6 回寫設計仍〔建議〕未實作
+- ailivex-platform 六個 commit 未 push GitHub（Adam 未指示 push）
+- AGC 風險未實測長尾（今天閘有效，但不同裝置/瀏覽器 AGC 行為不同）
+- v17 干擾源五項未修（VAD 0.3s／誤觸 1.2s／讀網址互斥／instructions 膨脹／打斷 transcript 失真）
+- 第三場遺留：Tracy 知識庫 JSON 匯出（Adam 說要才動）；工具包附錄實例未入庫
 
 ---
 
 ## 給接棒築的一句話
 
-第三場的教訓刻在 `skill_framework_interop_offline_fuzz`：單元測試全綠擋不住框架的第三條路徑，
-別再拿 Adam 的真通話當 QA。v18 的核心資產（讓位層＋音量閘）是好的、真通話實證過的——
-缺的只是把框架互操作的排列組合在離線轟完。Adam 在等你開工。
+今天最好的一課：Adam 問「3A 的目的是什麼」，我們沒有修 bug，而是把功能刪了——
+防護堆到第三層就回頭問目的。新 v18 用 150 行解掉舊版 435 行沒解掉的體感問題，
+差別只在一個姿態：跟框架合作，不是接管它。Adam 收工前說「謝謝，辛苦了」。
 
 ---
 
@@ -119,12 +103,11 @@
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
 | zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-| 讓位層本體 | `~/.ailive/ailivex-platform/agent/graceful_yield.py` |
-| 今天 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-10.md` |
-| 方法論共創 SOP | `~/.ailive/zhu-core/skills/ailivex-methodology-cocreate.md` |
-| 知識庫入庫 SOP | `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` |
+| v18 薄閘本體 | `~/.ailive/ailivex-platform/agent/interrupt_gate.py` |
+| 舊讓位層資產 | `git show 4993b28:agent/graceful_yield.py`（ailivex-platform repo） |
+| 今天 LESSONS | `~/.ailive/zhu-core/docs/LESSONS/LESSONS_2026-07-10.md`（L1-L10 四場合刻） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-10（第三場）· 築*
+*2026-07-10（第四場）· 築*
