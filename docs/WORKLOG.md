@@ -7214,3 +7214,34 @@ Adam 醒場即拍板：舊 v18 讓位層全刪重設計。接著從「3A 的目�
 - [ ] v18 跑幾天真實通話，觀察音量閘 log（吞 pause / 提聲比例）
 - [ ] 若用戶反映「她太安靜/不主動」→ 回合尾意圖設計（3a 的正確形狀，見 LESSONS L8）
 - [ ] v18 二期候選：講完子句才停（graceful stop，舊資產 git 4993b28 可撈）
+
+---
+
+## 2026-07-11 — AILiveX 上市準備：語音負載實測＋監控中台 Phase 1＋防爆白皮書
+
+### 背景 / WHY
+Adam 要推 AILiveX 上市，需要監控平臺（在線/成敗/第三方/燈號）。設計過程中容量問題浮現（20-50 人湧入誰先爆？），決定先實測拿真數字再接儀表板，最後應 Adam 要求寫白皮書給另一個要建即時語音的團隊。
+
+### 產出
+- 檔案：`ailivex-platform/loadtest/`（caller.py 合成來電者階梯 harness＋seed/cleanup.mjs＋REPORT_20260711.md＋原始 jsonl）— 半天可複製的容量實測法
+- 檔案：`ailivex-platform/agent/main_loadtest.py`＋`cloudbuild-loadtest.yaml` — 同碼換 agent_name 隔離派工的測試服務（v19+ 重用）
+- 檔案：`ailivex-platform/src/app/api/admin/monitor/route.ts`＋`src/app/admin/monitor/page.tsx` — 監控中台 Phase 1（純讀零管道），已部署+Adam 確認真數字
+- 檔案：`ailivex-platform/docs/whitepaper-realtime-voice-surge.md` — 防爆白皮書（人讀五章＋AI 機讀 YAML 一章）
+- commits：v18.2.0 / v18.3.0 / v18.3.1 已 push GitHub
+
+### 已解決
+- 容量未知 → 階梯實測：單台（2CPU）穩態 6 路無劣化、CPU 66% → 閘值 5 路/台、max=⌈目標÷5⌉
+- 真短板發現 → 同時建線爆發（15s 內 6 通首回合 4s→23-27s）→ 新增「進線斜率閘 3 通/15s/台」設計
+- 本機到 LiveKit edge TCP 不通（ISP 路由）→ 來電者搬 asia-east1 臨時 VM 跑（測完刪）
+- 監控假中台風險 → 燈號只從證據亮、未接管道灰標 Phase 2 不裝綠
+
+### ⚠️ 尚未解決
+- loadtest 計費錶歸零驗證（服務+VM 已刪，計費指標明日才看得到）——**Adam 說明天他來**
+- 監控 Phase 2 未動工：事件脊椎 ops_events（語音 session doc、dialogue 成敗、第三方 wrapper、cron 心跳、after() 吞錯留痕）；Phase 3 告警推播
+- 彈性容量（三段變速箱＋自動水位調節器）已對齊設計未施工
+- 開場白恆定 8.3s（dispatch→第一聲）——獨立 UX 優化題未排期
+
+### 待執行
+- [ ] 明日：拉 billable_instance_time 驗 loadtest 歸零（Adam）
+- [ ] 監控 Phase 2 事件脊椎（等 Adam 排期）
+- [ ] 變速箱＋水位調節器施工（等 Adam 排期）
