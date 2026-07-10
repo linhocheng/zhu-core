@@ -1,9 +1,17 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18（打斷音量閘 2026-07-10 轉正）、v17 冷備、3a 已退役、Podcast 腳本生成器、soulCore 已退役
+description: ailiveX 語音現役 v18、監控中台 /admin/monitor Phase 1 上線（2026-07-11）、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-11：上市準備——負載實測＋監控中台 Phase 1＋防爆白皮書（v18.2.0→v18.3.1 已 commit+push+部署）。**
+- **語音負載實測**（詳 [[voice-loadtest-setup-burst]]）：單台（2CPU/2GB）穩態 6 路無劣化（p50 平穩 3.9-4.4s、CPU 66%）；**真短板=同時建線爆發**（15s 內 6 通、首回合 4s→23-27s+1 逾時）；開場白恆定 8.3s（獨立 UX 題）。閘值定案：5 路/台、進線斜率 3 通/15s/台、max=⌈目標÷5⌉
+- **監控中台 `/admin/monitor` Phase 1**（純讀零管道改動）：聚合 API `/api/admin/monitor`（燈號真探測 doc-worker /health+Cloud Run API+LiveKit listRooms+bridge 可達；水位分母=實測 6 路/台；在線=LiveKit 房間現場+conversations 活躍；漏斗含卡死偵測 running 超時無錯誤=橘；第三方=zhu_vitals_cost 聚合）；未接管道灰標 Phase 2。**Phase 2 待做**：事件脊椎 ops_events（語音 session doc、dialogue 成敗事件、第三方呼叫 wrapper、cron 心跳、after() 吞錯留痕）；Phase 3 告警推播
+- **防爆白皮書** `docs/whitepaper-realtime-voice-surge.md`：給外部團隊建即時語音用（三定律/五道閘/記憶庫三原則/CPU 遊戲規則/兩層開關/雷區十條/AI 機讀 YAML）
+- **彈性容量設計已對齊 Adam**（未施工）：三段變速箱（關機/待命/活動限時自動回）＋自動水位調節器（token 發放時升檔 70%、cron 降檔 <40% 兩週期、升快降慢）；重用 voice-power.ts 的 min-instances PATCH
+- loadtest 資產留 repo（`agent/main_loadtest.py`＋`cloudbuild-loadtest.yaml`＋`loadtest/`），v19+ 換版重測直接用；測試服務/VM/Firestore 測試資料已全清，**計費錶歸零驗證=明日 Adam**
+- 監控 UIUX 稿（scratchpad html，Adam 已確認版面）：四區＋容量水位；雷：**部分 ISP 到 LiveKit edge 路由不通**（本機 Mac 親測 TCP timeout，Google/LiveKit 官網皆通）——用戶回報連不上先讓他換網路排除
 
 **2026-07-10 第四場：刪一萬行＋v18 重生轉正（現役 = v18.1.x，agent commit c7df55b）。**
 - **舊 v18 讓位層全退役歸零**（Adam 拍板重設計）：代碼五檔刪除、Cloud Run 服務刪除、access 路由清零；資產在 git `4993b28`（graceful_yield.py 435 行＋16 測試）
