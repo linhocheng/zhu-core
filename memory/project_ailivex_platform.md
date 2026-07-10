@@ -1,9 +1,22 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音 v2-v15（v15=DEFAULT）、Podcast 腳本生成器、soulCore 已退役（2026-07-04 單一 soul 欄位）
+description: ailiveX 語音 v2-v17（v17=DEFAULT 2026-07-10）、Podcast 腳本生成器、soulCore 已退役（2026-07-04 單一 soul 欄位）
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-10 夜場：優雅讓位戰役（v18.0.0→0.5 已 commit+部署，暫停真人測試轉離線沙推）。**
+- Adam 拍板治本「驚豔市場的打斷體感」→ v18 canary：`agent/graceful_yield.py` BoundaryAwareAudioOutput（LiveKit AudioOutput 鏈式代理：節流轉發 LEAD 0.35s＋RMS 靜音谷句子邊界 240ms＋讓位漸降 duck 0.55＋保底 2.8s＋孤兒自癒 2.5s＋序號截斷清除）＋VolumeGate 音量閘（stt_node 帶內 tap、基線×1.45，正常音量=影子讓位不停不減音、提聲才讓位、commit 仍收完整句）
+- 四通實測撞出框架三條 commit 路徑（熱清除/清除後狀態重置/暫停默殺），逐一修掉；**commit 後 resume 一律不翻案**（時間護欄 74µs~459ms 分佈打臉，見 [[框架互操作層要用真實事件序列離線沙推（單元測試測的是自己想像的框架）]]）；16 回歸測試（測資=實測失敗形狀）
+- 音量閘實證有效（真通話影子讓位×2，AGC 沒吃光音量差）；v17.3.1 min_words=3 上線半天就回滾（教練短答「对/嗯」停不下她=超慢），保留誤觸回復
+- 現況：v18.0.5 deployed（rev 4993b28）但**未過真人驗收**；Tracy/Lilith access 已退回 v17；下一步=離線 property-based 沙推 harness 全綠才再請 Adam 驗一次；Adam 驗收規格原話「音量變大或有插話企圖→講完最後一句→暫停等待」
+- 白天場：v17 轉正 v16 退役（計費錶歸零驗證）、3a 道別待命＋語意去重（conv_tuning is_farewell/is_semantic_repeat）、log 三重複印根治（拔 basicConfig，v16+ 查 log 看 jsonPayload.message）、3a 輔助級 6-15s；知識庫/方法論調用鏈勘查（text-only、遞招制、soul 正向替代寫法——詳 WORKLOG）
+
+**2026-07-10：3a 兩張嘴打架修正＋v17 轉正（v17.2.2→v17.3.0 已 commit+部署）。**
+- Tracy 通話實錄抓到：互道拜拜後 3a 主動發話迴圈連續重複道別/把回合路剛說的話換皮再說。根因＝回合路與 3a 是兩條獨立發聲路，3a 無去重、無道別狀態、靜默從用戶最後一句起算
+- 修（v16+v17 都接）：conv_tuning 新增 `is_farewell`/`is_semantic_repeat`（確定性，25 測試向量含實錄鐵證）；3a 道別待命（雙方互道再見→停自我重排，用戶開口自動復活）＋bigram 去重（開口前跟最近 3 句 assistant 比對）＋`agent_state_changed` 靜默起點對齊
+- log 三重複印技術債：basicConfig(stderr) 疊 livekit setup_logging(JSON stdout)＋job 子進程 LogQueueHandler 轉發＝同行印三次；拔 basicConfig 後恰一次。⚠️ 查 v16+/v17 log 改看 `jsonPayload.message`，textPayload grep 會空手
+- **v17 轉正**：DEFAULT_VOICE_VERSION v16→v17（token route 登錄表驅動，無需新頁面/分支）；語音電源開關跟 DEFAULT 走、CANARY 只有 v17，v16 不會被無聲拉起；v16 min=0（cloudbuild 不寫死 min-instances 無殭屍復活），計費殘尾待驗歸零
 
 **2026-07-04 第四場：營運日四連修（v15.3.1→v15.5.0 已 commit+部署）。**
 - 語音頓根因=cpu=1 扛不住 VAD+embedding+TTS（silero slower-than-realtime 實證）→ v15 `--cpu=2` cloudbuild 持久化；H3 語音多開修法+H4 python 媒體計量隨此上線

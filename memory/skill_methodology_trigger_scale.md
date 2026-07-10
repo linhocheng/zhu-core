@@ -18,5 +18,6 @@ ailivex 方法論系統在同一角色掛多套（Tracy 17 套實戰，2026-07-0
 4. 驗證三件套：每套一句擬真觸發句（不照抄 desc）＋不誤觸題（問知識/閒聊/一般求助）＋全量交叉矩陣印前二名與 margin
 5. margin < 0.02 列觀察名單，實測遞錯先修它的 desc，不動 τ
 6. 角色本人設計方法論時會把工具縮寫講歪（Tracy 把 4S/3P/CALM/TRACK 都重定義過）——動作保留、錯標籤拔掉，對照原文件校準
+7. **真雙屬近鄰修到 margin 歸零就停**：同錨定詞、兩域都合法的句子（「我媽情緒勒索」對勒索破解和換頻對話法都是真的），desc 手術每輪只挪 ~0.008，修到 margin 貼零就該停手——剩下交給 preconditions 分流（遞招≠出招是第二層防線，2026-07-10 沙盤實測擋得住）；不要為單句測試把 desc 削到失真（換頻案，第 18 套）
 
 相關：[[cross-register-retrieval-gist-index]]（同族：語域對齊）、[[rrf-hybrid-retrieval-pitfalls]]（同族：窄域坍縮）。SOP 本體在 ~/.ailive/zhu-core/skills/ailivex-methodology-cocreate.md。
