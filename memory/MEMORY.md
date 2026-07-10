@@ -7,6 +7,7 @@
 - [Cloud Run 後台長任務三旗標 SOP（2026-07-06 已升級）](reference_cloudrun_background_task_sop.md) — throttle 物理仍真，但 min=1 worker 解法已退役，長任務正解=Jobs；--set-env-vars 洗機密用 --update-env-vars
 - [天條：磚頭費只為秒級待命付，長任務進 Cloud Run Jobs](feedback_standing_cost_only_for_instant_readiness.md) — 判準：這台機器閒著時有沒有人下一秒需要它？常駐必配開關＋自動關機；podcast 兩平台已搬 Jobs 實測
 - [天條：驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離；流量釘舊revision真相分裂＋每次設定變更生驗證實例15分鐘；「複核全過」查錯面=零資訊
+- [雷區：切 DEFAULT 新服務時 min=1 不會自己跟過去](feedback_default_switch_standing_instance.md) — 新服務靠部署驗證實例撐15分鐘然後全聾；轉正三件套：新版min=1/舊版先出開關名單再降0/鑑別信號看min後的新實例
 - [天條：手動改雲端資源同日改部署腳本](feedback_manual_cloud_change_sync_deploy_script.md) — cloudbuild 寫死舊值=殭屍復活術，下次 deploy 無聲洗回；部署腳本是未來的現場
 - [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
 - [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
@@ -121,7 +122,7 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — walking skeleton 2026-06-06；四種額度管制全上線(語音/文件/媒體/對話)；語音現役 v16（延遲三件+to_thread+3a停止+破音字，2026-07-06）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18=打斷音量閘（2026-07-10 轉正，v17 冷備、3a 退役、14 殼頁清）；四種額度管制全上線；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
 - [ailivex doc-worker 真身](reference_ailivex_doc_worker_true_source.md) — 唯一 worker=~/.ailive/ailivex-doc-worker（asia-east1、POST /、repo linhocheng/ailivex-doc-worker）；死副本已全清（2026-07-04）
 - [opencc 簡繁轉換三顆雷](reference_opencc_s2t_pitfalls.md) — s2twp 會修壞已繁體文本、发文誤斷成髮文要覆寫表、驗證用冪等性不用手寫黑名單
 - [LiveKit Agents 1.5.1 語音中途控制四原語](reference_livekit_agents_voice_control_api.md) — 通話中暫停聽/打斷/改context/收前端RPC：set_audio_enabled/interrupt/update_instructions/register_rpc_method

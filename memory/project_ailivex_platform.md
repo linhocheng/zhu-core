@@ -1,15 +1,18 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音 v2-v17（v17=DEFAULT 2026-07-10）、Podcast 腳本生成器、soulCore 已退役（2026-07-04 單一 soul 欄位）
+description: ailiveX 語音現役 v18（打斷音量閘 2026-07-10 轉正）、v17 冷備、3a 已退役、Podcast 腳本生成器、soulCore 已退役
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
-**2026-07-10 夜場：優雅讓位戰役（v18.0.0→0.5 已 commit+部署，暫停真人測試轉離線沙推）。**
-- Adam 拍板治本「驚豔市場的打斷體感」→ v18 canary：`agent/graceful_yield.py` BoundaryAwareAudioOutput（LiveKit AudioOutput 鏈式代理：節流轉發 LEAD 0.35s＋RMS 靜音谷句子邊界 240ms＋讓位漸降 duck 0.55＋保底 2.8s＋孤兒自癒 2.5s＋序號截斷清除）＋VolumeGate 音量閘（stt_node 帶內 tap、基線×1.45，正常音量=影子讓位不停不減音、提聲才讓位、commit 仍收完整句）
-- 四通實測撞出框架三條 commit 路徑（熱清除/清除後狀態重置/暫停默殺），逐一修掉；**commit 後 resume 一律不翻案**（時間護欄 74µs~459ms 分佈打臉，見 [[框架互操作層要用真實事件序列離線沙推（單元測試測的是自己想像的框架）]]）；16 回歸測試（測資=實測失敗形狀）
-- 音量閘實證有效（真通話影子讓位×2，AGC 沒吃光音量差）；v17.3.1 min_words=3 上線半天就回滾（教練短答「对/嗯」停不下她=超慢），保留誤觸回復
-- 現況：v18.0.5 deployed（rev 4993b28）但**未過真人驗收**；Tracy/Lilith access 已退回 v17；下一步=離線 property-based 沙推 harness 全綠才再請 Adam 驗一次；Adam 驗收規格原話「音量變大或有插話企圖→講完最後一句→暫停等待」
+**2026-07-10 第四場：刪一萬行＋v18 重生轉正（現役 = v18.1.x，agent commit c7df55b）。**
+- **舊 v18 讓位層全退役歸零**（Adam 拍板重設計）：代碼五檔刪除、Cloud Run 服務刪除、access 路由清零；資產在 git `4993b28`（graceful_yield.py 435 行＋16 測試）
+- **3a 主動發話整組退役**（v17.4）：Adam「一次好球都沒有」；輪詢式填空與「活」相悖——真「活」全是脈絡驅動（lastSession/dynamic recall），未來若要主動性＝回合尾意圖（角色說完自己決定「沉默 X 秒補一句 Y」），等真實需求再建
+- **14 個 /realtime-vN 殼頁全清**：token route 只認 access doc，殼頁 URL 是訊息債（Adam 貼 v16 URL 實跑 v17）；v16 現役 UI 轉正為 `/realtime/`；版本登錄表只登活服務（退役版本可指派＝聾通話）
+- **新 v18 = v17.4 + `agent/interrupt_gate.py` 薄閘**（150 行 vs 舊 435）：只攔 pause——音量沒提高（VolumeGate 基線×1.45）就吞掉，她照講零死空氣；提聲照常暫停；commit 直通立即停（=v17 體感）。零佇列零計時器，與框架合作不對抗。8/8 離線測試、Adam 真人驗收「有感」→ 當天轉正 DEFAULT
+- **v17 冷備降 0**（先移出 voice-power 開關名單再降——留名單裡 power-on 會復活殭屍）；回滾＝v17 scale up min=1 → DEFAULT 切回 → Vercel 部署
+- ⚠️ 雷區已刻 [[default-switch-standing-instance]]：v18 新服務 minScale 缺席＝0，差 15 分鐘上架全聾；轉正三件套=新版 min=1/舊版出名單再降 0/鑑別信號看 min 後的新實例
+- v17 其餘干擾源待辦（掃過未修）：VAD 0.3s 換氣切句、誤觸恢復 1.2s 賭轉寫延遲、讀網址 generate_reply 無互斥、instructions 只增不減、被打斷 transcript 存完整句（記憶失真）
 - 白天場：v17 轉正 v16 退役（計費錶歸零驗證）、3a 道別待命＋語意去重（conv_tuning is_farewell/is_semantic_repeat）、log 三重複印根治（拔 basicConfig，v16+ 查 log 看 jsonPayload.message）、3a 輔助級 6-15s；知識庫/方法論調用鏈勘查（text-only、遞招制、soul 正向替代寫法——詳 WORKLOG）
 
 **2026-07-10：3a 兩張嘴打架修正＋v17 轉正（v17.2.2→v17.3.0 已 commit+部署）。**
