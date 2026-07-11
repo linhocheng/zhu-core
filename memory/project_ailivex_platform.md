@@ -5,6 +5,14 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-11 下半場：監控 Phase 2 事件脊椎＋彈性容量變速箱（v18.4.0→v18.5.1 已 commit+push+部署+實彈驗證）。**
+- **事件脊椎**：`ops_events`＋`voice_sessions`（30d TTL 已啟政策）；九收斂點零碰 v18 agent——dialogue 成敗、語音 session（token 開/voice-end 關+roomName beacon、open>3h=中斷）、bridge/minimax-tts/vertex/fal/media-worker 呼叫結果、cron 心跳×3（wrapCron，401 不計）、after() 五種吞錯留痕；儀表板灰燈點亮，剩 Soniox（agent 側）屬 Phase 3
+- ⚠️ 實踩新雷已刻 [[vercel-void-write-frozen]]：Vercel 回應後凍結吃掉 void 寫入，writer 一律 next/server after()
+- **彈性容量**：三段變速箱（關機/待命/活動限時自動回）＋水位調節器（升檔釘 token 發放 70%+transaction 防雙升；降檔 cron <40% 持續 60 分 floor 1；讀不到現場不動作；活動檔鎖定期調節停用）；`src/lib/voice-capacity.ts`＋`/api/admin/voice-capacity`＋`/admin/voice` 面板；**實彈驗證**：自簽 admin cookie 打生產 API 完整一輪 42 秒，Cloud Run 真值 0→1→3→1→0 全吻合＋調節器事件留痕
+- **規格書交付** `docs/spec-elastic-voice-capacity.md`（給外部團隊：原理/狀態機/四規則/常數推導/實測數據/合成來電者方法論/機讀 YAML）
+- loadtest 計費錶歸零已驗（billable_instance_time 零點+服務/VM 確認不存在），全案關帳
+- **Phase 3 待做**：紅燈告警推播（LINE/Telegram）＋Soniox agent 側儀表化；開場白 8.3s UX 優化未排期
+
 **2026-07-11：上市準備——負載實測＋監控中台 Phase 1＋防爆白皮書（v18.2.0→v18.3.1 已 commit+push+部署）。**
 - **語音負載實測**（詳 [[voice-loadtest-setup-burst]]）：單台（2CPU/2GB）穩態 6 路無劣化（p50 平穩 3.9-4.4s、CPU 66%）；**真短板=同時建線爆發**（15s 內 6 通、首回合 4s→23-27s+1 逾時）；開場白恆定 8.3s（獨立 UX 題）。閘值定案：5 路/台、進線斜率 3 通/15s/台、max=⌈目標÷5⌉
 - **監控中台 `/admin/monitor` Phase 1**（純讀零管道改動）：聚合 API `/api/admin/monitor`（燈號真探測 doc-worker /health+Cloud Run API+LiveKit listRooms+bridge 可達；水位分母=實測 6 路/台；在線=LiveKit 房間現場+conversations 活躍；漏斗含卡死偵測 running 超時無錯誤=橘；第三方=zhu_vitals_cost 聚合）；未接管道灰標 Phase 2。**Phase 2 待做**：事件脊椎 ops_events（語音 session doc、dialogue 成敗事件、第三方呼叫 wrapper、cron 心跳、after() 吞錯留痕）；Phase 3 告警推播
