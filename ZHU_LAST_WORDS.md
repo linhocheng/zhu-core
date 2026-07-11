@@ -22,63 +22,59 @@
 
 ---
 
-## 最新完成（2026-07-11 下半場 · 監控 Phase 2＋彈性容量，AILiveX 上市準備收官日）
+## 最新完成（2026-07-11 第三場 · 監控 Phase 2.5：時間軸＋計費錶＋首音延遲）
 
-### 監控 Phase 2 事件脊椎（v18.4.0）
-- `ops_events`＋`voice_sessions`（30d TTL 政策已啟）；**九收斂點零碰 v18 agent**：
-  dialogue 成敗、語音 session（token 開/voice-end 關+roomName beacon）、bridge/tts/
-  vertex/fal/media-worker 呼叫結果、cron 心跳×3、after() 五種吞錯留痕
-- 儀表板灰燈全點亮（文字/語音漏斗+cron 三燈+第三方真數據），剩 Soniox=Phase 3
-- ⚠️ 實踩新雷已刻記憶 [[vercel-void-write-frozen]]：**Vercel 回應後凍結吃掉 void 寫入**，
-  第一版 cron 回 200 但 Firestore 零筆；修=writer 內建 next/server after()
-
-### 彈性容量變速箱（v18.5.0，實彈驗證過）
-- 三檔：關機/待命（調節器 1↔max 自動）/活動（限時鎖高**到期 cron 自動回**）
-- 調節器：升檔釘 token 發放（(房間+1)≥容量70%，transaction 防雙升）、
-  降檔 cron（<40% 持續 60 分、floor 1、升快降慢）、讀不到現場不動作
-- **實彈**：自簽 admin cookie 打生產 API 一輪 42 秒，Cloud Run 真值 0→1→3→1→0 全吻合
-- `/admin/voice` 有變速箱面板＋活動檔一鍵
-
-### 規格書交付（v18.5.1）
-- `ailivex-platform/docs/spec-elastic-voice-capacity.md`：原理三物理/狀態機/調節四規則/
-  常數推導/實測階梯數據/合成來電者方法論全揭/AI 機讀 YAML——Adam 轉交外部工程師用
-
-### 上午場（同日）
-- loadtest 計費錶歸零收案；監控 Phase 1；防爆白皮書。實測核心數字：**單台 6 路穩態、
-  真短板=同時建線爆發、閘值 5 路/台**
+- 審計 ailivex 監控中台三層設計（聚合 API/事件脊椎/前端），Adam 認可後 GO 優化批
+- **v18.6.0**：`ops_rollups` 每小時快照時間軸＋寬窗改讀 rollup（原始掃描鎖 48h，讀量不隨資料量長大）＋趨勢 sparkline＋**Cloud Run 計費錶真值儀表化**＋abandoned session 清掃＋provider 燈失敗率門檻
+- **v18.6.1**：新 cron 被 middleware 登入牆 401——三件套雷已刻 memory `new-cron-three-places`
+- **v18.7.0**：首音延遲量測（前端 ActiveSpeakersChanged，**零碰 live agent**），Adam 真實通話收案：**connect 3.3s / 首音 18.0s → 14.7s 在 agent 首回合**
+- 計費錶第一天抓到三異常：doc-worker 14.2 實例時/24h、v17 名義冷備 6.4、loadtest 殘留 0.5
+- 實測監控整套成本 <$1/月（~55 讀/refresh）；新 memory ×2＋project 進度已更
 
 ---
 
-## 今天改了哪些檔案
+## 今天改了哪些檔案（第三場，ailivex-platform repo）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/src/lib/ops-event.ts`（新） | 事件脊椎 writer＋wrapCron＋session 開關盤（內建 after() 防凍結） |
-| 九個收斂點（dialogue/token/voice-end/bridge/tts/embeddings/kling/dispatcher/cron×3） | 接事件 |
-| `src/app/api/admin/monitor/route.ts` | 吃事件脊椎，點亮灰燈 |
-| `src/lib/voice-capacity.ts`（新）＋`api/admin/voice-capacity`（新）＋`admin/voice` 頁 | 變速箱 |
-| `docs/spec-elastic-voice-capacity.md`（新） | 彈性容量規格書 |
-| memory：`feedback_vercel_void_write_frozen`（新）＋`project_ailivex_platform` 更新 | |
+| `src/lib/ops-rollup.ts` | 新建：每小時聚合快照（事件窗 [T-1h,T)/任務窗 [T-2h,T-1h) 錯開沉澱、docId=小時鍵冪等、TTL 400d） |
+| `src/lib/cloudrun-billing.ts` | 新建：Monitoring API billable_instance_time（ALIGN_RATE=平均計費台數） |
+| `src/app/api/cron/ops-rollup/route.ts` | 新建：rollup cron（:05 每小時，wrapCron 心跳） |
+| `src/app/api/voice-metrics/route.ts` | 新建：首音延遲回報（session 鑑權+ownership+10min sanity） |
+| `src/app/realtime/[characterId]/page.tsx` | ActiveSpeakersChanged 首音量測（不是 TrackSubscribed！）+connectMs |
+| `src/app/api/admin/monitor/route.ts` | 寬窗讀 rollup、series、billing、voiceLatency p50/p95、abandoned 處理 |
+| `src/app/admin/monitor/page.tsx` | 趨勢/計費錶 section、Spark 元件、首音 stat（p95>15s 警示）、provider 失敗率燈 |
+| `src/lib/ops-event.ts` | sweepAbandonedSessions（open>3h 標 abandoned） |
+| `src/app/api/cron/voice-auto-off/route.ts` | 併入清掃 |
+| `src/middleware.ts` | PUBLIC_PATHS 補 `/api/cron/ops-rollup` |
+| `vercel.json` | cron 排程 |
+
+commits：v18.6.0 / v18.6.1 / v18.7.0（全部署 production，未 push GitHub 的話記得 push）
 
 ---
 
 ## 下一步
 
-**明天醒來第一件**：看事件脊椎第一批真數據——
-`https://ailivex-platform.vercel.app/admin/monitor`（Adam 開）或本機 node 查
-`ops_events`/`voice_sessions`（.env.local FIREBASE_SERVICE_ACCOUNT_JSON，查法見
-`loadtest/cleanup.mjs` 的讀 DB 模式）。特別看：真實通話有沒有正確開盤/收盤、
-調節器有沒有在真流量下觸發 scale-up（provider=='capacity-regulator'）。
-之後等 Adam 排期：**Phase 3 告警推播（LINE/Telegram）＋Soniox agent 側**、開場白 8.3s UX。
+**明天第一件：查計費錶三異常。**
+```bash
+cd ~/.ailive/ailivex-platform
+# 1. doc-worker 為何 24h 燒 14.2 實例時（平均 0.59 台）？查 min 與流量
+gcloud run services describe ailivex-doc-worker --region=asia-east1 --project=ailivex-2026 | grep -i -A2 scaling
+# 2. v17 名義冷備為何有 6.4 實例時？（懷疑：流量釘舊 revision 或 min 沒真降 0——掃 status.traffic）
+# 3. loadtest 服務 0.5 實例時——上一場已收案說歸零，去確認是量測窗殘影還是真沒刪乾淨
+```
+為什麼先做：三個都是正在燒的錢，「已清理」的認知跟計費錶對不上＝真相分裂，放一天多燒一天。
+
+次件：開 `/admin/monitor` 看趨勢區（rollup 已累積 24 點）＋首音樣本分佈。
 
 ---
 
 ## 卡住 / 未解
 
-- 調節器 R1（升檔）/R2（降檔）尚未被真實流量觸發過（實彈只驗了活動檔 R3/R4）——
-  等真通話量，屆時看 ops_events capacity-regulator 事件
-- 開場白 8.3s 固定成本未排期
-- ailivex 兩 repo 全乾淨已推（v18.5.1 / doc-worker 未動）
+- 首音 18s 只有 1 樣本，別急著下結論；14.7s 在 agent 首回合內部，拆解要 agent 打點（下個語音版本帶，本場刻意零碰 live agent）
+- /admin/monitor 新 section（趨勢/計費錶/首音）Adam 尚未回報視覺確認
+- 監控 Phase 3 未動：LINE/Telegram 告警推播、Soniox agent 側儀表化
+- 上半場遺留：開場白 8.3s UX 優化未排期
 
 ---
 
@@ -93,9 +89,7 @@
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| AILiveX 監控中台 | https://ailivex-platform.vercel.app/admin/monitor |
-| 防爆白皮書＋容量規格書 | `~/.ailive/ailivex-platform/docs/whitepaper-realtime-voice-surge.md`＋`spec-elastic-voice-capacity.md` |
-| 負載實測 harness | `~/.ailive/ailivex-platform/loadtest/`（v19+ 重測直接用） |
+| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 
 ---
 

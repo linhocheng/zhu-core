@@ -7273,3 +7273,37 @@ Adam 要推 AILiveX 上市，需要監控平臺（在線/成敗/第三方/燈號
 ### 待執行
 - [ ] 真實用戶通話後看事件脊椎第一批數據（漏斗/session/調節器）
 - [ ] Phase 3 排期後開工
+
+---
+
+## 2026-07-11 第三場 — ailivex 監控 Phase 2.5：時間軸＋計費錶＋首音延遲
+
+### 背景 / WHY
+Adam 要我審計監控中台設計。審完給了優化清單（時間軸/成本/abandoned/計費錶/provider 燈），Adam GO 全做；接著把原本排到下個語音版本的首音延遲也用「前端量測零碰 agent」的路做掉了。
+
+### 產出
+- 檔案：`ailivex-platform/src/lib/ops-rollup.ts` — 每小時聚合快照（事件窗/任務窗錯開 1h、docId=小時鍵冪等、TTL 400d）
+- 檔案：`ailivex-platform/src/lib/cloudrun-billing.ts` — Monitoring API billable_instance_time 計費錶
+- 檔案：`ailivex-platform/src/app/api/cron/ops-rollup/route.ts` + vercel.json cron（:05 每小時）+ middleware 白名單
+- 檔案：`ailivex-platform/src/app/api/voice-metrics/route.ts` — 首音延遲回報（session 鑑權+ownership+sanity）
+- 檔案：realtime page ActiveSpeakersChanged 量測、monitor route/page 趨勢 sparkline+計費錶+首音 p50/p95+abandoned 處理+provider 失敗率燈
+- 檔案：`ops-event.ts` 加 sweepAbandonedSessions（併入 voice-auto-off cron）
+- commits：v18.6.0 / v18.6.1 / v18.7.0 全部署；memory 新刻 new-cron-three-places + livekit-first-audio-metric
+
+### 已解決
+- 快照不是趨勢 → ops_rollups 時間軸；寬窗讀量爆炸隱患 → 原始掃描鎖 48h
+- 監控看不到計費面 → 計費錶真值儀表化（第一天抓到三異常）
+- abandoned session 當 30 天雜訊 → cron 清掃收案
+- 首音延遲盲區 → 前端量測全鏈路通，真實通話收案：connect 3.3s / 首音 18.0s → 14.7s 在 agent 首回合
+- 新 cron 被 middleware 401 → PUBLIC_PATHS 補路徑（交叉驗證法三分鐘定位）
+
+### ⚠️ 尚未解決
+- 計費錶三異常待查：doc-worker 24h 14.2 實例時（min>0？流量？）、v17 名義冷備 6.4 實例時、loadtest 服務殘留 0.5（該刪？）
+- 首音 18s 偏慢且只有 1 樣本；14.7s 在 agent 首回合內部，拆解要 agent 打點（下個語音版本）
+- /admin/monitor 新 section（趨勢/計費錶/首音）Adam 尚未視覺確認
+- Phase 3 未動：LINE/Telegram 告警推播、Soniox agent 側儀表化
+
+### 待執行
+- [ ] 查計費錶三異常（明天第一件）
+- [ ] 首音樣本累積後看 p50/p95 分佈，決定要不要動 agent 打點
+- [ ] rollup 累積 24h 後看趨勢區是否如預期長出曲線
