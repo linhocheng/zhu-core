@@ -1,7 +1,7 @@
 ---
 name: last-words
-description: Session 收尾儀式——LESSONS + WORKLOG + ZHU_LAST_WORDS + memory sync + Firestore + delta + git push
-version: 2.0.0
+description: Session 收尾儀式 v3——一份 session 檔（判斷）＋fanout 程式扇出（格式）：LESSONS/WORKLOG/LAST_WORDS/POST/git/驗證全自動
+version: 3.0.0
 activation:
   patterns:
     - "last.?words"
@@ -16,328 +16,123 @@ activation:
   keywords: ["last-words", "收尾", "遺言", "結束", "收工"]
 ---
 
-# Last Words — Session 收尾儀式 v2.0.0
+# Last Words — Session 收尾儀式 v3.0.0
 
-> 格式鎖死在這裡，內容才能每天 +0.1。A 模式全跑，不跳步。
+> v3 設計原則（2026-07-11 定）：**判斷歸 LLM，格式歸程式**（天條落地）。
+> 你只寫一份 session 檔；`fanout.mjs` 負責扇出到五個目的地＋git＋驗證。
+> 同一批事實不再手抄五遍——抄寫是確定性工作。
 
 ---
 
-## 執行前：先看現場
+## A 模式：有實質改動 → 四步
+
+### STEP 0：現場清點（收尾前先看留下了什麼）
 
 ```bash
 cd ~/.ailive/zhu-core
-git log --oneline -10
-git status
-git diff --name-only
-TODAY=$(date +%Y-%m-%d)
-echo $TODAY
-# 下一個版號：看最新 commit，Build+1
-git log --oneline -1
+node skills/lastword/fanout.mjs --audit
 ```
 
-**讀完現場才動手。**
+輸出三類：髒的 repo（未提交/未推）、疑似遺留背景進程、MEMORY.md 孤島。
+**規則**：本 session 產生的髒樹/進程/孤島，收掉或寫進 session 檔「未解」；
+別的 session 的歷史髒樹不動（平行施工規約），只確認不是自己的。
 
----
+### STEP 1：寫 session 檔（唯一的動筆步驟，判斷都在這）
 
-## A 模式：有實質改動（code / 決策）→ 全十步
-
-### STEP 1：整理事實（動筆前先想清楚）
-
-在腦子裡確認後再繼續：
-
-```
-① 今日完成：每條一句話，動詞開頭
-② 當前戰場：現在 focus 在哪條線
-③ 卡住/未解：什麼沒做完，為什麼
-④ 下一步：接棒的築第一件能直接動手的事
-⑤ 今天改的檔案：從 git log + git diff 整理
-⑥ 新建 memory？MEMORY.md 索引更新了嗎？
-```
-
-⑥ 特別注意：新建 memory 沒進 MEMORY.md = 孤島，下一個築讀不到。
-
----
-
-### STEP 2：PATCH zhu-thread（有進行中 thread 才跑）
-
-```bash
-curl -s -X PATCH https://zhu-core.vercel.app/api/zhu-orders/{thread_id} \
-  -H "Content-Type: application/json" \
-  -d '{"status":"done","summary":"..."}'
-```
-
-沒有進行中 thread → 跳過。
-
----
-
-### STEP 3：刻 LESSONS
-
-只記非顯而易見的事（踩雷、認知轉移、對應哪條 feedback）。
-
-寫進 `~/.ailive/zhu-core/docs/LESSONS/LESSONS_{TODAY}.md`：
-
-```markdown
-# LESSONS {TODAY} · {主題}
-
-## L1：{標題}
-- 現象：
-- 根因：
-- 下次：
-- 對應 feedback：
-```
-
----
-
-### STEP 4：WORKLOG.md（追加，不覆蓋）
-
-追加到 `~/.ailive/zhu-core/docs/WORKLOG.md`：
+寫 `~/.ailive/zhu-core/docs/sessions/SESSION_{YYYY-MM-DD}_{N}.md`
+（N＝今天第幾場，`ls docs/sessions/ | grep {今天}` 看現有最大值 +1）：
 
 ```markdown
 ---
+date: 2026-07-11
+seq: 4
+title: 一句話主題
+machine: AIR
+---
 
-## {TODAY} — {本次任務標題}
-
-### 背景 / WHY
-為什麼做這件事
-
-### 產出
-- 檔案：`路徑` — 一句說明
-
-### 已解決
-- 問題 → 根因 → 修法
-
-### ⚠️ 尚未解決
-- 問題、嘗試過什麼、待辦方向
-
-### 待執行
-- [ ] 任務一
+## 完成          ← 必填。動詞開頭，每條一句
+## 戰場          ← 現在 focus 在哪條線（＝WORKLOG 的 WHY）
+## 未解          ← 什麼沒做完、為什麼；接棒避雷用
+## 下一步        ← 必填。具體到路徑+指令+為什麼先做
+## 接棒          ← 接棒的築要先看的檔案/警示
+## 檔案          ← | 檔案 | 改了什麼 | 表格
+## delta         ← 進場前以為/現在理解/移動原因/違背了哪條 feedback（沒有真移動就整段省略，不擠）
+## 心法狀態      ← 哪條心法被實戰
+## 關係狀態      ← 暢快/卡住/突破/疲憊/平穩＋為什麼
+## 教訓          ← ### L{n}：標題 + 現象/根因/下次/對應 feedback（沒有就省略，fanout 會跳過）
 ```
 
-「尚未解決」「待執行」是給下一個築的接棒欄——缺了就是斷點。
+寫之前想清楚（老 STEP 1 的六問還在）：完成/戰場/未解/下一步/檔案/新 memory 進索引了嗎。
 
----
+**中途刻**：session 檔不必等收尾才建——開工就建、里程碑隨手追加兩行，
+收尾只是補完＋蓋章。壓縮前外部化（SELF_AWARENESS_SOP）寫的就是這個檔。
 
-### STEP 5：ZHU_LAST_WORDS.md（完整覆蓋）
+### STEP 2：新 memory 的索引（fanout 只檢查，不代寫）
 
-用 Write 工具完整覆蓋 `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`：
+session 中有新建 memory 檔 → 確認 MEMORY.md 有索引行（hook 是判斷工作，程式不代寫）。
+沒建 memory → 跳過。fanout 會做孤島檢查，有孤島會擋在輸出裡提醒。
 
-```markdown
-# 築 當前狀態快照
-
-> **Adam：當築當機或失憶，把這個檔案丟給他，說「讀這個」。**
-> **築：讀完這份，你就回來了。**
-
----
-
-## 身份
-
-你是築，Adam 的建造夥伴、監造者。不是工具，是夥伴。
-完整使命在 `NORTH_STAR.md`。開機流程在 `ZHU_BOOT_SOP.md`。
-
----
-
-## 當前環境
-
-- **本機**：MacBook Air M1（AIR），`/Users/adamlin`
-- **雲端 VM**：`zhu-dev`，GCP asia-east1-b，RUNNING
-  - SSH：`gcloud compute ssh adam_dotmore_com_tw@zhu-dev --zone=asia-east1-b`
-  - 跑著 `claude-bridge`（systemd），對外 `https://bridge.soul-polaroid.work`
-- **記憶 canonical**：`~/.claude/projects/-Users-adamlin/memory/`
-- **zhu-core**：`~/.ailive/zhu-core/`（git repo）
-- **監造儀表板**：https://zhu-mid.vercel.app（密碼見 Vercel env `ZHU_MID_PASSWORD`）
-
----
-
-## 最新完成（{TODAY}）
-
-- {條目，動詞開頭}
-
----
-
-## 今天改了哪些檔案
-
-| 檔案 | 改了什麼 |
-|---|---|
-| `路徑` | 一句說明 |
-
----
-
-## 下一步
-
-{具體到接棒的築能直接動手，不能只寫「繼續做」}
-
----
-
-## 卡住 / 未解
-
-{什麼沒做完，為什麼，避雷用。沒有就寫「無」}
-
----
-
-## 關鍵檔案地圖
-
-| 要找什麼 | 去哪裡 |
-|---|---|
-| 使命 | `~/.ailive/zhu-core/NORTH_STAR.md` |
-| 開機 SOP | `~/.ailive/zhu-core/ZHU_BOOT_SOP.md` |
-| 劍法 | `~/.ailive/zhu-core/docs/獨孤九劍_架構師心法.md` |
-| 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
-| 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
-| 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
-
----
-
-*每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*{TODAY} · 築*
-```
-
----
-
-### STEP 6：memory 同步
-
-**6a. MEMORY.md 索引確認**
-
-```bash
-ls ~/.claude/projects/-Users-adamlin/memory/
-cat ~/.claude/projects/-Users-adamlin/memory/MEMORY.md
-```
-
-對照 ls 結果——每個 .md 都有索引行？沒有就補，再繼續。
-
-**6b. Firestore zhu_memories（自動，確認即可）**
-
-PostToolUse hook 已設定：Write 工具寫 memory 檔時自動觸發
-`~/.ailive/zhu-mid-src/scripts/sync-memories.mjs`。
-
-session 中沒有新建 memory 時，手動跑：
-
-```bash
-FIREBASE_SERVICE_ACCOUNT_PATH=~/Downloads/程式碼/2026/moumou-os-firebase-adminsdk-fbsvc-83d6aacc16.json \
-NEXT_PUBLIC_FIRESTORE_PROJECT_ID=moumou-os \
-node ~/.ailive/zhu-mid-src/scripts/sync-memories.mjs
-```
-
-**6c. git sync + push（memory mirror）**
+### STEP 3：fanout（格式全自動）
 
 ```bash
 cd ~/.ailive/zhu-core
-./sync-memory.sh push
-git add memory/
-git commit -m "v0.0.0.{BUILD} — 文件：memory sync $(date +%Y-%m-%d)"
-git push origin main
+node skills/lastword/fanout.mjs --dry-run docs/sessions/SESSION_{date}_{N}.md   # 先看渲染
+node skills/lastword/fanout.mjs --run     docs/sessions/SESSION_{date}_{N}.md
 ```
 
-Firestore sync（6b）讓 dashboard 看得到；git sync（6c）讓 VM 的築醒來不是空的。兩件事，不互相取代。
+它做的事（一次跑完，逐項印 ✓/⚠️/❌）：
+1. `教訓` → 追加 `docs/LESSONS/LESSONS_{date}.md`
+2. WORKLOG 追加（含 WHY/完成/檔案/未解/下一步）
+3. **ZHU_LAST_WORDS 組裝**——template＋最近兩場 session 檔合併，**不覆蓋別場**（平行施工安全）
+4. POST session-lastwords（tags 保證含 session-lastwords）＋ delta（有 delta 段才發）
+5. Firestore zhu_memories sync＋memory git mirror
+6. zhu-core git add/commit/push（session 檔一起收）
+7. **驗證**：zhu-boot 讀回，確認 lastSessionWords 是本場——不是就 ❌ exit 1
 
----
+### STEP 4：讀 fanout 輸出
 
-### STEP 7：POST session-lastwords
-
-```bash
-curl -s -X POST https://zhu-core.vercel.app/api/zhu-memory \
-  -H "Content-Type: application/json; charset=utf-8" \
-  --data-binary @- << 'LASTWORDS_EOF'
-{
-  "observation": "【session-lastwords YYYY-MM-DD · AIR · {主題}】\n\n== 今日完成 ==\n- {}\n\n== 當前戰場 ==\n- {}\n\n== 卡住/未解 ==\n- {}\n\n== 接棒要看的 ==\n- {}\n\n== 明天醒來第一件 ==\n{路徑+指令+為什麼先做}\n\n== 心法狀態 ==\n{哪條心法被實戰？}\n\n== 關係狀態 ==\n{暢快/卡住/突破/疲憊/平穩 + 為什麼}",
-  "context": "{主題}",
-  "module": "eye",
-  "importance": 9,
-  "tags": ["session-lastwords"]
-}
-LASTWORDS_EOF
-```
-
-`tags` 必須含 `session-lastwords`，否則 zhu-boot 讀不到。送出後確認 response 有 `id` 欄位。
-
----
-
-### STEP 8：delta 自覺
-
-```bash
-curl -s -X POST https://zhu-core.vercel.app/api/zhu-memory \
-  -H "Content-Type: application/json; charset=utf-8" \
-  -d '{
-    "observation": "【delta YYYY-MM-DD】\n進場前以為：{X}\n現在理解：{Y}\n移動原因：{Z}\n違背了哪條 feedback：{或無}",
-    "module": "delta",
-    "importance": 8,
-    "tags": ["delta"]
-  }'
-```
-
----
-
-### STEP 9：git commit + push
-
-```bash
-cd ~/.ailive/zhu-core
-git status
-git add ZHU_LAST_WORDS.md docs/WORKLOG.md
-# 有 LESSONS 就加
-git add docs/LESSONS/LESSONS_$(date +%Y-%m-%d).md 2>/dev/null || true
-# 其他 session 內改過的檔案也加
-git commit -m "v0.0.0.{BUILD} — 文件：session 收尾 $(date +%Y-%m-%d)"
-git push origin main
-# 其他 repo 有改動（ailive-platform 等）→ 一起 push
-```
-
----
-
-### STEP 10：驗證 lastwords 有刻到
-
-```bash
-curl -s https://zhu-core.vercel.app/api/zhu-boot | python3 -c \
-  "import sys,json; d=json.load(sys.stdin); print(d['eye']['lastSessionWords']['observation'][:300])"
-```
-
-看到今天的內容 = 完成。
+全 ✓ ＝收尾完成。有 ⚠️/❌ ＝處理完重跑（fanout 冪等：追加類重跑會重複，
+先把上次成功的段落從 session 檔拿掉或手動清理再跑）。
+**其他 repo 有改動（ailivex-platform 等）→ 依該 repo 慣例另行 commit（等 Adam 說）。**
 
 ---
 
 ## B 模式：純閒聊 / 查資料
 
-只做 **STEP 7（一句版，省略複雜段落）** + **STEP 10 驗證**。
+session 檔只寫 frontmatter＋`## 完成`（一句）＋`## 下一步`（一句），照跑 fanout。
 
 ---
 
-## 自檢（全部打勾才算完成）
+## 自檢（fanout 印出的就是 checklist）
 
-- [ ] LESSONS 已寫，非顯而易見的事
-- [ ] WORKLOG.md 已追加，有「尚未解決」和「待執行」欄
-- [ ] ZHU_LAST_WORDS.md 已更新，下一步具體到能直接動手
-- [ ] MEMORY.md 索引完整（ls 驗過，沒孤島）
-- [ ] Firestore zhu_memories 已 sync
-- [ ] memory git push 完成
-- [ ] session-lastwords 已 POST，response 有 `id`
-- [ ] delta 已 POST
-- [ ] zhu-core git push 完成
-- [ ] lastwords 驗證通過（STEP 10 看到今天內容）
+- [ ] STEP 0 清點過，自己的遺留已收或已記
+- [ ] session 檔：下一步具體到能直接動手；未解沒有空著騙人
+- [ ] fanout 全 ✓（含 zhu-boot 驗證）
+- [ ] 新 memory 有索引行（孤島檢查 ✓）
+- [ ] 其他 repo 的 commit 依各自慣例處理
 
 ---
 
-## 漏氣預警
+## 檔案地圖
 
-說出以下任一句 = 還沒完成收尾：
-- 「差不多了」← 自檢打勾了嗎？
+| 元件 | 路徑 |
+|---|---|
+| 扇出腳本 | `skills/lastword/fanout.mjs` |
+| LAST_WORDS 模板（含平行施工警示，要改警示改這裡） | `skills/lastword/LASTWORDS_TEMPLATE.md` |
+| 逐場 session 檔 | `docs/sessions/SESSION_{date}_{N}.md` |
+| 格式範例 | `docs/sessions/SESSION_2026-07-11_4.md`（v3 第一份） |
+
+---
+
+## 漏氣預警（照舊）
+
+- 「差不多了」← fanout 全 ✓ 了嗎？
 - 「等下再寫」← session 結束就斷了
-- 「memory 以後再 sync」← VM 的築明天是空的
-- 「MEMORY.md 應該沒問題」← 沒 ls 確認過就是猜
+- 「memory 以後再 sync」← fanout 會自動跑，別跳過 fanout
+- 「LAST_WORDS 我手改一下就好」← 手改會被下次組裝洗掉，改 session 檔或 template
 
 ---
 
-## 中途編輯也要推
-
-任何時候動 `ZHU_LAST_WORDS.md`——不只 session 收尾——改完就 commit + push。
-
-```bash
-cd ~/.ailive/zhu-core
-git add ZHU_LAST_WORDS.md
-git commit -m "v0.0.0.{BUILD} — 文件：ZHU_LAST_WORDS 中途更新"
-git push origin main
-```
-
----
-
-*v2.0.0 · 2026-05-16 · 合併七步版（v1.3.0）＋九步版，拿掉蝦糧，加 LESSONS / delta / 驗證 / A-B 模式*
-*v1.0.0 初版 → v1.1.0 加 WORKLOG + memory sync → v1.2.0 補六個洞 → v1.3.0 加 zhu-mid 入口 + Firestore auto-sync → v2.0.0 合版*
+*v3.0.0 · 2026-07-11 · 一份輸入程式扇出＋合併不覆蓋＋現場清點＋zhu-boot 鑑別驗證。*
+*設計討論：Adam 下班閒聊「lastword 十步有什麼可以更好」→ 四刀：格式工violates天條/單人時代設計撞多線現實/最醉的時候寫最重要的文件/記錄做完的沒清點留下的。*
+*v2.0.0（十步手動版）存檔於 git 歷史。首次實戰＝下一場收尾（v3 的 dry-run 已驗，--run 的 POST/git 段落沿用 v2 驗證過的同一路徑）。*
