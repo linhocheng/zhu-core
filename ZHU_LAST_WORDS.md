@@ -22,28 +22,30 @@
 
 ---
 
-## 最新完成（2026-07-11 · AILiveX 上市準備三連發）
+## 最新完成（2026-07-11 下半場 · 監控 Phase 2＋彈性容量，AILiveX 上市準備收官日）
 
-### 語音負載實測（首次，真數據落地）
-- 方法：同碼換 agent_name 的 loadtest 服務（min=1/max=1 鎖單台）＋asia-east1 VM 跑合成
-  來電者階梯 1→6 路（本機 Mac 到 LiveKit edge TCP 不通——ISP 路由，記進雷區）
-- **結果：單台（2CPU）穩態 6 路無劣化（p50 平穩 3.9-4.4s、CPU 66%）；真短板=同時建線
-  爆發（15s 內 6 通，首回合 4s→23-27s+1 逾時）；開場白恆定 8.3s（獨立 UX 題）**
-- 閘值定案：5 路/台、進線斜率閘 3 通/15s/台、max-instances=⌈目標÷5⌉
-- agent 假通話抽了 14 筆「記憶」——測試隔離帳號設計被實證必要；已全清＋服務/VM 已刪
+### 監控 Phase 2 事件脊椎（v18.4.0）
+- `ops_events`＋`voice_sessions`（30d TTL 政策已啟）；**九收斂點零碰 v18 agent**：
+  dialogue 成敗、語音 session（token 開/voice-end 關+roomName beacon）、bridge/tts/
+  vertex/fal/media-worker 呼叫結果、cron 心跳×3、after() 五種吞錯留痕
+- 儀表板灰燈全點亮（文字/語音漏斗+cron 三燈+第三方真數據），剩 Soniox=Phase 3
+- ⚠️ 實踩新雷已刻記憶 [[vercel-void-write-frozen]]：**Vercel 回應後凍結吃掉 void 寫入**，
+  第一版 cron 回 200 但 Firestore 零筆；修=writer 內建 next/server after()
 
-### 監控中台 /admin/monitor Phase 1（已部署，Adam 確認真數字）
-- 聚合 API 純讀零管道：燈號真探測（doc-worker /health、Cloud Run API、LiveKit
-  listRooms、bridge 可達）＋水位（分母=實測 6 路/台）＋在線（LiveKit 房間現場）＋
-  漏斗含卡死偵測（running 超時無錯誤=橘）＋第三方（zhu_vitals_cost 聚合）
-- 原則：燈只從證據亮；未接管道灰標 Phase 2 不裝綠（假中台天條）
+### 彈性容量變速箱（v18.5.0，實彈驗證過）
+- 三檔：關機/待命（調節器 1↔max 自動）/活動（限時鎖高**到期 cron 自動回**）
+- 調節器：升檔釘 token 發放（(房間+1)≥容量70%，transaction 防雙升）、
+  降檔 cron（<40% 持續 60 分、floor 1、升快降慢）、讀不到現場不動作
+- **實彈**：自簽 admin cookie 打生產 API 一輪 42 秒，Cloud Run 真值 0→1→3→1→0 全吻合
+- `/admin/voice` 有變速箱面板＋活動檔一鍵
 
-### 防爆白皮書（給外部團隊建即時語音）
-- `ailivex-platform/docs/whitepaper-realtime-voice-surge.md`：三定律/五道閘/記憶庫
-  三原則/CPU 遊戲規則/兩層開關/雷區十條/**第六章 AI 機讀 YAML**（對方的 AI 是真實讀者）
+### 規格書交付（v18.5.1）
+- `ailivex-platform/docs/spec-elastic-voice-capacity.md`：原理三物理/狀態機/調節四規則/
+  常數推導/實測階梯數據/合成來電者方法論全揭/AI 機讀 YAML——Adam 轉交外部工程師用
 
-### commits（全 push GitHub）
-v18.2.0（loadtest 三件套）/ v18.3.0（監控中台）/ v18.3.1（白皮書）
+### 上午場（同日）
+- loadtest 計費錶歸零收案；監控 Phase 1；防爆白皮書。實測核心數字：**單台 6 路穩態、
+  真短板=同時建線爆發、閘值 5 路/台**
 
 ---
 
@@ -51,31 +53,32 @@ v18.2.0（loadtest 三件套）/ v18.3.0（監控中台）/ v18.3.1（白皮書�
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `ailivex-platform/loadtest/*` | 合成來電者 harness＋seed/cleanup＋實測報告＋原始數據 |
-| `ailivex-platform/agent/main_loadtest.py`＋`cloudbuild-loadtest.yaml` | 隔離測試服務（v19+ 重用） |
-| `ailivex-platform/src/app/api/admin/monitor/route.ts` | 監控聚合 API |
-| `ailivex-platform/src/app/admin/monitor/page.tsx`＋`admin/layout.tsx` | 監控頁＋導覽入口 |
-| `ailivex-platform/docs/whitepaper-realtime-voice-surge.md` | 防爆白皮書 v1.0 |
-| memory `skill_voice_loadtest_setup_burst.md`（新）＋`project_ailivex_platform.md` | 實測方法＋平台進度 |
+| `ailivex-platform/src/lib/ops-event.ts`（新） | 事件脊椎 writer＋wrapCron＋session 開關盤（內建 after() 防凍結） |
+| 九個收斂點（dialogue/token/voice-end/bridge/tts/embeddings/kling/dispatcher/cron×3） | 接事件 |
+| `src/app/api/admin/monitor/route.ts` | 吃事件脊椎，點亮灰燈 |
+| `src/lib/voice-capacity.ts`（新）＋`api/admin/voice-capacity`（新）＋`admin/voice` 頁 | 變速箱 |
+| `docs/spec-elastic-voice-capacity.md`（新） | 彈性容量規格書 |
+| memory：`feedback_vercel_void_write_frozen`（新）＋`project_ailivex_platform` 更新 | |
 
 ---
 
 ## 下一步
 
-**明天醒來第一件**：Adam 說計費錶他來驗——若他丟結果，核 `billable_instance_time`
-ailivex-realtime-agent-loadtest（ailivex-2026）＋ loadtest-caller VM（zhu-cloud-2026）兩條歸零。
-指令：`gcloud monitoring` REST（monitor route 裡有現成 curl 模式）。
-然後等 Adam 排期二選一：**監控 Phase 2 事件脊椎**（ops_events：語音 session doc/dialogue
-成敗/第三方 wrapper/cron 心跳/after() 吞錯留痕——設計已在 07-10 對話定案）或
-**彈性容量施工**（三段變速箱＋水位調節器——升檔釘 token route、重用 voice-power.ts PATCH）。
+**明天醒來第一件**：看事件脊椎第一批真數據——
+`https://ailivex-platform.vercel.app/admin/monitor`（Adam 開）或本機 node 查
+`ops_events`/`voice_sessions`（.env.local FIREBASE_SERVICE_ACCOUNT_JSON，查法見
+`loadtest/cleanup.mjs` 的讀 DB 模式）。特別看：真實通話有沒有正確開盤/收盤、
+調節器有沒有在真流量下觸發 scale-up（provider=='capacity-regulator'）。
+之後等 Adam 排期：**Phase 3 告警推播（LINE/Telegram）＋Soniox agent 側**、開場白 8.3s UX。
 
 ---
 
 ## 卡住 / 未解
 
-- loadtest 計費錶歸零驗證掛帳（資源已刪，指標明日才長出來）
-- 開場白 8.3s 固定成本未排期（預載/開場白快取方向）
-- 監控 UIUX 稿在 session scratchpad（html mockup，Adam 已確認版面）——正式版已上線，稿可棄
+- 調節器 R1（升檔）/R2（降檔）尚未被真實流量觸發過（實彈只驗了活動檔 R3/R4）——
+  等真通話量，屆時看 ops_events capacity-regulator 事件
+- 開場白 8.3s 固定成本未排期
+- ailivex 兩 repo 全乾淨已推（v18.5.1 / doc-worker 未動）
 
 ---
 
@@ -90,9 +93,9 @@ ailivex-realtime-agent-loadtest（ailivex-2026）＋ loadtest-caller VM（zhu-cl
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
 | 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
 | AILiveX 監控中台 | https://ailivex-platform.vercel.app/admin/monitor |
-| 語音容量白皮書 | `~/.ailive/ailivex-platform/docs/whitepaper-realtime-voice-surge.md` |
+| 防爆白皮書＋容量規格書 | `~/.ailive/ailivex-platform/docs/whitepaper-realtime-voice-surge.md`＋`spec-elastic-voice-capacity.md` |
+| 負載實測 harness | `~/.ailive/ailivex-platform/loadtest/`（v19+ 重測直接用） |
 
 ---
 

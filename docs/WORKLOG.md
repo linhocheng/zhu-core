@@ -7245,3 +7245,31 @@ Adam 要推 AILiveX 上市，需要監控平臺（在線/成敗/第三方/燈號
 - [ ] 明日：拉 billable_instance_time 驗 loadtest 歸零（Adam）
 - [ ] 監控 Phase 2 事件脊椎（等 Adam 排期）
 - [ ] 變速箱＋水位調節器施工（等 Adam 排期）
+
+---
+
+## 2026-07-11 下半場 — 監控 Phase 2 事件脊椎＋彈性容量變速箱＋規格書交付
+
+### 背景 / WHY
+上午收掉負載實測；Adam 點監控 Phase 2 開工，完成後追加彈性容量施工，最後要一份給外部工程師（＋他的 AI）的彈性容量規格書。
+
+### 產出
+- 檔案：`ailivex-platform/src/lib/ops-event.ts` — 事件脊椎 writer（recordOpsEvent/voice session 開關盤/wrapCron；內建 after() 防凍結）
+- 檔案：九個收斂點接線（dialogue/token/voice-end/bridge/tts/embeddings/kling/task-dispatcher/cron×3）＋monitor route 點亮灰燈
+- 檔案：`ailivex-platform/src/lib/voice-capacity.ts`＋`/api/admin/voice-capacity`＋`/admin/voice` 變速箱面板
+- 檔案：`ailivex-platform/docs/spec-elastic-voice-capacity.md` — 彈性容量規格書（人讀五章＋AI 機讀 YAML）
+- commits：v18.4.0 / v18.5.0 / v18.5.1 全 push；loadtest 計費錶歸零收案
+
+### 已解決
+- 儀表板灰燈 → 事件脊椎全接（ops_events+voice_sessions，30d TTL 政策已啟）
+- Vercel void 寫入蒸發 → next/server after() 包 writer（鑑別信號：cron_run doc 真長出）
+- 彈性容量 → 變速箱+調節器上線，實彈驗證 Cloud Run 真值 0→1→3→1→0 全吻合（自簽 admin cookie 打生產 API）
+
+### ⚠️ 尚未解決
+- Phase 3：紅燈告警推播（LINE/Telegram）＋Soniox agent 側儀表化——等 Adam 排期
+- 開場白 8.3s 固定成本未排期
+- 調節器 R1/R2 的真實流量驗證：實彈只驗了活動檔進出（R3/R4）＋讀側；升降檔要等真實通話量觸發，屆時看 ops_events capacity-regulator 事件
+
+### 待執行
+- [ ] 真實用戶通話後看事件脊椎第一批數據（漏斗/session/調節器）
+- [ ] Phase 3 排期後開工
