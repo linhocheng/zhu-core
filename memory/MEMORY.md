@@ -1,4 +1,6 @@
 - [意川_WEB Vercel 部署（臨時）](project_yichuan_web_deploy.md) — https://web-tawny-six-67.vercel.app，純靜態前台，可能撤下，重部署 SOP 在記憶裡
+- [加新 Vercel cron 必動三處](feedback_new_cron_three_places.md) — route+vercel.json+middleware PUBLIC_PATHS；middleware 401 和 route 401 長一樣；交叉驗證法=同 secret 打舊 cron
+- [LiveKit 首音延遲量測](reference_livekit_first_audio_metric.md) — ActiveSpeakersChanged 才是出聲（TrackSubscribed 只是音軌接上）；前端量比 agent 量貼近體感；基線 connect 3.3s/首音 18s
 - [全局 prompt 不能編碼個性，只能管格式](feedback_global_prompt_must_not_encode_personality.md) — 語音 agent voiceRules/hardcoded塊含個性句會蓋所有角色靈魂；每條規則問「格式還是個性？」個性刪掉
 - [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
 - [框架互操作層要用真實事件序列離線沙推](skill_framework_interop_offline_fuzz.md) — 沙推不是驗證第四張臉：測了但測的是想像中的框架；呼叫點窮舉+真實log序列+任意交錯fuzz；時間差護欄是賭博用狀態語意

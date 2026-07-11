@@ -1,9 +1,17 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18、監控中台 /admin/monitor Phase 1 上線（2026-07-11）、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
+description: ailiveX 語音現役 v18、監控中台 Phase 2.5（時間軸+計費錶+首音延遲量測）上線（2026-07-11）、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-11 第三場：監控 Phase 2.5 時間軸＋計費錶＋首音延遲（v18.6.0→v18.7.0 已 commit+部署+真實通話收案）。**
+- **時間軸**：`ops_rollups` 每小時聚合快照（cron :05，docId=UTC 小時鍵冪等，TTL 400d；事件窗 [T-1h,T) 史實／任務窗 [T-2h,T-1h) 延後沉澱）；監控頁原始掃描鎖 48h、寬窗（7d/30d）改加總 rollup——讀量不隨資料量線性長大；趨勢 sparkline（語音房間/常駐檔位/對話量/首音延遲）
+- **計費錶**：`src/lib/cloudrun-billing.ts` 讀 Monitoring API billable_instance_time（ALIGN_RATE=平均計費台數），儀表直顯——**第一天就抓到三異常待查：doc-worker 24h 14.2 實例時、v17 名義冷備 6.4 實例時、loadtest 服務殘留 0.5**
+- **首音延遲量測**（零碰 agent，詳 [[livekit-first-audio-metric]]）：前端 ActiveSpeakersChanged 量測→`/api/voice-metrics`（session 鑑權+ownership+10min sanity）→voice_sessions doc→rollup 聚合→監控頁 p50/p95（警示線 15s）。**真實通話基線：connectMs 3.3s / firstAudioMs 18.0s → 14.7s 在 agent 首回合**（與爆發 27s 同族）；拆解 agent 內部=下個語音版本打點
+- abandoned session 清掃併入 voice-auto-off（open>3h 標 abandoned，不再當 30 天雜訊）；provider 燈改失敗率門檻（≥30% 紅/零星橘）
+- ⚠️ 踩雷已刻 [[new-cron-three-places]]：新 cron 被 middleware 登入牆 401，交叉驗證法（同 secret 打舊 cron）三分鐘定位
+- 監控成本實測：~55 讀/refresh，整套 <$1/月；掛整天最壞 <$5/月
 
 **2026-07-11 下半場：監控 Phase 2 事件脊椎＋彈性容量變速箱（v18.4.0→v18.5.1 已 commit+push+部署+實彈驗證）。**
 - **事件脊椎**：`ops_events`＋`voice_sessions`（30d TTL 已啟政策）；九收斂點零碰 v18 agent——dialogue 成敗、語音 session（token 開/voice-end 關+roomName beacon、open>3h=中斷）、bridge/minimax-tts/vertex/fal/media-worker 呼叫結果、cron 心跳×3（wrapCron，401 不計）、after() 五種吞錯留痕；儀表板灰燈點亮，剩 Soniox（agent 側）屬 Phase 3
