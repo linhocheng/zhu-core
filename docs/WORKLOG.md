@@ -7307,3 +7307,41 @@ Adam 要我審計監控中台設計。審完給了優化清單（時間軸/成�
 - [ ] 查計費錶三異常（明天第一件）
 - [ ] 首音樣本累積後看 p50/p95 分佈，決定要不要動 agent 打點
 - [ ] rollup 累積 24h 後看趨勢區是否如預期長出曲線
+
+---
+
+## 2026-07-11（第四場）— podcast 雙人對話協議管線＋Voice Layer
+
+### 背景 / WHY
+Adam 讀了 AI 角色互聊 podcast 的逐字稿，診斷出七個病（無限反駁、同招十二次、假讓步、問號乒乓、捏造案例、無終點、無共同目標），提供兩份規格書：對話協議 v1（收斂）＋ Voice Layer v1（人話）。目標：讓任何兩個角色能交出一集像人的對話作品。
+
+### 產出
+- 檔案：`ailivex-platform/cloud-run/podcast-worker/src/duo-types.ts` — 共用型別＋VoiceBlock＋確定性 JSON 抽取
+- 檔案：`…/belief.ts` — corpus 掛既有知識庫＋Belief State 開錄前生成
+- 檔案：`…/protocol.ts` — PASS 1 THINK／PASS 2 SPEAK 兩次獨立生成（P1/P2 核心）
+- 檔案：`…/validators.ts` — think 層（R1/R2/steelman）＋speak 層（R3/R5/MOVE 種子）＋R4 只查第三方案例
+- 檔案：`…/producer.ts` — 製作人五動作＋確定性觸發器＋三幕交付物
+- 檔案：`…/acts.ts` — 三幕 Orchestrator、程式交替輪替（R6 結構性成立）、風格砂紙一遍上限
+- 檔案：`…/voice-rules.ts` — PASS 3 兩層偵測器＋voice_lexicon 自成長
+- 檔案：`ailivex-platform/src/app/api/convert/podcast/sharpen-goal/route.ts`＋convert 頁磨題 UI — EPISODE_GOAL 人持有
+- 驗收工具：`…/podcast-worker/analyze-duo.mjs`（協議指標）＋`analyze-voice.mjs`（語感指標）
+- 部署：image `voice-07112018`（service＋job）；Vercel 磨題 route 上線
+- commits：本體隨 cb1f681（v18.7.0）入庫（考古註記在 19ffcb3）＋v18.7.1 調音
+- 兩角色 characters doc 回填 voice{}；voice_lexicon 10 條種子+學習條目
+
+### 已解決
+- 四集同題對照實測：MOVE 命中 26→1、位移 0→9、字數變異 18→95、複述開頭 5/13→0/13、終止=交付
+- 「修過頭」→ 根因是退回壓力＋judge 過嚴 → 三旋鈕調音（judge 拿不準就 pass／風格磨一遍／詞庫修剪）
+- 簡報王空知識庫 → R4 引導為明說想像情境（不捏第三方權威）
+
+### ⚠️ 尚未解決
+- 19:05 調音版（task NrN7woXJ…）Adam 尚未讀稿確認自然度——這版是上市基準的候選
+- 複述開頭的「引用交戰型」（你說『…』往下挖）刻意保留未趕盡殺絕，等真實集數觀察
+- 簡報王知識庫仍為空（他永遠只能講假設情境）；voice_lexicon 跑幾集後要人工複審學到的條目
+- 多人（3+）模式仍走 legacy 舊管線，「多人也聽 Producer」未做
+- 測試 task docs（userId=zhu_duo_acceptance ×4＋一筆 failed 孤兒）留在 admin 列表，Adam 看完可刪
+
+### 待執行
+- [ ] Adam 讀 19:05 版定調 → 認可即為上市基準
+- [ ] 真實用戶集數的 voice_lexicon 成長複審
+- [ ] 多人模式接 Producer（協議層已預留不綁死兩人）

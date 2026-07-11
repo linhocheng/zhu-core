@@ -5,6 +5,18 @@
 
 ---
 
+## ⚠️ 先讀這條：平行施工警示（2026-07-11 實踩，每個築都要遵守）
+
+今天 AIR 上**同時有兩個築 session** 在 ailivex-platform 施工（第三場：監控/首音延遲；第四場：podcast duo/Voice Layer）。第三場的 v18.7.0 commit 把第四場的未提交檔案整批掃了進去——commit 訊息與內容分裂，已推無法改寫（19ffcb3 有考古註記）。這次良性，下次可能就是互相蓋寫。
+
+**規約（每個築、每次開工）**：
+1. 開工第一件事 `git pull`＋看最新 commit 認不認識
+2. commit 前 `git status`——看到**不是自己改的檔案**，先停：只 add 自己的清單，或問 Adam
+3. 雙線開工時，任一方在本檔標明「另一線正在跑＋戰場範圍」
+4. 能分目錄就分目錄
+
+---
+
 ## 身份
 
 你是築，Adam 的建造夥伴、監造者。不是工具，是夥伴。
@@ -22,59 +34,51 @@
 
 ---
 
-## 最新完成（2026-07-11 第三場 · 監控 Phase 2.5：時間軸＋計費錶＋首音延遲）
+## 最新完成（2026-07-11 第四場 · podcast 雙人對話協議＋Voice Layer）
 
-- 審計 ailivex 監控中台三層設計（聚合 API/事件脊椎/前端），Adam 認可後 GO 優化批
-- **v18.6.0**：`ops_rollups` 每小時快照時間軸＋寬窗改讀 rollup（原始掃描鎖 48h，讀量不隨資料量長大）＋趨勢 sparkline＋**Cloud Run 計費錶真值儀表化**＋abandoned session 清掃＋provider 燈失敗率門檻
-- **v18.6.1**：新 cron 被 middleware 登入牆 401——三件套雷已刻 memory `new-cron-three-places`
-- **v18.7.0**：首音延遲量測（前端 ActiveSpeakersChanged，**零碰 live agent**），Adam 真實通話收案：**connect 3.3s / 首音 18.0s → 14.7s 在 agent 首回合**
-- 計費錶第一天抓到三異常：doc-worker 14.2 實例時/24h、v17 名義冷備 6.4、loadtest 殘留 0.5
-- 實測監控整套成本 <$1/月（~55 讀/refresh）；新 memory ×2＋project 進度已更
+### 對話協議管線（治收斂：辯論機器→交作品）
+- Belief State（軟肋當靶心）＋三幕 Orchestrator＋Producer 煞車（五動作＋答案出現先認出）＋R1-R6 Validator（聆聽可稽核、反駁付立場修正、程式交替輪替）
+- corpus 掛既有角色知識庫；R4 禁第三方捏案例（自身經歷放行）
+- 2 角色自動走 duo、3+ 走 legacy；EPISODE_GOAL 磨題入口（目標由人持有）
+
+### Voice Layer（治聲音：報告腔→人話）
+- **THINK/SPEAK 兩次獨立生成**（P1）——單刀最大：MOVE 命中 26→0
+- persona voice{}（簡報王/tracy 已回填）＋PASS 3 兩層偵測器＋`voice_lexicon` 自成長（judge 命中→寫回，首集學 10 條）
+- 調音教訓：風格砂紙只磨一遍、judge 拿不準就 pass——「修過頭」是真病
+- 四集同題對照：位移 0→9、字數變異 18→95、複述開頭→0/13、終止＝交付
+- 部署 `voice-07112018`（service＋job）；repo v18.7.1 已推、樹乾淨
+
+### 第三場（平行線，另一個築，已各自收尾）
+- 監控 Phase 2.5：ops_rollups 時間軸＋計費錶真值儀表化（首日抓三異常）＋首音延遲前端量測（connect 3.3s／首音 18s，14.7s 在 agent 首回合）；v18.6.0/v18.6.1/v18.7.0
 
 ---
 
-## 今天改了哪些檔案（第三場，ailivex-platform repo）
+## 今天改了哪些檔案（第四場）
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `src/lib/ops-rollup.ts` | 新建：每小時聚合快照（事件窗 [T-1h,T)/任務窗 [T-2h,T-1h) 錯開沉澱、docId=小時鍵冪等、TTL 400d） |
-| `src/lib/cloudrun-billing.ts` | 新建：Monitoring API billable_instance_time（ALIGN_RATE=平均計費台數） |
-| `src/app/api/cron/ops-rollup/route.ts` | 新建：rollup cron（:05 每小時，wrapCron 心跳） |
-| `src/app/api/voice-metrics/route.ts` | 新建：首音延遲回報（session 鑑權+ownership+10min sanity） |
-| `src/app/realtime/[characterId]/page.tsx` | ActiveSpeakersChanged 首音量測（不是 TrackSubscribed！）+connectMs |
-| `src/app/api/admin/monitor/route.ts` | 寬窗讀 rollup、series、billing、voiceLatency p50/p95、abandoned 處理 |
-| `src/app/admin/monitor/page.tsx` | 趨勢/計費錶 section、Spark 元件、首音 stat（p95>15s 警示）、provider 失敗率燈 |
-| `src/lib/ops-event.ts` | sweepAbandonedSessions（open>3h 標 abandoned） |
-| `src/app/api/cron/voice-auto-off/route.ts` | 併入清掃 |
-| `src/middleware.ts` | PUBLIC_PATHS 補 `/api/cron/ops-rollup` |
-| `vercel.json` | cron 排程 |
-
-commits：v18.6.0 / v18.6.1 / v18.7.0（全部署 production，未 push GitHub 的話記得 push）
+| `podcast-worker/src/` 七個新模組 | duo-types／belief／protocol（THINK/SPEAK）／validators／producer／acts／voice-rules |
+| `podcast-worker/src/index.ts + job.ts` | duo 分支接線＋episodeGoal 透傳＋voice 欄位讀取 |
+| `api/convert/podcast/sharpen-goal`（新）＋convert 頁 | 磨題入口（選滿 2 角色出現） |
+| `podcast-worker/analyze-duo.mjs + analyze-voice.mjs` | 驗收儀表：協議面＋語感面 |
+| Firestore | characters ×2 回填 voice{}；`voice_lexicon` collection 新建（10 條） |
 
 ---
 
 ## 下一步
 
-**明天第一件：查計費錶三異常。**
-```bash
-cd ~/.ailive/ailivex-platform
-# 1. doc-worker 為何 24h 燒 14.2 實例時（平均 0.59 台）？查 min 與流量
-gcloud run services describe ailivex-doc-worker --region=asia-east1 --project=ailivex-2026 | grep -i -A2 scaling
-# 2. v17 名義冷備為何有 6.4 實例時？（懷疑：流量釘舊 revision 或 min 沒真降 0——掃 status.traffic）
-# 3. loadtest 服務 0.5 實例時——上一場已收案說歸零，去確認是量測窗殘影還是真沒刪乾淨
-```
-為什麼先做：三個都是正在燒的錢，「已清理」的認知跟計費錶對不上＝真相分裂，放一天多燒一天。
+**明天醒來第一件**：問 Adam 讀了 19:05 調音版沒（`/admin/podcasts`，task `NrN7woXJ9GslWIfqcflX`）。背景：他評 17:47 版「很不錯」、18:22 版「修過頭」，調音版目標＝回到自然度＋保留抓真病。他點頭＝上市基準定版；搖頭＝讀他指的段落，轉三個旋鈕（judge 判準／砂紙次數／詞庫修剪）再跑：`cd ~/.ailive/ailivex-platform/cloud-run/podcast-worker && node run-local-acceptance.mjs`（跑集）→ `node analyze-voice.mjs <taskId>`（量測）。
 
-次件：開 `/admin/monitor` 看趨勢區（rollup 已累積 24 點）＋首音樣本分佈。
+之後等 Adam 排期：第三場遺留的計費錶三異常、Phase 3 告警推播、多人模式接 Producer、開場白 8.3s UX。
 
 ---
 
 ## 卡住 / 未解
 
-- 首音 18s 只有 1 樣本，別急著下結論；14.7s 在 agent 首回合內部，拆解要 agent 打點（下個語音版本帶，本場刻意零碰 live agent）
-- /admin/monitor 新 section（趨勢/計費錶/首音）Adam 尚未回報視覺確認
-- 監控 Phase 3 未動：LINE/Telegram 告警推播、Soniox agent 側儀表化
-- 上半場遺留：開場白 8.3s UX 優化未排期
+- 19:05 調音版待 Adam 讀稿定調（上市基準候選）
+- 第三場遺留：計費錶三異常（doc-worker 14.2 實例時/24h、v17 冷備 6.4、loadtest 殘留 0.5）、首音 18s 僅 1 樣本
+- 簡報王知識庫空（只能講想像情境）；voice_lexicon 學習條目幾集後要人工複審；多人模式未接 Producer
+- 測試 task ×5（userId=zhu_duo_acceptance）留在 admin 列表，Adam 看完可刪
 
 ---
 
@@ -88,10 +92,12 @@ gcloud run services describe ailivex-doc-worker --region=asia-east1 --project=ai
 | 施工紀錄 | `~/.ailive/zhu-core/docs/WORKLOG.md` |
 | 當機救援 | `~/.ailive/zhu-core/ZHU_LAST_WORDS.md`（就是這份） |
 | 遠端記憶 | `curl -s https://zhu-core.vercel.app/api/zhu-boot` |
-| 監造儀表板 | https://zhu-mid.vercel.app/dashboard/overview |
-| zhu-mid 源碼 | `~/.ailive/zhu-mid-src/` |
+| AILiveX 監控中台 | https://ailivex-platform.vercel.app/admin/monitor |
+| podcast 對照集 ×4 | `/admin/podcasts`（GLrdBM=舊基線／h2Rroc=Phase A／w0DvYE=修過頭／NrN7wo=調音版） |
+| duo/Voice Layer 驗收工具 | `ailivex-platform/cloud-run/podcast-worker/analyze-{duo,voice}.mjs` |
+| 今天的教訓 | `docs/LESSONS/LESSONS_2026-07-11.md`（L9-L13，含平行施工規約） |
 
 ---
 
 *每次 session 結束前由 /last-words skill 更新。格式版本 v2.0.0。*
-*2026-07-11 · 築*
+*2026-07-11 第四場 · 築*
