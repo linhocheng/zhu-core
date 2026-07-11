@@ -124,7 +124,8 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18；監控中台 /admin/monitor Phase 1 上線＋防爆白皮書（2026-07-11）；四種額度管制全上線；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18；podcast duo 協議＋Voice Layer 上線、監控 Phase 2.5（2026-07-11）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — commit 會掃走對方未提交檔案；開工先 pull、commit 前 status 認檔案、雙線互相聲明戰場
 - [即時語音負載實測方法＋同時建線爆發發現](skill_voice_loadtest_setup_burst.md) — 合成來電者階梯法半天可複製；單台6路穩態、真短板=15s內6通建線首回合飆27s；閘值5路/台+3通/15s/台；ISP到LiveKit edge路由可能不通
 - [Vercel void 寫入被 lambda 凍結蒸發](feedback_vercel_void_write_frozen.md) — 回應送出即凍結，void promise 零錯誤消失；回應後寫入一律 next/server after() 包在 writer 內；驗證看 DB doc 不看路由 200
 - [ailivex doc-worker 真身](reference_ailivex_doc_worker_true_source.md) — 唯一 worker=~/.ailive/ailivex-doc-worker（asia-east1、POST /、repo linhocheng/ailivex-doc-worker）；死副本已全清（2026-07-04）

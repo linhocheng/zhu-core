@@ -1,9 +1,16 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18、監控中台 Phase 2.5（時間軸+計費錶+首音延遲量測）上線（2026-07-11）、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
+description: ailiveX 語音現役 v18、podcast 雙人對話協議＋Voice Layer 上線（2026-07-11 第四場）、監控中台 Phase 2.5、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-11 第四場：podcast 雙人對話協議管線＋Voice Layer（部署 voice-07112018，repo v18.7.1）。**
+- **對話協議**（治收斂）：2 角色自動走 duo 管線（3+ 仍 legacy）——Belief State（開錄前自動生成，軟肋當靶心）＋三幕 Orchestrator（分歧→攻軟肋→落地，出口條件程式判）＋Producer 煞車（CUT/GROUND/AUDIT/PRESS/LAND，不進成品）＋R1-R6（heard steelman 可稽核、REJECT 必付立場修正、輪替程式交替）；corpus 掛 knowledge_chunks（R4 禁第三方捏案例，**自身經歷放行**）；EPISODE_GOAL 磨題入口 `/api/convert/podcast/sharpen-goal`（目標由人持有）
+- **Voice Layer**（治聲音）：**THINK/SPEAK 兩次獨立生成**（thought 只存 task doc 永不回灌 history）——單刀 MOVE 命中 26→0；characters.voice{}（簡報王/tracy 已回填）；PASS 3 兩層偵測器（種子正則+`voice_lexicon` 自成長詞庫→Sonnet judge 只餵動作規則）；**調音三旋鈕**：judge 拿不準就 pass／風格砂紙只磨一遍／詞庫修剪——「修過頭」（退回壓力→角色躲地雷）是真病
+- 四集同題對照（`/admin/podcasts`，userId=zhu_duo_acceptance）：舊基線 GLrdBM→調音版 NrN7wo；位移 0→9、字數變異 18→95、複述開頭→0/13、終止=交付。驗收工具 `cloud-run/podcast-worker/analyze-{duo,voice}.mjs`
+- 待辦：調音版待 Adam 讀稿定調；簡報王知識庫空；voice_lexicon 幾集後人工複審；多人接 Producer 未做
+- ⚠️ 平行施工實踩：第三場 v18.7.0 掃走第四場未提交檔案（詳 [[parallel-sessions-same-repo]]）
 
 **2026-07-11 第三場：監控 Phase 2.5 時間軸＋計費錶＋首音延遲（v18.6.0→v18.7.0 已 commit+部署+真實通話收案）。**
 - **時間軸**：`ops_rollups` 每小時聚合快照（cron :05，docId=UTC 小時鍵冪等，TTL 400d；事件窗 [T-1h,T) 史實／任務窗 [T-2h,T-1h) 延後沉澱）；監控頁原始掃描鎖 48h、寬窗（7d/30d）改加總 rollup——讀量不隨資料量線性長大；趨勢 sparkline（語音房間/常駐檔位/對話量/首音延遲）
