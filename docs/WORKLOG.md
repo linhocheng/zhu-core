@@ -7409,3 +7409,38 @@ AILiveX podcast 品質線從「工程驗收」進入「節目營運」——Adam
 
 ### 待執行 / 下一步
 Adam 繼續督導＋首次生成音檔（驗 TTS 多段落首航：`/admin/podcasts` 任一 duo 集按生成音檔，聽有沒有怪停頓/漏段）。工程側下一優先＝規格書 v1.1 更新（`ailivex-platform/docs/spec-podcast-duo-dialogue.md`，補 v18.8-18.9 三章）；再來是多人接製作人、計費錶三異常。
+
+---
+
+## 2026-07-13（第1場）— S 姐姐「原生認知」規格落地——UDN 補判斷層、ailiveX 磨四刀，兄弟平台首次互相體檢
+
+### 背景 / WHY
+podcast 語意品質線跨了兩個平台：ailiveX（節目工藝）與 UDN（新聞快產線）第一次被當成同一條血脈保養——同款蟲互相巡檢、同份規格分章落地。
+
+### 完成
+- 摸 UDN podcast 線與 ailiveX 對比：UDN 是場控時代移植版往「新聞快產線」分化（主持人形式/Brief 事實打底/額度錶反領先）；三隻 ailiveX 踩過的同款蟲在 UDN 全數潛伏
+- 修 UDN 三蟲（v0.6.3.001）：EOS token 洩漏（stripModelTokens 釘 pushLine 收斂點＋自審＋懶人包）、音檔標記多段落蒸發（flattenLine 壓平往返）、發聲失敗靜默跳輪（重試＋明確 log）
+- 讀 S 姐姐「原生認知生成核心」規格並分章判定落點：前四章與我們 v18.8 獨立收斂（判斷先於語言＝THINK/SPEAK），第五章防護矩陣屬對用戶聊天線非 podcast
+- UDN 補課（v0.7.0.001）：生成加【想】內心判斷行（程式剝除只進 log）、說話規則翻賦權結構（同意三段/沉重話題靠生命經驗/回應內容不回應氣氛）、MOVES 擴四招；林子宜×張立真錄「毒癮悲歌」驗證——同意三段自己長出來（「『沒張力』跟『沒試過』是兩回事」）、重話題零療癒腔
+- ailiveX 磨四刀（v18.10.0）：SPEAK 同意三段＋沉重時刻錨＋回應內容不回應氣氛；analyze-voice 加名字遮蔽測試（對半折裁判認人＝角色分化度，基線 50% 目標 ≥80%）；簡報王×Tracy 真錄驗證，遮蔽 100%，Adam 昨日實錄集也 100%
+- 量尺當場抓到新規則反彈：「指名主張」被執行成 4/9 輪「你說…」句首口頭禪（原 0/11），補半句修正（指名嵌句中不必開頭複述）
+- 兩平台部署鑑別信號全過：UDN image `:d633447`、ailiveX image `:d7cb362`，皆 traffic==latestReady、job 同版
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| UDN `cloud-run/podcast-worker/src/index.ts` | 三蟲修＋【想】判斷層＋賦權規則（v0.6.3→v0.7.0） |
+| UDN `…/src/audio.ts` | flattenLine 多段落壓平往返 |
+| UDN `…/src/text-filter.ts` | stripModelTokens（與 ailivex 同款） |
+| UDN `…/src/rhythm.ts` | MOVES 擴四招實質推進 |
+| ailiveX `cloud-run/podcast-worker/src/protocol.ts` | SPEAK 三刀（同意三段/沉重錨/內容不氣氛）＋句首複述修正 |
+| ailiveX `…/analyze-voice.mjs` | 名字遮蔽測試（對半折＋確定性洗牌＋bridge 裁判） |
+
+### ⚠️ 尚未解決
+- **第五章「心智全息防護矩陣」未動**——它的家在對用戶的聊天線（ailiveX text/voice dialogue）；要做需 Adam 拍板，且個性句（「高維度碾壓」類）必須按角色下放進各自 soul，全局層只放機制（防吐 prompt），否則踩「全局 prompt 編碼個性」舊雷；反坍縮要留求助/自傷信號的破格活門
+- 「你說…」句首口頭禪的半句修正是 prompt 級、未經整集驗證——下一集自然驗，analyze-voice「複述+表態開頭」指標盯著（目標 ≤1）
+- UDN 微型集（600 字）收尾窄：主持人丟出尖問題後字數煞車直接道別，來賓沒機會答——正式集 800+ 字應不明顯，觀察
+- 沿前場：ailiveX 規格書 v1.1、duo 多段落 TTS 首航、THINK 共鳴全滿（本場 9/9 又中）、多人模式接製作人、計費錶三異常
+
+### 待執行 / 下一步
+Adam 拍板第五章要不要做＋怎麼按角色下放（讀 `~/.ailive/ailivex-platform/src/lib/memory.ts` 的 global prompts 注入點與 `agent/firestore_loader.py` 雙份同步規矩再動手）。工程側：兩平台各自然錄下一集後跑 `node analyze-voice.mjs <taskId>` 看「你說…」修正有沒有生效。
