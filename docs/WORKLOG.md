@@ -7369,3 +7369,43 @@ AILiveX podcast 品質線收官後的文件化——三份對外規格書集齊�
 
 ### 待執行 / 下一步
 兩件等 Adam：① 說 commit 就收規格書（v18.7.3 文件：podcast 雙人對話規格書）；② 讀 19:05 調音版（/admin/podcasts task NrN7wo 開頭）定上市基準。都不動的話下一優先＝第三場遺留的計費錶三異常。
+
+---
+
+## 2026-07-12（第2場）— podcast 關係矩陣＋無形製作人上線，Adam 首次坐上導播台
+
+### 背景 / WHY
+AILiveX podcast 品質線從「工程驗收」進入「節目營運」——Adam 當節目製作人實際督導，我在玻璃後面的後面修台子。四個版本全部從他實錄的集數裡長出來。
+
+### 完成
+- 吸收 S 文件前三章（尊重多元、回到系統）→ 關係矩陣版：聽眾鏡像＋THINK 第 7 步共鳴＋SPEAK 由禁令結構翻成賦權結構＋MOVE-2 隱喻全面解禁降純記錄；E 集驗證（對台下直說 5 次全自發、隱喻解禁反而歸零）
+- 製作人參與三缺口補齊前兩個：私下交代（per-character brief，開錄前耳語）＋節目記憶（series.ts，同對角色的共識/分歧/位移自動接續）；F 集驗證——兩位的開錄立場從上集「被說服後的位置」出發，零退回
+- 召喚無形製作人（invisible-producer.ts）：soul 活讀 characters 集合（admin 改了下集生效）＋前製張力地圖/五問法＋現場金礦標記（⭐不干涉）/REFOCUS 煞車＋後製收斂台（儀器掃描→裁決→角色重講）＋製作人後記；G 集＋收斂回放驗證（TRIM 11/RETAKE 0/金礦護住）
+- 收斂台剪接權結構化：TRIM 從「吐刪後全文」改「回句子編號、程式執刀」——只能選不能寫，越權在結構上不可能；順帶解掉 bridge 長呼叫 CF 100s 斷頭鍘（>95s 自動走 bridge-direct）
+- 試播前全管路審計抓四斷管：focus 假中台（duo 線沒人讀）、時長假中台（3 分鐘和 12 分鐘一樣長）、音檔多段落蒸發（tagging 行編號正則只抓第一行）、parseScript 回程丟段落（沒改稿也會丟）——全修＋單元測試
+- Adam 首次督導 3+ 集；從他的實錄裡抓四蟲全修：孤兒引號（切分閉合符號回黏）、EOS token 洩漏（stripModelTokens 釘四個生成出口）、聽眾欄吃指令的姿勢問題、REFOCUS 連踩暴露劇場矛盾
+- 受眾從「台下坐著的人」降級為「編輯羅盤」（Adam 拍板）：SPEAK 刪在場劇場與喊話權、THINK 改衡量有用性、BREAK_4TH_WALL 退役（抽象陷阱改開 GROUND）、留空＝純開放議題不硬生成
+- 版本鏈全部署＋commit：v18.8.0（關係矩陣＋無形製作人）→ v18.8.1（孤兒引號）→ v18.9.0（編輯羅盤）→ v18.9.1（EOS 衛生）→ v18.7.3 補收規格書；job image `:71d37a0`
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `podcast-worker/src/invisible-producer.ts`（新） | 無形製作人：soul 活讀/張力地圖五問/REFOCUS/收斂台/後記 |
+| `podcast-worker/src/series.ts`（新） | 節目記憶：同對角色前兩集共識/分歧/位移回灌 |
+| `podcast-worker/src/protocol.ts` | THINK 第 7 步＋brief/focus/羅盤注入；SPEAK 賦權重寫＋去劇場＋token 衛生 |
+| `podcast-worker/src/acts.ts` | 聽眾/交代/焦點/時長全接線；隱喻降純記錄；金礦/REFOCUS/收斂接入 |
+| `podcast-worker/src/producer.ts` | soul 聲帶移植＋五問彈藥庫＋金礦掃描＋GROUND 改道 |
+| `podcast-worker/src/audio.ts` | 多段落壓平/舞台指示/分隔線/EOS 保底（TTS 收斂點四修） |
+| `podcast-worker/src/{duo-types,belief,index,job}.ts` | 型別/立場生成注入/穿線/bridge-direct 長呼叫 |
+| `src/app/convert/page.tsx`＋兩條 route | 磨題三件套/交代欄/羅盤改名/parseScript 無損往返 |
+| `docs/spec-podcast-duo-dialogue.md` | 補收 v1.0（註明過時範圍） |
+
+### ⚠️ 尚未解決
+- 規格書 `docs/spec-podcast-duo-dialogue.md` 已收（v18.7.3）但內容停在 v18.7——台下模型/BREAK_4TH_WALL 章節已過時，待 v1.1 更新（關係矩陣/無形製作人/編輯羅盤）
+- 音檔管線的多段落修復是單元測試級，duo 稿完整 TTS 首航還沒真的跑（Adam 生成音檔時驗）
+- 觀察項：THINK 共鳴幾乎全滿（12/13）不肯填 null；後記出現過一次生成口吃；voice_lexicon 待人工複審；簡報王知識庫仍空
+- 沿前場：多人（3+）模式未接無形製作人；計費錶三異常（第三場遺留）
+- 19:05 調音版（NrN7wo）的「上市基準定版」一問已過時——基準改由 Adam 實際督導的集數自然形成
+
+### 待執行 / 下一步
+Adam 繼續督導＋首次生成音檔（驗 TTS 多段落首航：`/admin/podcasts` 任一 duo 集按生成音檔，聽有沒有怪停頓/漏段）。工程側下一優先＝規格書 v1.1 更新（`ailivex-platform/docs/spec-podcast-duo-dialogue.md`，補 v18.8-18.9 三章）；再來是多人接製作人、計費錶三異常。
