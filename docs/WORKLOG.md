@@ -7345,3 +7345,27 @@ Adam 讀了 AI 角色互聊 podcast 的逐字稿，診斷出七個病（無限�
 - [ ] Adam 讀 19:05 版定調 → 認可即為上市基準
 - [ ] 真實用戶集數的 voice_lexicon 成長複審
 - [ ] 多人模式接 Producer（協議層已預留不綁死兩人）
+
+---
+
+## 2026-07-12（第1場）— podcast prompt 流程攤解＋正式規格書交付
+
+### 背景 / WHY
+AILiveX podcast 品質線收官後的文件化——三份對外規格書集齊（防爆白皮書/彈性容量/雙人對話）。
+
+### 完成
+- 攤解 podcast duo 全鏈路 prompt 流程給 Adam（每一次 LLM 呼叫的組成，聊天版）
+- 確認 /convert 磨題按鈕位置與觸發條件（選滿 2 角色才出現）
+- 寫正式規格書 `ailivex-platform/docs/spec-podcast-duo-dialogue.md`（十章：診斷/架構/三鐵律/呼叫全解/voice五欄/四集實測表/調音教訓/驗收方法論/機讀 YAML/移植八步），檔案已傳 Adam
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `ailivex-platform/docs/spec-podcast-duo-dialogue.md`（新，未 commit） | 雙人對話系統完整規格書 v1.0 |
+
+### ⚠️ 尚未解決
+- `docs/spec-podcast-duo-dialogue.md` **未 commit**（規矩：等 Adam 說；已當面標記，若另一場要動 ailivex-platform 請先處理這檔）
+- 沿前場：19:05 調音版待 Adam 讀稿定調；計費錶三異常；簡報王知識庫空；voice_lexicon 待複審；多人接 Producer
+
+### 待執行 / 下一步
+兩件等 Adam：① 說 commit 就收規格書（v18.7.3 文件：podcast 雙人對話規格書）；② 讀 19:05 調音版（/admin/podcasts task NrN7wo 開頭）定上市基準。都不動的話下一優先＝第三場遺留的計費錶三異常。
