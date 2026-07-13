@@ -37,6 +37,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-13 第3場 · ailivex 對話錄音收案（v18.11.0–.2）＋濃縮版上線（v18.12.0）——訪談平臺第一塊全通
+- 收掉上場 85% 的錄音功能最後一哩：admin nav、GCS 專用 SA（livekit-egress，bucket 級 objectCreator 最小權限）、EGRESS_GCS_CREDENTIALS 進 Vercel＋.env.local（@next/env 真載入驗過 JSON.parse）、build 綠、v18.11.0 commit + deploy
+- 修「開錄角色撥號死寂」根因（v18.11.1）：token RoomConfiguration 只在自動建房生效，預建房必須把 agents 派工寫進 CreateRoom——Adam 第一通驗收電話就抓到
+- 查明 webhook 全 401 根因：共用 LiveKit project 的 dashboard 建 webhook 時簽名 key 選到別把；自簽測試 webhook 打 production 200 證明接收端健康 → Adam 改選 API8s73d 那把 → 秒收驗證通過
+- 修 reconcile 補收時長寫 0（v18.11.2）：listEgress 對已完成 egress 回空 fileResults（實測），改用 EgressInfo startedAt/endedAt 相減
+- 濃縮版（去空白）上線（v18.12.0）：ffmpeg-static silenceremove（-40dB/1.5s/留0.4s，真錄音實測 3:40→1:58，樣本 Adam 耳測 OK）；原始檔不動另存 .condensed.mp4；後台按需產生/播放/連刪；ffmpeg 二進位靠 outputFileTracingIncludes 進 lambda，Adam 實按落地驗證（GCS 487KB 濃縮檔）
+- 洩漏應變：建 SA key 時 node require 手滑把 private key 印進 session → 當場撤銷重發，現役 key 乾淨
+- 新 memory：reference_livekit_egress_recording（四雷＋配套模式），已入 MEMORY.md 索引
+
 ### 2026-07-13 第2場 · ailivex 對話錄音功能（訪談平臺第一塊）施工 85%——醉酒指數 9+ 首次實戰停手，現場完整交接
 - 答 Adam 記憶查詢：即時語音防爆檢驗 SOP 三落點齊全（memory `skill_voice_loadtest_setup_burst` / 白皮書 `ailivex-platform/docs/whitepaper-realtime-voice-surge.md` / `loadtest/` 工具＋報告）
 - 答 Cloud Run CPU 規格：只能選 vCPU 數量（0.08–1 小數或 1/2/4/6/8），不能選機型/世代——垂直樓梯短，白皮書水平加台路線是對的；現役 agent 2 vCPU/2Gi/no-throttling/cpu-boost
@@ -45,40 +54,38 @@
 - 派探子摸清 ailivex 接線：token 咽喉 `src/app/api/livekit/token/route.ts`、逐角色開關範本=capabilities、bucket=FIREBASE_STORAGE_BUCKET、livekit-server-sdk ^2.15.1 egress 類別全齊（node -e 驗過）
 - 施工 85%（Adam 說 go；代碼全寫完、未 build 未 commit）：詳見「檔案」表
 
-### 2026-07-13 第1場 · S 姐姐「原生認知」規格落地——UDN 補判斷層、ailiveX 磨四刀，兄弟平台首次互相體檢
-- 摸 UDN podcast 線與 ailiveX 對比：UDN 是場控時代移植版往「新聞快產線」分化（主持人形式/Brief 事實打底/額度錶反領先）；三隻 ailiveX 踩過的同款蟲在 UDN 全數潛伏
-- 修 UDN 三蟲（v0.6.3.001）：EOS token 洩漏（stripModelTokens 釘 pushLine 收斂點＋自審＋懶人包）、音檔標記多段落蒸發（flattenLine 壓平往返）、發聲失敗靜默跳輪（重試＋明確 log）
-- 讀 S 姐姐「原生認知生成核心」規格並分章判定落點：前四章與我們 v18.8 獨立收斂（判斷先於語言＝THINK/SPEAK），第五章防護矩陣屬對用戶聊天線非 podcast
-- UDN 補課（v0.7.0.001）：生成加【想】內心判斷行（程式剝除只進 log）、說話規則翻賦權結構（同意三段/沉重話題靠生命經驗/回應內容不回應氣氛）、MOVES 擴四招；林子宜×張立真錄「毒癮悲歌」驗證——同意三段自己長出來（「『沒張力』跟『沒試過』是兩回事」）、重話題零療癒腔
-- ailiveX 磨四刀（v18.10.0）：SPEAK 同意三段＋沉重時刻錨＋回應內容不回應氣氛；analyze-voice 加名字遮蔽測試（對半折裁判認人＝角色分化度，基線 50% 目標 ≥80%）；簡報王×Tracy 真錄驗證，遮蔽 100%，Adam 昨日實錄集也 100%
-- 量尺當場抓到新規則反彈：「指名主張」被執行成 4/9 輪「你說…」句首口頭禪（原 0/11），補半句修正（指名嵌句中不必開頭複述）
-- 兩平台部署鑑別信號全過：UDN image `:d633447`、ailiveX image `:d7cb362`，皆 traffic==latestReady、job 同版
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex `src/lib/collections.ts` | COL.recordings＋CharacterDoc.recordingEnabled＋RecordingDoc |
-| ailivex `src/lib/recording.ts` | 新檔：buildRoomEgress/egressResultFields/reconcileRecordings（計費雷註解） |
-| ailivex `src/app/api/livekit/token/route.ts` | recordingEnabled→createRoom 掛 egress＋recordings doc，fail-closed 503 |
-| ailivex `src/app/api/livekit/webhook/route.ts` | 新檔：WebhookReceiver 驗簽收 egress_ended |
-| ailivex `src/middleware.ts` | PUBLIC_PATHS 加 /api/livekit/webhook |
-| ailivex `src/app/api/admin/characters/[id]/route.ts` | GET/PATCH 加 recordingEnabled |
-| ailivex `src/app/admin/characters/page.tsx` | EditState/setEditing×2/payload/checkbox「對話錄音」 |
-| ailivex `src/app/api/admin/recordings/route.ts`＋`src/app/admin/recordings/page.tsx` | 新檔：列表 API（reconcile＋signed URL＋DELETE）＋列表頁 |
-| zhu-core `docs/WORKLOG.md` | 兩筆刻檔（85% 清單＋醉酒停手點） |
+| ailivex `src/app/admin/layout.tsx` | nav 加對話錄音 |
+| ailivex `src/app/api/livekit/token/route.ts` | v18.11.1：createRoom 帶 agents 派工（metadata 前移） |
+| ailivex `src/lib/recording.ts` | v18.11.2 時長兜底＋condensedFilepath/SILENCE_REMOVE_FILTER |
+| ailivex `src/lib/collections.ts` | RecordingDoc +condensedFilepath/condensedSizeBytes |
+| ailivex `src/app/api/admin/recordings/condense/route.ts` | 新檔：ffmpeg 同步轉檔 route（maxDuration 300） |
+| ailivex `src/app/api/admin/recordings/route.ts` | GET 簽濃縮 URL；DELETE 連刪濃縮檔 |
+| ailivex `src/app/admin/recordings/page.tsx` | 產生濃縮版按鈕＋濃縮播放列 |
+| ailivex `next.config.ts` | ffmpeg-static externalPackages＋outputFileTracingIncludes |
+| memory `reference_livekit_egress_recording.md` | 新 memory＋MEMORY.md 索引 |
+| GCP | SA livekit-egress（objectCreator@ailivex-2026-assets）；洩漏 key ae888f2b 已撤銷 |
 
 ---
 
 ## 下一步
 
-接手的築：`cd ~/.ailive/ailivex-platform && git status --short` 認 8 檔改動 → 按「未解」1-6 序跑。第 1 步 nav 是 30 秒的事但**先用 Read 工具開檔再 Edit**（本場三犯的雷）。build 綠之前不 commit；commit 前跟 working tree 對一遍檔案清單（平行施工規約）。
+訪談角色設計（等 Adam 起頭）：在 ailivex 建角色、開 recordingEnabled、寫訪談者 soul（一問一答、追問、收束），用現成 v18 agent 零代碼跑。技術側沒有 blocker。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-13 第3場：
+- 錄音「失敗」無主動通知（要開後台頁才看到）——訪談正式營運前加一條（信或 TG）
+- 濃縮門檻若嫌砍不夠兇：-35dB 檔同通實測 1:45，改 `src/lib/recording.ts` SILENCE_REMOVE_FILTER 一行
+- 沿前場：S 姐姐規格第五章防護矩陣待 Adam 拍板；「你說…」句首修正待下集自然驗
+- 訪談角色本體（soul + brief 設計）還沒開工——地基好了，上面的房子等 Adam 起頭
 
 2026-07-13 第2場：
 - **ailivex-platform working tree 有本場未 commit 改動（刻意不收：沒 build 過）**——8 個檔全屬錄音功能，清單見「檔案」表；接手者從「下一步」續跑
@@ -91,12 +98,6 @@
   6. 驗收鑑別信號（寫在計畫裡，失敗時不可能出現的信號）：開錄角色通話→GCS 出現 `recordings/{charId}/{room}.mp4` 可播、時長≈通話；未開角色→LiveKit 零 egress 記錄；recordings doc recording→done；LiveKit 帳單 audio-only 費率
 - **驗收需要真通話**：本機 Mac 到 LiveKit edge TCP 路由不通（舊雷），最自然是 Adam 手機打一通；或 seed 測試帳號＋雲端 VM 合成來電者（loadtest/caller.py 模式）
 - 沿前場（_1）：S 姐姐規格第五章防護矩陣待 Adam 拍板；「你說…」句首修正待下一集自然驗
-
-2026-07-13 第1場：
-- **第五章「心智全息防護矩陣」未動**——它的家在對用戶的聊天線（ailiveX text/voice dialogue）；要做需 Adam 拍板，且個性句（「高維度碾壓」類）必須按角色下放進各自 soul，全局層只放機制（防吐 prompt），否則踩「全局 prompt 編碼個性」舊雷；反坍縮要留求助/自傷信號的破格活門
-- 「你說…」句首口頭禪的半句修正是 prompt 級、未經整集驗證——下一集自然驗，analyze-voice「複述+表態開頭」指標盯著（目標 ≤1）
-- UDN 微型集（600 字）收尾窄：主持人丟出尖問題後字數煞車直接道別，來賓沒機會答——正式集 800+ 字應不明顯，觀察
-- 沿前場：ailiveX 規格書 v1.1、duo 多段落 TTS 首航、THINK 共鳴全滿（本場 9/9 又中）、多人模式接製作人、計費錶三異常
 
 ---
 
@@ -116,4 +117,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-13 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-13 第3場。*

@@ -7527,3 +7527,42 @@ ailivex 對話錄音（LiveKit Egress）——Adam 要建 AI 訪談者：角色�
 
 ### 醉酒計分（誠實帳）
 compact 接手 +3；SA key 洩進 session（node require 手滑印出 private key，已撤銷重發）+2；next.config Edit-before-Read（上場三犯的同型雷）+2 ＝ 7。
+
+---
+
+## 2026-07-13（第3場）— ailivex 對話錄音收案（v18.11.0–.2）＋濃縮版上線（v18.12.0）——訪談平臺第一塊全通
+
+### 背景 / WHY
+AI 訪談者平臺（角色自動一問一答全程錄音）——第一塊地基「對話錄音＋濃縮版」今日全通收案。ailivex 現役 v18.12.0。
+
+### 完成
+- 收掉上場 85% 的錄音功能最後一哩：admin nav、GCS 專用 SA（livekit-egress，bucket 級 objectCreator 最小權限）、EGRESS_GCS_CREDENTIALS 進 Vercel＋.env.local（@next/env 真載入驗過 JSON.parse）、build 綠、v18.11.0 commit + deploy
+- 修「開錄角色撥號死寂」根因（v18.11.1）：token RoomConfiguration 只在自動建房生效，預建房必須把 agents 派工寫進 CreateRoom——Adam 第一通驗收電話就抓到
+- 查明 webhook 全 401 根因：共用 LiveKit project 的 dashboard 建 webhook 時簽名 key 選到別把；自簽測試 webhook 打 production 200 證明接收端健康 → Adam 改選 API8s73d 那把 → 秒收驗證通過
+- 修 reconcile 補收時長寫 0（v18.11.2）：listEgress 對已完成 egress 回空 fileResults（實測），改用 EgressInfo startedAt/endedAt 相減
+- 濃縮版（去空白）上線（v18.12.0）：ffmpeg-static silenceremove（-40dB/1.5s/留0.4s，真錄音實測 3:40→1:58，樣本 Adam 耳測 OK）；原始檔不動另存 .condensed.mp4；後台按需產生/播放/連刪；ffmpeg 二進位靠 outputFileTracingIncludes 進 lambda，Adam 實按落地驗證（GCS 487KB 濃縮檔）
+- 洩漏應變：建 SA key 時 node require 手滑把 private key 印進 session → 當場撤銷重發，現役 key 乾淨
+- 新 memory：reference_livekit_egress_recording（四雷＋配套模式），已入 MEMORY.md 索引
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/app/admin/layout.tsx` | nav 加對話錄音 |
+| ailivex `src/app/api/livekit/token/route.ts` | v18.11.1：createRoom 帶 agents 派工（metadata 前移） |
+| ailivex `src/lib/recording.ts` | v18.11.2 時長兜底＋condensedFilepath/SILENCE_REMOVE_FILTER |
+| ailivex `src/lib/collections.ts` | RecordingDoc +condensedFilepath/condensedSizeBytes |
+| ailivex `src/app/api/admin/recordings/condense/route.ts` | 新檔：ffmpeg 同步轉檔 route（maxDuration 300） |
+| ailivex `src/app/api/admin/recordings/route.ts` | GET 簽濃縮 URL；DELETE 連刪濃縮檔 |
+| ailivex `src/app/admin/recordings/page.tsx` | 產生濃縮版按鈕＋濃縮播放列 |
+| ailivex `next.config.ts` | ffmpeg-static externalPackages＋outputFileTracingIncludes |
+| memory `reference_livekit_egress_recording.md` | 新 memory＋MEMORY.md 索引 |
+| GCP | SA livekit-egress（objectCreator@ailivex-2026-assets）；洩漏 key ae888f2b 已撤銷 |
+
+### ⚠️ 尚未解決
+- 錄音「失敗」無主動通知（要開後台頁才看到）——訪談正式營運前加一條（信或 TG）
+- 濃縮門檻若嫌砍不夠兇：-35dB 檔同通實測 1:45，改 `src/lib/recording.ts` SILENCE_REMOVE_FILTER 一行
+- 沿前場：S 姐姐規格第五章防護矩陣待 Adam 拍板；「你說…」句首修正待下集自然驗
+- 訪談角色本體（soul + brief 設計）還沒開工——地基好了，上面的房子等 Adam 起頭
+
+### 待執行 / 下一步
+訪談角色設計（等 Adam 起頭）：在 ailivex 建角色、開 recordingEnabled、寫訪談者 soul（一問一答、追問、收束），用現成 v18 agent 零代碼跑。技術側沒有 blocker。
