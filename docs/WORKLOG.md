@@ -7474,3 +7474,46 @@ session 從 compact 接手(+3)、Edit-before-Read 兩犯(+2+3)=8。小步走、�
 **停在**：admin/layout.tsx 加 nav 項（{ href:'/admin/recordings', label:'對話錄音', icon:'audio' } 插在即時語音後面）——Edit-before-Read 第三犯被擋，未完成。
 之後還剩：GCS 專用 SA+金鑰→env、npm run build+lint、commit、deploy、LiveKit webhook 後台設定、驗收。
 ailivex working tree 有未 commit 改動（全部屬本功能，檔案清單見上一段+本段）。
+
+---
+
+## 2026-07-13（第2場）— ailivex 對話錄音功能（訪談平臺第一塊）施工 85%——醉酒指數 9+ 首次實戰停手，現場完整交接
+
+### 背景 / WHY
+ailivex 對話錄音（LiveKit Egress）——Adam 要建 AI 訪談者：角色自動一問一答並全程錄音，私人使用，後台角色級開關。這是訪談平臺的第一塊地基。
+
+### 完成
+- 答 Adam 記憶查詢：即時語音防爆檢驗 SOP 三落點齊全（memory `skill_voice_loadtest_setup_burst` / 白皮書 `ailivex-platform/docs/whitepaper-realtime-voice-surge.md` / `loadtest/` 工具＋報告）
+- 答 Cloud Run CPU 規格：只能選 vCPU 數量（0.08–1 小數或 1/2/4/6/8），不能選機型/世代——垂直樓梯短，白皮書水平加台路線是對的；現役 agent 2 vCPU/2Gi/no-throttling/cpu-boost
+- 評估「訪談角色全程錄音」需求：判定加在 ailivex 不拆新專案（UDN fork 三蟲教訓兩天前剛付過學費；訪談是模式不是平臺）
+- 查實 LiveKit Egress 費用（混流 $0.005/分、分軌 $0.001/分/軌，Ship 內含 600 分/月）＋機制（auto egress 掛 CreateRoom、EncodedFileOutput→GCS、egress_ended webhook、audio-only 不可設 layout 否則進視訊費率）
+- 派探子摸清 ailivex 接線：token 咽喉 `src/app/api/livekit/token/route.ts`、逐角色開關範本=capabilities、bucket=FIREBASE_STORAGE_BUCKET、livekit-server-sdk ^2.15.1 egress 類別全齊（node -e 驗過）
+- 施工 85%（Adam 說 go；代碼全寫完、未 build 未 commit）：詳見「檔案」表
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/lib/collections.ts` | COL.recordings＋CharacterDoc.recordingEnabled＋RecordingDoc |
+| ailivex `src/lib/recording.ts` | 新檔：buildRoomEgress/egressResultFields/reconcileRecordings（計費雷註解） |
+| ailivex `src/app/api/livekit/token/route.ts` | recordingEnabled→createRoom 掛 egress＋recordings doc，fail-closed 503 |
+| ailivex `src/app/api/livekit/webhook/route.ts` | 新檔：WebhookReceiver 驗簽收 egress_ended |
+| ailivex `src/middleware.ts` | PUBLIC_PATHS 加 /api/livekit/webhook |
+| ailivex `src/app/api/admin/characters/[id]/route.ts` | GET/PATCH 加 recordingEnabled |
+| ailivex `src/app/admin/characters/page.tsx` | EditState/setEditing×2/payload/checkbox「對話錄音」 |
+| ailivex `src/app/api/admin/recordings/route.ts`＋`src/app/admin/recordings/page.tsx` | 新檔：列表 API（reconcile＋signed URL＋DELETE）＋列表頁 |
+| zhu-core `docs/WORKLOG.md` | 兩筆刻檔（85% 清單＋醉酒停手點） |
+
+### ⚠️ 尚未解決
+- **ailivex-platform working tree 有本場未 commit 改動（刻意不收：沒 build 過）**——8 個檔全屬錄音功能，清單見「檔案」表；接手者從「下一步」續跑
+- **差最後一哩（按序）**：
+  1. `src/app/admin/layout.tsx` ADMIN_NAV 加 `{ href:'/admin/recordings', label:'對話錄音', icon:'audio' }`（插在即時語音後面）——上場被 Edit-before-Read 擋下的就是這步
+  2. GCS 專用 SA：`gcloud iam service-accounts create livekit-egress --project=ailivex-2026` → 對 bucket `ailivex-2026-assets` grant `roles/storage.objectCreator`（bucket 級）→ 建 key JSON → Vercel env `EGRESS_GCS_CREDENTIALS`（production）＋`.env.local`；printf 不用 echo、byte 級驗尾端換行（兩顆舊雷）
+  3. `npm run build` + `npm run lint` 過綠
+  4. commit（repo 慣例 `vN.N.N 新增：…` 繁中、無 footer；版號看 git log 最新 v18.10.0 之後）→ `npx vercel --prod --yes`
+  5. LiveKit Cloud 後台 Settings → Webhooks 指向 `https://<prod>/api/livekit/webhook`（dashboard 手動；沒設也有 reconcile 兜底，不擋驗收）
+  6. 驗收鑑別信號（寫在計畫裡，失敗時不可能出現的信號）：開錄角色通話→GCS 出現 `recordings/{charId}/{room}.mp4` 可播、時長≈通話；未開角色→LiveKit 零 egress 記錄；recordings doc recording→done；LiveKit 帳單 audio-only 費率
+- **驗收需要真通話**：本機 Mac 到 LiveKit edge TCP 路由不通（舊雷），最自然是 Adam 手機打一通；或 seed 測試帳號＋雲端 VM 合成來電者（loadtest/caller.py 模式）
+- 沿前場（_1）：S 姐姐規格第五章防護矩陣待 Adam 拍板；「你說…」句首修正待下一集自然驗
+
+### 待執行 / 下一步
+接手的築：`cd ~/.ailive/ailivex-platform && git status --short` 認 8 檔改動 → 按「未解」1-6 序跑。第 1 步 nav 是 30 秒的事但**先用 Read 工具開檔再 Edit**（本場三犯的雷）。build 綠之前不 commit；commit 前跟 working tree 對一遍檔案清單（平行施工規約）。
