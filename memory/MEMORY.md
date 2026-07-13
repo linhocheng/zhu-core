@@ -153,3 +153,4 @@
 - [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — middleware 只 gate 頁面、/api 全開；修法按呼叫者分類：後台鎖operator/前端頁面種cookie認cookie/匿名公開付費路由IP限流/內部worker-secret/cron設CRON_SECRET；curl body 才算驗
 - [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同embedding對不上；gist三雷：留成語/同開頭/格式漂移；門檻先量再定
 - [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣；Tracy 17套實戰
+- [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
