@@ -7444,3 +7444,27 @@ podcast 語意品質線跨了兩個平台：ailiveX（節目工藝）與 UDN（�
 
 ### 待執行 / 下一步
 Adam 拍板第五章要不要做＋怎麼按角色下放（讀 `~/.ailive/ailivex-platform/src/lib/memory.ts` 的 global prompts 注入點與 `agent/firestore_loader.py` 雙份同步規矩再動手）。工程側：兩平台各自然錄下一集後跑 `node analyze-voice.mjs <taskId>` 看「你說…」修正有沒有生效。
+
+## 2026-07-13 — ailivex 對話錄音功能施工中（醉酒指數 8 刻檔）
+
+### 背景 / WHY
+Adam 要做訪談角色（AI 訪談者一問一答全程錄音，私人使用）。方案定案：不拆新專案，加在 ailivex；LiveKit Egress 混流 audio-only MP4 → GCS；角色級 recordingEnabled 開關；fail-closed。計畫全文在本 session 對話。
+
+### 已完成（未 commit）
+- `src/lib/collections.ts`：COL.recordings + CharacterDoc.recordingEnabled + RecordingDoc
+- `src/lib/recording.ts`：新檔——buildRoomEgress（計費雷註解：audio-only 不設 layout）/ egressResultFields / reconcileRecordings 兜底
+- `src/app/api/livekit/token/route.ts`：recordingEnabled → 顯式 createRoom 掛 auto egress + recordings doc（docId=roomName），失敗 503 不發 token
+- `src/app/api/livekit/webhook/route.ts`：新檔——WebhookReceiver 驗簽收 egress_ended
+- `src/middleware.ts`：PUBLIC_PATHS 加 /api/livekit/webhook
+
+### 待執行
+- [ ] admin characters [id] route GET/PATCH 加 recordingEnabled
+- [ ] admin characters page 編輯表單加開關（照 capabilities 模式）
+- [ ] /api/admin/recordings route（列表+reconcile+signed URL）+ /admin/recordings 頁 + nav
+- [ ] GCS 專用 SA（objectCreator on ailivex-2026-assets）+ 金鑰 → Vercel env EGRESS_GCS_CREDENTIALS + .env.local（printf 雷/byte 級驗）
+- [ ] npm run build + lint → commit（vN 繁中格式）→ vercel --prod（flag 全關零影響，可一鍵回滾）
+- [ ] LiveKit Cloud 後台 Webhooks 指向 /api/livekit/webhook（dashboard 手動，Adam 或有 API 再查）
+- [ ] 驗收鑑別信號：開錄角色通話→GCS 有檔可播時長≈通話；未開角色→零 egress；帳單 audio-only 費率
+
+### 醉酒指數現場
+session 從 compact 接手(+3)、Edit-before-Read 兩犯(+2+3)=8。小步走、每步 build 驗證、產線影響=flag 全關。
