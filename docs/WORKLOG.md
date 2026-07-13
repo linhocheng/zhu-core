@@ -7468,3 +7468,9 @@ Adam 要做訪談角色（AI 訪談者一問一答全程錄音，私人使用）
 
 ### 醉酒指數現場
 session 從 compact 接手(+3)、Edit-before-Read 兩犯(+2+3)=8。小步走、每步 build 驗證、產線影響=flag 全關。
+
+### 2026-07-13 追刻（醉酒指數 9+ 停手點）
+自上一刻檔後又完成：admin characters [id] route GET/PATCH 加 recordingEnabled ✅、admin characters page EditState+兩處 setEditing+payload+checkbox UI ✅、/api/admin/recordings route（GET reconcile+signed URL / DELETE）✅、/admin/recordings page ✅。
+**停在**：admin/layout.tsx 加 nav 項（{ href:'/admin/recordings', label:'對話錄音', icon:'audio' } 插在即時語音後面）——Edit-before-Read 第三犯被擋，未完成。
+之後還剩：GCS 專用 SA+金鑰→env、npm run build+lint、commit、deploy、LiveKit webhook 後台設定、驗收。
+ailivex working tree 有未 commit 改動（全部屬本功能，檔案清單見上一段+本段）。
