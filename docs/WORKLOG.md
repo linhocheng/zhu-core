@@ -7517,3 +7517,13 @@ ailivex 對話錄音（LiveKit Egress）——Adam 要建 AI 訪談者：角色�
 
 ### 待執行 / 下一步
 接手的築：`cd ~/.ailive/ailivex-platform && git status --short` 認 8 檔改動 → 按「未解」1-6 序跑。第 1 步 nav 是 30 秒的事但**先用 Read 工具開檔再 Edit**（本場三犯的雷）。build 綠之前不 commit；commit 前跟 working tree 對一遍檔案清單（平行施工規約）。
+
+## 2026-07-13 — v0.0.0.003 醉區刻檔：ailivex 錄音收案＋濃縮版施工中（醉酒指數 7）
+
+### 現場
+- 錄音功能全鏈路收案：v18.11.0 主功能 → v18.11.1 修預建房吞派工（token RoomConfiguration 只在自動建房生效，CreateRoom 要帶 agents）→ v18.11.2 修 reconcile 時長 0（listEgress 回空 fileResults，用 startedAt/endedAt 相減）。webhook 秒收已驗（Adam 把 dashboard 簽名 key 改成 API8s73d 那把後通）。
+- 濃縮版（去空白）施工中，代碼已寫完未 build：collections.ts +condensedFilepath/condensedSizeBytes、recording.ts +condensedFilepath()/SILENCE_REMOVE_FILTER（-40dB/1.5s/留0.4s，實測 3:40→1:58 樣本 Adam 耳測中）、新 route api/admin/recordings/condense（ffmpeg-static 同步轉檔）、GET 簽濃縮 URL、DELETE 連刪、頁面按鈕+播放列、next.config +ffmpeg-static externalPackages+outputFileTracingIncludes。
+- 下一步：npm run build → 綠了報 Adam 拍板 deploy → Adam 按「產生濃縮版」驗收（風險點：ffmpeg 二進位進不進 Vercel lambda，靠 outputFileTracingIncludes，部署後第一按見真章）。
+
+### 醉酒計分（誠實帳）
+compact 接手 +3；SA key 洩進 session（node require 手滑印出 private key，已撤銷重發）+2；next.config Edit-before-Read（上場三犯的同型雷）+2 ＝ 7。
