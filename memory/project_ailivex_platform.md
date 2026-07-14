@@ -1,9 +1,16 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18、podcast 雙人對話協議＋Voice Layer 上線（2026-07-11 第四場）、監控中台 Phase 2.5、語音容量實測 6 路/台、防爆白皮書已交付、v17 冷備、3a 已退役
+description: ailiveX 語音現役 v18、對話錄音＋濃縮版（v18.11-12）、記憶健康巡檢觀察者（v18.14）、podcast 雙人對話協議＋Voice Layer、監控中台 Phase 2.5、v17 冷備、3a 已退役
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-14 第二場：記憶健康巡檢（觀察者）上線（v18.14.0 已 commit+部署）。**
+- 五項確定性檢查（`src/lib/memory-health.ts`）：孤兒（角色＋用戶雙軸）/缺欄/積壓/鞏固 watermark 卡住（>48h）/embedding 脫鉤抽測（每輪隨機 8 條 re-embed 對庫存 cosine<0.85 判漂移）＋觀察者評語（Haiku via bridge，掛了不影響結論）——程式算數字、角色寫評語
+- cron 每日台北 04:00（排鞏固/維護之後）＋/admin/memories 頂部面板（狀態/觸發時間/來源/發現/評語/canary 現況＋立即巡檢）＋監控頁 cron·記憶健檢燈；結果落 `memory_health_runs`
+- **第一輪就抓到 42 條用戶孤兒**（兩個已刪用戶）——上場手術只查角色軸；已驗屍+備份+清除，memories 496→454，重跑 status=ok
+- 本機測 cron 路由 SOP：`FIREBASE_SERVICE_ACCOUNT_JSON=`（置空走 ADC）＋`FIREBASE_PROJECT_ID=ailivex-2026`＋臨時 CRON_SECRET 起 dev（.env.local 的 SA JSON 有真換行 parse 不過＋缺 PROJECT_ID，歷史遺留）
+- 記憶優化清單剩四項（按價值）：印象層後台化、rerank、admin 語義搜尋、檢索真相鏈面板；Adam 說「以後一起來看角色記憶」
 
 **2026-07-11 第四場：podcast 雙人對話協議管線＋Voice Layer（部署 voice-07112018，repo v18.7.1）。**
 - **對話協議**（治收斂）：2 角色自動走 duo 管線（3+ 仍 legacy）——Belief State（開錄前自動生成，軟肋當靶心）＋三幕 Orchestrator（分歧→攻軟肋→落地，出口條件程式判）＋Producer 煞車（CUT/GROUND/AUDIT/PRESS/LAND，不進成品）＋R1-R6（heard steelman 可稽核、REJECT 必付立場修正、輪替程式交替）；corpus 掛 knowledge_chunks（R4 禁第三方捏案例，**自身經歷放行**）；EPISODE_GOAL 磨題入口 `/api/convert/podcast/sharpen-goal`（目標由人持有）
