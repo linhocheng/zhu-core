@@ -7608,3 +7608,41 @@ AI 訪談者平臺（角色自動一問一答全程錄音）——第一塊地�
 
 ### 待執行 / 下一步
 Adam 挑一個角色在文字對話教第一條慣用語（「這種情況你通常會說…」）→ 驗 [[EXPRESSION]] 寫入後台可見 → 打語音聽會不會自然用出來（v18 已含新 loader）。收工時 fanout 本檔補完蓋章。
+
+---
+
+## 2026-07-14（第2場）— 記憶觀察者上線（ailivex v18.14.0）——健檢第一輪抓到 42 條用戶孤兒並清除
+
+### 背景 / WHY
+AI 訪談平臺的記憶基建線——訪談要驗「角色記住受訪者」，先讓記憶系統可觀測。觀察者是眼睛的第一塊；Adam 說「以後一起來看角色記憶」。
+
+### 完成
+- 盤點 ailivex 記憶系統可檢視/可查詢/可優化全貌（四層：情節→印象→日記→遺忘，斷點：印象層不可見、無檢索真相鏈、admin 無語義搜尋）
+- 建記憶健康巡檢（觀察者）：五項確定性檢查（孤兒/缺欄/積壓/鞏固卡住/embedding 脫鉤抽測）＋Haiku via bridge 診斷評語——程式算數字、角色寫評語（天條落地）
+- 接線三處雷全動：cron route（每日台北 04:00，排在鞏固/維護之後）＋vercel.json＋middleware PUBLIC_PATHS；監控中台自動多一顆 cron·記憶健檢心跳燈
+- 後台面板上線：/admin/memories 頂部顯示狀態燈/觸發時間/觸發來源/發現清單/觀察者評語/管線 canary 現況/近況趨勢＋立即巡檢按鈕
+- 本機端到端驗三輪（ADC fallback：FIREBASE_SERVICE_ACCOUNT_JSON 置空＋FIREBASE_PROJECT_ID=ailivex-2026）：第一輪抓到 42 條孤兒、第二輪驗通抽測管道（8 條自符合度 1.0）、第三輪調完觀察者 prompt（canary 關≠故障）
+- 驗證健檢發現為真（記憶會說謊，自己的檢查也要驗）：42 條孤兒＝兩個已刪用戶（40+2），上場手術只查角色軸漏了用戶軸
+- 清孤兒：驗屍（user doc 確認不存在）→ 42 條全文備份 scratchpad → 批次刪 → 重跑健檢 status=ok 零發現；496→454 帳目相符，缺 type 那條在孤兒裡一併走了
+- v18.14.0 commit + deploy，生產 401-not-404 驗過兩條路由
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/lib/memory-health.ts` | 新檔：五項確定性檢查＋觀察者評語 |
+| ailivex `src/lib/collections.ts` | COL.memoryHealthRuns＋MemoryHealthRunDoc 型別 |
+| ailivex `src/app/api/cron/memory-health/route.ts` | 新檔：每日巡檢 cron（wrapCron 心跳） |
+| ailivex `src/app/api/admin/memory-health/route.ts` | 新檔：後台讀近輪＋手動觸發 |
+| ailivex `src/app/admin/memories/page.tsx` | 頂部觀察者面板 |
+| ailivex `src/app/api/admin/monitor/route.ts` | cron·記憶健檢燈 |
+| ailivex `vercel.json`＋`src/middleware.ts` | cron 排程＋PUBLIC_PATHS（三處雷） |
+| Firestore | memories 496→454（42 條用戶孤兒清除，先備份後動刀） |
+
+### ⚠️ 尚未解決
+- 生產第一次 cron 心跳未發生（今晚台北 04:00）——監控頁灰燈到那時是誠實狀態；Adam 可先在 /admin/memories 按「立即巡檢」看真輪
+- 記憶優化清單剩四項未動（按價值排）：印象層後台化、rerank、admin 語義搜尋、檢索真相鏈/模擬器（本場做的是自動觀察者，真相鏈 debug 面板還沒做）
+- 本機 dev 環境雙缺（歷史遺留非本場）：.env.local 的 SA JSON 有真換行 JSON.parse 不過、且缺 FIREBASE_PROJECT_ID——本機測法＝FIREBASE_SERVICE_ACCOUNT_JSON= 置空走 ADC＋補 FIREBASE_PROJECT_ID
+- 沿前場：表達層語音實戰驗收、訪談角色 soul、錄音失敗主動通知、S 姐姐第五章
+
+### 待執行 / 下一步
+Adam 起頭「一起來看角色記憶」時：開 https://ailivex-platform.vercel.app/admin/memories 按立即巡檢看觀察者真輪 → 逐角色看記憶分佈與品質 → 從剩下四項優化（印象層後台化最優先）挑著做。技術入口：`src/lib/memory-health.ts`（檢查項要加就加這）。

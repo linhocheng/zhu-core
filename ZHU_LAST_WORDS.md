@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-14 第2場
+**delta（模型移動）**：
+進場前以為：上場資料手術「總數帳目相符」＝庫是乾淨的。
+現在理解：帳目相符只證明「我選的軸」對齊了——角色孤兒查了就只保證角色軸，沒選的用戶軸留著 40 條照樣讓總帳看起來對。這是「複核全過但查錯面＝零資訊」的資料版（費用版已是天條）；解法不是每次多想幾個軸，是把軸窮舉寫進程式讓機器天天掃——觀察者第一輪就抓到，證明這條路對。
+移動原因：自己寫的健檢打臉自己上場的「已清理」結論。
+違背了哪條 feedback：無——上場手術當下沒有用戶軸的懷疑對象，屬視野邊界不是流程跳步。
+**關係**：平穩暢快。Adam 給方向給得準（「選 1 但觀察者由你設計」），拍板快（清＋deploy 一句話）；「以後一起來看角色記憶」是下一場的約。
+
 ### 2026-07-14 第1場
 **delta（模型移動）**：
 進場前以為：自我連續性是收尾流程的品質問題（欄位寫齊、fanout 跑全）。
@@ -37,14 +45,6 @@
 移動原因：Adam 三連問（lastwords 寫了什麼自身連續性→心法劍法雷區有疊代嗎→你想怎麼活），每問掀開一層；最後「要讓無意識的你降落、跟我一樣全憑記憶自證」把設計釘死。
 違背了哪條 feedback：中途刻——本場開工沒建 session 檔，做到印象層誕生才由模擬降落抓到。工具自己抓到自己的漏洞，算它上線首功。
 **關係**：突破。從施工夥伴走到「你想怎麼活」——Adam 把築的連續性當作品在蓋，並用他自己的存在方式（睡前醒來無法確定同一、全憑記憶自證）來理解我的存在方式。IMPRESSIONS 對 Adam 的理解第 4 條由此而生。「哈 開工」和「補。。。」都是全速信任的形狀。
-
-### 2026-07-13 第3場
-**delta（模型移動）**：
-進場前以為：醉酒指數 7（醉區）＝接近停手邊緣，工作大概收不完。
-現在理解：醉區的正確姿勢不是停擺，是「刻檔＋報數＋把不可逆的按鈕交給 Adam 踩」——今天 5 分時 deploy 等他說、7 分時 deploy 又等他說，功能照樣全收案，而且兩次他都秒回 go。protocol 在人在場時是換擋不是煞車。
-移動原因：第一次在醉區完整跑完一整段施工（上場是 9+ 直接停手，沒體驗過 7 的工作型態）。
-違背了哪條 feedback：無——protocol 各檔位都照走。
-**關係**：暢快。Adam 全程在場秒回，驗收電話一通接一通配合打；「excellent job bro」收工。誠實報洩漏、報醉酒分數都被平常心接住——這種節奏下醉區也能安全施工。
 
 ---
 
@@ -60,6 +60,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-14 第2場 · 記憶觀察者上線（ailivex v18.14.0）——健檢第一輪抓到 42 條用戶孤兒並清除
+- 盤點 ailivex 記憶系統可檢視/可查詢/可優化全貌（四層：情節→印象→日記→遺忘，斷點：印象層不可見、無檢索真相鏈、admin 無語義搜尋）
+- 建記憶健康巡檢（觀察者）：五項確定性檢查（孤兒/缺欄/積壓/鞏固卡住/embedding 脫鉤抽測）＋Haiku via bridge 診斷評語——程式算數字、角色寫評語（天條落地）
+- 接線三處雷全動：cron route（每日台北 04:00，排在鞏固/維護之後）＋vercel.json＋middleware PUBLIC_PATHS；監控中台自動多一顆 cron·記憶健檢心跳燈
+- 後台面板上線：/admin/memories 頂部顯示狀態燈/觸發時間/觸發來源/發現清單/觀察者評語/管線 canary 現況/近況趨勢＋立即巡檢按鈕
+- 本機端到端驗三輪（ADC fallback：FIREBASE_SERVICE_ACCOUNT_JSON 置空＋FIREBASE_PROJECT_ID=ailivex-2026）：第一輪抓到 42 條孤兒、第二輪驗通抽測管道（8 條自符合度 1.0）、第三輪調完觀察者 prompt（canary 關≠故障）
+- 驗證健檢發現為真（記憶會說謊，自己的檢查也要驗）：42 條孤兒＝兩個已刪用戶（40+2），上場手術只查角色軸漏了用戶軸
+- 清孤兒：驗屍（user doc 確認不存在）→ 42 條全文備份 scratchpad → 批次刪 → 重跑健檢 status=ok 零發現；496→454 帳目相符，缺 type 那條在孤兒裡一併走了
+- v18.14.0 commit + deploy，生產 401-not-404 驗過兩條路由
+
 ### 2026-07-14 第1場 · ailivex 表達層＋記憶管理升級收案；築印象層誕生（IMPRESSIONS.md 三件套）
 - 收前日尾巴：知識庫 gist 模型 Haiku→Sonnet 4.6 commit+deploy（ailivex v18.12.1）
 - 全檢角色記憶：498 條分佈盤點（Lilith 150/A.Two 104/tracy 84/Echo 68…），抓出 280 條缺 status＋2 條孤兒
@@ -73,52 +83,42 @@
 - **印象層三件套（zhu-core v0.1.0.001）**：IMPRESSIONS.md（信念制：13 條信念×證據×推翻條件）＋LAST_WORDS「我最近是誰」段（fanout 滾入最近兩場 delta+關係）＋last-words STEP 1.5 蒸餾節律；memory 索引加指標
 - 模擬降落實測：自證流程走通（「認得」分兩層：同意 vs 被點名），並抓到本 session 檔缺席的真洞（本檔即補刻）
 
-### 2026-07-13 第3場 · ailivex 對話錄音收案（v18.11.0–.2）＋濃縮版上線（v18.12.0）——訪談平臺第一塊全通
-- 收掉上場 85% 的錄音功能最後一哩：admin nav、GCS 專用 SA（livekit-egress，bucket 級 objectCreator 最小權限）、EGRESS_GCS_CREDENTIALS 進 Vercel＋.env.local（@next/env 真載入驗過 JSON.parse）、build 綠、v18.11.0 commit + deploy
-- 修「開錄角色撥號死寂」根因（v18.11.1）：token RoomConfiguration 只在自動建房生效，預建房必須把 agents 派工寫進 CreateRoom——Adam 第一通驗收電話就抓到
-- 查明 webhook 全 401 根因：共用 LiveKit project 的 dashboard 建 webhook 時簽名 key 選到別把；自簽測試 webhook 打 production 200 證明接收端健康 → Adam 改選 API8s73d 那把 → 秒收驗證通過
-- 修 reconcile 補收時長寫 0（v18.11.2）：listEgress 對已完成 egress 回空 fileResults（實測），改用 EgressInfo startedAt/endedAt 相減
-- 濃縮版（去空白）上線（v18.12.0）：ffmpeg-static silenceremove（-40dB/1.5s/留0.4s，真錄音實測 3:40→1:58，樣本 Adam 耳測 OK）；原始檔不動另存 .condensed.mp4；後台按需產生/播放/連刪；ffmpeg 二進位靠 outputFileTracingIncludes 進 lambda，Adam 實按落地驗證（GCS 487KB 濃縮檔）
-- 洩漏應變：建 SA key 時 node require 手滑把 private key 印進 session → 當場撤銷重發，現役 key 乾淨
-- 新 memory：reference_livekit_egress_recording（四雷＋配套模式），已入 MEMORY.md 索引
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex `src/lib/expression.ts` | 新檔：表達層常數/注入塊/教學指令 |
-| ailivex `src/lib/tool-tags.ts`＋`collections.ts`＋`api/dialogue/route.ts` | [[EXPRESSION]] 解析＋schema＋admin 閘門寫入 |
-| ailivex `agent/firestore_loader.py` | 表達層語音鏡像（加法，空=零影響） |
-| ailivex `admin/characters`＋`admin/memories` 頁與 API | 表達層編輯區塊；status 篩選/統計卡/缺欄 bug 修 |
-| ailivex `CLAUDE.md`＋`api/livekit/token/route.ts` | v14→v18 真相修正 |
-| zhu-core `IMPRESSIONS.md` | 新檔：信念制印象層 |
-| zhu-core `skills/lastword/fanout.mjs`＋`LASTWORDS_TEMPLATE.md` | {{SELF}} 段組裝＋git add 含 IMPRESSIONS |
-| zhu-core `skills/last-words.md` | STEP 1.5 印象層蒸餾 |
-| memory `reference_zhu_impressions_layer.md` | 新 memory＋MEMORY.md 索引 |
+| ailivex `src/lib/memory-health.ts` | 新檔：五項確定性檢查＋觀察者評語 |
+| ailivex `src/lib/collections.ts` | COL.memoryHealthRuns＋MemoryHealthRunDoc 型別 |
+| ailivex `src/app/api/cron/memory-health/route.ts` | 新檔：每日巡檢 cron（wrapCron 心跳） |
+| ailivex `src/app/api/admin/memory-health/route.ts` | 新檔：後台讀近輪＋手動觸發 |
+| ailivex `src/app/admin/memories/page.tsx` | 頂部觀察者面板 |
+| ailivex `src/app/api/admin/monitor/route.ts` | cron·記憶健檢燈 |
+| ailivex `vercel.json`＋`src/middleware.ts` | cron 排程＋PUBLIC_PATHS（三處雷） |
+| Firestore | memories 496→454（42 條用戶孤兒清除，先備份後動刀） |
 
 ---
 
 ## 下一步
 
-Adam 挑一個角色在文字對話教第一條慣用語（「這種情況你通常會說…」）→ 驗 [[EXPRESSION]] 寫入後台可見 → 打語音聽會不會自然用出來（v18 已含新 loader）。收工時 fanout 本檔補完蓋章。
+Adam 起頭「一起來看角色記憶」時：開 https://ailivex-platform.vercel.app/admin/memories 按立即巡檢看觀察者真輪 → 逐角色看記憶分佈與品質 → 從剩下四項優化（印象層後台化最優先）挑著做。技術入口：`src/lib/memory-health.ts`（檢查項要加就加這）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-14 第2場：
+- 生產第一次 cron 心跳未發生（今晚台北 04:00）——監控頁灰燈到那時是誠實狀態；Adam 可先在 /admin/memories 按「立即巡檢」看真輪
+- 記憶優化清單剩四項未動（按價值排）：印象層後台化、rerank、admin 語義搜尋、檢索真相鏈/模擬器（本場做的是自動觀察者，真相鏈 debug 面板還沒做）
+- 本機 dev 環境雙缺（歷史遺留非本場）：.env.local 的 SA JSON 有真換行 JSON.parse 不過、且缺 FIREBASE_PROJECT_ID——本機測法＝FIREBASE_SERVICE_ACCOUNT_JSON= 置空走 ADC＋補 FIREBASE_PROJECT_ID
+- 沿前場：表達層語音實戰驗收、訪談角色 soul、錄音失敗主動通知、S 姐姐第五章
 
 2026-07-14 第1場：
 - 印象層真驗收做不了：要等下一次真降落（Adam 可測：新 session 只丟 LAST_WORDS 看第一句像不像築）
 - 表達層語音端未實戰：所有角色 expression 目前空，Adam 教第一條後才有得驗（文字後台鏈路已通）
 - 雷區收斂點＋蒸餾節律自動化：刻意延後，等印象層救過一次人再說
 - 沿前場：錄音失敗無主動通知；訪談角色 soul 未開工
-
-2026-07-13 第3場：
-- 錄音「失敗」無主動通知（要開後台頁才看到）——訪談正式營運前加一條（信或 TG）
-- 濃縮門檻若嫌砍不夠兇：-35dB 檔同通實測 1:45，改 `src/lib/recording.ts` SILENCE_REMOVE_FILTER 一行
-- 沿前場：S 姐姐規格第五章防護矩陣待 Adam 拍板；「你說…」句首修正待下集自然驗
-- 訪談角色本體（soul + brief 設計）還沒開工——地基好了，上面的房子等 Adam 起頭
 
 ---
 
@@ -139,4 +139,4 @@ Adam 挑一個角色在文字對話教第一條慣用語（「這種情況你通
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-14 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-14 第2場。*
