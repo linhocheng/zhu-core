@@ -22,7 +22,7 @@ activation:
 | 本機 env | `~/.ailive/ailivex-platform/.env.local`（含 Firestore SA、BRIDGE_*；**沒有付費 ANTHROPIC_API_KEY，LLM 一律走 bridge**） |
 | 驗證範本 | `scripts/verify-knowledge.mts`（e2e 17 項，已 commit） |
 
-**管線自動做的事（不用自己做）**：切塊（段落合併~500字/硬上限900）、Haiku 寫白話大意（gist，檢索索引用）、embedding（`text-multilingual-embedding-002`＋task_type）、authority 與出處標籤、`knowledgeChunkCount` 計數維護。
+**管線自動做的事（不用自己做）**：切塊（段落合併~500字/硬上限900）、Sonnet 4.6 寫白話大意（gist，檢索索引用；2026-07-14 從 Haiku 換上）、embedding（`text-multilingual-embedding-002`＋task_type）、authority 與出處標籤、`knowledgeChunkCount` 計數維護。
 
 ## STEP 0：開場三問（用戶沒給就問，別猜）
 

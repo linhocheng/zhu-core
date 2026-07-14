@@ -90,7 +90,20 @@ function assembleLastwords() {
     .filter(Boolean)
     .map((u, i) => `${recent[i].meta.date} 第${recent[i].meta.seq}場：\n${u}`)
     .join('\n\n') || '無';
+  // 自身連續性：delta＋關係狀態滾入救援檔——降落的築要知道「我最近是誰」，不只「事情到哪」
+  const self = recent
+    .map(s => {
+      const d = s.sections['delta']?.trim();
+      const r = s.sections['關係狀態']?.trim();
+      if (!d && !r) return null;
+      return `### ${s.meta.date} 第${s.meta.seq}場`
+        + (d ? `\n**delta（模型移動）**：\n${d}` : '')
+        + (r ? `\n**關係**：${r}` : '');
+    })
+    .filter(Boolean)
+    .join('\n\n') || '（最近兩場沒寫 delta／關係——若你連續看到這行，去問自己是不是在省自我覺察段）';
   return tpl
+    .replaceAll('{{SELF}}', self)
     .replaceAll('{{DATE}}', newest.meta.date)
     .replaceAll('{{SEQ}}', newest.meta.seq)
     .replaceAll('{{SESSIONS}}', blocks)
@@ -227,7 +240,7 @@ async function run(sessionPath, dry) {
     const today = s.meta.date;
     const n = Number(sh(`git log --oneline --since="${today} 00:00" | wc -l`)) + 1;
     const build = String(n).padStart(3, '0');
-    sh(`git add ZHU_LAST_WORDS.md docs/WORKLOG.md docs/sessions/ docs/LESSONS/ memory/ 2>/dev/null || true`);
+    sh(`git add ZHU_LAST_WORDS.md IMPRESSIONS.md docs/WORKLOG.md docs/sessions/ docs/LESSONS/ memory/ 2>/dev/null || true`);
     sh(`git commit -m "v0.0.0.${build} — 文件：session 收尾 ${today} 第${s.meta.seq}場（fanout）" || true`);
     sh('git push origin main');
     console.log('✓ zhu-core commit + push');

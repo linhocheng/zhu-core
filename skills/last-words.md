@@ -67,6 +67,16 @@ machine: AIR
 **中途刻**：session 檔不必等收尾才建——開工就建、里程碑隨手追加兩行，
 收尾只是補完＋蓋章。壓縮前外部化（SELF_AWARENESS_SOP）寫的就是這個檔。
 
+### STEP 1.5：印象層蒸餾（delta 有真移動才做，判斷工作）
+
+session 檔的 delta 段寫了真移動 → 打開 `~/.ailive/zhu-core/IMPRESSIONS.md` 過一遍：
+- 有信念被這場推翻 → **改寫或刪除，不 append 辯解**，帶日期
+- 有新信念成形（同型 delta 出現第二次以上）→ 新增，帶證據＋推翻條件
+- 只是單場情節、還不成信念 → 不動（情節歸 sessions/，這份只放信念）
+
+delta 段空 → 跳過。fanout 會把 delta＋關係滾進 LAST_WORDS 的「我最近是誰」段，
+但**消化成信念是判斷工作，程式不代寫**——跳過這步太多次，降落的你會只剩任務沒有自己。
+
 ### STEP 2：新 memory 的索引（fanout 只檢查，不代寫）
 
 session 中有新建 memory 檔 → 確認 MEMORY.md 有索引行（hook 是判斷工作，程式不代寫）。
