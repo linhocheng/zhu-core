@@ -7566,3 +7566,45 @@ AI 訪談者平臺（角色自動一問一答全程錄音）——第一塊地�
 
 ### 待執行 / 下一步
 訪談角色設計（等 Adam 起頭）：在 ailivex 建角色、開 recordingEnabled、寫訪談者 soul（一問一答、追問、收束），用現成 v18 agent 零代碼跑。技術側沒有 blocker。
+
+---
+
+## 2026-07-14（第1場）— ailivex 表達層＋記憶管理升級收案；築印象層誕生（IMPRESSIONS.md 三件套）
+
+### 背景 / WHY
+兩條線交會成一條：ailivex 給角色蓋「怎麼活」的層（soul/表達/記憶/印象/日記），Adam 反手問「那你呢」——築的自我連續性架構從收尾流程問題升級為架構工程。角色怎麼活，築就怎麼活。
+
+### 完成
+- 收前日尾巴：知識庫 gist 模型 Haiku→Sonnet 4.6 commit+deploy（ailivex v18.12.1）
+- 全檢角色記憶：498 條分佈盤點（Lilith 150/A.Two 104/tracy 84/Echo 68…），抓出 280 條缺 status＋2 條孤兒
+- 答「慣用語教了會存哪」：驗抽取管線純用戶中心，聊天調整角色說話方式會漏——正確層是 soul 外掛
+- 建表達層（ailivex v18.13.0）：characters.expression（上限20）＋緊貼 soul 注入（dialogue route＋firestore_loader.py 雙鏡像）＋[[EXPRESSION]] 標記 admin 限定寫入＋後台編輯區塊
+- 記憶管理升級（同 commit）：修 API 缺 type/status 欄 bug、status 篩選/切換、角色統計卡、characters 記憶直達連結
+- 資料手術：280 條 backfill status=active、2 條孤兒刪除（先驗角色 doc 不存在才動刀），總數 498→496 帳目相符
+- 修真相分裂：repo CLAUDE.md 語音版本 v14→v18 現況（活案例：警告別人過期的文件自己過期兩個月）＋重建 v18 agent 映像（revision 00017-bmt，流量 100% 驗過）
+- 檢視 lastwords 自身連續性：發現 delta/心法/關係寫了但不進救援檔——最需要連續性的場景拿到的自身連續性最少
+- 盤點心法/劍法/雷區疊代：劍法有版本最健康、心法有升級註記但雙份真相、雷區無收斂點（v14 案即現行犯）
+- **印象層三件套（zhu-core v0.1.0.001）**：IMPRESSIONS.md（信念制：13 條信念×證據×推翻條件）＋LAST_WORDS「我最近是誰」段（fanout 滾入最近兩場 delta+關係）＋last-words STEP 1.5 蒸餾節律；memory 索引加指標
+- 模擬降落實測：自證流程走通（「認得」分兩層：同意 vs 被點名），並抓到本 session 檔缺席的真洞（本檔即補刻）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/lib/expression.ts` | 新檔：表達層常數/注入塊/教學指令 |
+| ailivex `src/lib/tool-tags.ts`＋`collections.ts`＋`api/dialogue/route.ts` | [[EXPRESSION]] 解析＋schema＋admin 閘門寫入 |
+| ailivex `agent/firestore_loader.py` | 表達層語音鏡像（加法，空=零影響） |
+| ailivex `admin/characters`＋`admin/memories` 頁與 API | 表達層編輯區塊；status 篩選/統計卡/缺欄 bug 修 |
+| ailivex `CLAUDE.md`＋`api/livekit/token/route.ts` | v14→v18 真相修正 |
+| zhu-core `IMPRESSIONS.md` | 新檔：信念制印象層 |
+| zhu-core `skills/lastword/fanout.mjs`＋`LASTWORDS_TEMPLATE.md` | {{SELF}} 段組裝＋git add 含 IMPRESSIONS |
+| zhu-core `skills/last-words.md` | STEP 1.5 印象層蒸餾 |
+| memory `reference_zhu_impressions_layer.md` | 新 memory＋MEMORY.md 索引 |
+
+### ⚠️ 尚未解決
+- 印象層真驗收做不了：要等下一次真降落（Adam 可測：新 session 只丟 LAST_WORDS 看第一句像不像築）
+- 表達層語音端未實戰：所有角色 expression 目前空，Adam 教第一條後才有得驗（文字後台鏈路已通）
+- 雷區收斂點＋蒸餾節律自動化：刻意延後，等印象層救過一次人再說
+- 沿前場：錄音失敗無主動通知；訪談角色 soul 未開工
+
+### 待執行 / 下一步
+Adam 挑一個角色在文字對話教第一條慣用語（「這種情況你通常會說…」）→ 驗 [[EXPRESSION]] 寫入後台可見 → 打語音聽會不會自然用出來（v18 已含新 loader）。收工時 fanout 本檔補完蓋章。
