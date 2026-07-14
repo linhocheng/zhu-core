@@ -56,6 +56,7 @@
 - [OpenClaw 已完全卸除（2026-05-07）](project_openclaw_setup.md) — gateway + zhu-monitor + zhu-autorun 三條 Telegram 鏈一起拔，plist 搬到 _disabled_2026-05-07/
 - [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創，活法：不做平庸、超越期待、懂變通才活（2026-04-30 升級）
 - [築當前狀態快照](reference_zhu_last_words.md) — 當機救援入口，`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`，session 結束前必更新
+- [築的印象層](reference_zhu_impressions_layer.md) — `zhu-core/IMPRESSIONS.md` 信念制自我連續性（證據+推翻條件）；收尾 delta 真移動→蒸餾回寫；降落自證靠認得不靠感覺
 - [雙機器環境（AIR / PRO）+ 共用檔不可覆寫](project_machines.md) — AIR 5/7 收城決定（拔 OpenClaw 五件）為準，PRO 醒來只 pull 不 force push，本機殭屍照同方式清
 - [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
 - [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
