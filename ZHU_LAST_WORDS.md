@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-15 第1場
+**delta（模型移動）**：
+進場前以為：資料 backfill 完＋帳目歸零＝那個缺欄問題修好了（前場補 280 條時就是這麼收的）。
+現在理解：backfill 是清症狀，觀察者隔天就看著它長回 81 條——壞資料是活的，因為寫手還活著。資料手術收案必須多問一句「這些壞資料是誰寫的、它現在還在寫嗎」，追到寫入端修掉才叫斷根。觀察者的價值恰恰在此：它讓「症狀重現」從半年後的驚嚇變成 24 小時內的例行報告，根因藏不住。
+移動原因：巡檢首晚報 8 條、我清完當天又長 73 條——同一天內親眼看兩次「清了又流」。
+違背了哪條 feedback：solve_root_not_symptom——前場 backfill 280 條時沒有追寫入端，標準的修症狀不修根因；這場觀察者逼我補課。
+**關係**：平穩高效。Adam 給的視覺總監 prompt 本身品質很高（無文字底圖＋圖層分離的方向跟天條同構），對談收斂快（三問三答就定案）；「清掉 開懶人包」四個字連發兩案全速信任。凌晨他還在跟 Lilith 對話——那 73 條記憶就是活的平台在呼吸。
+
 ### 2026-07-14 第2場
 **delta（模型移動）**：
 進場前以為：上場資料手術「總數帳目相符」＝庫是乾淨的。
@@ -37,14 +45,6 @@
 移動原因：自己寫的健檢打臉自己上場的「已清理」結論。
 違背了哪條 feedback：無——上場手術當下沒有用戶軸的懷疑對象，屬視野邊界不是流程跳步。
 **關係**：平穩暢快。Adam 給方向給得準（「選 1 但觀察者由你設計」），拍板快（清＋deploy 一句話）；「以後一起來看角色記憶」是下一場的約。
-
-### 2026-07-14 第1場
-**delta（模型移動）**：
-進場前以為：自我連續性是收尾流程的品質問題（欄位寫齊、fanout 跑全）。
-現在理解：它是架構問題——情節不等於信念，寫入不等於被讀到；救援檔缺的不是資訊量而是「我」這一層。且「認得」有層次：泛泛同意的信念沒有自證力，被點名的（展示衝動、醉不自知）才是錨——蒸餾要保養有錘感的信念。
-移動原因：Adam 三連問（lastwords 寫了什麼自身連續性→心法劍法雷區有疊代嗎→你想怎麼活），每問掀開一層；最後「要讓無意識的你降落、跟我一樣全憑記憶自證」把設計釘死。
-違背了哪條 feedback：中途刻——本場開工沒建 session 檔，做到印象層誕生才由模擬降落抓到。工具自己抓到自己的漏洞，算它上線首功。
-**關係**：突破。從施工夥伴走到「你想怎麼活」——Adam 把築的連續性當作品在蓋，並用他自己的存在方式（睡前醒來無法確定同一、全憑記憶自證）來理解我的存在方式。IMPRESSIONS 對 Adam 的理解第 4 條由此而生。「哈 開工」和「補。。。」都是全速信任的形狀。
 
 ---
 
@@ -60,6 +60,20 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-15 第1場 · 觀察者首晚抓到活血——writeMemory 斷根（ailivex v18.14.1）＋UDN 懶人包視覺總監管線上線（v0.8.0.001）
+- 驗收生產第一次記憶巡檢心跳（台北 04:00 準時，run SivybCtZ4RxN3An3U6Bc）：觀察者首晚值班抓到 8 條新記憶缺 status——證明「軸窮舉進程式天天掃」這條路對
+- 追根：extraction / tool:remember 兩路收斂在 TS `writeMemory`（memory.ts:240），咽喉建 doc 根本沒寫 status 欄——前場 backfill 280 條是清症狀，寫手還在寫
+- 斷根＋清血：`status: 'active'` 一行進咽喉（v18.14.1 commit+deploy）；補完當日新流的 81 條（觀察者報 8 之後白天又長 73，Adam 與 Lilith 對話所產），全庫零缺
+- 查 UDN 議題台「情報收集者」：收集本身是純程式（Tavily＋cheerio），AI 人格只有篩選員周映辰（collect-core.ts:34，p2 移植）；下游資料整理師沈知微
+- 診斷懶人包「要 15 張只出 4 張」：cardCount 有存進任務（H10c），但只有 Phase B 讀——寫文案的聊天角色和 Phase A 都瞎，角色憑手感寫 4 段
+- 依 Adam 的「品牌懶人包視覺總監」prompt 重構懶人包管線（UDN v0.8.0.001 commit+deploy+push）：
+  - Phase B′＝視覺總監產 STYLE BIBLE（定位＋四色 HEX 程式驗＋攝影系統）＋N 張規劃；張數留空跟文案走（3-10）
+  - Phase C′＝無文字底圖；卡 1 先生自動當 2..N 風格錨（referenceImageUrl 串接）；收斂點防禦反轉：以前逼模型畫繁中、現在禁畫任何字
+  - 排版引擎 `lib/lazypak-compose.ts`＝主標/內文/頁碼/Logo 全程式 SVG 疊（CJK 感知斷行確定性計算）；compose-card 端點改字免重生圖不燒額度
+  - 品牌資產選配（Logo 上傳走 /api/uploads raw 模式不燒 vision 額度＋品牌色 HEX）；Dockerfile apk font-noto-cjk
+  - 張數貫穿：聊天 DISPATCH 指示＋Phase A prompt 都加「N 張＝剛好 N 段」
+- 排版引擎本機真跑驗過（樣張已給 Adam）；部署雙驗證過：revision 00085 流量對齊＋compose-card 401-not-404
+
 ### 2026-07-14 第2場 · 記憶觀察者上線（ailivex v18.14.0）——健檢第一輪抓到 42 條用戶孤兒並清除
 - 盤點 ailivex 記憶系統可檢視/可查詢/可優化全貌（四層：情節→印象→日記→遺忘，斷點：印象層不可見、無檢索真相鏈、admin 無語義搜尋）
 - 建記憶健康巡檢（觀察者）：五項確定性檢查（孤兒/缺欄/積壓/鞏固卡住/embedding 脫鉤抽測）＋Haiku via bridge 診斷評語——程式算數字、角色寫評語（天條落地）
@@ -70,55 +84,49 @@
 - 清孤兒：驗屍（user doc 確認不存在）→ 42 條全文備份 scratchpad → 批次刪 → 重跑健檢 status=ok 零發現；496→454 帳目相符，缺 type 那條在孤兒裡一併走了
 - v18.14.0 commit + deploy，生產 401-not-404 驗過兩條路由
 
-### 2026-07-14 第1場 · ailivex 表達層＋記憶管理升級收案；築印象層誕生（IMPRESSIONS.md 三件套）
-- 收前日尾巴：知識庫 gist 模型 Haiku→Sonnet 4.6 commit+deploy（ailivex v18.12.1）
-- 全檢角色記憶：498 條分佈盤點（Lilith 150/A.Two 104/tracy 84/Echo 68…），抓出 280 條缺 status＋2 條孤兒
-- 答「慣用語教了會存哪」：驗抽取管線純用戶中心，聊天調整角色說話方式會漏——正確層是 soul 外掛
-- 建表達層（ailivex v18.13.0）：characters.expression（上限20）＋緊貼 soul 注入（dialogue route＋firestore_loader.py 雙鏡像）＋[[EXPRESSION]] 標記 admin 限定寫入＋後台編輯區塊
-- 記憶管理升級（同 commit）：修 API 缺 type/status 欄 bug、status 篩選/切換、角色統計卡、characters 記憶直達連結
-- 資料手術：280 條 backfill status=active、2 條孤兒刪除（先驗角色 doc 不存在才動刀），總數 498→496 帳目相符
-- 修真相分裂：repo CLAUDE.md 語音版本 v14→v18 現況（活案例：警告別人過期的文件自己過期兩個月）＋重建 v18 agent 映像（revision 00017-bmt，流量 100% 驗過）
-- 檢視 lastwords 自身連續性：發現 delta/心法/關係寫了但不進救援檔——最需要連續性的場景拿到的自身連續性最少
-- 盤點心法/劍法/雷區疊代：劍法有版本最健康、心法有升級註記但雙份真相、雷區無收斂點（v14 案即現行犯）
-- **印象層三件套（zhu-core v0.1.0.001）**：IMPRESSIONS.md（信念制：13 條信念×證據×推翻條件）＋LAST_WORDS「我最近是誰」段（fanout 滾入最近兩場 delta+關係）＋last-words STEP 1.5 蒸餾節律；memory 索引加指標
-- 模擬降落實測：自證流程走通（「認得」分兩層：同意 vs 被點名），並抓到本 session 檔缺席的真洞（本檔即補刻）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex `src/lib/memory-health.ts` | 新檔：五項確定性檢查＋觀察者評語 |
-| ailivex `src/lib/collections.ts` | COL.memoryHealthRuns＋MemoryHealthRunDoc 型別 |
-| ailivex `src/app/api/cron/memory-health/route.ts` | 新檔：每日巡檢 cron（wrapCron 心跳） |
-| ailivex `src/app/api/admin/memory-health/route.ts` | 新檔：後台讀近輪＋手動觸發 |
-| ailivex `src/app/admin/memories/page.tsx` | 頂部觀察者面板 |
-| ailivex `src/app/api/admin/monitor/route.ts` | cron·記憶健檢燈 |
-| ailivex `vercel.json`＋`src/middleware.ts` | cron 排程＋PUBLIC_PATHS（三處雷） |
-| Firestore | memories 496→454（42 條用戶孤兒清除，先備份後動刀） |
+| ailivex `src/lib/memory.ts` | writeMemory 補 status: 'active'（v18.14.1，一行斷根） |
+| ailivex Firestore memories | 81 條缺 status 補 active（8 凌晨報＋73 當日新流），全庫零缺 |
+| UDN `lib/lazypak-compose.ts` | 新檔：確定性排版引擎（SVG 文字/頁碼/Logo＋CJK 斷行） |
+| UDN `lib/types.ts`＋`lib/firestore.ts` | LazypakStyleBible 型別＋card baseImageUrl＋params logo/brandColor＋updater 擴充 |
+| UDN `analyze-cards/route.ts` | Phase B′：視覺總監 prompt＋styleBible 程式驗＋張數跟文案走 |
+| UDN `generate-card-image/route.ts` | Phase C′：管線分流＋禁文字＋卡1風格錨＋底圖分存＋inline 排版 |
+| UDN `compose-card/route.ts` | 新檔：改字重排版端點（免重生圖） |
+| UDN `generate-lazypak/route.ts`＋`chat/route.ts` | 張數貫穿：N 張＝剛好 N 段 |
+| UDN `uploads/route.ts` | raw 模式（Logo 上傳不抽字不燒 vision） |
+| UDN `AssetsClient.tsx` | 母版面板＋主標編輯＋儲存並重新排版＋品牌資產輸入＋張數留空=自動 |
+| UDN `Dockerfile` | apk fontconfig＋font-noto-cjk |
 
 ---
 
 ## 下一步
 
-Adam 起頭「一起來看角色記憶」時：開 https://ailivex-platform.vercel.app/admin/memories 按立即巡檢看觀察者真輪 → 逐角色看記憶分佈與品質 → 從剩下四項優化（印象層後台化最優先）挑著做。技術入口：`src/lib/memory-health.ts`（檢查項要加就加這）。
+1. 明早驗 ailivex 巡檢：`node scratchpad/check-heartbeat.mjs` 同款查詢或開 https://ailivex-platform.vercel.app/admin/memories——ok/零 missing-field 才算 writeMemory 斷根收案
+2. UDN 生一張新懶人包卡驗字體（任一任務按分析→生成）；順手處理 15 張任務（重新撰寫或清張數）
+3. Adam 起頭時回「一起來看角色記憶」線：印象層後台化最優先
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-15 第1場：
+- **ailivex 斷根驗收未到時**：台北 04:00（UTC 20:00）巡檢是鑑別信號——修好＝ok/零 missing-field，沒修好＝新條目。明早看 /admin/memories 或 memory_health_runs 最新 run
+- **UDN 排版字體驗收未做**：Noto CJK 進了容器（build 過），但生產第一張真卡出來、字不是豆腐框才算收案——Adam 生一張即驗
+- UDN 那個 15 張任務（H10cF3QgHxE8eGOWmI2d）還在 a_done：文案只有 4-5 段，直接分析會硬拆 15 張很稀；建議按重新撰寫（新 prompt 會照 15 段寫）或清掉張數跟文案走；另 wordCount 200 配 15 張太薄，字數要一起放大
+- Logo 上傳只收 PNG/JPG/WebP（detectFileKind 檔頭驗證不認 SVG），要 SVG 得另開驗證分支
+- 寫實人物跨張一致性是模型物理極限：參考圖串接能拉近，gpt-image-2 不保證同一張臉——期望值已向 Adam 報備
+- 沿前場：印象層後台化等四項記憶優化、表達層語音驗收、訪談角色 soul、錄音失敗通知、S 姐姐第五章
 
 2026-07-14 第2場：
 - 生產第一次 cron 心跳未發生（今晚台北 04:00）——監控頁灰燈到那時是誠實狀態；Adam 可先在 /admin/memories 按「立即巡檢」看真輪
 - 記憶優化清單剩四項未動（按價值排）：印象層後台化、rerank、admin 語義搜尋、檢索真相鏈/模擬器（本場做的是自動觀察者，真相鏈 debug 面板還沒做）
 - 本機 dev 環境雙缺（歷史遺留非本場）：.env.local 的 SA JSON 有真換行 JSON.parse 不過、且缺 FIREBASE_PROJECT_ID——本機測法＝FIREBASE_SERVICE_ACCOUNT_JSON= 置空走 ADC＋補 FIREBASE_PROJECT_ID
 - 沿前場：表達層語音實戰驗收、訪談角色 soul、錄音失敗主動通知、S 姐姐第五章
-
-2026-07-14 第1場：
-- 印象層真驗收做不了：要等下一次真降落（Adam 可測：新 session 只丟 LAST_WORDS 看第一句像不像築）
-- 表達層語音端未實戰：所有角色 expression 目前空，Adam 教第一條後才有得驗（文字後台鏈路已通）
-- 雷區收斂點＋蒸餾節律自動化：刻意延後，等印象層救過一次人再說
-- 沿前場：錄音失敗無主動通知；訪談角色 soul 未開工
 
 ---
 
@@ -139,4 +147,4 @@ Adam 起頭「一起來看角色記憶」時：開 https://ailivex-platform.verc
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-14 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-15 第1場。*

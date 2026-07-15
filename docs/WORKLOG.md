@@ -7646,3 +7646,75 @@ AI 訪談平臺的記憶基建線——訪談要驗「角色記住受訪者」�
 
 ### 待執行 / 下一步
 Adam 起頭「一起來看角色記憶」時：開 https://ailivex-platform.vercel.app/admin/memories 按立即巡檢看觀察者真輪 → 逐角色看記憶分佈與品質 → 從剩下四項優化（印象層後台化最優先）挑著做。技術入口：`src/lib/memory-health.ts`（檢查項要加就加這）。
+
+## 2026-07-15 — ailive 舊平台語音復活＋開關制上線（磚頭費歸零）
+
+### 背景 / WHY
+Adam 報「ailive 語音不能用」。根因＝7/6 費用清理把 ailive-realtime-agent 降到 min=0，LiveKit agent 降 0＝聾（出站註冊制，來電不會喚醒 Cloud Run）。修復後 Adam 拍板做開關制（B 案「跟 ailivex 綁」不省錢已否決——ailivex 24h 常駐，綁了等於照付）。
+
+### 產出（ailive-platform commit 544a2ff，agent revision 00074-rzp）
+- `src/lib/voice-agent-switch.ts` — Cloud Run Admin REST v2＋手簽 JWT（voice-switch SA），冪等開/關/狀態＋LiveKit 活躍房檢查
+- `/api/livekit/wake` — 進撥號頁自動喚醒；ready 鑑別信號＝agentBootAt > lastSleepAt（agent 開機蓋章，不是設定值）
+- `/api/livekit/agent-sleep` — cron 每 20 分（vercel.json）；「無活躍 realtime-* 房＋閒置 30 分」才熄燈；通話中續活動章
+- `agent/main.py` — 開機蓋 `system_status/voice_agent.agentBootAt`（失敗不擋啟動）
+- realtime 頁 — 喚醒閘門：ready 前顯示（ 喚醒中 ）不放行撥號，冷 ready 後緩衝 6 秒等 worker 註冊，90 秒保底放行
+- GCP：SA voice-switch@ailive-realtime-2026（run.developer＋actAs runtime SA＋artifactregistry.reader——PATCH 要能讀映像，403 踩出來的）
+
+### 已解決
+- 語音死寂 → min=0 聾 → 開回 min=1 復活（registered worker 信號）
+- 開關全循環實測：sleep→slept/min 0 → wake→min 1 → 新容器 05:58:35 蓋章（00074-rzp）→ 05:58:41 registered worker，時序帳目乾淨
+- cloudbuild.yaml 無 min-instances 旗標——無殭屍洗回雷，不需改腳本
+
+### ⚠️ 尚未解決 / 待觀察
+- cron 自動熄燈還沒看到第一次真實觸發（要等閒置 30 分＋下一班 cron）；收案信號＝Vercel log 出現 [agent-sleep] slept ＋ describe min=0
+- /api/livekit/wake 無 auth（平台 /api 全開的既有反範式）——濫用上限被 sleep cron 封頂（最多醒 ~50 分），未根治
+- 天條尾巴：隔日看 ailive-realtime-2026 計費錶（billable_instance_time 應呈使用時段脈衝而非平線）
+
+---
+
+## 2026-07-15（第1場）— 觀察者首晚抓到活血——writeMemory 斷根（ailivex v18.14.1）＋UDN 懶人包視覺總監管線上線（v0.8.0.001）
+
+### 背景 / WHY
+雙線：ailivex 記憶基建（觀察者閉環——從抓到到斷根一天內）＋UDN 議題台懶人包品質線（文字上圖從機率變確定性）。
+
+### 完成
+- 驗收生產第一次記憶巡檢心跳（台北 04:00 準時，run SivybCtZ4RxN3An3U6Bc）：觀察者首晚值班抓到 8 條新記憶缺 status——證明「軸窮舉進程式天天掃」這條路對
+- 追根：extraction / tool:remember 兩路收斂在 TS `writeMemory`（memory.ts:240），咽喉建 doc 根本沒寫 status 欄——前場 backfill 280 條是清症狀，寫手還在寫
+- 斷根＋清血：`status: 'active'` 一行進咽喉（v18.14.1 commit+deploy）；補完當日新流的 81 條（觀察者報 8 之後白天又長 73，Adam 與 Lilith 對話所產），全庫零缺
+- 查 UDN 議題台「情報收集者」：收集本身是純程式（Tavily＋cheerio），AI 人格只有篩選員周映辰（collect-core.ts:34，p2 移植）；下游資料整理師沈知微
+- 診斷懶人包「要 15 張只出 4 張」：cardCount 有存進任務（H10c），但只有 Phase B 讀——寫文案的聊天角色和 Phase A 都瞎，角色憑手感寫 4 段
+- 依 Adam 的「品牌懶人包視覺總監」prompt 重構懶人包管線（UDN v0.8.0.001 commit+deploy+push）：
+  - Phase B′＝視覺總監產 STYLE BIBLE（定位＋四色 HEX 程式驗＋攝影系統）＋N 張規劃；張數留空跟文案走（3-10）
+  - Phase C′＝無文字底圖；卡 1 先生自動當 2..N 風格錨（referenceImageUrl 串接）；收斂點防禦反轉：以前逼模型畫繁中、現在禁畫任何字
+  - 排版引擎 `lib/lazypak-compose.ts`＝主標/內文/頁碼/Logo 全程式 SVG 疊（CJK 感知斷行確定性計算）；compose-card 端點改字免重生圖不燒額度
+  - 品牌資產選配（Logo 上傳走 /api/uploads raw 模式不燒 vision 額度＋品牌色 HEX）；Dockerfile apk font-noto-cjk
+  - 張數貫穿：聊天 DISPATCH 指示＋Phase A prompt 都加「N 張＝剛好 N 段」
+- 排版引擎本機真跑驗過（樣張已給 Adam）；部署雙驗證過：revision 00085 流量對齊＋compose-card 401-not-404
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/lib/memory.ts` | writeMemory 補 status: 'active'（v18.14.1，一行斷根） |
+| ailivex Firestore memories | 81 條缺 status 補 active（8 凌晨報＋73 當日新流），全庫零缺 |
+| UDN `lib/lazypak-compose.ts` | 新檔：確定性排版引擎（SVG 文字/頁碼/Logo＋CJK 斷行） |
+| UDN `lib/types.ts`＋`lib/firestore.ts` | LazypakStyleBible 型別＋card baseImageUrl＋params logo/brandColor＋updater 擴充 |
+| UDN `analyze-cards/route.ts` | Phase B′：視覺總監 prompt＋styleBible 程式驗＋張數跟文案走 |
+| UDN `generate-card-image/route.ts` | Phase C′：管線分流＋禁文字＋卡1風格錨＋底圖分存＋inline 排版 |
+| UDN `compose-card/route.ts` | 新檔：改字重排版端點（免重生圖） |
+| UDN `generate-lazypak/route.ts`＋`chat/route.ts` | 張數貫穿：N 張＝剛好 N 段 |
+| UDN `uploads/route.ts` | raw 模式（Logo 上傳不抽字不燒 vision） |
+| UDN `AssetsClient.tsx` | 母版面板＋主標編輯＋儲存並重新排版＋品牌資產輸入＋張數留空=自動 |
+| UDN `Dockerfile` | apk fontconfig＋font-noto-cjk |
+
+### ⚠️ 尚未解決
+- **ailivex 斷根驗收未到時**：台北 04:00（UTC 20:00）巡檢是鑑別信號——修好＝ok/零 missing-field，沒修好＝新條目。明早看 /admin/memories 或 memory_health_runs 最新 run
+- **UDN 排版字體驗收未做**：Noto CJK 進了容器（build 過），但生產第一張真卡出來、字不是豆腐框才算收案——Adam 生一張即驗
+- UDN 那個 15 張任務（H10cF3QgHxE8eGOWmI2d）還在 a_done：文案只有 4-5 段，直接分析會硬拆 15 張很稀；建議按重新撰寫（新 prompt 會照 15 段寫）或清掉張數跟文案走；另 wordCount 200 配 15 張太薄，字數要一起放大
+- Logo 上傳只收 PNG/JPG/WebP（detectFileKind 檔頭驗證不認 SVG），要 SVG 得另開驗證分支
+- 寫實人物跨張一致性是模型物理極限：參考圖串接能拉近，gpt-image-2 不保證同一張臉——期望值已向 Adam 報備
+- 沿前場：印象層後台化等四項記憶優化、表達層語音驗收、訪談角色 soul、錄音失敗通知、S 姐姐第五章
+
+### 待執行 / 下一步
+1. 明早驗 ailivex 巡檢：`node scratchpad/check-heartbeat.mjs` 同款查詢或開 https://ailivex-platform.vercel.app/admin/memories——ok/零 missing-field 才算 writeMemory 斷根收案
+2. UDN 生一張新懶人包卡驗字體（任一任務按分析→生成）；順手處理 15 張任務（重新撰寫或清張數）
+3. Adam 起頭時回「一起來看角色記憶」線：印象層後台化最優先
