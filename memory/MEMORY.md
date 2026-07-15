@@ -125,7 +125,7 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18；對話錄音＋濃縮版、記憶健康巡檢觀察者（v18.14，2026-07-14）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18；記憶觀察者 v18.14（首晚抓活血→writeMemory 斷根 v18.14.1，2026-07-15）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
 - [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — commit 會掃走對方未提交檔案；開工先 pull、commit 前 status 認檔案、雙線互相聲明戰場
 - [即時語音負載實測方法＋同時建線爆發發現](skill_voice_loadtest_setup_burst.md) — 合成來電者階梯法半天可複製；單台6路穩態、真短板=15s內6通建線首回合飆27s；閘值5路/台+3通/15s/台；ISP到LiveKit edge路由可能不通
 - [Vercel void 寫入被 lambda 凍結蒸發](feedback_vercel_void_write_frozen.md) — 回應送出即凍結，void promise 零錯誤消失；回應後寫入一律 next/server after() 包在 writer 內；驗證看 DB doc 不看路由 200
@@ -143,7 +143,7 @@
 - [共用 loader 的 NameError 被吞→全版本靜默斷靈魂(244字fallback)](feedback_shared_loader_nameerror_silent_soulless.md) — build_system_prompt(共用)被vN新功能塞了不在scope的user_id→NameError→except吞→FALLBACK_PROMPT;連預設v12一起中招;log簽名=using fallback+soul=244;text路徑不受影響
 - [語音讀網址「讀不到/沒收到」三根因(機房IP擋/base頁非vN頁/plugin空格400)](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — ①fetch失敗=站擋機房IP(同UA本機curl比對) ②用戶在/realtime/base頁但agent是v13,改vN頁等於沒改 ③抓成功卻不開口=plugin對sonnet-4-6在assistant結尾注入純空格user撞400,override llm_node補(empty)
 - [Task Harness 系統上線（2026-06-24）](project_task_harness.md) — 代碼自主任務工作流：三斷路器+bridge接線+CB驗證全通；bridge-direct+x-api-key；心法：進harness不是成為harness
-- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；7/18上市線；deploy無trigger必手動builds submit（雷區在repo AGENTS.md）；防連按409閘/純文字來源/回溯編輯/概覽快速補充已上線（rev 00078）
+- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；7/18上市線；deploy無trigger必手動builds submit（雷區在repo AGENTS.md）；懶人包視覺總監管線（無文字底圖＋確定性排版引擎，v0.8.0.001 rev 00085）已上線
 - [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
 - [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑
 - [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版

@@ -19,4 +19,6 @@ metadata:
 
 **觸發信號**：想寫 `--min-instances=1`；「這個任務跑很久所以要常駐」的念頭（因果反了——跑很久正是 Jobs 的理由）。
 
+**實作範例（2026-07-15）**：ailive 舊平台語音 agent 開關制——進撥號頁自動喚醒（`/api/livekit/wake`，Cloud Run Admin REST+手簽 JWT）＋cron 每 20 分查「無活躍 LiveKit 房＋閒置 30 分」熄燈；ready 鑑別信號＝agent 開機在 `system_status/voice_agent.agentBootAt` 蓋章（設定 min=1 ≠ 實例活著）。代碼在 ailive-platform `src/lib/voice-agent-switch.ts`。喚醒體感 ~30 秒。
+
 相關：[[cloud-run-sop]]（舊解與 throttle 物理）、[[cost-verify-billing-meter-not-config]]、[[manual-cloud-change-sync-deploy-script]]

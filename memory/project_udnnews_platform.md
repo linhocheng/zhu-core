@@ -192,6 +192,16 @@ metadata:
 - chat double-send 無 server 冪等 key
 - Brief 多版本無比較介面
 
+## 2026-07-15 懶人包視覺總監管線（v0.8.0.001，rev 00085）
+
+- **架構反轉**：文字不再讓 gpt-image-2 畫（機率、中文常爛）→ Phase C′ 生「無文字寫真底圖」，主標/內文/頁碼/Logo 由 `lib/lazypak-compose.ts` 確定性 SVG 疊加（CJK 感知斷行、比例制座標、scrim 漸層保可讀）。Dockerfile apk font-noto-cjk（豆腐框保險）
+- **STYLE BIBLE 視覺母版**：Phase B′ 一次產出（定位＋四色 HEX 程式驗＋攝影系統英文段），每張生圖 prompt 完整帶入（收斂點防禦：母版＋禁字＋上下留白硬 append）；卡 1 底圖自動當 2..N 的風格錨（referenceImageUrl 串接，「全部生成」迴圈本來就循序所以剛好）
+- **管線分流開關＝task.lazypakStyleBible 存在與否**；舊任務走舊管線（zhTextDirective 留在 else 分支）
+- **compose-card 端點**：改字從 baseImageUrl 重排版，不重生圖不燒額度；UI「儲存並重新排版」
+- **品牌資產選配**：lazypakParams.logoUrl（/api/uploads raw 模式＝不抽字不燒 vision；只收 PNG/JPG/WebP，SVG 檔頭驗證不認）＋brandColor（HEX 驗證）；沒帶就不留位
+- **張數貫穿根修**（15 張只出 4 張案）：cardCount 原本只有 Phase B 讀，寫文案的聊天角色/Phase A 全瞎→兩處 prompt 都加「N 張＝剛好 N 段」；UI 張數留空＝自動跟文案走（3-10）
+- 待驗：生產第一張真卡的字體（Noto 進容器但未實戰）；寫實人物跨張同臉是模型物理極限，參考圖串接只能拉近
+
 ## 2026-07-07 追加（rev 00078，commit 52e99cc）
 
 - **防連按閘**（MiniMax 燒錢口）：dispatch 同 projectId+assetType running→409（`hasRunningTask`）；generate-audio 同 parentTaskId running audio→409（`hasRunningAudioForParent`）

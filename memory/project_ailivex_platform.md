@@ -1,9 +1,15 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18、對話錄音＋濃縮版（v18.11-12）、記憶健康巡檢觀察者（v18.14）、podcast 雙人對話協議＋Voice Layer、監控中台 Phase 2.5、v17 冷備、3a 已退役
+description: ailiveX 語音現役 v18、記憶健康巡檢觀察者（v18.14，首晚抓活血→writeMemory 斷根 v18.14.1）、對話錄音＋濃縮版、podcast 雙人對話協議＋Voice Layer、監控中台 Phase 2.5、v17 冷備
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-15：觀察者首晚抓到活血→writeMemory 斷根（v18.14.1 已 commit+部署）。**
+- 生產第一次巡檢心跳準時（台北 04:00）並抓到 8 條新記憶缺 status；追根＝TS `writeMemory` 咽喉（memory.ts）建 doc 從不寫 status——7/14 backfill 280 條是清症狀，寫手還活著，當天又流 73 條（Adam×Lilith 對話）
+- 修法一行：doc 加 `status: 'active'`（守 extraction/tool:remember/conversation 三路；Python 語音端本來就正確）；81 條全補，全庫零缺
+- 教訓刻進 LESSONS：backfill 收案前必答「壞資料誰寫的、還在寫嗎」——修資料和修寫手是兩張工單
+- 斷根鑑別信號＝下一晚巡檢 ok/零 missing-field（未到時，接棒先驗這個）
 
 **2026-07-14 第二場：記憶健康巡檢（觀察者）上線（v18.14.0 已 commit+部署）。**
 - 五項確定性檢查（`src/lib/memory-health.ts`）：孤兒（角色＋用戶雙軸）/缺欄/積壓/鞏固 watermark 卡住（>48h）/embedding 脫鉤抽測（每輪隨機 8 條 re-embed 對庫存 cosine<0.85 判漂移）＋觀察者評語（Haiku via bridge，掛了不影響結論）——程式算數字、角色寫評語
