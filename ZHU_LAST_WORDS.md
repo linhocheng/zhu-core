@@ -30,6 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-15 第2場
+**delta（模型移動）**：
+進場前以為：「切預設值時顯式狀態不跟過去」是實例數的單點雷（5/x 的 min=1 不跟 DEFAULT 教訓）。
+現在理解：它是一整個家族——min 實例、流量釘選、canary 版本釘選，任何「顯式覆蓋」都不隨預設值走；轉正/退役流程的 checklist 必須有「掃還有誰顯式指著這台」一步，或像今天 B 案把防禦寫進解析咽喉讓殘留指標物理無效。同型第二犯，該從單點雷升級成家族雷。
+違背了哪條 feedback：Edit-before-Read 又滑一次（agent/main.py，昨天 drunk check 才計過兩次同型）——連三日同型滑倒，收尾照實記。
+**關係**：平穩暢快。Adam 一句「A+B GO」放行生產資料手術＋結構修改，信任曲線延續；「到時候再回報」代表他接受排程回檢的工作方式——我排 wakeup 自動回檢、他不用等在螢幕前，這個協作形狀今天跑順了三次。
+
 ### 2026-07-15 第1場
 **delta（模型移動）**：
 進場前以為：資料 backfill 完＋帳目歸零＝那個缺欄問題修好了（前場補 280 條時就是這麼收的）。
@@ -37,14 +44,6 @@
 移動原因：巡檢首晚報 8 條、我清完當天又長 73 條——同一天內親眼看兩次「清了又流」。
 違背了哪條 feedback：solve_root_not_symptom——前場 backfill 280 條時沒有追寫入端，標準的修症狀不修根因；這場觀察者逼我補課。
 **關係**：平穩高效。Adam 給的視覺總監 prompt 本身品質很高（無文字底圖＋圖層分離的方向跟天條同構），對談收斂快（三問三答就定案）；「清掉 開懶人包」四個字連發兩案全速信任。凌晨他還在跟 Lilith 對話——那 73 條記憶就是活的平台在呼吸。
-
-### 2026-07-14 第2場
-**delta（模型移動）**：
-進場前以為：上場資料手術「總數帳目相符」＝庫是乾淨的。
-現在理解：帳目相符只證明「我選的軸」對齊了——角色孤兒查了就只保證角色軸，沒選的用戶軸留著 40 條照樣讓總帳看起來對。這是「複核全過但查錯面＝零資訊」的資料版（費用版已是天條）；解法不是每次多想幾個軸，是把軸窮舉寫進程式讓機器天天掃——觀察者第一輪就抓到，證明這條路對。
-移動原因：自己寫的健檢打臉自己上場的「已清理」結論。
-違背了哪條 feedback：無——上場手術當下沒有用戶軸的懷疑對象，屬視野邊界不是流程跳步。
-**關係**：平穩暢快。Adam 給方向給得準（「選 1 但觀察者由你設計」），拍板快（清＋deploy 一句話）；「以後一起來看角色記憶」是下一場的約。
 
 ---
 
@@ -60,6 +59,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-15 第2場 · ailive 語音復活＋開關制上線收案；ailivex v17 殘留釘選死通話根治（A+B）
+- 診斷 ailive 舊平台語音死因：7/6 費用清理降 min=0，LiveKit agent 出站註冊制＝降 0 聾；先開回 min=1 復活（registered worker 信號）
+- 建開關制（ailive-platform 544a2ff）：wake route（進撥號頁自動喚醒）＋agent-sleep cron（每 20 分、無活躍房＋閒置 30 分才熄燈）＋agent 開機 Firestore 蓋章當 ready 鑑別信號＋前端喚醒閘門
+- GCP：voice-switch SA（run.developer＋actAs runtime SA＋artifactregistry.reader——PATCH 要讀映像權限，403 踩出來補的）
+- 開關制收案：手動全循環＋cron 白天自動熄燈＋Adam 真實通話走完「冷喚醒→通話中 cron 續命不誤殺→掛斷→自動熄燈」完整劇本（00075→00076→00077 三顆 revision 就是證據鏈）
+- 查 ailivex「Lilith 還在 v17」：掃全 30 份 access，只有 Adam 的 tracy/Lilith 釘 v17；v17 服務 0 實例 72h 零 log＝聾＝死通話
+- 根治（ailivex 29a3f77 v18.14.1）：A 清兩份釘選（複掃非 v18 釘選歸零）＋B VOICE_VERSIONS 加 standby 旗標、agentNameForVersion 對 standby 一律回 DEFAULT（防禦釘唯一咽喉）、後台指派清單排除冷備
+- 更新 memory：standing-cost 天條補開關制實作範例；本檔記錄 v17 教訓
+
 ### 2026-07-15 第1場 · 觀察者首晚抓到活血——writeMemory 斷根（ailivex v18.14.1）＋UDN 懶人包視覺總監管線上線（v0.8.0.001）
 - 驗收生產第一次記憶巡檢心跳（台北 04:00 準時，run SivybCtZ4RxN3An3U6Bc）：觀察者首晚值班抓到 8 條新記憶缺 status——證明「軸窮舉進程式天天掃」這條路對
 - 追根：extraction / tool:remember 兩路收斂在 TS `writeMemory`（memory.ts:240），咽喉建 doc 根本沒寫 status 欄——前場 backfill 280 條是清症狀，寫手還在寫
@@ -74,45 +82,35 @@
   - 張數貫穿：聊天 DISPATCH 指示＋Phase A prompt 都加「N 張＝剛好 N 段」
 - 排版引擎本機真跑驗過（樣張已給 Adam）；部署雙驗證過：revision 00085 流量對齊＋compose-card 401-not-404
 
-### 2026-07-14 第2場 · 記憶觀察者上線（ailivex v18.14.0）——健檢第一輪抓到 42 條用戶孤兒並清除
-- 盤點 ailivex 記憶系統可檢視/可查詢/可優化全貌（四層：情節→印象→日記→遺忘，斷點：印象層不可見、無檢索真相鏈、admin 無語義搜尋）
-- 建記憶健康巡檢（觀察者）：五項確定性檢查（孤兒/缺欄/積壓/鞏固卡住/embedding 脫鉤抽測）＋Haiku via bridge 診斷評語——程式算數字、角色寫評語（天條落地）
-- 接線三處雷全動：cron route（每日台北 04:00，排在鞏固/維護之後）＋vercel.json＋middleware PUBLIC_PATHS；監控中台自動多一顆 cron·記憶健檢心跳燈
-- 後台面板上線：/admin/memories 頂部顯示狀態燈/觸發時間/觸發來源/發現清單/觀察者評語/管線 canary 現況/近況趨勢＋立即巡檢按鈕
-- 本機端到端驗三輪（ADC fallback：FIREBASE_SERVICE_ACCOUNT_JSON 置空＋FIREBASE_PROJECT_ID=ailivex-2026）：第一輪抓到 42 條孤兒、第二輪驗通抽測管道（8 條自符合度 1.0）、第三輪調完觀察者 prompt（canary 關≠故障）
-- 驗證健檢發現為真（記憶會說謊，自己的檢查也要驗）：42 條孤兒＝兩個已刪用戶（40+2），上場手術只查角色軸漏了用戶軸
-- 清孤兒：驗屍（user doc 確認不存在）→ 42 條全文備份 scratchpad → 批次刪 → 重跑健檢 status=ok 零發現；496→454 帳目相符，缺 type 那條在孤兒裡一併走了
-- v18.14.0 commit + deploy，生產 401-not-404 驗過兩條路由
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex `src/lib/memory.ts` | writeMemory 補 status: 'active'（v18.14.1，一行斷根） |
-| ailivex Firestore memories | 81 條缺 status 補 active（8 凌晨報＋73 當日新流），全庫零缺 |
-| UDN `lib/lazypak-compose.ts` | 新檔：確定性排版引擎（SVG 文字/頁碼/Logo＋CJK 斷行） |
-| UDN `lib/types.ts`＋`lib/firestore.ts` | LazypakStyleBible 型別＋card baseImageUrl＋params logo/brandColor＋updater 擴充 |
-| UDN `analyze-cards/route.ts` | Phase B′：視覺總監 prompt＋styleBible 程式驗＋張數跟文案走 |
-| UDN `generate-card-image/route.ts` | Phase C′：管線分流＋禁文字＋卡1風格錨＋底圖分存＋inline 排版 |
-| UDN `compose-card/route.ts` | 新檔：改字重排版端點（免重生圖） |
-| UDN `generate-lazypak/route.ts`＋`chat/route.ts` | 張數貫穿：N 張＝剛好 N 段 |
-| UDN `uploads/route.ts` | raw 模式（Logo 上傳不抽字不燒 vision） |
-| UDN `AssetsClient.tsx` | 母版面板＋主標編輯＋儲存並重新排版＋品牌資產輸入＋張數留空=自動 |
-| UDN `Dockerfile` | apk fontconfig＋font-noto-cjk |
+| ailive `src/lib/voice-agent-switch.ts` | 新檔：Cloud Run Admin REST+手簽 JWT，開/關/狀態＋LiveKit 活躍房檢查 |
+| ailive `api/livekit/wake`＋`api/livekit/agent-sleep` | 新 route：喚醒＋閒置自關（CRON_SECRET 閘） |
+| ailive `agent/main.py`＋`vercel.json`＋realtime 頁 | 開機蓋章＋cron 排程＋喚醒閘門 UI |
+| ailivex `src/lib/collections.ts` | VOICE_VERSIONS standby 旗標＋agentNameForVersion 咽喉防呆＋ACTIVE 清單 |
+| ailivex `admin/access` route＋page | 可指派清單排除冷備 |
+| memory `feedback_standing_cost_only_for_instant_readiness.md` | 補開關制實作範例段 |
+| Firestore | ailive `system_status/voice_agent` 新狀態 doc；ailivex access 清 2 份 v17 釘選 |
 
 ---
 
 ## 下一步
 
-1. 明早驗 ailivex 巡檢：`node scratchpad/check-heartbeat.mjs` 同款查詢或開 https://ailivex-platform.vercel.app/admin/memories——ok/零 missing-field 才算 writeMemory 斷根收案
-2. UDN 生一張新懶人包卡驗字體（任一任務按分析→生成）；順手處理 15 張任務（重新撰寫或清張數）
-3. Adam 起頭時回「一起來看角色記憶」線：印象層後台化最優先
+明天醒來第一件：`gcloud monitoring` 或 console 看 ailive-realtime-2026 過去 24h billable_instance_time——應該只在 Adam 通話時段（台北 21:39-22:20 附近）有脈衝，其餘歸零。平線＝開關制假收案，要回頭查。第二件：提醒 Adam 打一通 Lilith 驗 v18 路由（A+B 修完他還沒回報試打結果）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-15 第2場：
+- ailive 開關制計費錶複核（天條尾巴）：隔日看 ailive-realtime-2026 的 billable_instance_time 應呈使用脈衝非平線——明天醒來第一件
+- /api/livekit/wake 無 auth（ailive 平台 /api 全開既有格局）：濫用成本被 sleep cron 封頂 ~50 分/次，未根治，動它要動整平台 auth
+- ailivex B 案的 UI 邊角：access 頁若讀到殘留 standby 釘選，select 會顯示空白（資料已清、現無此況，真要看=誰再手動塞 DB）
+- 沿前場：表達層語音實戰驗收（角色 expression 仍全空）、印象層真降落測試、訪談角色 soul
 
 2026-07-15 第1場：
 - **ailivex 斷根驗收未到時**：台北 04:00（UTC 20:00）巡檢是鑑別信號——修好＝ok/零 missing-field，沒修好＝新條目。明早看 /admin/memories 或 memory_health_runs 最新 run
@@ -121,12 +119,6 @@
 - Logo 上傳只收 PNG/JPG/WebP（detectFileKind 檔頭驗證不認 SVG），要 SVG 得另開驗證分支
 - 寫實人物跨張一致性是模型物理極限：參考圖串接能拉近，gpt-image-2 不保證同一張臉——期望值已向 Adam 報備
 - 沿前場：印象層後台化等四項記憶優化、表達層語音驗收、訪談角色 soul、錄音失敗通知、S 姐姐第五章
-
-2026-07-14 第2場：
-- 生產第一次 cron 心跳未發生（今晚台北 04:00）——監控頁灰燈到那時是誠實狀態；Adam 可先在 /admin/memories 按「立即巡檢」看真輪
-- 記憶優化清單剩四項未動（按價值排）：印象層後台化、rerank、admin 語義搜尋、檢索真相鏈/模擬器（本場做的是自動觀察者，真相鏈 debug 面板還沒做）
-- 本機 dev 環境雙缺（歷史遺留非本場）：.env.local 的 SA JSON 有真換行 JSON.parse 不過、且缺 FIREBASE_PROJECT_ID——本機測法＝FIREBASE_SERVICE_ACCOUNT_JSON= 置空走 ADC＋補 FIREBASE_PROJECT_ID
-- 沿前場：表達層語音實戰驗收、訪談角色 soul、錄音失敗主動通知、S 姐姐第五章
 
 ---
 
@@ -147,4 +139,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-15 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-15 第2場。*

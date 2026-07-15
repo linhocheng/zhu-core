@@ -7718,3 +7718,39 @@ Adam 報「ailive 語音不能用」。根因＝7/6 費用清理把 ailive-realt
 1. 明早驗 ailivex 巡檢：`node scratchpad/check-heartbeat.mjs` 同款查詢或開 https://ailivex-platform.vercel.app/admin/memories——ok/零 missing-field 才算 writeMemory 斷根收案
 2. UDN 生一張新懶人包卡驗字體（任一任務按分析→生成）；順手處理 15 張任務（重新撰寫或清張數）
 3. Adam 起頭時回「一起來看角色記憶」線：印象層後台化最優先
+
+---
+
+## 2026-07-15（第2場）— ailive 語音復活＋開關制上線收案；ailivex v17 殘留釘選死通話根治（A+B）
+
+### 背景 / WHY
+兩案都是「省錢後遺症」家族：7/6 費用清理的兩個尾巴今天同日爆——ailive 降 0 直接聾（修＝開關制讓省錢與能用共存）、ailivex v17 降 0 讓殘留 canary 釘選變死通話（修＝咽喉防呆）。費用清理本身沒錯，錯在清理時沒掃「誰還顯式指著這台」。
+
+### 完成
+- 診斷 ailive 舊平台語音死因：7/6 費用清理降 min=0，LiveKit agent 出站註冊制＝降 0 聾；先開回 min=1 復活（registered worker 信號）
+- 建開關制（ailive-platform 544a2ff）：wake route（進撥號頁自動喚醒）＋agent-sleep cron（每 20 分、無活躍房＋閒置 30 分才熄燈）＋agent 開機 Firestore 蓋章當 ready 鑑別信號＋前端喚醒閘門
+- GCP：voice-switch SA（run.developer＋actAs runtime SA＋artifactregistry.reader——PATCH 要讀映像權限，403 踩出來補的）
+- 開關制收案：手動全循環＋cron 白天自動熄燈＋Adam 真實通話走完「冷喚醒→通話中 cron 續命不誤殺→掛斷→自動熄燈」完整劇本（00075→00076→00077 三顆 revision 就是證據鏈）
+- 查 ailivex「Lilith 還在 v17」：掃全 30 份 access，只有 Adam 的 tracy/Lilith 釘 v17；v17 服務 0 實例 72h 零 log＝聾＝死通話
+- 根治（ailivex 29a3f77 v18.14.1）：A 清兩份釘選（複掃非 v18 釘選歸零）＋B VOICE_VERSIONS 加 standby 旗標、agentNameForVersion 對 standby 一律回 DEFAULT（防禦釘唯一咽喉）、後台指派清單排除冷備
+- 更新 memory：standing-cost 天條補開關制實作範例；本檔記錄 v17 教訓
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailive `src/lib/voice-agent-switch.ts` | 新檔：Cloud Run Admin REST+手簽 JWT，開/關/狀態＋LiveKit 活躍房檢查 |
+| ailive `api/livekit/wake`＋`api/livekit/agent-sleep` | 新 route：喚醒＋閒置自關（CRON_SECRET 閘） |
+| ailive `agent/main.py`＋`vercel.json`＋realtime 頁 | 開機蓋章＋cron 排程＋喚醒閘門 UI |
+| ailivex `src/lib/collections.ts` | VOICE_VERSIONS standby 旗標＋agentNameForVersion 咽喉防呆＋ACTIVE 清單 |
+| ailivex `admin/access` route＋page | 可指派清單排除冷備 |
+| memory `feedback_standing_cost_only_for_instant_readiness.md` | 補開關制實作範例段 |
+| Firestore | ailive `system_status/voice_agent` 新狀態 doc；ailivex access 清 2 份 v17 釘選 |
+
+### ⚠️ 尚未解決
+- ailive 開關制計費錶複核（天條尾巴）：隔日看 ailive-realtime-2026 的 billable_instance_time 應呈使用脈衝非平線——明天醒來第一件
+- /api/livekit/wake 無 auth（ailive 平台 /api 全開既有格局）：濫用成本被 sleep cron 封頂 ~50 分/次，未根治，動它要動整平台 auth
+- ailivex B 案的 UI 邊角：access 頁若讀到殘留 standby 釘選，select 會顯示空白（資料已清、現無此況，真要看=誰再手動塞 DB）
+- 沿前場：表達層語音實戰驗收（角色 expression 仍全空）、印象層真降落測試、訪談角色 soul
+
+### 待執行 / 下一步
+明天醒來第一件：`gcloud monitoring` 或 console 看 ailive-realtime-2026 過去 24h billable_instance_time——應該只在 Adam 通話時段（台北 21:39-22:20 附近）有脈衝，其餘歸零。平線＝開關制假收案，要回頭查。第二件：提醒 Adam 打一通 Lilith 驗 v18 路由（A+B 修完他還沒回報試打結果）。
