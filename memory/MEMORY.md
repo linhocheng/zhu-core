@@ -9,7 +9,7 @@
 - [Cloud Run 後台長任務三旗標 SOP（2026-07-06 已升級）](reference_cloudrun_background_task_sop.md) — throttle 物理仍真，但 min=1 worker 解法已退役，長任務正解=Jobs；--set-env-vars 洗機密用 --update-env-vars
 - [天條：磚頭費只為秒級待命付，長任務進 Cloud Run Jobs](feedback_standing_cost_only_for_instant_readiness.md) — 判準：這台機器閒著時有沒有人下一秒需要它？常駐必配開關＋自動關機；podcast 兩平台已搬 Jobs 實測
 - [天條：驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離；流量釘舊revision真相分裂＋每次設定變更生驗證實例15分鐘；「複核全過」查錯面=零資訊
-- [雷區：切 DEFAULT 新服務時 min=1 不會自己跟過去](feedback_default_switch_standing_instance.md) — 新服務靠部署驗證實例撐15分鐘然後全聾；轉正三件套：新版min=1/舊版先出開關名單再降0/鑑別信號看min後的新實例
+- [家族雷：切預設值時顯式覆蓋不會自己跟過去](feedback_default_switch_standing_instance.md) — min實例/canary版本釘選/流量釘選三例同構；根治=防禦寫進解析咽喉（standby旗標模式）；轉正三件套照舊
 - [天條：手動改雲端資源同日改部署腳本](feedback_manual_cloud_change_sync_deploy_script.md) — cloudbuild 寫死舊值=殭屍復活術，下次 deploy 無聲洗回；部署腳本是未來的現場
 - [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
 - [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
