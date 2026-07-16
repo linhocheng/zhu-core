@@ -155,3 +155,4 @@
 - [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同embedding對不上；gist三雷：留成語/同開頭/格式漂移；門檻先量再定
 - [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣；Tracy 17套實戰
 - [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
+- [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份訓練輾過靈魂prompt擋不住；量尺/插座/驗收法落袋；18s首音瓶頸在共用開場路徑
