@@ -7754,3 +7754,103 @@ Adam 報「ailive 語音不能用」。根因＝7/6 費用清理把 ailive-realt
 
 ### 待執行 / 下一步
 明天醒來第一件：`gcloud monitoring` 或 console 看 ailive-realtime-2026 過去 24h billable_instance_time——應該只在 Adam 通話時段（台北 21:39-22:20 附近）有脈衝，其餘歸零。平線＝開關制假收案，要回頭查。第二件：提醒 Adam 打一通 Lilith 驗 v18 路由（A+B 修完他還沒回報試打結果）。
+
+## 2026-07-16 — GPT 即時語音研究＋GPT Voice 線開案（Phase 0 已上線）
+
+### 背景 / WHY
+Adam 體感 ChatGPT 新語音「邊聽邊說邊想」，要求深度對比＋可行則出藍圖。研究後定案：不換架構，開獨立「GPT Voice」第二條線（gpt-realtime-2.1 聽想＋MiniMax 發聲混血），與 v18 並存對照。
+
+### 產出
+- 檔案：`ailivex-platform/docs/research_gpt_realtime_vs_ailivex_20260716.md` — 對比研究（GPT-Live 7/8 換代真 full-duplex 但無 API；gpt-realtime-2.1 感知雙工；deep-research 24 claims 存活）
+- 檔案：`ailivex-platform/docs/blueprint_duplex_voice_20260716.md` — 三路藍圖（C 模擬 duplex / A GPT線 / B 觀望）
+- 檔案：`ailivex-platform/docs/plan_gpt_voice_line_20260716.md` — GPT Voice 線施工計畫（待 Adam 過目）
+- Phase 0 回合延遲打點**已部署 Vercel**：realtime 頁 mic RMS+ActiveSpeakersChanged 配對、voice-metrics 收 turnLatenciesMs、monitor 回合 p50/p95 卡（`realtime/[characterId]/page.tsx`、`api/voice-metrics/route.ts`、`api/admin/monitor/route.ts`、`admin/monitor/page.tsx`，未 commit——等 Adam 開口）
+
+### 已解決
+- B 層四柱全過（文件＋源碼實讀）：Realtime API text-only 輸出✓、plugin 1.5.1 modalities/自由model字串✓、AgentSession realtime文字流→外接TTS 官方支援組合✓、input transcription✓
+- 記憶說謊修正：v18 STT=Soniox（非Deepgram）、回合路LLM=Sonnet 4.6（非Haiku）
+
+### ⚠️ 尚未解決
+- OPENAI_API_KEY（Secret Manager 2026-06-18 建）未驗活——shell 讀 secret 被紅線 deny，等 Adam 跑 `!` 驗證指令
+- 回合打點門檻參數（RMS 0.04/靜音500ms）未經真通話校準，首批樣本要人工對照體感
+- GPT Voice 線施工計畫待 Adam 過目才動工
+
+### 待執行
+- [ ] Adam 驗 key ＋ OpenAI 後台設 $20 hard limit
+- [ ] Adam 過目 plan_gpt_voice_line → GO 才蓋線（W1 agent → W2 平台 → W3 驗證）
+- [ ] Phase 0 樣本累積後看回合 p50/p95 分佈
+
+## 2026-07-16（續）— GPT Voice 線蓋完上線（W1-W3 全通）
+
+### 產出
+- agent：`agent/main_gpt.py`＋`agent/realtime_agent_gpt.py`（gpt-realtime-2.1-mini text-only＋MiniMax 發聲）＋`agent/cloudbuild-gpt.yaml`；requirements 加 livekit-plugins-openai==1.5.1
+- 平台：collections GPT_VOICE_LINE＋access.gptVoiceEnabled、token route line:'gpt' 分流（無權限 403 不降級）、realtime 頁 GPT Voice 鈕、admin access GPT Voice 開關、monitor 回合延遲按線拆表
+- Cloud Run `ailivex-realtime-agent-gpt` 已部署（第一次 build 因 PyPI timeout 重跑）、**min=1 已升**、log 見 registered worker；Vercel prod 200
+
+### ⚠️ 尚未解決 / 待執行
+- [ ] Adam 打第一通 GPT Voice 實測（冒煙收案：接通出聲＋transcript 落 DB＋記憶抽取＋monitor gpt 線回合樣本）
+- [ ] **測完把 ailivex-realtime-agent-gpt 降回 min=0**（yaml 不帶 min 旗標，手動 min=1 會跨 deploy 殘留＝磚頭費）
+- [ ] OpenAI 後台 $20 hard limit（Adam 手動）
+- [ ] 代碼未 commit（等 Adam 開口；含 Phase 0 打點＋GPT 線全部）
+
+## 2026-07-16（收案）— GPT Voice 線一晚 POC：判負，資產落袋
+
+### 判定（Adam 拍板）
+gpt-realtime 路線放棄——「要的不是罐頭，是有靈魂的角色」。逐字稿實錘三件事：①身份錨生效版仍直答「我是 ChatGPT」＋否認記憶（底模身份訓練輾過 prompt）②幻聽輸入 `[user] Evet.`（用戶沒說）＋無 user turn 連發回應＝「跟第三者聊」體感 ③OpenAI VAD 0.5 → speech_started → framework 無條件 interrupt = 「一直跳」。
+
+### 落袋資產
+- 回合延遲量尺端到端通（實收 7 筆：p50 5.1s，混打斷雜訊僅供參考）
+- 首通首音 GPT 線也 18.6s → 18 秒瓶頸在共用開場路徑非管線選型（樣本 1 待複驗，重定向 C5）
+- 第二線插座（line 分流/access 旗標/admin 鈕/per-line 監控）模型無關，未來 S2S 候選即插即測
+- S2S 驗收三連：直問你是誰／transcript 幻聽稽核／TTS started-done 差值打斷率
+- 記憶：`memory/project_gpt_voice_line_verdict.md`
+
+### 現場狀態
+- ailivex-realtime-agent-gpt **已降 min=0**（零常駐費）；代碼保留（隔離）
+- 未 commit：Phase 0 打點＋GPT 線全部＋VAD 調降版（build 4 已出未再驗，線已停用）
+- [extraction] LLM timeout 一筆（該通記憶提煉可能缺，線已停用不追）
+- 下一步（Adam 未拍板）：blueprint path C 抄機制回自家線（v19）
+
+---
+
+## 2026-07-16（第1場）— GPT 即時語音一晚全迴圈——深研→建線→實測→判負退役，量尺與插座落袋
+
+### 背景 / WHY
+ailivex 即時語音體感升級。GPT 引擎路線已封死，下一條線是 blueprint path C（自家 cascaded 模擬 duplex：語意斷句/搶先生成/preamble/應和），加上首通 18 秒的共用開場路徑翻案。
+
+### 完成
+- 跑 deep-research（104 agents/22源/24 claims 存活）：GPT-Live 7/8 換代真 full-duplex 但無 API；gpt-realtime-2.1 感知雙工；Moshi 可自建但 prototype 級
+- 核對 v18 現場修正記憶說謊兩處（STT=Soniox 非 Deepgram；回合路=Sonnet 4.6 非 Haiku）
+- 寫三份文件：對比研究、三路藍圖（path C 仍有效）、GPT Voice 線施工計畫
+- 蓋 Phase 0 回合延遲量尺（前端 RMS+ActiveSpeakersChanged→voice-metrics→monitor p50/p95）並上線，實測收到 7 筆樣本
+- 一晚蓋完 GPT Voice 獨立線（gpt-realtime-2.1-mini text-only＋MiniMax 發聲）：agent 三檔＋平台六處＋Cloud Run 部署，三個 revision 迭代（transcript 修復/身份錨/VAD 0.85）
+- 實測判負（Adam 拍板「要靈魂不要罐頭」）：逐字稿實錘自報 ChatGPT＋幻聽 Evet.＋無條件 interrupt 鏈
+- 退役收乾淨：service 降 min=0、`GPT_VOICE_LINE.retired` 雙閘（按鈕＋派工咽喉）、回顧文件單一入口、記憶已刻
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform/docs/research_gpt_realtime_vs_ailivex_20260716.md | 新增：對比研究報告 |
+| ailivex-platform/docs/blueprint_duplex_voice_20260716.md | 新增：三路藍圖（C 現行） |
+| ailivex-platform/docs/plan_gpt_voice_line_20260716.md | 新增後標記退役存檔 |
+| ailivex-platform/docs/gpt_voice_line_retrospective_20260716.md | 新增：GPT 線歷史單一入口 |
+| ailivex-platform/agent/{main_gpt,realtime_agent_gpt}.py, cloudbuild-gpt.yaml | 新增：GPT 線 agent（已退役保留） |
+| ailivex-platform/agent/requirements.txt | 加 livekit-plugins-openai==1.5.1 |
+| ailivex-platform/src/lib/collections.ts | GPT_VOICE_LINE（retired:true）＋AccessDoc.gptVoiceEnabled |
+| ailivex-platform/src/app/api/livekit/token/route.ts | line:'gpt' 分流＋退役閘 |
+| ailivex-platform/src/app/api/characters/[id]/route.ts | gptVoice 旗標（退役=隱藏） |
+| ailivex-platform/src/app/realtime/[characterId]/page.tsx | 回合延遲打點＋GPT Voice 鈕 |
+| ailivex-platform/src/app/api/voice-metrics/route.ts | 收 turnLatenciesMs |
+| ailivex-platform/src/app/api/admin/monitor/route.ts＋page.tsx | 回合 p50/p95＋按線拆表 |
+| ailivex-platform/src/app/{admin/access/page,api/admin/access/route}.tsx/ts | GPT Voice 開關（現隱） |
+| memory/project_gpt_voice_line_verdict.md | 新增＋MEMORY.md 索引 |
+
+### ⚠️ 尚未解決
+- ailivex-platform 17 檔未 commit（Phase 0 打點＋GPT 線全部＋退役閘）——repo 慣例等 Adam 開口
+- 首通 18.6s=共用開場路徑的推論只有 1 樣本，未複驗
+- 回合打點門檻參數（RMS 0.04/靜音 500ms）未經校準，首批 v18 樣本要對體感
+- 幻聽輸入可能已寫進 Lilith 記憶庫（Evet. 那通）——她若提怪內容來回顧文件查案
+- OpenAI 後台 $20 hard limit Adam 未確認設好（key 續留 Secret Manager）
+
+### 待執行 / 下一步
+Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_duplex_voice_20260716.md` 第 2 節，從 Phase 0 樣本累積（v18 真實通話幾通就有基線）→ C1 preamble 開始，v19 隔離施工。為什麼先做：量尺已上線零成本收樣本，C1 是性價比最高的死空氣修法。
