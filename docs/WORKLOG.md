@@ -7895,3 +7895,42 @@ Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_
 
 ### 待執行 / 下一步
 週一驗 W30 自動輪（`gcloud run jobs executions list --job=geo-monitor-job` 應有 09:00 執行＋任務中心出現 cron 單）。之後 Adam 二選一：Phase 2 第二刀（自動發布）或 Phase 3.5（月報前台）。beselfaviva 草稿在 /content 等批准。
+
+---
+
+## 2026-07-18（第1場）— geo-authority 掃雷＋月報前台＋顧問七層包裝＋自動駕駛月循環（v1.5→v1.8）
+
+### 背景 / WHY
+geo-authority 權威收錄平台（GEO 代操商業線）。平台已能自己過完一個月：週一自動監測→月初自動月報＋自動排產→通知→人只批准。Adam 正拿報告找顧問驗市場價值，顧問七層架構已上線。
+
+### 完成
+- 掃雷三發：①雲上 Jobs→bridge 真雷＝job 容器沒掛 BRIDGE 秘密（不是 CF 524），補 Secret Manager＋job＋deploy.sh 三處後雲端 content job 實測通（2123 字草稿全過稽核）②beselfaviva 髒別名 15→11（套 validateProfile 規則，其他租戶掃過乾淨）③死 OpenAI key 盤點：只剩一把躺在 ailive-platform 三個歷史快照檔（等 Adam 點頭才刪）
+- Phase 3.5 客戶月報前台上線（v1.6）：report 管道（確定性聚合零 LLM，reports/{month} 冪等覆蓋）＋`/r/{token}` share-link 客戶前台（免登入、token 即憑證、壞 token 不洩漏）＋route group 拆 (admin)/(public)＋租戶頁月報區（產生/輪換/撤銷分享）
+- Adam 抓到「暫停租戶為何還在跑」→ 修「停＝全停」（v1.6.1）：狀態檢查搬進 processJob 咽喉，五條管道一個檢查全守，CLI 手排也繞不過；鑑別信號驗過（暫停租戶單 failed＋零產物）
+- 顧問七層報告架構全落地（v1.7）：封面指數（提及×0.6＋引用×0.4，公式附錄揭露）→三事實→儀表板三格→競品地圖（交戰題前、空位題後）→工作紀錄＋誠實承諾→下月作戰計畫→附錄工程師版。全部模板句零 LLM——包裝不犧牲確定性
+- 自動駕駛月循環三件套（v1.8）：①每月 1 號 09:00 月報 cron（geo-monthly-report scheduler，冪等建單）②cron 月報自動排產作戰計畫三題草稿（題目去重；人按「產生月報」不偷排）③通知層：notify.ts 咽喉（job 失敗/草稿等審核/月報出爐）→站內通知中心頁＋nav 未讀徽章＋settings 可配 webhook（Discord/Slack 相容）
+- 全迴路本機實測一次通：cron 月報→自動排 3 單→bridge 寫 3 篇→稽核全過→佇列 5 篇（1 APPROVED）→通知 5 則；月輪冪等（二跑 0 單）＋空月優雅降級驗過
+- deploy.sh 收編兩條 scheduler 為唯一真相源（昨天手建的週輪一起收，天條補帳）
+- 對 Adam 講清系統初心（給顧問的 brief）：黑盒打開＝量測/診斷/改善閉環，月報＝續費引擎
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo-authority `src/monthlyReport.ts` | 新檔：report 管道＋buildSummary 商業層（指數/事實/作戰計畫/競品地圖全模板句） |
+| geo-authority `src/notify.ts` | 新檔：通知咽喉（站內 doc＋webhook，絕不 throw） |
+| geo-authority `src/processJob.ts` | 停＝全停收斂點檢查 |
+| geo-authority `src/jobs.ts` | createMonthlyReportJobs＋finishJob/reap 失敗通知 |
+| geo-authority `admin/` | route group 拆分、/r/[token] 客戶前台、ReportView 七層、通知中心頁、nav 徽章、settings webhook 欄 |
+| geo-authority `deploy.sh` | BRIDGE secrets＋schedulers 段（兩條 cron 唯一真相源） |
+| GCP | secrets BRIDGE_URL/BRIDGE_SECRET；scheduler geo-monthly-report（0 9 1 * * Asia/Taipei） |
+
+### ⚠️ 尚未解決
+- 週輪首次自然觸發驗證＝週一（7/20）09:00 batch `2026-W30`；月輪首發 8/1 09:00（月報 2026-07＋自動排產）——兩個鑑別信號都還沒到期
+- 通知 webhook 未配置（settings 頁貼 Discord/Slack webhook URL 即生效；現在只進站內通知中心）
+- beselfaviva 4 篇草稿在 /content 等批准（熟齡肌精華液＋自動排產的卸妝/防曬×2）；批准後仍是人工貼稿（Phase 2 自動發布被 Adam 暫緩）
+- ailive-platform 三個含死 OpenAI key 的快照檔（.env.firebase.tmp/.env.local.fresh/.env.prod.tmp）等 Adam 點頭刪
+- 語氣靈租戶暫停中：月報是舊格式（重生即升級）、無官網無分享；下一步是官網實體
+- zhu-core 兩份 GEO 文件（研究＋規劃書）昨天 fanout 沒收進 git，本場一起收
+
+### 待執行 / 下一步
+週一驗 W30：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 出現第二輪數據（月報趨勢表從此有兩行、封面出現↑↓箭頭）。Adam 帶顧問意見回來後迭代包裝層；接第二個真客戶是平台現在最缺的東西。

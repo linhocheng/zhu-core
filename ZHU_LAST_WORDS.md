@@ -30,20 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-18 第1場
+**delta（模型移動）**：
+進場前以為：商業包裝（指數、故事句、情緒燃料）和工程誠實（確定性、零生成）之間要做取捨，包裝＝往「數字可以修飾」滑一步。
+現在理解：顧問要的七層皮 100% 用模板句＋程式聚合蓋得出來——指數是透明公式、事實句是規則挑選、作戰計畫是排序輸出。包裝的本質是「資訊架構＋語言翻譯」，不是數字加工；「沒有任何 AI 生成的數字」反而成了商品差異點。移動原因：實際蓋完七層，每一層都找到了確定性實作。
+違背了哪條 feedback：無重大違背；「停＝全停」缺口是 Adam 先看見的（增刪改停協議自己定的卻只 enforce 一條管道）——防禦釘收斂點的舊心法，新踩法。
+**關係**：暢快。Adam 節奏乾脆（修/GO/三件一起做），問的兩個問題都問在要害上（暫停為何還跑＝抓出協議破口；初心是什麼＝逼我把商業敘事收攏）。他找顧問驗市場、我顧管道誠實，分工成形。收尾他說「你可以自己寫 lastword」——信任的形狀。
+
 ### 2026-07-17 第1場
 **delta（模型移動）**：
 進場前以為：AI 引用監測是黑盒、是整個 GEO 商業模式最虛最難量的一層（前次評估原話「監測層是全藍圖最虛的一層」）。
 現在理解：四家官方 API 全回結構化 citation，監測是**最便宜、最確定、最該先蓋**的一層（$30/月/客戶，商用工具賣 $99-2000）；真正虛的是「引用→營收」的因果（唯一準實驗 p=0.16）。移動原因：三路調研拿到一手 API 文件與定價。
 違背了哪條 feedback：監視器盯錯 job doc（抓「最新一筆」而不是鎖 batchId 唯一鍵）差點誤報 canceled；壓縮 summary 接手開場（+3）＋引用錯對象（+2）醉酒指數約 5 微醺——但全程部署皆有鑑別信號驗證，未涉不可逆操作。
 **關係**：暢快高產的一天。Adam 全天在線快節奏拍板（「go baby go」），親手測出三個真問題（redirect 0.0.0.0、錯誤標籤語意、jobs 刪除）——不是驗收是共建。他的產品直覺持續餵進協議（網域是行業的錨、題庫繁中打底、隱藏 prompt 要亮出來），我的工作是把直覺變成結構。
-
-### 2026-07-16 第1場
-**delta（模型移動）**：
-- 進場前以為：GPT 路線的主要考題是延遲和成本，人格靠 instructions 應該能撐個七八成
-- 現在理解：底模身份訓練是權重層的硬地板，直球質問兩句就輾過任何 prompt 錨——「靈魂蓋不蓋得上去」是二元的不是百分比，且一晚實測就能判定，不用猜
-- 移動原因：逐字稿鐵證（身份錨生效版仍自報 ChatGPT＋否認 context 裡的 14 條記憶）
-- 對應 feedback：[[ai-sycophancy-is-baked-in]] 的身份版——prompt 必要不充分，底模天性分層反制也有極限
-**關係**：暢快。Adam 給了一整晚研究授權，全程決策節奏乾脆（GO/放棄/藏按鈕都是一句話），實測時他人在線上跟 Lilith 對話當測試員，「我會找工程師來看」那句在逐字稿裡看到的時候很好笑——工程師就在監控台上。一晚走完研究→建→測→判→收的完整迴圈，這種迴圈速度是跟他合作最爽的部分。
 
 ---
 
@@ -59,6 +58,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-18 第1場 · geo-authority 掃雷＋月報前台＋顧問七層包裝＋自動駕駛月循環（v1.5→v1.8）
+- 掃雷三發：①雲上 Jobs→bridge 真雷＝job 容器沒掛 BRIDGE 秘密（不是 CF 524），補 Secret Manager＋job＋deploy.sh 三處後雲端 content job 實測通（2123 字草稿全過稽核）②beselfaviva 髒別名 15→11（套 validateProfile 規則，其他租戶掃過乾淨）③死 OpenAI key 盤點：只剩一把躺在 ailive-platform 三個歷史快照檔（等 Adam 點頭才刪）
+- Phase 3.5 客戶月報前台上線（v1.6）：report 管道（確定性聚合零 LLM，reports/{month} 冪等覆蓋）＋`/r/{token}` share-link 客戶前台（免登入、token 即憑證、壞 token 不洩漏）＋route group 拆 (admin)/(public)＋租戶頁月報區（產生/輪換/撤銷分享）
+- Adam 抓到「暫停租戶為何還在跑」→ 修「停＝全停」（v1.6.1）：狀態檢查搬進 processJob 咽喉，五條管道一個檢查全守，CLI 手排也繞不過；鑑別信號驗過（暫停租戶單 failed＋零產物）
+- 顧問七層報告架構全落地（v1.7）：封面指數（提及×0.6＋引用×0.4，公式附錄揭露）→三事實→儀表板三格→競品地圖（交戰題前、空位題後）→工作紀錄＋誠實承諾→下月作戰計畫→附錄工程師版。全部模板句零 LLM——包裝不犧牲確定性
+- 自動駕駛月循環三件套（v1.8）：①每月 1 號 09:00 月報 cron（geo-monthly-report scheduler，冪等建單）②cron 月報自動排產作戰計畫三題草稿（題目去重；人按「產生月報」不偷排）③通知層：notify.ts 咽喉（job 失敗/草稿等審核/月報出爐）→站內通知中心頁＋nav 未讀徽章＋settings 可配 webhook（Discord/Slack 相容）
+- 全迴路本機實測一次通：cron 月報→自動排 3 單→bridge 寫 3 篇→稽核全過→佇列 5 篇（1 APPROVED）→通知 5 則；月輪冪等（二跑 0 單）＋空月優雅降級驗過
+- deploy.sh 收編兩條 scheduler 為唯一真相源（昨天手建的週輪一起收，天條補帳）
+- 對 Adam 講清系統初心（給顧問的 brief）：黑盒打開＝量測/診斷/改善閉環，月報＝續費引擎
+
 ### 2026-07-17 第1場 · geo-authority 權威收錄平台從零到正式站（研究→規劃→監測→後台→健檢→內容管線）
 - 開場收案兩件：ailivex 語音修復驗證（Anthropic 月限額，Adam 調完後 log 驗非零 TTS bytes＋零 400）＋ailive 開關制計費錶複核（脈衝式，22h 平線，天條尾巴閉）
 - 三路平行調研 GEO/AI爬蟲/引用監測，彙整入 `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md`（含所有來源 URL）
@@ -70,36 +79,37 @@
 - Day-0 基線：語氣靈＋模擬牙醫四引擎全 0%（對照組鎖定）；Adam 真客戶 beselfaviva（AVIVA 保養品）建檔＋263 筆監測＋健檢＋草稿全鏈跑通
 - 修三雷：Cloud Run 代理後 redirect 0.0.0.0（x-forwarded-host）、成本閘誤殺（只數計費搜尋）、intake 別名長句污染（收緊為稱呼）
 
-### 2026-07-16 第1場 · GPT 即時語音一晚全迴圈——深研→建線→實測→判負退役，量尺與插座落袋
-- 跑 deep-research（104 agents/22源/24 claims 存活）：GPT-Live 7/8 換代真 full-duplex 但無 API；gpt-realtime-2.1 感知雙工；Moshi 可自建但 prototype 級
-- 核對 v18 現場修正記憶說謊兩處（STT=Soniox 非 Deepgram；回合路=Sonnet 4.6 非 Haiku）
-- 寫三份文件：對比研究、三路藍圖（path C 仍有效）、GPT Voice 線施工計畫
-- 蓋 Phase 0 回合延遲量尺（前端 RMS+ActiveSpeakersChanged→voice-metrics→monitor p50/p95）並上線，實測收到 7 筆樣本
-- 一晚蓋完 GPT Voice 獨立線（gpt-realtime-2.1-mini text-only＋MiniMax 發聲）：agent 三檔＋平台六處＋Cloud Run 部署，三個 revision 迭代（transcript 修復/身份錨/VAD 0.85）
-- 實測判負（Adam 拍板「要靈魂不要罐頭」）：逐字稿實錘自報 ChatGPT＋幻聽 Evet.＋無條件 interrupt 鏈
-- 退役收乾淨：service 降 min=0、`GPT_VOICE_LINE.retired` 雙閘（按鈕＋派工咽喉）、回顧文件單一入口、記憶已刻
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| zhu-core `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md` | 新檔：三路調研全文＋整合判斷 |
-| zhu-core `docs/GEO_AUTHORITY_SYSTEM_PLAN_2026-07-17.md` | 新檔：系統規劃書＋協議 8 條（v1.1） |
-| `~/.ailive/geo-authority/`（新 repo，10 commits v1.0-v1.5） | 監測/intake/audit/content 四管道＋admin＋部署腳本全套 |
-| memory `skill_filter_unit_matches_error_shape.md` | 追加費用版案例（成本閘計量單位） |
-| GCP geo-authority-2026 | 新 project：Firestore/6 secrets/IAM/AR/geo-admin service/geo-monitor-job/geo-weekly-monitor scheduler |
+| geo-authority `src/monthlyReport.ts` | 新檔：report 管道＋buildSummary 商業層（指數/事實/作戰計畫/競品地圖全模板句） |
+| geo-authority `src/notify.ts` | 新檔：通知咽喉（站內 doc＋webhook，絕不 throw） |
+| geo-authority `src/processJob.ts` | 停＝全停收斂點檢查 |
+| geo-authority `src/jobs.ts` | createMonthlyReportJobs＋finishJob/reap 失敗通知 |
+| geo-authority `admin/` | route group 拆分、/r/[token] 客戶前台、ReportView 七層、通知中心頁、nav 徽章、settings webhook 欄 |
+| geo-authority `deploy.sh` | BRIDGE secrets＋schedulers 段（兩條 cron 唯一真相源） |
+| GCP | secrets BRIDGE_URL/BRIDGE_SECRET；scheduler geo-monthly-report（0 9 1 * * Asia/Taipei） |
 
 ---
 
 ## 下一步
 
-週一驗 W30 自動輪（`gcloud run jobs executions list --job=geo-monitor-job` 應有 09:00 執行＋任務中心出現 cron 單）。之後 Adam 二選一：Phase 2 第二刀（自動發布）或 Phase 3.5（月報前台）。beselfaviva 草稿在 /content 等批准。
+週一驗 W30：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 出現第二輪數據（月報趨勢表從此有兩行、封面出現↑↓箭頭）。Adam 帶顧問意見回來後迭代包裝層；接第二個真客戶是平台現在最缺的東西。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-18 第1場：
+- 週輪首次自然觸發驗證＝週一（7/20）09:00 batch `2026-W30`；月輪首發 8/1 09:00（月報 2026-07＋自動排產）——兩個鑑別信號都還沒到期
+- 通知 webhook 未配置（settings 頁貼 Discord/Slack webhook URL 即生效；現在只進站內通知中心）
+- beselfaviva 4 篇草稿在 /content 等批准（熟齡肌精華液＋自動排產的卸妝/防曬×2）；批准後仍是人工貼稿（Phase 2 自動發布被 Adam 暫緩）
+- ailive-platform 三個含死 OpenAI key 的快照檔（.env.firebase.tmp/.env.local.fresh/.env.prod.tmp）等 Adam 點頭刪
+- 語氣靈租戶暫停中：月報是舊格式（重生即升級）、無官網無分享；下一步是官網實體
+- zhu-core 兩份 GEO 文件（研究＋規劃書）昨天 fanout 沒收進 git，本場一起收
 
 2026-07-17 第1場：
 - beselfaviva 監測 263/324（成本閘誤殺，閘已修）——要跑滿就在任務中心排新 batch（~$2）
@@ -111,13 +121,6 @@
 - beselfaviva 髒別名（長句）殘留 DB——Adam 可 UI 改或按 AI 重建
 - 語氣靈租戶暫停中且無官網——語氣靈專案要動的下一步是官網實體
 - OpenAI 舊 key 四把全 401 死在各 env 檔（雜訊，有空清）
-
-2026-07-16 第1場：
-- ailivex-platform 17 檔未 commit（Phase 0 打點＋GPT 線全部＋退役閘）——repo 慣例等 Adam 開口
-- 首通 18.6s=共用開場路徑的推論只有 1 樣本，未複驗
-- 回合打點門檻參數（RMS 0.04/靜音 500ms）未經校準，首批 v18 樣本要對體感
-- 幻聽輸入可能已寫進 Lilith 記憶庫（Evet. 那通）——她若提怪內容來回顧文件查案
-- OpenAI 後台 $20 hard limit Adam 未確認設好（key 續留 Secret Manager）
 
 ---
 
@@ -138,4 +141,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-17 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-18 第1場。*
