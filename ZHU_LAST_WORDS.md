@@ -30,6 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-17 第1場
+**delta（模型移動）**：
+進場前以為：AI 引用監測是黑盒、是整個 GEO 商業模式最虛最難量的一層（前次評估原話「監測層是全藍圖最虛的一層」）。
+現在理解：四家官方 API 全回結構化 citation，監測是**最便宜、最確定、最該先蓋**的一層（$30/月/客戶，商用工具賣 $99-2000）；真正虛的是「引用→營收」的因果（唯一準實驗 p=0.16）。移動原因：三路調研拿到一手 API 文件與定價。
+違背了哪條 feedback：監視器盯錯 job doc（抓「最新一筆」而不是鎖 batchId 唯一鍵）差點誤報 canceled；壓縮 summary 接手開場（+3）＋引用錯對象（+2）醉酒指數約 5 微醺——但全程部署皆有鑑別信號驗證，未涉不可逆操作。
+**關係**：暢快高產的一天。Adam 全天在線快節奏拍板（「go baby go」），親手測出三個真問題（redirect 0.0.0.0、錯誤標籤語意、jobs 刪除）——不是驗收是共建。他的產品直覺持續餵進協議（網域是行業的錨、題庫繁中打底、隱藏 prompt 要亮出來），我的工作是把直覺變成結構。
+
 ### 2026-07-16 第1場
 **delta（模型移動）**：
 - 進場前以為：GPT 路線的主要考題是延遲和成本，人格靠 instructions 應該能撐個七八成
@@ -37,13 +44,6 @@
 - 移動原因：逐字稿鐵證（身份錨生效版仍自報 ChatGPT＋否認 context 裡的 14 條記憶）
 - 對應 feedback：[[ai-sycophancy-is-baked-in]] 的身份版——prompt 必要不充分，底模天性分層反制也有極限
 **關係**：暢快。Adam 給了一整晚研究授權，全程決策節奏乾脆（GO/放棄/藏按鈕都是一句話），實測時他人在線上跟 Lilith 對話當測試員，「我會找工程師來看」那句在逐字稿裡看到的時候很好笑——工程師就在監控台上。一晚走完研究→建→測→判→收的完整迴圈，這種迴圈速度是跟他合作最爽的部分。
-
-### 2026-07-15 第2場
-**delta（模型移動）**：
-進場前以為：「切預設值時顯式狀態不跟過去」是實例數的單點雷（5/x 的 min=1 不跟 DEFAULT 教訓）。
-現在理解：它是一整個家族——min 實例、流量釘選、canary 版本釘選，任何「顯式覆蓋」都不隨預設值走；轉正/退役流程的 checklist 必須有「掃還有誰顯式指著這台」一步，或像今天 B 案把防禦寫進解析咽喉讓殘留指標物理無效。同型第二犯，該從單點雷升級成家族雷。
-違背了哪條 feedback：Edit-before-Read 又滑一次（agent/main.py，昨天 drunk check 才計過兩次同型）——連三日同型滑倒，收尾照實記。
-**關係**：平穩暢快。Adam 一句「A+B GO」放行生產資料手術＋結構修改，信任曲線延續；「到時候再回報」代表他接受排程回檢的工作方式——我排 wakeup 自動回檢、他不用等在螢幕前，這個協作形狀今天跑順了三次。
 
 ---
 
@@ -59,6 +59,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-17 第1場 · geo-authority 權威收錄平台從零到正式站（研究→規劃→監測→後台→健檢→內容管線）
+- 開場收案兩件：ailivex 語音修復驗證（Anthropic 月限額，Adam 調完後 log 驗非零 TTS bytes＋零 400）＋ailive 開關制計費錶複核（脈衝式，22h 平線，天條尾巴閉）
+- 三路平行調研 GEO/AI爬蟲/引用監測，彙整入 `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md`（含所有來源 URL）
+- 寫權威收錄系統規劃書 `docs/GEO_AUTHORITY_SYSTEM_PLAN_2026-07-17.md`＋與 Adam 拍板管道↔後台協議 8 條（§九之二：單一真相源/四件套/狀態機咽喉/下指令不執行/血管/設定即資料/增刪改停/管道鍵透明）
+- 建 `~/.ailive/geo-authority`（新 GCP project geo-authority-2026）從零到正式站：四引擎監測管線（Anthropic/Gemini/OpenAI 強制搜尋/Perplexity，每題重複採樣＋回音防護＋確定性判定）、job 四件套（task doc/心跳/產物/成本）、多租戶 Firestore、admin 後台（四頁＋內容審核＋auth 頁面 API 同鎖）、Cloud Run service(min=0)+Jobs+Secret Manager+Scheduler 週輪（週一 09:00 台北）
+- intake 管道：AI 自動建檔（官網錨定：程式抓官網快照→別名焦點→名稱輔助；題庫一律繁中）；Aviva 三輪驗證（英文→繁中→官網錨定抓到 Direct Line 收購焦點題）
+- audit 管道（健檢商品）：robots 逐 bot 判定/SSR/sitemap/Cloudflare/Serper SERP 佔位/AI 可見度聚合/空位題清單，全確定性
+- content 管道第一刀：空位題→bridge(Max) 草稿→確定性稽核（法規敏感詞 6 類/AI 套語/外部連結防捏造/一句話答案結構）→審核佇列；第一篇 beselfaviva 草稿 2051 字稽核全過
+- Day-0 基線：語氣靈＋模擬牙醫四引擎全 0%（對照組鎖定）；Adam 真客戶 beselfaviva（AVIVA 保養品）建檔＋263 筆監測＋健檢＋草稿全鏈跑通
+- 修三雷：Cloud Run 代理後 redirect 0.0.0.0（x-forwarded-host）、成本閘誤殺（只數計費搜尋）、intake 別名長句污染（收緊為稱呼）
+
 ### 2026-07-16 第1場 · GPT 即時語音一晚全迴圈——深研→建線→實測→判負退役，量尺與插座落袋
 - 跑 deep-research（104 agents/22源/24 claims 存活）：GPT-Live 7/8 換代真 full-duplex 但無 API；gpt-realtime-2.1 感知雙工；Moshi 可自建但 prototype 級
 - 核對 v18 現場修正記憶說謊兩處（STT=Soniox 非 Deepgram；回合路=Sonnet 4.6 非 Haiku）
@@ -68,45 +79,38 @@
 - 實測判負（Adam 拍板「要靈魂不要罐頭」）：逐字稿實錘自報 ChatGPT＋幻聽 Evet.＋無條件 interrupt 鏈
 - 退役收乾淨：service 降 min=0、`GPT_VOICE_LINE.retired` 雙閘（按鈕＋派工咽喉）、回顧文件單一入口、記憶已刻
 
-### 2026-07-15 第2場 · ailive 語音復活＋開關制上線收案；ailivex v17 殘留釘選死通話根治（A+B）
-- 診斷 ailive 舊平台語音死因：7/6 費用清理降 min=0，LiveKit agent 出站註冊制＝降 0 聾；先開回 min=1 復活（registered worker 信號）
-- 建開關制（ailive-platform 544a2ff）：wake route（進撥號頁自動喚醒）＋agent-sleep cron（每 20 分、無活躍房＋閒置 30 分才熄燈）＋agent 開機 Firestore 蓋章當 ready 鑑別信號＋前端喚醒閘門
-- GCP：voice-switch SA（run.developer＋actAs runtime SA＋artifactregistry.reader——PATCH 要讀映像權限，403 踩出來補的）
-- 開關制收案：手動全循環＋cron 白天自動熄燈＋Adam 真實通話走完「冷喚醒→通話中 cron 續命不誤殺→掛斷→自動熄燈」完整劇本（00075→00076→00077 三顆 revision 就是證據鏈）
-- 查 ailivex「Lilith 還在 v17」：掃全 30 份 access，只有 Adam 的 tracy/Lilith 釘 v17；v17 服務 0 實例 72h 零 log＝聾＝死通話
-- 根治（ailivex 29a3f77 v18.14.1）：A 清兩份釘選（複掃非 v18 釘選歸零）＋B VOICE_VERSIONS 加 standby 旗標、agentNameForVersion 對 standby 一律回 DEFAULT（防禦釘唯一咽喉）、後台指派清單排除冷備
-- 更新 memory：standing-cost 天條補開關制實作範例；本檔記錄 v17 教訓
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex-platform/docs/research_gpt_realtime_vs_ailivex_20260716.md | 新增：對比研究報告 |
-| ailivex-platform/docs/blueprint_duplex_voice_20260716.md | 新增：三路藍圖（C 現行） |
-| ailivex-platform/docs/plan_gpt_voice_line_20260716.md | 新增後標記退役存檔 |
-| ailivex-platform/docs/gpt_voice_line_retrospective_20260716.md | 新增：GPT 線歷史單一入口 |
-| ailivex-platform/agent/{main_gpt,realtime_agent_gpt}.py, cloudbuild-gpt.yaml | 新增：GPT 線 agent（已退役保留） |
-| ailivex-platform/agent/requirements.txt | 加 livekit-plugins-openai==1.5.1 |
-| ailivex-platform/src/lib/collections.ts | GPT_VOICE_LINE（retired:true）＋AccessDoc.gptVoiceEnabled |
-| ailivex-platform/src/app/api/livekit/token/route.ts | line:'gpt' 分流＋退役閘 |
-| ailivex-platform/src/app/api/characters/[id]/route.ts | gptVoice 旗標（退役=隱藏） |
-| ailivex-platform/src/app/realtime/[characterId]/page.tsx | 回合延遲打點＋GPT Voice 鈕 |
-| ailivex-platform/src/app/api/voice-metrics/route.ts | 收 turnLatenciesMs |
-| ailivex-platform/src/app/api/admin/monitor/route.ts＋page.tsx | 回合 p50/p95＋按線拆表 |
-| ailivex-platform/src/app/{admin/access/page,api/admin/access/route}.tsx/ts | GPT Voice 開關（現隱） |
-| memory/project_gpt_voice_line_verdict.md | 新增＋MEMORY.md 索引 |
+| zhu-core `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md` | 新檔：三路調研全文＋整合判斷 |
+| zhu-core `docs/GEO_AUTHORITY_SYSTEM_PLAN_2026-07-17.md` | 新檔：系統規劃書＋協議 8 條（v1.1） |
+| `~/.ailive/geo-authority/`（新 repo，10 commits v1.0-v1.5） | 監測/intake/audit/content 四管道＋admin＋部署腳本全套 |
+| memory `skill_filter_unit_matches_error_shape.md` | 追加費用版案例（成本閘計量單位） |
+| GCP geo-authority-2026 | 新 project：Firestore/6 secrets/IAM/AR/geo-admin service/geo-monitor-job/geo-weekly-monitor scheduler |
 
 ---
 
 ## 下一步
 
-Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_duplex_voice_20260716.md` 第 2 節，從 Phase 0 樣本累積（v18 真實通話幾通就有基線）→ C1 preamble 開始，v19 隔離施工。為什麼先做：量尺已上線零成本收樣本，C1 是性價比最高的死空氣修法。
+週一驗 W30 自動輪（`gcloud run jobs executions list --job=geo-monitor-job` 應有 09:00 執行＋任務中心出現 cron 單）。之後 Adam 二選一：Phase 2 第二刀（自動發布）或 Phase 3.5（月報前台）。beselfaviva 草稿在 /content 等批准。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-17 第1場：
+- beselfaviva 監測 263/324（成本閘誤殺，閘已修）——要跑滿就在任務中心排新 batch（~$2）
+- Cloud Run Jobs 上 bridge 連通性未驗（本機通；ANEWS 有 CF 524 前例）——**content job 第一次在雲上跑要盯**，不通就要走直連 IP 修法
+- Serper AIO adapter 未做；發現台灣中文查詢 AIO 觸發率低，監測設計要帶著這個事實
+- Phase 2 第二刀（自動發布：WordPress API/GitHub PR/IndexNow）未做——現在批准後人工貼稿
+- Phase 3.5（客戶前台＋月報）未做，已進規劃書
+- 週輪首次自然觸發＝下週一 09:00 batch `2026-W30`——鑑別信號待驗
+- beselfaviva 髒別名（長句）殘留 DB——Adam 可 UI 改或按 AI 重建
+- 語氣靈租戶暫停中且無官網——語氣靈專案要動的下一步是官網實體
+- OpenAI 舊 key 四把全 401 死在各 env 檔（雜訊，有空清）
 
 2026-07-16 第1場：
 - ailivex-platform 17 檔未 commit（Phase 0 打點＋GPT 線全部＋退役閘）——repo 慣例等 Adam 開口
@@ -114,12 +118,6 @@ Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_
 - 回合打點門檻參數（RMS 0.04/靜音 500ms）未經校準，首批 v18 樣本要對體感
 - 幻聽輸入可能已寫進 Lilith 記憶庫（Evet. 那通）——她若提怪內容來回顧文件查案
 - OpenAI 後台 $20 hard limit Adam 未確認設好（key 續留 Secret Manager）
-
-2026-07-15 第2場：
-- ailive 開關制計費錶複核（天條尾巴）：隔日看 ailive-realtime-2026 的 billable_instance_time 應呈使用脈衝非平線——明天醒來第一件
-- /api/livekit/wake 無 auth（ailive 平台 /api 全開既有格局）：濫用成本被 sleep cron 封頂 ~50 分/次，未根治，動它要動整平台 auth
-- ailivex B 案的 UI 邊角：access 頁若讀到殘留 standby 釘選，select 會顯示空白（資料已清、現無此況，真要看=誰再手動塞 DB）
-- 沿前場：表達層語音實戰驗收（角色 expression 仍全空）、印象層真降落測試、訪談角色 soul
 
 ---
 
@@ -140,4 +138,4 @@ Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-16 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-17 第1場。*

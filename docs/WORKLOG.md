@@ -7854,3 +7854,44 @@ ailivex 即時語音體感升級。GPT 引擎路線已封死，下一條線是 b
 
 ### 待執行 / 下一步
 Adam 拍板後開 blueprint path C：`~/.ailive/ailivex-platform/docs/blueprint_duplex_voice_20260716.md` 第 2 節，從 Phase 0 樣本累積（v18 真實通話幾通就有基線）→ C1 preamble 開始，v19 隔離施工。為什麼先做：量尺已上線零成本收樣本，C1 是性價比最高的死空氣修法。
+
+---
+
+## 2026-07-17（第1場）— geo-authority 權威收錄平台從零到正式站（研究→規劃→監測→後台→健檢→內容管線）
+
+### 背景 / WHY
+新商業線「權威收錄」（GEO 代操）：geo-authority 平台。語氣靈＝租戶一號（陳威廷個人品牌佔位），beselfaviva＝第一個真品牌客戶。銷售漏斗：健檢（成交）→監測+內容（交付）→月報（續費，未建）。
+
+### 完成
+- 開場收案兩件：ailivex 語音修復驗證（Anthropic 月限額，Adam 調完後 log 驗非零 TTS bytes＋零 400）＋ailive 開關制計費錶複核（脈衝式，22h 平線，天條尾巴閉）
+- 三路平行調研 GEO/AI爬蟲/引用監測，彙整入 `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md`（含所有來源 URL）
+- 寫權威收錄系統規劃書 `docs/GEO_AUTHORITY_SYSTEM_PLAN_2026-07-17.md`＋與 Adam 拍板管道↔後台協議 8 條（§九之二：單一真相源/四件套/狀態機咽喉/下指令不執行/血管/設定即資料/增刪改停/管道鍵透明）
+- 建 `~/.ailive/geo-authority`（新 GCP project geo-authority-2026）從零到正式站：四引擎監測管線（Anthropic/Gemini/OpenAI 強制搜尋/Perplexity，每題重複採樣＋回音防護＋確定性判定）、job 四件套（task doc/心跳/產物/成本）、多租戶 Firestore、admin 後台（四頁＋內容審核＋auth 頁面 API 同鎖）、Cloud Run service(min=0)+Jobs+Secret Manager+Scheduler 週輪（週一 09:00 台北）
+- intake 管道：AI 自動建檔（官網錨定：程式抓官網快照→別名焦點→名稱輔助；題庫一律繁中）；Aviva 三輪驗證（英文→繁中→官網錨定抓到 Direct Line 收購焦點題）
+- audit 管道（健檢商品）：robots 逐 bot 判定/SSR/sitemap/Cloudflare/Serper SERP 佔位/AI 可見度聚合/空位題清單，全確定性
+- content 管道第一刀：空位題→bridge(Max) 草稿→確定性稽核（法規敏感詞 6 類/AI 套語/外部連結防捏造/一句話答案結構）→審核佇列；第一篇 beselfaviva 草稿 2051 字稽核全過
+- Day-0 基線：語氣靈＋模擬牙醫四引擎全 0%（對照組鎖定）；Adam 真客戶 beselfaviva（AVIVA 保養品）建檔＋263 筆監測＋健檢＋草稿全鏈跑通
+- 修三雷：Cloud Run 代理後 redirect 0.0.0.0（x-forwarded-host）、成本閘誤殺（只數計費搜尋）、intake 別名長句污染（收緊為稱呼）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| zhu-core `docs/GEO_CRAWLER_RESEARCH_2026-07-16.md` | 新檔：三路調研全文＋整合判斷 |
+| zhu-core `docs/GEO_AUTHORITY_SYSTEM_PLAN_2026-07-17.md` | 新檔：系統規劃書＋協議 8 條（v1.1） |
+| `~/.ailive/geo-authority/`（新 repo，10 commits v1.0-v1.5） | 監測/intake/audit/content 四管道＋admin＋部署腳本全套 |
+| memory `skill_filter_unit_matches_error_shape.md` | 追加費用版案例（成本閘計量單位） |
+| GCP geo-authority-2026 | 新 project：Firestore/6 secrets/IAM/AR/geo-admin service/geo-monitor-job/geo-weekly-monitor scheduler |
+
+### ⚠️ 尚未解決
+- beselfaviva 監測 263/324（成本閘誤殺，閘已修）——要跑滿就在任務中心排新 batch（~$2）
+- Cloud Run Jobs 上 bridge 連通性未驗（本機通；ANEWS 有 CF 524 前例）——**content job 第一次在雲上跑要盯**，不通就要走直連 IP 修法
+- Serper AIO adapter 未做；發現台灣中文查詢 AIO 觸發率低，監測設計要帶著這個事實
+- Phase 2 第二刀（自動發布：WordPress API/GitHub PR/IndexNow）未做——現在批准後人工貼稿
+- Phase 3.5（客戶前台＋月報）未做，已進規劃書
+- 週輪首次自然觸發＝下週一 09:00 batch `2026-W30`——鑑別信號待驗
+- beselfaviva 髒別名（長句）殘留 DB——Adam 可 UI 改或按 AI 重建
+- 語氣靈租戶暫停中且無官網——語氣靈專案要動的下一步是官網實體
+- OpenAI 舊 key 四把全 401 死在各 env 檔（雜訊，有空清）
+
+### 待執行 / 下一步
+週一驗 W30 自動輪（`gcloud run jobs executions list --job=geo-monitor-job` 應有 09:00 執行＋任務中心出現 cron 單）。之後 Adam 二選一：Phase 2 第二刀（自動發布）或 Phase 3.5（月報前台）。beselfaviva 草稿在 /content 等批准。
