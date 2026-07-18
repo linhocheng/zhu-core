@@ -7958,3 +7958,11 @@ Adam 想要「admin 跟角色聊天，角色自己提出方法論，寫入本體
 
 ### 待執行
 - [ ] Adam 實測：admin 身份跟 A.Two 文字對話共創 → 後台審核轉正 → 換白話觸發句驗遞招
+
+### 追加（同場第2段）— A.Two 知識/方法論入庫＋語音線提案管道 v19 上線
+
+- 咖啡案例查證：「1876 咖啡」查無此牌，真身 Bacha Coffee（2019 創立、品牌掛 1910=Dar el Bacha 宮殿年；同集團 TWG Tea 2008 創立掛 1837）——校正版 v1.1 入 A.Two 知識庫（7 塊，驗收三件套全過）；文件區那份仍是舊案例（A.Two 原稿，刻意不改）
+- 方法論《品牌校準三問》入庫 active（4 步，d78I6JUMSx8mOiuXvYp3），三題驗證全過；文字＋語音線共用遞招
+- v19 上線（= v18 + propose_method 原生工具）：agent 三檔複製改名＋雙閘（users.role=admin × characters.methodProposalEnabled）＋draft 無 triggerEmb（轉正時後台補嵌=收斂點）；VOICE_VERSIONS 註冊、approve route 補嵌、Cloud Build SUCCESS、min=1、registered worker 確認、Adam×A.Two access 釘 v19
+- 未收案：Adam 語音實測（鑑別信號：log 出現 `[v19] method proposal enabled` → 閘開；`[v19] method proposal saved` → 落庫）；監聽已掛
+- 注意：v19 min=1 是第二台常駐（v18 也 min=1）——試驗期雙付，收案後二選一（v19 轉正 v18 降冷備，或 v19 降 0）
