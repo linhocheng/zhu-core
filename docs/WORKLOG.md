@@ -7934,3 +7934,27 @@ geo-authority 權威收錄平台（GEO 代操商業線）。平台已能自己�
 
 ### 待執行 / 下一步
 週一驗 W30：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 出現第二輪數據（月報趨勢表從此有兩行、封面出現↑↓箭頭）。Adam 帶顧問意見回來後迭代包裝層；接第二個真客戶是平台現在最缺的東西。
+
+---
+
+## 2026-07-18（第2場）— ailivex 方法論共創管道（admin 對話→角色提案→審核轉正）
+
+### 背景 / WHY
+Adam 想要「admin 跟角色聊天，角色自己提出方法論，寫入本體、全用戶升級」。查現況：表達層 [[EXPRESSION]] 已是此模式的原型（admin 限定、全用戶生效），但方法論缺提案管道與審核閘。拍板一吋蛋糕：只做方法論提案，試驗場 A.Two（PSKSAsvbpShIDlAXHFKv）。
+
+### 完成
+- `[[PROPOSE_METHOD]]` 標記全鏈：tool-tags 解析剝離 → `saveMethodologyProposal()`（parseJsonLoose 確定性解析＋sanitizeSteps＋嵌 triggerEmb）→ 落 `methodologies` status='draft'（不動 methodologyCount，對用戶完全隱形）
+- 雙閘：user.role==='admin' ＋ `characters.methodProposalEnabled`（僅 A.Two 開）；指令注入與寫入同閘
+- METHOD_PROPOSE_INSTRUCTION 教角色四個抽屜（知識庫=是什麼/方法論=怎麼帶）＋triggerDesc 白話簽名鐵律＋steps 寫目標不寫台詞
+- 後台 /admin/knowledge 方法論面板加「待審提案」區（步驟全文供審核）＋轉正按鈕；PATCH action='approve'（此刻才 +1 計數）
+- 順修既有雷：DELETE draft 不遞減 methodologyCount（draft 從未計入）
+- 驗證：build 綠＋本機五題全過（解析/落draft/壞JSON拒收/同名拒收/draft不遞招）＋Vercel prod 已部署＋A.Two 旗標開啟
+
+### ⚠️ 尚未解決
+- ailivex-platform 未提交檔案累到 22（GPT 線 17 檔＋本場 5 檔），等 Adam 說 commit；collections.ts 兩場改動疊同檔
+- 端到端真人迴圈未跑：等 Adam 跟 A.Two 共創對話實測（提案→待審區→轉正→遞招）
+- 轉正後的三題驗證（遞招/不誤觸）目前手動；未來提案量大再自動化交叉矩陣
+- 旗標只能腳本開（無 UI 開關）——試驗期刻意的
+
+### 待執行
+- [ ] Adam 實測：admin 身份跟 A.Two 文字對話共創 → 後台審核轉正 → 換白話觸發句驗遞招
