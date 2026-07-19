@@ -8036,3 +8036,41 @@ Adam 提案新天條：舊天條全是踩雷才立的（不二踩），沒有一
 - v20 = v19 外科移除訓練師提案部件（propose_*/共創閘/s2t/inventory 全拔），canary 實測（載庫＋注入＋遞招信號亮、無共創閘信號=乾淨度證明）→ Adam「可過」→ DEFAULT 切 v20
 - 收尾狀態：v20=LIVE（全用戶有知識庫+方法論了）；v18=熱回滾 min=1（CANARY 傘下，數日後降冷備）；v19=訓練線照舊；全平台殘留釘選掃過=0
 - 未解：①bike-race 假記憶污染（背景電視聲那通的 lastSession/記憶，等 Adam 點頭清）②wait_for_participant 秒掛競態拋錯（良性，待優雅化）③v18 降冷備擇日④本批代碼未 commit
+
+---
+
+## 2026-07-19（第1場）— 共創系統一日全迴圈——admin 教角色→角色提案→審核轉正→v20 全用戶遞招上線
+
+### 背景 / WHY
+ailivex 角色成長閉環：教（共創）→審（後台）→用（全線遞招）。閉環今天全通，下一階段是規模化（更多角色開共創旗標）與體感精修。
+
+### 完成
+- 蓋文字線共創管道：[[PROPOSE_METHOD]]/[[PROPOSE_KNOWLEDGE]] 標記＋雙閘（admin×methodProposalEnabled）＋後台待審區（轉正/轉入庫才生效，轉正補嵌 triggerEmb 收斂點）
+- 蓋語音 v19 訓練線：propose_method/propose_knowledge 原生工具＋opencc s2tw 落庫轉繁＋現有方法論清單注入；TRAINER_VOICE_LINE「共創」鈕沿用 GPT 第二線插座，v19 掛電源傘
+- A.Two 首個完全體：查證校正 Bacha Coffee（原誤植 1876 咖啡）入知識庫 7 塊＋《品牌校準三問》4 步；實測共創兩筆（《品牌故事解構法》6 步轉正、兩筆知識轉入庫）——全部從 Adam×A.Two 對話長出來
+- 發現並補齊語音線器官缺失：v19.1 知識檢索＋遞招運行時（multilingual query 嵌入、開場載庫、背景查找 v15 模式、走步工具狀態機、exit 120s 冷卻）；離線重放五題全過＋訓練線全生命週期實戰（遞招含分寸→五步無跳步→exit）
+- v20 = v19 移除提案部件的用戶版，canary 實測後 DEFAULT 切 v20——全用戶語音有知識庫＋方法論了；v18 轉熱回滾、殘留釘選全平台掃 0
+- 實測中診斷三連：MiniMax WS 408（沉默根因）、participant disconnect（用戶端網路）、wait_for_participant 秒掛競態（良性）
+- ailivex-platform 五個 commit 收庫（v18.15.0-v18.17.1）；誤收平行 session 檔案後 v18.17.1 修正還原
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform src/lib/{methodology,knowledge,tool-tags,collections,voice-power}.ts | 提案管道＋TRAINER_VOICE_LINE＋v19/v20 註冊＋DEFAULT 切 v20 |
+| ailivex-platform src/app/api/dialogue/route.ts | 雙標記提案處理＋共創指令注入 |
+| ailivex-platform src/app/api/admin/characters/[id]/{methodologies,knowledge-proposals}/ | 待審列表/轉正補嵌/轉入庫/計數修雷 |
+| ailivex-platform src/app/admin/knowledge/page.tsx | 兩個待審區 UI |
+| ailivex-platform src/app/api/livekit/token/route.ts＋realtime page＋characters/[id] | 訓練線分流＋共創鈕 |
+| ailivex-platform agent/realtime_agent_v19.py | 提案工具＋s2t＋清單＋v19.1 運行時＋冷卻 |
+| ailivex-platform agent/{main_v20,realtime_agent_v20}.py＋cloudbuild-v20.yaml | v20 用戶版三檔 |
+| Firestore | A.Two 知識 9 塊＋方法論 2 套（全 active）；methodProposalEnabled=true |
+
+### ⚠️ 尚未解決
+- 半拍延遲未精測：背景注入=下輪才進腦，Adam 體感 OK 但無數據；v20 上真實用戶後看 monitor 回合延遲有無變化
+- wait_for_participant 秒掛競態拋錯（良性未處理）；TTS REST 備援疑未觸發（MiniMax 408 那次無 fallback log，再犯才查 minimax_tts.py）
+- v18 降冷備擇日（觀察 v20 幾天）；屆時 voice-power CANARY 拔 'v18'＋VOICE_VERSIONS 掛 standby
+- 知識檢索 v20 簡化版無 lex rescue/兄弟塊補帶/SMALL_DOC 整份帶入——與文字線有行為差，手感有落差再補
+- 平行 session 的 FOUNDATION.md/tests/next.config CSP 仍未提交（他們的戰場，勿收）
+
+### 待執行 / 下一步
+觀察 v20 真實用戶通話幾天：`gcloud logging read ... service_name="ailivex-realtime-agent-v20"` 看 `[v20] knowledge inject/method offered/start` 出現頻率＋monitor 頁回合延遲按線對比 v18 基線。穩定後做 v18 降冷備三件套（min=0、CANARY 拔、standby 旗標）。為什麼先做：全用戶剛切新版，第一週的異常信號最值錢。
