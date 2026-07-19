@@ -7994,6 +7994,22 @@ Adam 提案新天條：舊天條全是踩雷才立的（不二踩），沒有一
 ### 待執行
 - [ ] 下一個新平台需求進來時首戰實測本天條（調度清單→點頭→帳本）
 
+### 追加（同日第2段）— 災難還原補課：三平台 Firestore 備份鏈全鋪＋真還原演練
+
+- Adam 問「collection 刪了影響什麼」→ 盤 ailiveX 全 collection 衝擊面（memories/characters/conversations 不可再生＝最痛；最真實風險向量是我自己的 admin 腳本誤刪）→ GO
+- 三平台（ailivex-2026/udnnews/geo-authority-2026）全鋪兩層防線：
+  - **PITR 開啟**（describe 驗證 ENABLED，7 天窗口 604800s）
+  - **每日 export 排程**：Scheduler `firestore-daily-export` 03:30 台北 → `gs://{project}-firestore-backups`（同 region 桶＋30 天生命週期自動清舊）；SA=`firestore-backup@`（datastore.importExportAdmin，最小權限）
+- 排程鏈全部用 SA 身份 force-run 真驗過（手動 export 成功≠排程會成功，身份不同）：三平台桶裡都有 SA 觸發的 export 資料夾
+- **真還原演練（ailiveX）**：export → 建 `drill` 臨時庫 → import → 四 collection 數字全 MATCH（memories 575/characters 19/conversations 58/users 8）＋抽查內容一致 → 刪 drill。備份證明是活的，不是薛丁格備份
+- geo deploy.sh 收編 backup_scheduler（天條：手動改雲端同日改腳本）commit d7d19d5 已推
+- 還原 SOP：`docs/FIRESTORE_BACKUP_RESTORE.md`（PITR 劇本/整庫劇本/import 是 upsert 不是回滾的邊界/鑑別信號）
+- 施工小雷自錄：重試迴圈判斷寫死「恰好 2 資料夾」，通了之後繼續空打多 export 3 份（無害，生命週期會清）——until 條件要寫 `>=` 不寫 `==`
+- 低利債（帳本待記）：跨 project 異地備份未做（觸發：任一平台有真付費客戶）；scheduler 失敗無通知
+
+### ⚠️ 尚未解決（追加）
+- ailivex/udnnews 無中央 IaC，備份排程「排程即真相」——FIRESTORE_BACKUP_RESTORE.md 為記錄
+
 ### 追加（同場第3段）— v19 實測收案＋知識提案管道上線
 
 - v19 語音提案端到端實測通：inventory=1（他答得出自己有什麼）→ propose_method 真呼叫 →《品牌故事解構法》六步落待審區（品質高：雙重障礙結構＋具體判準）

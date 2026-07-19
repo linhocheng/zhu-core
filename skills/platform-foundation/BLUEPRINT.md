@@ -117,7 +117,8 @@
   關鍵 secrets 的災備（bridge 掛了怎辦、SA 洩漏怎麼輪換）
 - 最晚灌注點：備份**第一筆不可再生真資料寫入之前**；還原演練**上線後首月**
 - 來源教訓：這章是 2026-07-19 立藍圖時發現的裸區——當時誠實答案是
-  「ailiveX 被誤刪一個 collection 沒有還原路徑」。第一個補課對象。
+  「ailiveX 被誤刪一個 collection 沒有還原路徑」。同日補課：三平台 PITR 7 天＋每日
+  export 排程＋ailiveX drill 庫真還原演練通過。SOP：`docs/FIRESTORE_BACKUP_RESTORE.md`
 
 ## 十一、擴建預留
 
