@@ -14,7 +14,7 @@ activation:
 
 # Platform Foundation — 平台地基 SOP v1.0
 
-> 母版藍圖（11 章地基＋檢查表＋技術債規則＋滾動規則）：同目錄 `BLUEPRINT.md`。
+> 母版藍圖（11 章地基＋檢查表＋技術債規則＋承重牆帳＋滾動規則）：同目錄 `BLUEPRINT.md`。
 > 本檔只管「怎麼執行」。
 
 ## 觸發判準
@@ -64,6 +64,14 @@ activation:
 
 利率：活血=立刻清｜壓底=動工前清｜低利=順手清或顯式養著。
 同一繞法連續兩場 session 被重新解釋 → 自動升高利貸，下場優先。
+顯式養著的債雙向保護：不順手修（要 scoped 討論）、不挖深；退場條件寫進 code 註釋。
+
+## 承重牆帳（無聲消失會打到真人的規則）
+| invariant | 基線值 | 來源 commit | code anchor | pinning test |
+|---|---|---|---|---|
+
+pinning test 變紅＝系統在正常運作；禁 skip/xfail/刪測讓 CI 綠。
+動承重牆檔案的改動要聲明 preserved / moving baseline。無測試守的標 prose-pinned。
 
 ## 變動記錄
 - YYYY-MM-DD 需求「開放註冊」→ #4 濫用防護 排後→到期

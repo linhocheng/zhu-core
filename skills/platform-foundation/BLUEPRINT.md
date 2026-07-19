@@ -1,4 +1,4 @@
-# 平台地基藍圖（母版）v1.0
+# 平台地基藍圖（母版）v1.1
 
 > **定位**：以後 Adam 說「蓋平台」，這整份**默認全含**；哪塊不蓋要顯式說、他點頭才能砍。
 > 跟舊模式反過來——舊模式是「提到才蓋」，本藍圖生效後是「砍掉才不蓋」。
@@ -33,6 +33,8 @@
 - **資料生命週期四動作都要有答案**：建立、修改、封存、刪除——不能只設計「寫進去」。
   刪除要想連帶（子集合、關聯 doc、儲存桶檔案）
 - 狀態欄是狀態機不是自由字串；不同軸不混用（如 tier vs status）
+- 資料層 deny-by-default 保險：應用層授權之外，DB 層預設全拒（Firestore rules 鎖死、
+  只走 admin SDK；或 RLS enable 不給 policy）——應用層漏了還有一道
 - 最晚灌注點：**第一筆真資料寫入之前**（schema 文件）；封存/刪除路徑可排後但要有觸發條件
 - 來源教訓：真相分裂系（feedback_anews 兩-worker 分裂、假中台 ANEWS）
 
@@ -44,9 +46,23 @@
   一切外部輸入不可信（injection、SSRF 防護——url-reader 的私有 IP／metadata 封鎖是範本）；
   最小權限 IAM（SA 只拿需要的角色）；公開 endpoint 一律 rate limiting；
   審計信號（誰在何時動了什麼，至少 admin 寫操作要留痕）
-- LLM 平台加一條：prompt injection——外部文本進 prompt 前隔離標記，工具權限最小化
-- 最晚灌注點：secrets 紀律**第一天**；威脅模型**對外開放前**；rate limiting**公開 endpoint 上線前**
-- 來源教訓：gh push 驗 tracked tree、SSRF guard（url-reader）、密鑰不落地天條
+- **機器把關，不靠自律——安全掃描四件套接 CI**：SAST（Semgrep）＋套件掃描（Dependabot／
+  `npm audit --audit-level=high`）＋祕密掃描（gitleaks + GitHub push protection）＋
+  DAST（ZAP baseline 打 staging；active scan 永不打生產）。節奏：每 PR 跑前三種、
+  nightly ZAP 被動、發版前 ZAP 主動掃 staging。「人會忘記檢查，工具不會」
+- 供應鏈：裝任何套件前查證真實存在、知名、有維護——AI 會掰出不存在的套件名，
+  駭客搶注放毒（slopsquatting）
+- 錯誤不洩內部：stack trace／版本／SQL／路徑不回給用戶（通用錯誤訊息）；
+  log 不進明文個資與 token（識別碼雜湊後記）
+- LLM 平台四規：①用戶文字與檢索內容是**資料不是指令**，不併入 system 塊；
+  ②模型輸出不可信，sanitize 後才下游用（不 eval、不當 HTML render）；
+  ③模型觸發的不可逆動作必過人閘；④**prompt／persona 改動＝schema 改動**，改了就重跑紅線測試
+- 紅線升級清單：碰到**真錢、密碼、個資、付款、檔案上傳、醫療金融**——停，做一次
+  安全審查再上線。「能跑」不等於「能安全上線」
+- 最晚灌注點：secrets 紀律**第一天**；gitleaks＋audit **repo 建立即開**；
+  威脅模型＋rate limiting＋完整掃描鏈**對外開放前**
+- 來源教訓：gh push 驗 tracked tree、SSRF guard（url-reader）、密鑰不落地天條；
+  David Lo 資安系列＋holygrail2 security-baseline 20 條 invariants（2026-07-19 收編）
 
 ## 四、住戶行為與濫用
 
@@ -95,6 +111,10 @@
 - 標配：deploy script／IaC 是唯一真相源（手動改雲端資源**同日**改腳本並 commit）；
   環境分離（dev 不碰生產資料）；env 變數清單有文件；新 relative import 部署前本機起一次；
   部署驗證用鑑別信號（流量 revision 對齊＋功能探針，不是「部署指令跑完」）
+- env 進程式前過 schema 驗證（Zod 或同級），缺值**啟動就死**（fail loud），
+  不跑到一半才炸——env 雷全家（字面 \n、系統 env 蓋 .env、靜默 404）的機制解
+- 生產部署是**人的按鈕**：prod deploy 走顯式人閘（manual dispatch／Adam 的 GO），
+  staging 可自動、prod 永不自動
 - 最晚灌注點：**第一次部署的同一天**（deploy script 進 repo）
 - 來源教訓：手動改雲端同日改腳本天條、ADC 天條、traffic 釘舊 revision 真相分裂
 
@@ -161,7 +181,29 @@
 - **低利**（死代碼、過時文件）→ 順手清（下次路過時），或**顯式養著**（帳本記「不清＋理由」）
 - **升級規則**：同一個繞法連續兩場 session 被重新解釋＝高利貸，下場優先清
   （每解釋一遍就是付一次利息；reflex 454 次 solve_root_not_symptom 就是利息帳單）
+- **已接受風險雙向規則**（holygrail2 收編）：顯式養著的債受雙向保護——
+  不准在不相關的改動裡**順手「修好」它**（每筆要自己的 scoped 討論才能動），
+  也不准把它**挖深**；退場條件（什麼時候必須清）跟債一起寫，最好直接寫在 code 註釋裡
 - 防腐：清債不掛「今天想清」，掛觸發條件或順手——否則清債變成躲主線的逃避
+
+## 承重牆帳（invariant 表——地基帳的孿生，帳本第三張表）
+
+地基帳管「該蓋的蓋了沒」，承重牆帳管「**蓋好的不被無聲拆掉**」。
+血的教訓（holygrail2）：persona 危機紅線在改版中無聲消失**七週**才被發現；
+我們自己的同型雷：共用 loader 靜默 fallback 斷靈魂（244 字 soul）、zhTextDirective 家族。
+
+- 格式（每條承重牆一行）：**| invariant | 基線值 | 來源 commit | code anchor | pinning test |**；
+  載重 commit hash 直接寫進代碼註釋——「這行為什麼在這、誰立的」一眼可查，比 git blame 快
+- **pinning test 變紅＝系統在正常運作**（它抓到你動了不該動的）。
+  禁止 skip／xfail／刪測試讓 CI 變綠——那是剪警報線。修 bug 前先寫一個會 fail 的 test
+- 動到承重牆檔案的改動必須顯式聲明：`preserved baselines: <list>` 或
+  `moving baseline: <哪條> · <為什麼> · <證據>`——承重牆不是不能動，
+  是動之前要知道自己在動什麼、並留下痕跡
+- 什麼算承重牆：安全 invariant、效能基線、角色靈魂紅線（危機處理段落）、資料綁定鐵律——
+  判準一句話：**無聲消失會打到真人的，都算**
+- 沒有自動測試守的承重牆標 `prose-pinned`（只剩人眼把關）——這種行要特別小心，
+  且是補 pinning test 的優先清單
+- 最晚灌注點：第一條「無聲消失會出事」的規則誕生時（通常＝第一次 hardening 或第一條紅線落地時）
 
 ## 滾動規則（敏捷的機制版，不是姿態版）
 
@@ -174,3 +216,6 @@
 
 *v1.0 · 2026-07-19 · 源自 Adam「樣品屋 vs 真房子」對談：清單裡幾乎每章都是踩雷才變天條的，*
 *這份藍圖把「不二踩」升級為「第一次就該有」。天條短版在 `~/.claude/CLAUDE.md`，SOP 在 `SKILL.md`。*
+*v1.1 · 同日 · 收編兩批外部文件：David Lo 資安系列（掃描四件套/供應鏈/紅線清單/LLM 四規/*
+*env fail-loud/deny-by-default）＋holygrail2 工作原則與 baselines（承重牆帳/pinning test/*
+*已接受風險雙向規則/prod 人閘）。原檔存 Drive 資料夾與 davidlo3917/holygrail2 repo。*
