@@ -7966,3 +7966,30 @@ Adam 想要「admin 跟角色聊天，角色自己提出方法論，寫入本體
 - v19 上線（= v18 + propose_method 原生工具）：agent 三檔複製改名＋雙閘（users.role=admin × characters.methodProposalEnabled）＋draft 無 triggerEmb（轉正時後台補嵌=收斂點）；VOICE_VERSIONS 註冊、approve route 補嵌、Cloud Build SUCCESS、min=1、registered worker 確認、Adam×A.Two access 釘 v19
 - 未收案：Adam 語音實測（鑑別信號：log 出現 `[v19] method proposal enabled` → 閘開；`[v19] method proposal saved` → 落庫）；監聽已掛
 - 注意：v19 min=1 是第二台常駐（v18 也 min=1）——試驗期雙付，收案後二選一（v19 轉正 v18 降冷備，或 v19 降 0）
+
+---
+
+## 2026-07-19 — 平台地基天條立條（樣品屋 vs 真房子）＋writeMemory 斷根收案
+
+### 背景 / WHY
+Adam 提案新天條：舊天條全是踩雷才立的（不二踩），沒有一條管「第一次就該有」。功能是皮，地基是管道間/水錶/門禁/消防——沒地基的平台是樣品屋。對談共創定案後 GO。
+
+### 產出
+- 檔案：`skills/platform-foundation/BLUEPRINT.md` — 母版 v1.0：11 章地基（門禁/資料憲法/安全威脅/濫用/可觀測/任務基建/後台/部署/成本/災難還原/擴建）＋出廠檢查表（各章默認最晚灌注點）＋技術債規則（利率制：活血/壓底/低利＋清償事件＋兩場重解釋升高利貸）＋滾動規則（排後必帶觸發條件、需求變動先回帳本、節拍靠 lastword）
+- 檔案：`skills/platform-foundation/SKILL.md` — 執行 SOP：調度清單給 Adam 點頭才動工（硬步驟）→ 開工 commit 帶 repo root FOUNDATION.md 帳本（模板內含）→ 施工中滾動 → 收尾盤到期
+- 檔案：`~/.claude/CLAUDE.md` — 技能觸發區加 platform-foundation（觸發詞＋既有平台開放對外也觸發）；天條區加短版
+- 檔案：`skills/last-words.md` — STEP 0 加地基帳本盤點（到期項→未解＋下一步優先）
+- 檔案：memory `feedback_platform_foundation_ledger.md`＋MEMORY.md 索引行
+
+### 已解決
+- 地基藍圖 vs 一吋蛋糕的表面衝突 → Adam 定調：不衝突，是施工單位的靈活調度；排後=調度（監造姿態）不是紅線（防守姿態），但必留痕（觸發條件＋點頭）
+- 敏捷「即時滾動」的爛尾風險 → 機制三件套：帳本（狀態只有已灌/排後/砍掉）＋節拍（lastword 盤到期）＋需求變動先回帳本再改 code
+- 同場收案：ailivex writeMemory 斷根（7/16-7/19 連四晚巡檢 ok/0 findings，全庫 573 條零缺 status）
+
+### ⚠️ 尚未解決
+- 災難與還原是現役平台共同裸區（ailiveX 誤刪 collection 無還原路徑）——第一個補課對象，等 Adam 排
+- 既有平台（ailiveX/UDN/geo）都沒有 FOUNDATION.md——天條只管新平台起，舊平台等「開放對外/大改版」觸發時補建現況盤點式帳本
+- UDN 懶人包字體驗收仍未做（新管線部署後生產零任務跑過）
+
+### 待執行
+- [ ] 下一個新平台需求進來時首戰實測本天條（調度清單→點頭→帳本）

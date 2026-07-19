@@ -37,6 +37,10 @@ node skills/lastword/fanout.mjs --audit
 **規則**：本 session 產生的髒樹/進程/孤島，收掉或寫進 session 檔「未解」；
 別的 session 的歷史髒樹不動（平行施工規約），只確認不是自己的。
 
+**地基帳本盤點**（平台地基天條的節拍點，2026-07-19 起）：本場施工的 repo 若有
+`FOUNDATION.md` → 盤到期項（排後觸發條件已到而未灌、技術債升高利貸的）→
+有到期就寫進 session 檔「未解」＋「下一步」優先。沒有帳本或沒到期 → 跳過。
+
 ### STEP 1：寫 session 檔（唯一的動筆步驟，判斷都在這）
 
 寫 `~/.ailive/zhu-core/docs/sessions/SESSION_{YYYY-MM-DD}_{N}.md`
