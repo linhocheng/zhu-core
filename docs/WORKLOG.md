@@ -8074,3 +8074,40 @@ ailivex 角色成長閉環：教（共創）→審（後台）→用（全線遞
 
 ### 待執行 / 下一步
 觀察 v20 真實用戶通話幾天：`gcloud logging read ... service_name="ailivex-realtime-agent-v20"` 看 `[v20] knowledge inject/method offered/start` 出現頻率＋monitor 頁回合延遲按線對比 v18 基線。穩定後做 v18 降冷備三件套（min=0、CANARY 拔、standby 旗標）。為什麼先做：全用戶剛切新版，第一週的異常信號最值錢。
+
+---
+
+## 2026-07-19（承接同日）— 地基天條實戰：三平台備份鏈＋藍圖 v1.1＋承重牆帳＋ZAP 資安加固
+
+### 背景 / WHY
+平台地基天條立條當天就實戰驗證：Adam 問「collection 刪了影響什麼」→ 補災難還原地基；讀 David Lo 資安系列＋holygrail2 工作原則→藍圖升 v1.1；「排 1,2 實戰」→ 建 ailiveX 承重牆帳＋ZAP 掃三平台加固。
+
+### 完成
+- **災難還原地基（三平台 PITR＋每日 export＋真還原演練）**：ailivex-2026/udnnews/geo-authority-2026 全開 PITR 7 天＋Scheduler 每日 03:30 export 到同 region 備份桶（30 天生命週期）＋專用 SA（datastore.importExportAdmin 最小權限）；ailiveX drill 庫真還原演練四 collection 數字全 MATCH。SOP：docs/FIRESTORE_BACKUP_RESTORE.md；geo deploy.sh 收編 backup_scheduler（天條補帳）
+- **藍圖 v1.1**（skills/platform-foundation/BLUEPRINT.md）：收編兩批外部文件——David Lo 資安系列（掃描四件套接 CI/供應鏈 slopsquatting/紅線升級清單/LLM 四規/env fail-loud/deny-by-default）＋holygrail2 baselines（承重牆帳 invariant 表/pinning test 變紅＝正常/已接受風險雙向規則/prod 人閘）。新增第三張帳表「承重牆帳」
+- **ailiveX 承重牆帳**：FOUNDATION.md 三表＋tests/test_load_bearing.py 9 個 pinning test 全綠；反向驗證確認 LB1（靈魂不可無聲消失）警報線有效（模擬吞靈魂→斷言真的紅）
+- **ZAP baseline 掃三平台**（被動、安全打生產）：三站 FAIL-NEW=0 無真實漏洞→補全站 security headers（CSP 保守版/HSTS/nosniff/clickjacking/COOP/Referrer/Permissions＋移除 X-Powered-By）→部署三站→重掃驗證
+- **UDN／geo 也建 FOUNDATION.md**（回溯盤點式）
+
+### 誠實記錄（天條實戰）
+重掃鑑別信號打臉初報：curl 看到 7 header 都在、正要說「消掉 Medium」——重掃 ZAP 揭穿 CSP 從「未設」(1 Medium) 變「unsafe-inline×3」(3 Medium)，因保守 CSP 無 script-src 擋不住 inline XSS。真實面（clickjacking/洩漏/傳輸）確實改善、Low 大降，但 CSP 數字不減反增。**若只 curl 不重掃就會對 Adam 說謊（挑 header-在 的有利信號）**。這正是當天寫進藍圖第三章、當天自己撞上的「宣告修好前先看只有真修好才會出現的信號」。CSP unsafe-inline 依 Adam 決定認列壓底債（退場＝nonce 改造，打爛 SSR 是獨立工程）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| zhu-core BLUEPRINT.md/SKILL.md | 藍圖 v1.1＋承重牆帳＋SOP |
+| zhu-core docs/FIRESTORE_BACKUP_RESTORE.md | 新檔：PITR/整庫/import-upsert 邊界/鑑別信號 |
+| ailivex FOUNDATION.md＋tests/test_load_bearing.py | 承重牆帳＋9 pinning test（d3204b1） |
+| ailivex/udnnews/geo next.config | security headers（d3204b1/bd9b96c/533d68d） |
+| geo deploy.sh | backup_scheduler（d7d19d5） |
+| udnnews/geo FOUNDATION.md | 回溯盤點帳本（c46c70e/2fe3ace） |
+| GCP ×3 project | PITR＋備份桶＋export scheduler＋firestore-backup SA |
+
+### ⚠️ 尚未解決
+- CSP nonce-based 改造（三站共通 D2/D6 壓底債，退場＝防 XSS 縱深或對外開放註冊）
+- 掃描四件套接 CI（三站 D1）；UDN/geo 無測試框架，承重牆帳只 prose-pinned 待補 pinning test
+- 跨 project 異地備份、排程失敗通知（低利債）
+- UDN 懶人包字體驗收仍未做
+
+### 待執行 / 下一步
+下一個新平台需求進來時首戰完整跑地基天條（調度清單→點頭→帳本）。三站 CSP nonce 化是獨立工程，等 Adam 排。
