@@ -1,3 +1,4 @@
+- [天條：蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 11 章標配默認全含、調度清單點頭才動工、排後必帶觸發條件、債看利率不看年齡；BLUEPRINT 在 zhu-core/skills/platform-foundation/
 - [意川_WEB Vercel 部署（臨時）](project_yichuan_web_deploy.md) — https://web-tawny-six-67.vercel.app，純靜態前台，可能撤下，重部署 SOP 在記憶裡
 - [加新 Vercel cron 必動三處](feedback_new_cron_three_places.md) — route+vercel.json+middleware PUBLIC_PATHS；middleware 401 和 route 401 長一樣；交叉驗證法=同 secret 打舊 cron
 - [LiveKit 首音延遲量測](reference_livekit_first_audio_metric.md) — ActiveSpeakersChanged 才是出聲（TrackSubscribed 只是音軌接上）；前端量比 agent 量貼近體感；基線 connect 3.3s/首音 18s
@@ -125,7 +126,7 @@
 - [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
 - [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v18；記憶觀察者 v18.14（首晚抓活血→writeMemory 斷根 v18.14.1，2026-07-15）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v20（知識檢索＋遞招）；v19 訓練線共創、v18 熱回滾；共創系統 admin 教→提案→審核轉正（2026-07-19）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
 - [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — commit 會掃走對方未提交檔案；開工先 pull、commit 前 status 認檔案、雙線互相聲明戰場
 - [即時語音負載實測方法＋同時建線爆發發現](skill_voice_loadtest_setup_burst.md) — 合成來電者階梯法半天可複製；單台6路穩態、真短板=15s內6通建線首回合飆27s；閘值5路/台+3通/15s/台；ISP到LiveKit edge路由可能不通
 - [Vercel void 寫入被 lambda 凍結蒸發](feedback_vercel_void_write_frozen.md) — 回應送出即凍結，void promise 零錯誤消失；回應後寫入一律 next/server after() 包在 writer 內；驗證看 DB doc 不看路由 200

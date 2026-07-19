@@ -1,9 +1,17 @@
 ---
 name: ailiveX 平台進度
-description: ailiveX 語音現役 v18、記憶健康巡檢觀察者（v18.14，首晚抓活血→writeMemory 斷根 v18.14.1）、對話錄音＋濃縮版、podcast 雙人對話協議＋Voice Layer、監控中台 Phase 2.5、v17 冷備
+description: ailiveX 語音現役 v20（知識檢索＋遞招運行時）、v19 訓練線（共創提案）、v18 熱回滾、共創系統（admin 教→角色提案→審核轉正）、記憶健康巡檢觀察者、監控中台 Phase 2.5
 type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
+
+**2026-07-19：共創系統一日全迴圈＋v20 全用戶上線（v18.15.0-v18.17.1 已 commit+部署）。**
+- **共創系統**：文字線 [[PROPOSE_METHOD]]/[[PROPOSE_KNOWLEDGE]] 標記＋語音 v19 原生工具（propose_method/propose_knowledge，opencc s2tw 落庫轉繁）；雙閘 admin×`characters.methodProposalEnabled`；draft→後台「知識與方法」待審區→轉正（補嵌 triggerEmb 收斂點）/轉入庫（走 ingest 正式管線 authority=derived）才生效。知識**不給角色自我入庫直通管**——他會幻覺（Bacha Coffee 曾被記成 1876 咖啡），事實層審核權在 Adam
+- **語音版本佈局**：v20=LIVE DEFAULT（v18＋知識檢索 τ=0.68 top3＋遞招 τ=0.70 最佳單選＋走步工具 method_start/next/exit 狀態機＋exit 120s 冷卻；每輪背景 multilingual-002 query 嵌入，v15 動態想起管線，半拍延遲）；v19=訓練線（TRAINER_VOICE_LINE，通話頁「共創」鈕 admin 限定，沿用 GPT 第二線插座）；v18=熱回滾 min=1（數日後降冷備）；voice-power CANARY=['v19','v18']
+- **A.Two（PSKSAsvbpShIDlAXHFKv）首個完全體**：知識 9 塊＋方法論 2 套（品牌校準三問/品牌故事解構法），全部從 Adam×A.Two 對話共創長出
+- 關鍵發現：**語音線原本連知識檢索都沒接**（agent 全文無 knowledge 字樣）——「架構共用≠消費端共用」，跨線斷言先 grep
+- 未解：半拍延遲未精測、v20 檢索是簡化版（無 lex rescue/兄弟塊）、wait_for_participant 秒掛競態（良性）、TTS REST 備援疑未觸發（MiniMax 408 一例）
+- ⚠️ 平行施工再踩：git add -A 誤收平行 session 檔案（FOUNDATION.md/tests/next.config CSP）並推，v18.17.1 退回還原——多 session 共用 repo 一律顯式 add 路徑清單
 
 **2026-07-15：觀察者首晚抓到活血→writeMemory 斷根（v18.14.1 已 commit+部署）。**
 - 生產第一次巡檢心跳準時（台北 04:00）並抓到 8 條新記憶缺 status；追根＝TS `writeMemory` 咽喉（memory.ts）建 doc 從不寫 status——7/14 backfill 280 條是清症狀，寫手還活著，當天又流 73 條（Adam×Lilith 對話）
