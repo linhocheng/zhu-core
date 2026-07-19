@@ -8026,3 +8026,13 @@ Adam 提案新天條：舊天條全是踩雷才立的（不二踩），沒有一
 - TRAINER_VOICE_LINE 上線（沿用 GPT Voice 第二線插座）：通話頁「共創」鈕（admin×methodProposalEnabled 雙閘）→ token route line='trainer' 分流 v19，403 不靜默降級；Adam access 釘選已解除（主按鈕回 v18 用戶視角）
 - v19 掛進語音電源傘（voice-power CANARY_VOICE_VERSIONS）：與 v18 同開同關＋自動關機，訓練線不再永久常駐燒錢
 - 遞招定位修正：屬於用戶體驗 → 原型在 v19 驗手感，成熟開 v20（=v18+遞招）轉正；task #10 排隊
+
+### 追加（同場第5段）— v19.1 遞招原型一晚轉正 v20，全用戶上線
+
+- v19.1（知識檢索＋遞招運行時）施工：multilingual-002 query 嵌入（鏡像 TS，urllib＋RETRIEVAL_QUERY）、開場載庫進 RAM、每輪背景查找（v15 動態想起模式）、走步原生工具三件（start/next/exit，狀態機在程式）、門檻照搬文字線量值（0.68/0.70）
+- 離線重放五題全過（真實庫向量：遞招 0.78/0.87、知識 0.72-0.85、閒聊全空手）——本機重現不等遠端 cycle 心法
+- 訓練線實戰全生命週期：遞招含分寸（純討論忍住、求助才出手）→ start → 五步無跳步 → exit；Adam 三體感題全 OK
+- 實測抓到補上：exit 後同套無冷卻馬上再遞 → METHOD_REOFFER_COOLDOWN=120s（v19/v20 都補）
+- v20 = v19 外科移除訓練師提案部件（propose_*/共創閘/s2t/inventory 全拔），canary 實測（載庫＋注入＋遞招信號亮、無共創閘信號=乾淨度證明）→ Adam「可過」→ DEFAULT 切 v20
+- 收尾狀態：v20=LIVE（全用戶有知識庫+方法論了）；v18=熱回滾 min=1（CANARY 傘下，數日後降冷備）；v19=訓練線照舊；全平台殘留釘選掃過=0
+- 未解：①bike-race 假記憶污染（背景電視聲那通的 lastSession/記憶，等 Adam 點頭清）②wait_for_participant 秒掛競態拋錯（良性，待優雅化）③v18 降冷備擇日④本批代碼未 commit
