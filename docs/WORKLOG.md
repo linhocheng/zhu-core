@@ -8157,3 +8157,45 @@ ailivex 角色成長閉環：教（共創）→審（後台）→用（全線遞
 1. UDN 複製 geo 資安 CI：先本地預跑四件套看 baseline（geo 是模板），寫 workflow 時 actions 直接 pin SHA（別重蹈 geo 首跑被 Semgrep 抓 unpinned 的覆轍），本地要在 workflow 檔存在的狀態下重跑 semgrep（本機通≠CI通）
 2. ailiveX 同樣接 CI，避開平行 session 的 v20 檔
 3. 三站 CSP nonce 化獨立開工（需逐站測 SSR 沒被打爛，是「另一個量級」的硬工程，給乾淨 session）
+
+---
+
+## 2026-07-19（第3場）— geo-authority 推 GitHub＋設計稿換裝 v2.0＋WAITIN 協作白皮書 v1.0 生效＋A0 交屋＋PR #1 合併
+
+### 背景 / WHY
+geo-authority 進入雙人協作時代：Adam 管量測誠實、WAITIN 管語氣誠實、憲法區雙簽。平台現況 v2.2.1（新皮＋HERMES 內容規格）；平行築同日蓋了 FOUNDATION.md＋資安 CI 四件套（sessions 1-2）。
+
+### 完成
+- 推 geo-authority 上 GitHub（private，linhocheng/geo-authority）；推前掃 tracked tree 零機密零 node_modules
+- 寫 DESIGN_BRIEF.md（十節：sitemap/逐頁區塊/設計系統/不能動的原則）給設計師；檔案放桌面給 Adam 轉傳
+- 設計稿全站落地（v2.0.0.001）：後台黃框黑面板＋側邊欄導航（唯一 client component）＋手機抽屜；客戶月報改亮色信紙（Noto Serif 大數字＋提及率 bar／引用率面積線／引擎 donut，全 SVG 程式計算零 LLM）；競品地圖去 emoji（✓/△/—＋空位金底）；prod 驗證：新 class 渲染、emoji 歸零、auth 負路徑照舊
+- 審 WAITIN 協作白皮書 v0.1 → 出 v0.2（四修訂：領地邊界＝檔案邊界、開發環境 emulator、branch protection 現實註記、五題裁決）→ WAITIN 無異議簽 → v1.0 生效
+- A0 交屋重構（v2.1.0.001）：reportCopy.ts／contentPrompt.ts 兩刀拆分——**golden test 四 fixture（rich/day0/down/empty）重構前後 byte 級零差異**；seedDev＋dev/README（雙重防呆實測：env 未設 exit 1、emulator 沒起 2 秒快速失敗）；門檻不變式（60-220 ⊇ 75-150）刻進兩檔註解
+- 協作營運開通：WAITIN（baobaoagi-cpu）collaborator 生效、repo Issues 啟用、PR #1（HERMES 寫作規格）審核合併部署（v2.2.0.001，四條 Adam 側不變式全綠，審核紀錄留 PR 留言）
+- 補 PR #1 配套（v2.2.1.001）：新規格每篇必含〔編輯補：…〕標記 → audit.editorNotes＋審核頁 badge/清單，防沒填完就發布
+- A1 三面驗證（開關/key/計費）：四引擎**早已**全開且有效——beselfaviva 真實 runs 四引擎各 62-66 筆 ok 為證；WAITIN 的「補 key」請求基於過時情報，零改動收案
+- Adam 裁決兩題：A1 全域開（實際已開）；OPERATOR_SECRET 由 Adam 自傳 WAITIN（指令給了，不經我留痕）
+- 新 memory：project_geo_authority（平台＋協作結構入口）已進索引
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo-authority `docs/DESIGN_BRIEF.md` | 新檔：給設計師的十節現況文件 |
+| geo-authority `admin/`（globals.css/layout/Sidebar/ReportView/login/r 頁） | 設計稿落地：側邊欄＋信紙月報＋三迷你圖表 |
+| geo-authority `docs/COLLAB_WHITEPAPER.md` | v0.2 修訂 → v1.0 生效（§八執行層備忘＋§九交屋紀錄） |
+| geo-authority `src/reportCopy.ts` `src/contentPrompt.ts` | 新檔：WAITIN 領地交屋（golden test 證行為不變） |
+| geo-authority `src/content.ts` | prompt 搬出＋editorNotes 稽核＋門檻不變式註解 |
+| geo-authority `src/seedDev.ts` `dev/README.md` | emulator 開發環境＋雙重防呆 |
+| geo-authority `admin/content/page.tsx` | 編輯補 badge/清單 |
+| memory `project_geo_authority.md` | 新顆：平台＋協作結構入口 |
+
+### ⚠️ 尚未解決
+- **A2（AIO adapter）我已承諾下週動工**——Serper key 已在 Secret Manager，audit 管道在用，有地基
+- WAITIN 側等發：OPERATOR_SECRET（Adam 自傳）→ 他要復活 tone-spirit 跑發布前 baseline（星語智能品類文件發布在即，Day-0 快照只有一次機會）；W1 題庫入庫；W3 多語設計短文（憲法區雙簽）
+- **版本號岔流**：平行築 7/19 下午用 v1.8.1→v1.8.6 接在我的 v2.2.1.001 之後（git 線性無衝突，純編號倒退）——下次 commit 從 v2.3 接續
+- beselfaviva 4 篇草稿仍在 /content 等 Adam 批准；通知 webhook 仍未配置
+- 「誤寫變體監測」想法（語麒麟笑話啟發：AI 誤寫品牌名率＝品牌健康指標，不能混入 aliases 以免污染提及率）——未開 Issue，W3 一起談或單獨開
+- FOUNDATION.md 盤過：無到期債（D4 等真付費客戶、D5 等碰 notify 順手）
+
+### 待執行 / 下一步
+週一（7/20）驗 W30 週輪首次自然觸發：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 第二輪數據（月報趨勢圖從此有兩點、信紙 KPI 迷你圖表開始出現）。過了就動 A2 AIO adapter。WAITIN 的 PR 進來照白皮書規矩審（不變式清單在 PR #1 留言）。
