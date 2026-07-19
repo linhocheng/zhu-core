@@ -8001,3 +8001,12 @@ Adam 提案新天條：舊天條全是踩雷才立的（不二踩），沒有一
 - 知識提案管道全鏈上線（Adam 拍板「一樣由我審再送出」）：[[PROPOSE_KNOWLEDGE]] 標記＋v19 propose_knowledge 工具 → knowledge_proposals draft → 後台待審區「轉入庫」走 ingest 正式管線（authority=derived）；指令刻死「只提對話真實出現的內容，不准補事實」（1876 咖啡之課）
 - 語音線遞招（方案 A 變體）已規劃未動工，等 Adam 拍板排 v19.1
 - 未收案：知識提案語音實測（劇本：教他一段內容→提進知識庫→轉入庫）；《品牌故事解構法》待 Adam 轉正
+
+### 追加（同場第4段）— v19 定位定案：訓練線（共創高我線）＋按鈕插座上線
+
+- Adam 定調：v19 永不取代 v18，是 admin 限定的「訓練師直通角色底層」線；兩線長期並存
+- 知識提案語音實測全通：兩筆落庫（《故事傳播三動機》383字已轉繁＋sourceNote 自標口授；《沒有什麼東西不能做品牌》與校準二重疊，給 Adam A退回併案例/B直轉 二選）
+- 通話中斷診斷三連：Anthropic APIConnectionError（暫時）、MiniMax WS 408（沉默根因，TTS REST 備援疑未觸發——再犯才查）、participant disconnect 16.6s（Adam 端網路）
+- TRAINER_VOICE_LINE 上線（沿用 GPT Voice 第二線插座）：通話頁「共創」鈕（admin×methodProposalEnabled 雙閘）→ token route line='trainer' 分流 v19，403 不靜默降級；Adam access 釘選已解除（主按鈕回 v18 用戶視角）
+- v19 掛進語音電源傘（voice-power CANARY_VOICE_VERSIONS）：與 v18 同開同關＋自動關機，訓練線不再永久常駐燒錢
+- 遞招定位修正：屬於用戶體驗 → 原型在 v19 驗手感，成熟開 v20（=v18+遞招）轉正；task #10 排隊
