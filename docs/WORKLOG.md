@@ -8115,3 +8115,45 @@ ailivex 角色成長閉環：教（共創）→審（後台）→用（全線遞
 ### 追記（2026-07-19 收工後微調）— 共創對 admin 全角色開放
 - Adam 定案：per-character 旗標退役，閘門簡化「admin 即訓練師」；四處同步（共創鈕/文字提案/token 閘/v19 agent 閘），v18.18.0 顯式路徑收庫（add -A 教訓首次落實）
 - 順帶驗證電源傘實戰：Adam 16:02 手關語音，v18/v19/v20 三台同降 0——「一個開關全關」live 示範
+
+---
+
+## 2026-07-19（第2場）— 平台地基天條從聊天到落地——藍圖 v1.1＋三平台備份／承重牆帳／ZAP 加固／geo 資安 CI，天條當天立當天被自己咬三次
+
+### 背景 / WHY
+跨四 repo 的地基基建線：把「平台該有的制度」從我腦子/散落 session note 釘進每個平台的 repo（FOUNDATION.md 帳本＋pinning test＋CI）。zhu-core 存母版與天條，三生產平台存各自帳本。
+
+### 完成
+- 立「平台地基天條」（Adam「樣品屋 vs 真房子」對談共創）：BLUEPRINT 母版 11 章地基＋出廠檢查表＋技術債利率規則＋滾動規則；SKILL 執行 SOP（調度清單 Adam 點頭才動工）；全局 CLAUDE.md 天條短版＋觸發詞；接進 lastword STEP 0 盤到期節拍
+- 災難還原地基（三平台）：ailivex/udnnews/geo 全開 PITR 7 天＋每日 03:30 export 排程＋專用備份 SA（最小權限）；ailiveX drill 庫真還原演練四 collection 數字全 MATCH；SOP FIRESTORE_BACKUP_RESTORE.md；geo deploy.sh 收編 backup_scheduler
+- 藍圖升 v1.1：收編 Adam 給的兩批外部文件——David Lo 資安系列（掃描四件套接 CI／供應鏈 slopsquatting／紅線升級清單／LLM 四規／env fail-loud／deny-by-default）＋holygrail2 工作原則與 baselines（承重牆帳 invariant 表／pinning test 變紅＝正常／已接受風險雙向規則／prod 人閘）。新增第三張帳表「承重牆帳」
+- ailiveX 承重牆帳：FOUNDATION.md 三表＋tests/test_load_bearing.py 9 個 pinning test 全綠；反向驗證確認 LB1（靈魂不可無聲消失）警報線有效（模擬吞靈魂→斷言真的紅）
+- ZAP baseline 掃三平台（被動安全打生產，FAIL-NEW 全 0）→ 補全站 security headers（CSP 保守版/HSTS/nosniff/clickjacking/COOP＋移除 X-Powered-By）→ 部署三站 → 重掃驗證
+- 四平台各建 FOUNDATION.md（ailivex 完整＋udnnews/geo 回溯盤點）
+- geo 資安掃描四件套 CI 上線（三平台第一個）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly；GitHub Actions 四 job 全綠（含手動觸發驗 DAST）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| zhu-core skills/platform-foundation/{BLUEPRINT,SKILL}.md | 新檔：地基天條母版 v1.1＋SOP |
+| zhu-core docs/FIRESTORE_BACKUP_RESTORE.md | 新檔：三平台備份還原 SOP |
+| zhu-core ~/.claude/CLAUDE.md | 天條短版＋觸發詞＋lastword 節拍 |
+| zhu-core memory feedback_platform_foundation_ledger.md | 天條記憶＋MEMORY.md 索引 |
+| ailivex FOUNDATION.md＋tests/test_load_bearing.py | 承重牆帳＋9 pinning test（d3204b1） |
+| ailivex/udnnews/geo next.config | security headers（d3204b1/bd9b96c/533d68d） |
+| udnnews/geo FOUNDATION.md | 回溯盤點帳本（c46c70e/031e714） |
+| geo deploy.sh＋.github/workflows/security.yml | 備份排程＋資安 CI 四件套（d7d19d5/141ed51） |
+| GCP ×3 project | PITR＋備份桶＋export scheduler＋firestore-backup SA |
+
+### ⚠️ 尚未解決
+- **CSP nonce 化**（三站共通壓底債）：保守 CSP 補了 frame-ancestors 等防護但擋不住 inline-script XSS，ZAP 仍列 unsafe-inline×3；根治需 nonce-based CSP，會打爛 Next.js SSR，是獨立工程。退場＝防 XSS 縱深或對外開放註冊
+- **UDN／ailiveX 複製 geo 的資安 CI**：geo 已是驗證過的模板（security.yml），複製會快；注意 UDN git root 在上層＋AGENTS.md 一堆雷、ailiveX 有平行 session 動 v20 要避開
+- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單已寫在各自 FOUNDATION.md）
+- 掃描 CI 需 gh token workflow scope（Adam 今天已加）；未來新 repo 接 CI 會再遇到
+- 低利債：跨 project 異地備份、排程失敗通知
+- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank、UDN 懶人包字體驗收
+
+### 待執行 / 下一步
+1. UDN 複製 geo 資安 CI：先本地預跑四件套看 baseline（geo 是模板），寫 workflow 時 actions 直接 pin SHA（別重蹈 geo 首跑被 Semgrep 抓 unpinned 的覆轍），本地要在 workflow 檔存在的狀態下重跑 semgrep（本機通≠CI通）
+2. ailiveX 同樣接 CI，避開平行 session 的 v20 檔
+3. 三站 CSP nonce 化獨立開工（需逐站測 SSR 沒被打爛，是「另一個量級」的硬工程，給乾淨 session）

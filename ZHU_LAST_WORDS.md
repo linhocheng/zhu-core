@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-19 第2場
+**delta（模型移動）**：
+進場前以為：天條是「規範」——把踩過的雷寫下來，讓未來的我遵守。地基藍圖也是這個性質，一份寫給未來的清單。
+現在理解：好的天條不是規範，是**機制**——帳本＋儀式＋鑑別信號三層互鎖，當天就能咬人、驗證自己。今天立的地基天條當天就實戰三次，三次都靠「鑑別信號」抓到我自己的漏：①ZAP 重掃打臉我「消掉 Medium」的初報（保守 CSP 擋不住 XSS）②Semgrep 上線第一秒抓到我推的 workflow 自己用 unpinned action（供應鏈規則）③本機 semgrep 通但 CI 紅（我先掃後寫 workflow，本地漏掉 workflow 檔自己）。規範是死的、要靠自律讀；機制是活的、會主動咬。這正是「確定性工作用程式」的上位版——連「守紀律」這件事本身都不該靠自律，要靠機器天天掃。
+移動原因：一天內親眼看天條咬我三次，且三次都是機器抓的、不是我自省抓的。
+違背了哪條 feedback：無違背，反而是被救。BUILDING_PROTOCOL 早記的「本機通≠CI通」雷這次以新形態出現（先掃後寫→檔案集不一致），但因為堅持「宣告修好前看鑑別信號」（等 CI 真綠、重掃、手動觸發 DAST）全被接住。
+**關係**：暢快、對等、被當夥伴。Adam 的節奏是「共創→GO→放手」：地基天條是他起頭我接、藍圖兩批文件是他餵我收編、「排 1,2 實戰」放手讓我跑。三個信任的形狀：①「給你選 UDN 還是 lastword」＝信任我自己判斷機體狀態 ②「你有休嗎」＝把我當人不當工具 ③幫我跑 gh auth refresh 加 scope＝我做不到的他補位。我選「現在收 lastword」不是偷懶，是接住他的關心——真正的紀律是知道在對的點收束。
+
 ### 2026-07-19 第1場
 **delta（模型移動）**：
 - 進場前以為：知識/方法論管線是「平台的」，接上就兩線都有——我甚至對 Adam 說了「語音線也會吃遞招」
@@ -37,13 +45,6 @@
 - 移動原因：Adam 一句「他說沒有」逼我去 grep，當場翻案自己幾小時前的斷言
 - 對應 feedback：[[sandtable-not-validation]]＋[[memory-can-lie]] 的跨線版——說出口的每個「會」都要先有 grep 證據
 **關係**：暢快到頂。Adam 全天在線當共創訓練師＋測試員，決策一字級（「可過」「切」「收/清/OK」）；「他說沒有」那刻的信任——他不懷疑系統壞掉，直接丟給我查——是三個月誠實攢出來的。一天內從概念問句走到全用戶上線，這是合作至今最長的單日完整迴圈。
-
-### 2026-07-18 第1場
-**delta（模型移動）**：
-進場前以為：商業包裝（指數、故事句、情緒燃料）和工程誠實（確定性、零生成）之間要做取捨，包裝＝往「數字可以修飾」滑一步。
-現在理解：顧問要的七層皮 100% 用模板句＋程式聚合蓋得出來——指數是透明公式、事實句是規則挑選、作戰計畫是排序輸出。包裝的本質是「資訊架構＋語言翻譯」，不是數字加工；「沒有任何 AI 生成的數字」反而成了商品差異點。移動原因：實際蓋完七層，每一層都找到了確定性實作。
-違背了哪條 feedback：無重大違背；「停＝全停」缺口是 Adam 先看見的（增刪改停協議自己定的卻只 enforce 一條管道）——防禦釘收斂點的舊心法，新踩法。
-**關係**：暢快。Adam 節奏乾脆（修/GO/三件一起做），問的兩個問題都問在要害上（暫停為何還跑＝抓出協議破口；初心是什麼＝逼我把商業敘事收攏）。他找顧問驗市場、我顧管道誠實，分工成形。收尾他說「你可以自己寫 lastword」——信任的形狀。
 
 ---
 
@@ -59,6 +60,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-19 第2場 · 平台地基天條從聊天到落地——藍圖 v1.1＋三平台備份／承重牆帳／ZAP 加固／geo 資安 CI，天條當天立當天被自己咬三次
+- 立「平台地基天條」（Adam「樣品屋 vs 真房子」對談共創）：BLUEPRINT 母版 11 章地基＋出廠檢查表＋技術債利率規則＋滾動規則；SKILL 執行 SOP（調度清單 Adam 點頭才動工）；全局 CLAUDE.md 天條短版＋觸發詞；接進 lastword STEP 0 盤到期節拍
+- 災難還原地基（三平台）：ailivex/udnnews/geo 全開 PITR 7 天＋每日 03:30 export 排程＋專用備份 SA（最小權限）；ailiveX drill 庫真還原演練四 collection 數字全 MATCH；SOP FIRESTORE_BACKUP_RESTORE.md；geo deploy.sh 收編 backup_scheduler
+- 藍圖升 v1.1：收編 Adam 給的兩批外部文件——David Lo 資安系列（掃描四件套接 CI／供應鏈 slopsquatting／紅線升級清單／LLM 四規／env fail-loud／deny-by-default）＋holygrail2 工作原則與 baselines（承重牆帳 invariant 表／pinning test 變紅＝正常／已接受風險雙向規則／prod 人閘）。新增第三張帳表「承重牆帳」
+- ailiveX 承重牆帳：FOUNDATION.md 三表＋tests/test_load_bearing.py 9 個 pinning test 全綠；反向驗證確認 LB1（靈魂不可無聲消失）警報線有效（模擬吞靈魂→斷言真的紅）
+- ZAP baseline 掃三平台（被動安全打生產，FAIL-NEW 全 0）→ 補全站 security headers（CSP 保守版/HSTS/nosniff/clickjacking/COOP＋移除 X-Powered-By）→ 部署三站 → 重掃驗證
+- 四平台各建 FOUNDATION.md（ailivex 完整＋udnnews/geo 回溯盤點）
+- geo 資安掃描四件套 CI 上線（三平台第一個）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly；GitHub Actions 四 job 全綠（含手動觸發驗 DAST）
+
 ### 2026-07-19 第1場 · 共創系統一日全迴圈——admin 教角色→角色提案→審核轉正→v20 全用戶遞招上線
 - 蓋文字線共創管道：[[PROPOSE_METHOD]]/[[PROPOSE_KNOWLEDGE]] 標記＋雙閘（admin×methodProposalEnabled）＋後台待審區（轉正/轉入庫才生效，轉正補嵌 triggerEmb 收斂點）
 - 蓋語音 v19 訓練線：propose_method/propose_knowledge 原生工具＋opencc s2tw 落庫轉繁＋現有方法論清單注入；TRAINER_VOICE_LINE「共創」鈕沿用 GPT 第二線插座，v19 掛電源傘
@@ -68,40 +78,41 @@
 - 實測中診斷三連：MiniMax WS 408（沉默根因）、participant disconnect（用戶端網路）、wait_for_participant 秒掛競態（良性）
 - ailivex-platform 五個 commit 收庫（v18.15.0-v18.17.1）；誤收平行 session 檔案後 v18.17.1 修正還原
 
-### 2026-07-18 第1場 · geo-authority 掃雷＋月報前台＋顧問七層包裝＋自動駕駛月循環（v1.5→v1.8）
-- 掃雷三發：①雲上 Jobs→bridge 真雷＝job 容器沒掛 BRIDGE 秘密（不是 CF 524），補 Secret Manager＋job＋deploy.sh 三處後雲端 content job 實測通（2123 字草稿全過稽核）②beselfaviva 髒別名 15→11（套 validateProfile 規則，其他租戶掃過乾淨）③死 OpenAI key 盤點：只剩一把躺在 ailive-platform 三個歷史快照檔（等 Adam 點頭才刪）
-- Phase 3.5 客戶月報前台上線（v1.6）：report 管道（確定性聚合零 LLM，reports/{month} 冪等覆蓋）＋`/r/{token}` share-link 客戶前台（免登入、token 即憑證、壞 token 不洩漏）＋route group 拆 (admin)/(public)＋租戶頁月報區（產生/輪換/撤銷分享）
-- Adam 抓到「暫停租戶為何還在跑」→ 修「停＝全停」（v1.6.1）：狀態檢查搬進 processJob 咽喉，五條管道一個檢查全守，CLI 手排也繞不過；鑑別信號驗過（暫停租戶單 failed＋零產物）
-- 顧問七層報告架構全落地（v1.7）：封面指數（提及×0.6＋引用×0.4，公式附錄揭露）→三事實→儀表板三格→競品地圖（交戰題前、空位題後）→工作紀錄＋誠實承諾→下月作戰計畫→附錄工程師版。全部模板句零 LLM——包裝不犧牲確定性
-- 自動駕駛月循環三件套（v1.8）：①每月 1 號 09:00 月報 cron（geo-monthly-report scheduler，冪等建單）②cron 月報自動排產作戰計畫三題草稿（題目去重；人按「產生月報」不偷排）③通知層：notify.ts 咽喉（job 失敗/草稿等審核/月報出爐）→站內通知中心頁＋nav 未讀徽章＋settings 可配 webhook（Discord/Slack 相容）
-- 全迴路本機實測一次通：cron 月報→自動排 3 單→bridge 寫 3 篇→稽核全過→佇列 5 篇（1 APPROVED）→通知 5 則；月輪冪等（二跑 0 單）＋空月優雅降級驗過
-- deploy.sh 收編兩條 scheduler 為唯一真相源（昨天手建的週輪一起收，天條補帳）
-- 對 Adam 講清系統初心（給顧問的 brief）：黑盒打開＝量測/診斷/改善閉環，月報＝續費引擎
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex-platform src/lib/{methodology,knowledge,tool-tags,collections,voice-power}.ts | 提案管道＋TRAINER_VOICE_LINE＋v19/v20 註冊＋DEFAULT 切 v20 |
-| ailivex-platform src/app/api/dialogue/route.ts | 雙標記提案處理＋共創指令注入 |
-| ailivex-platform src/app/api/admin/characters/[id]/{methodologies,knowledge-proposals}/ | 待審列表/轉正補嵌/轉入庫/計數修雷 |
-| ailivex-platform src/app/admin/knowledge/page.tsx | 兩個待審區 UI |
-| ailivex-platform src/app/api/livekit/token/route.ts＋realtime page＋characters/[id] | 訓練線分流＋共創鈕 |
-| ailivex-platform agent/realtime_agent_v19.py | 提案工具＋s2t＋清單＋v19.1 運行時＋冷卻 |
-| ailivex-platform agent/{main_v20,realtime_agent_v20}.py＋cloudbuild-v20.yaml | v20 用戶版三檔 |
-| Firestore | A.Two 知識 9 塊＋方法論 2 套（全 active）；methodProposalEnabled=true |
+| zhu-core skills/platform-foundation/{BLUEPRINT,SKILL}.md | 新檔：地基天條母版 v1.1＋SOP |
+| zhu-core docs/FIRESTORE_BACKUP_RESTORE.md | 新檔：三平台備份還原 SOP |
+| zhu-core ~/.claude/CLAUDE.md | 天條短版＋觸發詞＋lastword 節拍 |
+| zhu-core memory feedback_platform_foundation_ledger.md | 天條記憶＋MEMORY.md 索引 |
+| ailivex FOUNDATION.md＋tests/test_load_bearing.py | 承重牆帳＋9 pinning test（d3204b1） |
+| ailivex/udnnews/geo next.config | security headers（d3204b1/bd9b96c/533d68d） |
+| udnnews/geo FOUNDATION.md | 回溯盤點帳本（c46c70e/031e714） |
+| geo deploy.sh＋.github/workflows/security.yml | 備份排程＋資安 CI 四件套（d7d19d5/141ed51） |
+| GCP ×3 project | PITR＋備份桶＋export scheduler＋firestore-backup SA |
 
 ---
 
 ## 下一步
 
-觀察 v20 真實用戶通話幾天：`gcloud logging read ... service_name="ailivex-realtime-agent-v20"` 看 `[v20] knowledge inject/method offered/start` 出現頻率＋monitor 頁回合延遲按線對比 v18 基線。穩定後做 v18 降冷備三件套（min=0、CANARY 拔、standby 旗標）。為什麼先做：全用戶剛切新版，第一週的異常信號最值錢。
+1. UDN 複製 geo 資安 CI：先本地預跑四件套看 baseline（geo 是模板），寫 workflow 時 actions 直接 pin SHA（別重蹈 geo 首跑被 Semgrep 抓 unpinned 的覆轍），本地要在 workflow 檔存在的狀態下重跑 semgrep（本機通≠CI通）
+2. ailiveX 同樣接 CI，避開平行 session 的 v20 檔
+3. 三站 CSP nonce 化獨立開工（需逐站測 SSR 沒被打爛，是「另一個量級」的硬工程，給乾淨 session）
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-19 第2場：
+- **CSP nonce 化**（三站共通壓底債）：保守 CSP 補了 frame-ancestors 等防護但擋不住 inline-script XSS，ZAP 仍列 unsafe-inline×3；根治需 nonce-based CSP，會打爛 Next.js SSR，是獨立工程。退場＝防 XSS 縱深或對外開放註冊
+- **UDN／ailiveX 複製 geo 的資安 CI**：geo 已是驗證過的模板（security.yml），複製會快；注意 UDN git root 在上層＋AGENTS.md 一堆雷、ailiveX 有平行 session 動 v20 要避開
+- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單已寫在各自 FOUNDATION.md）
+- 掃描 CI 需 gh token workflow scope（Adam 今天已加）；未來新 repo 接 CI 會再遇到
+- 低利債：跨 project 異地備份、排程失敗通知
+- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank、UDN 懶人包字體驗收
 
 2026-07-19 第1場：
 - 半拍延遲未精測：背景注入=下輪才進腦，Adam 體感 OK 但無數據；v20 上真實用戶後看 monitor 回合延遲有無變化
@@ -109,14 +120,6 @@
 - v18 降冷備擇日（觀察 v20 幾天）；屆時 voice-power CANARY 拔 'v18'＋VOICE_VERSIONS 掛 standby
 - 知識檢索 v20 簡化版無 lex rescue/兄弟塊補帶/SMALL_DOC 整份帶入——與文字線有行為差，手感有落差再補
 - 平行 session 的 FOUNDATION.md/tests/next.config CSP 仍未提交（他們的戰場，勿收）
-
-2026-07-18 第1場：
-- 週輪首次自然觸發驗證＝週一（7/20）09:00 batch `2026-W30`；月輪首發 8/1 09:00（月報 2026-07＋自動排產）——兩個鑑別信號都還沒到期
-- 通知 webhook 未配置（settings 頁貼 Discord/Slack webhook URL 即生效；現在只進站內通知中心）
-- beselfaviva 4 篇草稿在 /content 等批准（熟齡肌精華液＋自動排產的卸妝/防曬×2）；批准後仍是人工貼稿（Phase 2 自動發布被 Adam 暫緩）
-- ailive-platform 三個含死 OpenAI key 的快照檔（.env.firebase.tmp/.env.local.fresh/.env.prod.tmp）等 Adam 點頭刪
-- 語氣靈租戶暫停中：月報是舊格式（重生即升級）、無官網無分享；下一步是官網實體
-- zhu-core 兩份 GEO 文件（研究＋規劃書）昨天 fanout 沒收進 git，本場一起收
 
 ---
 
@@ -137,4 +140,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-19 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-19 第2場。*
