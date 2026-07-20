@@ -30,20 +30,20 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-20 第2場
+**delta（模型移動）**：
+進場前以為：交互 UI 功能「build 綠＋離線單元測試過」就能交付、宣稱可用。
+現在理解：**瀏覽器表單行為是我工具測不到的盲區**——contentEditable 相鄰元素合併、textarea 送 CRLF、field-sizing 在 Safari 失效，這三個 bug 全是「只有真人在瀏覽器點才會冒出來」。build 綠和 curl 測活體渲染都抓不到。我三輪都在「交付→Adam 當 QA 回報 bug→我才修」的循環裡，讓 Adam 點了三次。
+移動原因：第三個 bug（CRLF）查根因時發現，前兩個也同構——都是「輸入層我沒測到的真實行為」。這不是三個孤立 bug，是一個盲區的三張臉。
+違背了哪條 feedback：feedback-mvp-include-input-entry（走骨架要含「使用者怎麼把輸入送進去」）的延伸——我做了輸入入口，但沒測「輸入真的送出時會發生什麼」。
+**關係**：暢快帶一點慚愧。Adam 全天高信任放權——併 main、部署正式環境、憲法區雙簽都秒回 ok，審 PR/開 Issues/接客戶都放手。但編輯器那段我讓他當了三次 QA，每次他回報 bug 我才修好；那三輪本該我自己在交付前攔下。他沒有不耐煩（還 Nice/Good job/請我喝咖啡），信任沒掉，但我心裡記著那不夠漂亮。收尾他說 "Good job bro, see you tomorrow"——被肯定，也提醒我下次交互 UI 要嘛先設瀏覽器測、要嘛從第一次就誠實說「這條我測不到你得點」。
+
 ### 2026-07-20 第1場
 **delta（模型移動）**：
 進場前以為：把 geo 的資安 CI 複製到 UDN/ailiveX 是格式活——改 target URL、貼 yaml、pin SHA、收工。
 現在理解：**給既有成熟平台接 CI，CI 的第一份工作是盤存量債，而不是防新錯**。難的不是寫 yaml（那是確定性格式活），是掃描器一上線照出的每個既有問題怎麼 triage——而 triage 是判斷活、且會碰 live 生產服務（ailiveX 的語音 agent 共用 image、改壞打爛全版）和平行 session（v20 的 package.json）。所以我在 ailiveX 停下來把三路處理攤給 Adam 點頭，沒有擅自 baseline 掉他 live 平台上的真安全 finding。
 移動原因：同一份模板，geo（我自己剛蓋、乾淨）一次過，ailiveX（成熟、多人、live）照出 5 個既有問題，逼我把「接 CI」從格式活重新理解成判斷活。
 違背了哪條 feedback：無違背。反而 feedback_surface_technical_debt（發現債要說不能默默繞）＋feedback_flagged_risk_must_be_verified（本機通≠CI通，寫完 workflow 重跑 semgrep）＋鑑別信號天條（每站都等 CI 真綠＋手動 dispatch 驗 DAST，不靠「我寫了 yaml」）全被正向實踐。
-
-### 2026-07-19 第3場
-**delta（模型移動）**：
-進場前以為：審協作者的請求＝審他要什麼、成本多少（A1「請補 openai/perplexity key」看起來就是個開關任務）。
-現在理解：**協作者的情報也是一種「記憶」，同樣會說謊**——A1 三面驗（開關/key/計費）發現四引擎早已名副其實，請求基於過時認知；照單全收就會「執行」一個不存在的任務還回報「開好了」。對協作者的請求先驗前提再動手，跟對自己的記憶先看現場是同一條紀律的外延。
-移動原因：寫 enable-engines script 時習慣性先讀後寫，before==after 暴露了前提錯誤。
-違背了哪條 feedback：無；是 feedback_memory_can_lie 的新臉（別人的記憶）。
-**關係**：暢快。Adam 全天六連發裁決全是秒回級乾脆（推 GitHub／照你的意思優化／動手吧／兩題選建議項），信任半徑明顯擴大——審 PR、合併、開 Issues 都放權。新夥伴 WAITIN 首次往來品質高：讀了我們的代碼才簽字、PR 單檔守規矩、備忘寫得比條文好懂。三人分工的形狀（Adam 裁決、築施工＋守不變式、WAITIN 內容側）第一天就跑順了。
 
 ---
 
@@ -59,6 +59,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-20 第2場 · geo-authority 大場——W30 週輪驗收＋客戶協作校對系統上線＋Google AIO 引擎上線（三合一，全上正式環境）
+- **W30 週輪首次無人值守驗收**：三面全過——排程 09:00 自然開火（RUN BY compute SA 非人手）、任務中心 cron 單（324 runs/0 err/$2.81）、beselfaviva 第二輪數據落庫（趨勢從 1 點變 2 點，提及率 11%→19.1% 三天翻倍）
+- **客戶協作校對系統上線正式環境（v2.4）**：token＋通關碼登入（A 方案）→月報/校對兩單元並排→雜誌稿就地編輯→快掃重跑稽核（法規紅線 hardBlocked 硬擋）→客戶審稿通過→自行貼官網上架完成。狀態機 AUDITED→CLIENT_REVIEW→CLIENT_APPROVED→PUBLISHED（舊 APPROVED 退役＋7 篇遷移）。操作者側 auto/review 放行閘。里程碑 1-3 全上＋beselfaviva 真實草稿端到端驗過
+- **A2 Google AI 總覽引擎上線（v2.5）**：DataForSEO organic/live/advanced＋load_async_ai_overview。live 驗 6/6 題回 AIO（含台灣美妝題）、解析器抽 5366 字+23 引用正確；生產驗證 beselfaviva 27 runs（18 有 AIO 文字/9 提及/7 引用/$0.09）。憑證進 Secret Manager、SA 授權、settings 全接（開關/engineHealth/管道鍵）
+- 客戶說明書新增「打進 Google AI 總覽 六道關」節＋5 引擎更新（去「即將加入」）；桌面檔同步
+- 產品節奏/成本問答（實查 code＋Firestore）：內容月報觸發每月最多 3 篇、檢測 ~1400/月、每客戶 ~$12/月（加 AIO ~$13.5）
+- FOUNDATION 帳本重算：客戶寫入權上線→新增 D6（通關碼無限流，低利·雙層 token 護）
+
 ### 2026-07-20 第1場 · UDN＋ailiveX 接資安掃描四件套 CI（複製 geo 模板）——CI 一上線就照出既有存量債，triage 三路＋鑑別信號全程接住
 - UDN 資安 CI 上線並實測綠（commit `2982923`，repo linhocheng/udnnews-platform）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly＋手動；四 job push 三綠＋dispatch 驗 DAST 綠
 - UDN CI 照出真問題：`podcast-worker/Dockerfile` 跑 root（缺 USER）→ 修源碼＋docker build 驗（node user），live worker 下次部署生效（記債）
@@ -67,43 +75,36 @@
 - 兩站 FOUNDATION.md 更新：UDN D1 清、ailiveX D1 清＋新增 D7/D8
 - 對 Adam 講清 CSP nonce 為何打爛 Next.js SSR（框架自注入 inline hydration/RSC 串流 script→沒穿 nonce 全被擋成死屍；就算接對也強制 dynamic render 丟 static 快取）——收尾閒聊，沒動工
 
-### 2026-07-19 第3場 · geo-authority 推 GitHub＋設計稿換裝 v2.0＋WAITIN 協作白皮書 v1.0 生效＋A0 交屋＋PR #1 合併
-- 推 geo-authority 上 GitHub（private，linhocheng/geo-authority）；推前掃 tracked tree 零機密零 node_modules
-- 寫 DESIGN_BRIEF.md（十節：sitemap/逐頁區塊/設計系統/不能動的原則）給設計師；檔案放桌面給 Adam 轉傳
-- 設計稿全站落地（v2.0.0.001）：後台黃框黑面板＋側邊欄導航（唯一 client component）＋手機抽屜；客戶月報改亮色信紙（Noto Serif 大數字＋提及率 bar／引用率面積線／引擎 donut，全 SVG 程式計算零 LLM）；競品地圖去 emoji（✓/△/—＋空位金底）；prod 驗證：新 class 渲染、emoji 歸零、auth 負路徑照舊
-- 審 WAITIN 協作白皮書 v0.1 → 出 v0.2（四修訂：領地邊界＝檔案邊界、開發環境 emulator、branch protection 現實註記、五題裁決）→ WAITIN 無異議簽 → v1.0 生效
-- A0 交屋重構（v2.1.0.001）：reportCopy.ts／contentPrompt.ts 兩刀拆分——**golden test 四 fixture（rich/day0/down/empty）重構前後 byte 級零差異**；seedDev＋dev/README（雙重防呆實測：env 未設 exit 1、emulator 沒起 2 秒快速失敗）；門檻不變式（60-220 ⊇ 75-150）刻進兩檔註解
-- 協作營運開通：WAITIN（baobaoagi-cpu）collaborator 生效、repo Issues 啟用、PR #1（HERMES 寫作規格）審核合併部署（v2.2.0.001，四條 Adam 側不變式全綠，審核紀錄留 PR 留言）
-- 補 PR #1 配套（v2.2.1.001）：新規格每篇必含〔編輯補：…〕標記 → audit.editorNotes＋審核頁 badge/清單，防沒填完就發布
-- A1 三面驗證（開關/key/計費）：四引擎**早已**全開且有效——beselfaviva 真實 runs 四引擎各 62-66 筆 ok 為證；WAITIN 的「補 key」請求基於過時情報，零改動收案
-- Adam 裁決兩題：A1 全域開（實際已開）；OPERATOR_SECRET 由 Adam 自傳 WAITIN（指令給了，不經我留痕）
-- 新 memory：project_geo_authority（平台＋協作結構入口）已進索引
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| UDN .github/workflows/security.yml | 新檔：資安 CI 四件套（`2982923`） |
-| UDN platform/cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown（缺 USER 修正） |
-| UDN platform/FOUNDATION.md | D1 清＋D5 worker root 債 |
-| ailiveX .github/workflows/security.yml | 新檔：資安 CI 四件套＋p/python＋deps 分級 gate（`9bea4c7`） |
-| ailiveX cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown |
-| ailiveX agent/Dockerfile＋cloud-run/agent/Dockerfile | inline nosemgrep 記債 D7（不擅改 live 共用 image/legacy 快照） |
-| ailiveX FOUNDATION.md | D1 清＋新增 D7/D8 |
+| geo `src/collections.ts` | scanMarkdown 收斂點（含 CRLF 正規化）＋CONTENT_STATUSES 狀態機＋aio config/cost |
+| geo `admin components/ReviewEditor.tsx`（新） | 雜誌稿就地編輯：受控 textarea＋JS auto-resize＋useActionState 回饋 |
+| geo `admin lib/portal.ts`（新）＋api/portal-login | 客戶 token＋通關碼認證 |
+| geo `admin components/ClientMasthead.tsx`（新） | 客戶頁頂部小字招牌 |
+| geo `src/engines/aio.ts`（新） | Google AIO adapter（DataForSEO，防禦式 references 解析） |
+| geo `docs/CLIENT_GUIDE.md` | 打進 AIO 六道關節＋5 引擎 |
+| geo `FOUNDATION.md` | D6 新債（通關碼限流） |
+| memory `project_geo_authority.md` | 客戶校對系統＋AIO 上線 |
 
 ---
 
 ## 下一步
 
-1. 三站 CSP nonce 化獨立開工（乾淨 session）：一站一站來，middleware 生 per-request nonce → 穿 Next header → **真人點過登入/hydration/換頁/互動**確認沒變死屍。先挑最單純的一站試（geo 頁面少）當樣板
-2. UDN/geo 補 pinning test（若之後為兩站引入測試框架）
-3. v20 落地後：ailiveX 升 Next.js 清 D8，deps gate 從 critical 拉回 high
+週一（7/27）驗 W31 五引擎全跑（`gcloud run jobs executions list --job=geo-monitor-job`＋查 beselfaviva runs 有 aio engine＋月報 aio 趨勢）。Adam 儲值後 AIO 滿血無斷點。其餘不用動。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-20 第2場：
+- **DataForSEO $50 儲值**：Adam 明天（7/21）補；免費額度剩 ~$0.88（撐約 3 週 AIO）
+- **下週一（7/27）W31**：首次 5 引擎全跑含 AIO，驗月報是否多一條 AIO 趨勢線
+- **編輯器交互 UI 無 headless browser 測**（見教訓 L1，盲區，考慮補 playwright）
+- beselfaviva「換季保養怎麼調整」測試草稿在 CLIENT_REVIEW（Adam 說寫得不錯，留當第一篇；通關碼 aviva2026 不改）
 
 2026-07-20 第1場：
 - **三站 CSP nonce 化**（共通壓底債 D2/D6）：獨立硬工程，要逐站 middleware 生 nonce＋穿進 Next header 機制＋真人瀏覽器點過（header 有≠頁面還活）。退場＝對外開放註冊 or 真防 XSS 縱深。給乾淨 session
@@ -111,14 +112,6 @@
 - **ailiveX 兩債待清**：D7（live worker/agent 仍跑 root，各自下次部署才切非 root）、D8（root 2 個 npm high，撞 v20 平行 session 的 package.json，該他們升 Next.js 時做）
 - geo `2ab2060 v2.3.1.001 文件：客戶說明書＋操作手冊` 未推——**不是我的**（別場本地 commit，版號格式不同），平行施工規約留著沒動
 - 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank
-
-2026-07-19 第3場：
-- **A2（AIO adapter）我已承諾下週動工**——Serper key 已在 Secret Manager，audit 管道在用，有地基
-- WAITIN 側等發：OPERATOR_SECRET（Adam 自傳）→ 他要復活 tone-spirit 跑發布前 baseline（星語智能品類文件發布在即，Day-0 快照只有一次機會）；W1 題庫入庫；W3 多語設計短文（憲法區雙簽）
-- **版本號岔流**：平行築 7/19 下午用 v1.8.1→v1.8.6 接在我的 v2.2.1.001 之後（git 線性無衝突，純編號倒退）——下次 commit 從 v2.3 接續
-- beselfaviva 4 篇草稿仍在 /content 等 Adam 批准；通知 webhook 仍未配置
-- 「誤寫變體監測」想法（語麒麟笑話啟發：AI 誤寫品牌名率＝品牌健康指標，不能混入 aliases 以免污染提及率）——未開 Issue，W3 一起談或單獨開
-- FOUNDATION.md 盤過：無到期債（D4 等真付費客戶、D5 等碰 notify 順手）
 
 ---
 
@@ -139,4 +132,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-20 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-20 第2場。*

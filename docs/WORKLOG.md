@@ -8237,3 +8237,39 @@ geo-authority 進入雙人協作時代：Adam 管量測誠實、WAITIN 管語氣
 1. 三站 CSP nonce 化獨立開工（乾淨 session）：一站一站來，middleware 生 per-request nonce → 穿 Next header → **真人點過登入/hydration/換頁/互動**確認沒變死屍。先挑最單純的一站試（geo 頁面少）當樣板
 2. UDN/geo 補 pinning test（若之後為兩站引入測試框架）
 3. v20 落地後：ailiveX 升 Next.js 清 D8，deps gate 從 critical 拉回 high
+
+---
+
+## 2026-07-20（第2場）— geo-authority 大場——W30 週輪驗收＋客戶協作校對系統上線＋Google AIO 引擎上線（三合一，全上正式環境）
+
+### 背景 / WHY
+geo-authority 一天內從「單純監測平台」長成「監測＋客戶協作校對＋5 引擎（含最大流量的 Google AIO）」。main＝prod，版本 v2.5。beselfaviva 當真實客戶跑著。
+
+### 完成
+- **W30 週輪首次無人值守驗收**：三面全過——排程 09:00 自然開火（RUN BY compute SA 非人手）、任務中心 cron 單（324 runs/0 err/$2.81）、beselfaviva 第二輪數據落庫（趨勢從 1 點變 2 點，提及率 11%→19.1% 三天翻倍）
+- **客戶協作校對系統上線正式環境（v2.4）**：token＋通關碼登入（A 方案）→月報/校對兩單元並排→雜誌稿就地編輯→快掃重跑稽核（法規紅線 hardBlocked 硬擋）→客戶審稿通過→自行貼官網上架完成。狀態機 AUDITED→CLIENT_REVIEW→CLIENT_APPROVED→PUBLISHED（舊 APPROVED 退役＋7 篇遷移）。操作者側 auto/review 放行閘。里程碑 1-3 全上＋beselfaviva 真實草稿端到端驗過
+- **A2 Google AI 總覽引擎上線（v2.5）**：DataForSEO organic/live/advanced＋load_async_ai_overview。live 驗 6/6 題回 AIO（含台灣美妝題）、解析器抽 5366 字+23 引用正確；生產驗證 beselfaviva 27 runs（18 有 AIO 文字/9 提及/7 引用/$0.09）。憑證進 Secret Manager、SA 授權、settings 全接（開關/engineHealth/管道鍵）
+- 客戶說明書新增「打進 Google AI 總覽 六道關」節＋5 引擎更新（去「即將加入」）；桌面檔同步
+- 產品節奏/成本問答（實查 code＋Firestore）：內容月報觸發每月最多 3 篇、檢測 ~1400/月、每客戶 ~$12/月（加 AIO ~$13.5）
+- FOUNDATION 帳本重算：客戶寫入權上線→新增 D6（通關碼無限流，低利·雙層 token 護）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo `src/collections.ts` | scanMarkdown 收斂點（含 CRLF 正規化）＋CONTENT_STATUSES 狀態機＋aio config/cost |
+| geo `admin components/ReviewEditor.tsx`（新） | 雜誌稿就地編輯：受控 textarea＋JS auto-resize＋useActionState 回饋 |
+| geo `admin lib/portal.ts`（新）＋api/portal-login | 客戶 token＋通關碼認證 |
+| geo `admin components/ClientMasthead.tsx`（新） | 客戶頁頂部小字招牌 |
+| geo `src/engines/aio.ts`（新） | Google AIO adapter（DataForSEO，防禦式 references 解析） |
+| geo `docs/CLIENT_GUIDE.md` | 打進 AIO 六道關節＋5 引擎 |
+| geo `FOUNDATION.md` | D6 新債（通關碼限流） |
+| memory `project_geo_authority.md` | 客戶校對系統＋AIO 上線 |
+
+### ⚠️ 尚未解決
+- **DataForSEO $50 儲值**：Adam 明天（7/21）補；免費額度剩 ~$0.88（撐約 3 週 AIO）
+- **下週一（7/27）W31**：首次 5 引擎全跑含 AIO，驗月報是否多一條 AIO 趨勢線
+- **編輯器交互 UI 無 headless browser 測**（見教訓 L1，盲區，考慮補 playwright）
+- beselfaviva「換季保養怎麼調整」測試草稿在 CLIENT_REVIEW（Adam 說寫得不錯，留當第一篇；通關碼 aviva2026 不改）
+
+### 待執行 / 下一步
+週一（7/27）驗 W31 五引擎全跑（`gcloud run jobs executions list --job=geo-monitor-job`＋查 beselfaviva runs 有 aio engine＋月報 aio 趨勢）。Adam 儲值後 AIO 滿血無斷點。其餘不用動。
