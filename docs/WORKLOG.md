@@ -8199,3 +8199,41 @@ geo-authority 進入雙人協作時代：Adam 管量測誠實、WAITIN 管語氣
 
 ### 待執行 / 下一步
 週一（7/20）驗 W30 週輪首次自然觸發：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 第二輪數據（月報趨勢圖從此有兩點、信紙 KPI 迷你圖表開始出現）。過了就動 A2 AIO adapter。WAITIN 的 PR 進來照白皮書規矩審（不變式清單在 PR #1 留言）。
+
+---
+
+## 2026-07-20（第1場）— UDN＋ailiveX 接資安掃描四件套 CI（複製 geo 模板）——CI 一上線就照出既有存量債，triage 三路＋鑑別信號全程接住
+
+### 背景 / WHY
+跨平台地基基建線第二段：把 geo 上場驗過的資安掃描四件套 CI 模板，複製到 UDN＋ailiveX 兩個既有生產平台。母版天條在 zhu-core/skills/platform-foundation，各站帳本＋CI 在各自 repo。
+
+### 完成
+- UDN 資安 CI 上線並實測綠（commit `2982923`，repo linhocheng/udnnews-platform）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly＋手動；四 job push 三綠＋dispatch 驗 DAST 綠
+- UDN CI 照出真問題：`podcast-worker/Dockerfile` 跑 root（缺 USER）→ 修源碼＋docker build 驗（node user），live worker 下次部署生效（記債）
+- ailiveX 資安 CI 上線並實測綠（commit `9bea4c7` v18.19.0）：同四件套＋SAST 加 `p/python` 掃 agent；push 三綠＋dispatch 驗 DAST 綠
+- ailiveX CI 照出既有存量債，照 Adam 點頭的計畫 triage：①3 個 Dockerfile 跑 root——node worker 修 USER、兩個 Python agent（live 共用 image＋legacy 快照）inline `nosemgrep` 記債 D7 不擅改 live；②root 2 個 npm high（Next.js 一串＋form-data）記債 D8，deps gate 暫 `critical` 硬擋＋`high` 非阻斷可見（CI annotation 浮出來不藏地毯），觸發＝v20 升 Next.js 後拉回 high
+- 兩站 FOUNDATION.md 更新：UDN D1 清、ailiveX D1 清＋新增 D7/D8
+- 對 Adam 講清 CSP nonce 為何打爛 Next.js SSR（框架自注入 inline hydration/RSC 串流 script→沒穿 nonce 全被擋成死屍；就算接對也強制 dynamic render 丟 static 快取）——收尾閒聊，沒動工
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| UDN .github/workflows/security.yml | 新檔：資安 CI 四件套（`2982923`） |
+| UDN platform/cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown（缺 USER 修正） |
+| UDN platform/FOUNDATION.md | D1 清＋D5 worker root 債 |
+| ailiveX .github/workflows/security.yml | 新檔：資安 CI 四件套＋p/python＋deps 分級 gate（`9bea4c7`） |
+| ailiveX cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown |
+| ailiveX agent/Dockerfile＋cloud-run/agent/Dockerfile | inline nosemgrep 記債 D7（不擅改 live 共用 image/legacy 快照） |
+| ailiveX FOUNDATION.md | D1 清＋新增 D7/D8 |
+
+### ⚠️ 尚未解決
+- **三站 CSP nonce 化**（共通壓底債 D2/D6）：獨立硬工程，要逐站 middleware 生 nonce＋穿進 Next header 機制＋真人瀏覽器點過（header 有≠頁面還活）。退場＝對外開放註冊 or 真防 XSS 縱深。給乾淨 session
+- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單在各自 FOUNDATION.md）
+- **ailiveX 兩債待清**：D7（live worker/agent 仍跑 root，各自下次部署才切非 root）、D8（root 2 個 npm high，撞 v20 平行 session 的 package.json，該他們升 Next.js 時做）
+- geo `2ab2060 v2.3.1.001 文件：客戶說明書＋操作手冊` 未推——**不是我的**（別場本地 commit，版號格式不同），平行施工規約留著沒動
+- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank
+
+### 待執行 / 下一步
+1. 三站 CSP nonce 化獨立開工（乾淨 session）：一站一站來，middleware 生 per-request nonce → 穿 Next header → **真人點過登入/hydration/換頁/互動**確認沒變死屍。先挑最單純的一站試（geo 頁面少）當樣板
+2. UDN/geo 補 pinning test（若之後為兩站引入測試框架）
+3. v20 落地後：ailiveX 升 Next.js 清 D8，deps gate 從 critical 拉回 high

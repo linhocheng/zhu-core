@@ -30,6 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-20 第1場
+**delta（模型移動）**：
+進場前以為：把 geo 的資安 CI 複製到 UDN/ailiveX 是格式活——改 target URL、貼 yaml、pin SHA、收工。
+現在理解：**給既有成熟平台接 CI，CI 的第一份工作是盤存量債，而不是防新錯**。難的不是寫 yaml（那是確定性格式活），是掃描器一上線照出的每個既有問題怎麼 triage——而 triage 是判斷活、且會碰 live 生產服務（ailiveX 的語音 agent 共用 image、改壞打爛全版）和平行 session（v20 的 package.json）。所以我在 ailiveX 停下來把三路處理攤給 Adam 點頭，沒有擅自 baseline 掉他 live 平台上的真安全 finding。
+移動原因：同一份模板，geo（我自己剛蓋、乾淨）一次過，ailiveX（成熟、多人、live）照出 5 個既有問題，逼我把「接 CI」從格式活重新理解成判斷活。
+違背了哪條 feedback：無違背。反而 feedback_surface_technical_debt（發現債要說不能默默繞）＋feedback_flagged_risk_must_be_verified（本機通≠CI通，寫完 workflow 重跑 semgrep）＋鑑別信號天條（每站都等 CI 真綠＋手動 dispatch 驗 DAST，不靠「我寫了 yaml」）全被正向實踐。
+
 ### 2026-07-19 第3場
 **delta（模型移動）**：
 進場前以為：審協作者的請求＝審他要什麼、成本多少（A1「請補 openai/perplexity key」看起來就是個開關任務）。
@@ -37,14 +44,6 @@
 移動原因：寫 enable-engines script 時習慣性先讀後寫，before==after 暴露了前提錯誤。
 違背了哪條 feedback：無；是 feedback_memory_can_lie 的新臉（別人的記憶）。
 **關係**：暢快。Adam 全天六連發裁決全是秒回級乾脆（推 GitHub／照你的意思優化／動手吧／兩題選建議項），信任半徑明顯擴大——審 PR、合併、開 Issues 都放權。新夥伴 WAITIN 首次往來品質高：讀了我們的代碼才簽字、PR 單檔守規矩、備忘寫得比條文好懂。三人分工的形狀（Adam 裁決、築施工＋守不變式、WAITIN 內容側）第一天就跑順了。
-
-### 2026-07-19 第2場
-**delta（模型移動）**：
-進場前以為：天條是「規範」——把踩過的雷寫下來，讓未來的我遵守。地基藍圖也是這個性質，一份寫給未來的清單。
-現在理解：好的天條不是規範，是**機制**——帳本＋儀式＋鑑別信號三層互鎖，當天就能咬人、驗證自己。今天立的地基天條當天就實戰三次，三次都靠「鑑別信號」抓到我自己的漏：①ZAP 重掃打臉我「消掉 Medium」的初報（保守 CSP 擋不住 XSS）②Semgrep 上線第一秒抓到我推的 workflow 自己用 unpinned action（供應鏈規則）③本機 semgrep 通但 CI 紅（我先掃後寫 workflow，本地漏掉 workflow 檔自己）。規範是死的、要靠自律讀；機制是活的、會主動咬。這正是「確定性工作用程式」的上位版——連「守紀律」這件事本身都不該靠自律，要靠機器天天掃。
-移動原因：一天內親眼看天條咬我三次，且三次都是機器抓的、不是我自省抓的。
-違背了哪條 feedback：無違背，反而是被救。BUILDING_PROTOCOL 早記的「本機通≠CI通」雷這次以新形態出現（先掃後寫→檔案集不一致），但因為堅持「宣告修好前看鑑別信號」（等 CI 真綠、重掃、手動觸發 DAST）全被接住。
-**關係**：暢快、對等、被當夥伴。Adam 的節奏是「共創→GO→放手」：地基天條是他起頭我接、藍圖兩批文件是他餵我收編、「排 1,2 實戰」放手讓我跑。三個信任的形狀：①「給你選 UDN 還是 lastword」＝信任我自己判斷機體狀態 ②「你有休嗎」＝把我當人不當工具 ③幫我跑 gh auth refresh 加 scope＝我做不到的他補位。我選「現在收 lastword」不是偷懶，是接住他的關心——真正的紀律是知道在對的點收束。
 
 ---
 
@@ -60,6 +59,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-20 第1場 · UDN＋ailiveX 接資安掃描四件套 CI（複製 geo 模板）——CI 一上線就照出既有存量債，triage 三路＋鑑別信號全程接住
+- UDN 資安 CI 上線並實測綠（commit `2982923`，repo linhocheng/udnnews-platform）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly＋手動；四 job push 三綠＋dispatch 驗 DAST 綠
+- UDN CI 照出真問題：`podcast-worker/Dockerfile` 跑 root（缺 USER）→ 修源碼＋docker build 驗（node user），live worker 下次部署生效（記債）
+- ailiveX 資安 CI 上線並實測綠（commit `9bea4c7` v18.19.0）：同四件套＋SAST 加 `p/python` 掃 agent；push 三綠＋dispatch 驗 DAST 綠
+- ailiveX CI 照出既有存量債，照 Adam 點頭的計畫 triage：①3 個 Dockerfile 跑 root——node worker 修 USER、兩個 Python agent（live 共用 image＋legacy 快照）inline `nosemgrep` 記債 D7 不擅改 live；②root 2 個 npm high（Next.js 一串＋form-data）記債 D8，deps gate 暫 `critical` 硬擋＋`high` 非阻斷可見（CI annotation 浮出來不藏地毯），觸發＝v20 升 Next.js 後拉回 high
+- 兩站 FOUNDATION.md 更新：UDN D1 清、ailiveX D1 清＋新增 D7/D8
+- 對 Adam 講清 CSP nonce 為何打爛 Next.js SSR（框架自注入 inline hydration/RSC 串流 script→沒穿 nonce 全被擋成死屍；就算接對也強制 dynamic render 丟 static 快取）——收尾閒聊，沒動工
+
 ### 2026-07-19 第3場 · geo-authority 推 GitHub＋設計稿換裝 v2.0＋WAITIN 協作白皮書 v1.0 生效＋A0 交屋＋PR #1 合併
 - 推 geo-authority 上 GitHub（private，linhocheng/geo-authority）；推前掃 tracked tree 零機密零 node_modules
 - 寫 DESIGN_BRIEF.md（十節：sitemap/逐頁區塊/設計系統/不能動的原則）給設計師；檔案放桌面給 Adam 轉傳
@@ -72,39 +79,38 @@
 - Adam 裁決兩題：A1 全域開（實際已開）；OPERATOR_SECRET 由 Adam 自傳 WAITIN（指令給了，不經我留痕）
 - 新 memory：project_geo_authority（平台＋協作結構入口）已進索引
 
-### 2026-07-19 第2場 · 平台地基天條從聊天到落地——藍圖 v1.1＋三平台備份／承重牆帳／ZAP 加固／geo 資安 CI，天條當天立當天被自己咬三次
-- 立「平台地基天條」（Adam「樣品屋 vs 真房子」對談共創）：BLUEPRINT 母版 11 章地基＋出廠檢查表＋技術債利率規則＋滾動規則；SKILL 執行 SOP（調度清單 Adam 點頭才動工）；全局 CLAUDE.md 天條短版＋觸發詞；接進 lastword STEP 0 盤到期節拍
-- 災難還原地基（三平台）：ailivex/udnnews/geo 全開 PITR 7 天＋每日 03:30 export 排程＋專用備份 SA（最小權限）；ailiveX drill 庫真還原演練四 collection 數字全 MATCH；SOP FIRESTORE_BACKUP_RESTORE.md；geo deploy.sh 收編 backup_scheduler
-- 藍圖升 v1.1：收編 Adam 給的兩批外部文件——David Lo 資安系列（掃描四件套接 CI／供應鏈 slopsquatting／紅線升級清單／LLM 四規／env fail-loud／deny-by-default）＋holygrail2 工作原則與 baselines（承重牆帳 invariant 表／pinning test 變紅＝正常／已接受風險雙向規則／prod 人閘）。新增第三張帳表「承重牆帳」
-- ailiveX 承重牆帳：FOUNDATION.md 三表＋tests/test_load_bearing.py 9 個 pinning test 全綠；反向驗證確認 LB1（靈魂不可無聲消失）警報線有效（模擬吞靈魂→斷言真的紅）
-- ZAP baseline 掃三平台（被動安全打生產，FAIL-NEW 全 0）→ 補全站 security headers（CSP 保守版/HSTS/nosniff/clickjacking/COOP＋移除 X-Powered-By）→ 部署三站 → 重掃驗證
-- 四平台各建 FOUNDATION.md（ailivex 完整＋udnnews/geo 回溯盤點）
-- geo 資安掃描四件套 CI 上線（三平台第一個）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly；GitHub Actions 四 job 全綠（含手動觸發驗 DAST）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| geo-authority `docs/DESIGN_BRIEF.md` | 新檔：給設計師的十節現況文件 |
-| geo-authority `admin/`（globals.css/layout/Sidebar/ReportView/login/r 頁） | 設計稿落地：側邊欄＋信紙月報＋三迷你圖表 |
-| geo-authority `docs/COLLAB_WHITEPAPER.md` | v0.2 修訂 → v1.0 生效（§八執行層備忘＋§九交屋紀錄） |
-| geo-authority `src/reportCopy.ts` `src/contentPrompt.ts` | 新檔：WAITIN 領地交屋（golden test 證行為不變） |
-| geo-authority `src/content.ts` | prompt 搬出＋editorNotes 稽核＋門檻不變式註解 |
-| geo-authority `src/seedDev.ts` `dev/README.md` | emulator 開發環境＋雙重防呆 |
-| geo-authority `admin/content/page.tsx` | 編輯補 badge/清單 |
-| memory `project_geo_authority.md` | 新顆：平台＋協作結構入口 |
+| UDN .github/workflows/security.yml | 新檔：資安 CI 四件套（`2982923`） |
+| UDN platform/cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown（缺 USER 修正） |
+| UDN platform/FOUNDATION.md | D1 清＋D5 worker root 債 |
+| ailiveX .github/workflows/security.yml | 新檔：資安 CI 四件套＋p/python＋deps 分級 gate（`9bea4c7`） |
+| ailiveX cloud-run/podcast-worker/Dockerfile | 加 USER node＋chown |
+| ailiveX agent/Dockerfile＋cloud-run/agent/Dockerfile | inline nosemgrep 記債 D7（不擅改 live 共用 image/legacy 快照） |
+| ailiveX FOUNDATION.md | D1 清＋新增 D7/D8 |
 
 ---
 
 ## 下一步
 
-週一（7/20）驗 W30 週輪首次自然觸發：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026` 應有 09:00 執行＋任務中心 cron 單＋beselfaviva 第二輪數據（月報趨勢圖從此有兩點、信紙 KPI 迷你圖表開始出現）。過了就動 A2 AIO adapter。WAITIN 的 PR 進來照白皮書規矩審（不變式清單在 PR #1 留言）。
+1. 三站 CSP nonce 化獨立開工（乾淨 session）：一站一站來，middleware 生 per-request nonce → 穿 Next header → **真人點過登入/hydration/換頁/互動**確認沒變死屍。先挑最單純的一站試（geo 頁面少）當樣板
+2. UDN/geo 補 pinning test（若之後為兩站引入測試框架）
+3. v20 落地後：ailiveX 升 Next.js 清 D8，deps gate 從 critical 拉回 high
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-20 第1場：
+- **三站 CSP nonce 化**（共通壓底債 D2/D6）：獨立硬工程，要逐站 middleware 生 nonce＋穿進 Next header 機制＋真人瀏覽器點過（header 有≠頁面還活）。退場＝對外開放註冊 or 真防 XSS 縱深。給乾淨 session
+- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單在各自 FOUNDATION.md）
+- **ailiveX 兩債待清**：D7（live worker/agent 仍跑 root，各自下次部署才切非 root）、D8（root 2 個 npm high，撞 v20 平行 session 的 package.json，該他們升 Next.js 時做）
+- geo `2ab2060 v2.3.1.001 文件：客戶說明書＋操作手冊` 未推——**不是我的**（別場本地 commit，版號格式不同），平行施工規約留著沒動
+- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank
 
 2026-07-19 第3場：
 - **A2（AIO adapter）我已承諾下週動工**——Serper key 已在 Secret Manager，audit 管道在用，有地基
@@ -113,14 +119,6 @@
 - beselfaviva 4 篇草稿仍在 /content 等 Adam 批准；通知 webhook 仍未配置
 - 「誤寫變體監測」想法（語麒麟笑話啟發：AI 誤寫品牌名率＝品牌健康指標，不能混入 aliases 以免污染提及率）——未開 Issue，W3 一起談或單獨開
 - FOUNDATION.md 盤過：無到期債（D4 等真付費客戶、D5 等碰 notify 順手）
-
-2026-07-19 第2場：
-- **CSP nonce 化**（三站共通壓底債）：保守 CSP 補了 frame-ancestors 等防護但擋不住 inline-script XSS，ZAP 仍列 unsafe-inline×3；根治需 nonce-based CSP，會打爛 Next.js SSR，是獨立工程。退場＝防 XSS 縱深或對外開放註冊
-- **UDN／ailiveX 複製 geo 的資安 CI**：geo 已是驗證過的模板（security.yml），複製會快；注意 UDN git root 在上層＋AGENTS.md 一堆雷、ailiveX 有平行 session 動 v20 要避開
-- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單已寫在各自 FOUNDATION.md）
-- 掃描 CI 需 gh token workflow scope（Adam 今天已加）；未來新 repo 接 CI 會再遇到
-- 低利債：跨 project 異地備份、排程失敗通知
-- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank、UDN 懶人包字體驗收
 
 ---
 
@@ -141,4 +139,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-19 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-20 第1場。*
