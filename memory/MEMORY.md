@@ -1,4 +1,7 @@
 - [天條：蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 11 章標配默認全含、調度清單點頭才動工、排後必帶觸發條件、債看利率不看年齡；BLUEPRINT 在 zhu-core/skills/platform-foundation/
+- [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是「當時規模」快照；加引擎/加租戶/cron合併必回頭重驗；串行合併要用當日總和算；geo 兩輪撞死60分 $5.43 學費
+- [失敗路徑也要記帳（cost 隨心跳寫回）](skill_cost_on_heartbeat_failure_accounting.md) — 只在成功記帳＝燒最兇時刻預算閘全盲；SIGKILL 不走 catch，心跳帶帳才留得住；稽核用原始事件層重算
+- [本機接力正姿：nohup 脫鉤＋Monitor 盯 log](skill_detached_relay_nohup_monitor.md) — harness 背景任務活不過幾分鐘；腳本必冪等可重跑；正式路徑不能依賴筆電活著
 - [意川_WEB Vercel 部署（臨時）](project_yichuan_web_deploy.md) — https://web-tawny-six-67.vercel.app，純靜態前台，可能撤下，重部署 SOP 在記憶裡
 - [加新 Vercel cron 必動三處](feedback_new_cron_three_places.md) — route+vercel.json+middleware PUBLIC_PATHS；middleware 401 和 route 401 長一樣；交叉驗證法=同 secret 打舊 cron
 - [LiveKit 首音延遲量測](reference_livekit_first_audio_metric.md) — ActiveSpeakersChanged 才是出聲（TrackSubscribed 只是音軌接上）；前端量比 agent 量貼近體感；基線 connect 3.3s/首音 18s
