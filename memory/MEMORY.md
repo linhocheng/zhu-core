@@ -158,3 +158,5 @@
 - [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
 - [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份訓練輾過靈魂prompt擋不住；量尺/插座/驗收法落袋；18s首音瓶頸在共用開場路徑
 - [GEO Authority 平台（Adam×WAITIN 協作）](project_geo_authority.md) — AI 搜尋可見度代操；月循環自動駕駛；白皮書 v1.0 領地=檔案邊界；月報零 LLM 是商品本體
+- [Next.js CSP nonce 化正解＋Next 16 三雷](reference_nextjs16_csp_nonce.md) — middleware/proxy per-request nonce＋strict-dynamic＋不設default-src；Next16雷：proxy.ts改名/nonce必配force-dynamic否則靜態頁死白頁/__next_f探針失效；外部字型要放行googleapis
+- [同模板複製多站也要逐站真瀏覽器測](skill_csp_nonce_per_site_headless_verify.md) — 每站雷不同(三站三種破法)；headless驗CSP鑑別信號：script nonce覆蓋/0 violation/軟導航=最強hydration證據；自簽cookie測gated頁；部署後同信號打production
