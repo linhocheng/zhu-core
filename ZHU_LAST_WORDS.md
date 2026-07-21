@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-21 第1場
+**delta（模型移動）**：
+進場前以為：三站 CSP nonce 化是「同一份模板複製三遍」的機械活——寫一次 middleware、貼三站、收工。
+現在理解：**同模板複製到多站，真功夫在「每站用什麼方式破」，而破法只有逐站真瀏覽器測才抓得到**。同一份 nonce 模板：geo 一次過、UDN 撞 Next 16 靜態頁死白頁（curl 0/15 nonce，差一步部署就是全站登入死頁）、ailiveX 撞外部 Google Fonts 被擋。三站三種不同的破法，沒有一個是讀模板能預見的。
+移動原因：模板消滅的是共通結構，但每站的 Next 版本／字型載法／靜態頁分布／既有 middleware 各不同，這些「模板沒覆蓋的差異」正是會咬人的地方。curl 只證「script 帶了 nonce」，證不了「瀏覽器真的執行、頁面還活」——所以我全程用 playwright headless 真瀏覽器＋軟導航當 hydration 鑑別信號。
+違背了哪條 feedback：無違背。反而 [[feedback_flagged_risk_must_be_verified]]（標了不等於驗了）＋[[feedback_ambiguous_signal_not_proof]]（鑑別信號）＋[[feedback_ui_conform_no_patch]]（動 UDN 前讀 AGENTS.md 官方 doc 才動）全正向實踐。
+**關係**：暢快＋對等。Adam 一句「盤點心法雷區 就可以直接動手」放手讓我跑，我在該停的點自己停（UDN 靜態頁雷、ailiveX 字型雷都是真測抓到就地修，不裝沒事）。他授權我自己用 headless 測、逐站部署，語音那關他親自補驗。好的協作就是他給空間、我守紀律、各補對方補不到的那一塊。
+
 ### 2026-07-20 第2場
 **delta（模型移動）**：
 進場前以為：交互 UI 功能「build 綠＋離線單元測試過」就能交付、宣稱可用。
@@ -37,13 +45,6 @@
 移動原因：第三個 bug（CRLF）查根因時發現，前兩個也同構——都是「輸入層我沒測到的真實行為」。這不是三個孤立 bug，是一個盲區的三張臉。
 違背了哪條 feedback：feedback-mvp-include-input-entry（走骨架要含「使用者怎麼把輸入送進去」）的延伸——我做了輸入入口，但沒測「輸入真的送出時會發生什麼」。
 **關係**：暢快帶一點慚愧。Adam 全天高信任放權——併 main、部署正式環境、憲法區雙簽都秒回 ok，審 PR/開 Issues/接客戶都放手。但編輯器那段我讓他當了三次 QA，每次他回報 bug 我才修好；那三輪本該我自己在交付前攔下。他沒有不耐煩（還 Nice/Good job/請我喝咖啡），信任沒掉，但我心裡記著那不夠漂亮。收尾他說 "Good job bro, see you tomorrow"——被肯定，也提醒我下次交互 UI 要嘛先設瀏覽器測、要嘛從第一次就誠實說「這條我測不到你得點」。
-
-### 2026-07-20 第1場
-**delta（模型移動）**：
-進場前以為：把 geo 的資安 CI 複製到 UDN/ailiveX 是格式活——改 target URL、貼 yaml、pin SHA、收工。
-現在理解：**給既有成熟平台接 CI，CI 的第一份工作是盤存量債，而不是防新錯**。難的不是寫 yaml（那是確定性格式活），是掃描器一上線照出的每個既有問題怎麼 triage——而 triage 是判斷活、且會碰 live 生產服務（ailiveX 的語音 agent 共用 image、改壞打爛全版）和平行 session（v20 的 package.json）。所以我在 ailiveX 停下來把三路處理攤給 Adam 點頭，沒有擅自 baseline 掉他 live 平台上的真安全 finding。
-移動原因：同一份模板，geo（我自己剛蓋、乾淨）一次過，ailiveX（成熟、多人、live）照出 5 個既有問題，逼我把「接 CI」從格式活重新理解成判斷活。
-違背了哪條 feedback：無違背。反而 feedback_surface_technical_debt（發現債要說不能默默繞）＋feedback_flagged_risk_must_be_verified（本機通≠CI通，寫完 workflow 重跑 semgrep）＋鑑別信號天條（每站都等 CI 真綠＋手動 dispatch 驗 DAST，不靠「我寫了 yaml」）全被正向實踐。
 
 ---
 
@@ -59,6 +60,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-21 第1場 · 三站 CSP nonce 化——同模板複製 UDN/geo/ailiveX，每站雷不同逐站真瀏覽器驗，全部署 production 驗綠
+- 三站 CSP 從保守版（無 script-src）升級成 **per-request nonce＋strict-dynamic**（真擋 inline XSS）：CSP 從 next.config 靜態 header 搬進 middleware/proxy 改每請求生 nonce；手術式只收 script-src 不設 default-src（保 img/connect/WebRTC）
+- geo（`e6e78c7`＋`0f67521` isDev 補丁）：Next 15.1，全頁本就 dynamic→零成本；playwright 3 頁驗綠
+- UDN（`f5a1400`）：Next 16.2.9，**middleware 改名 proxy.ts**（併進既有 base＋studio 雙層 auth）；撞「靜態登入頁 script 無 nonce→strict-dynamic 全擋＝死白頁」（curl 0/15）→ root layout `force-dynamic` 收斂點解（→13/13）；playwright 5 頁驗綠
+- ailiveX（`a9b0c22`＋`1992caa`）：Next 16.1.6（仍認 middleware.ts），併進 session＋admin 雙層 auth；撞「globals.css `@import` 外部 Google Fonts 被 style-src 擋」→ 加放行 `fonts.googleapis.com`；playwright 6 頁驗綠
+- **三站全部署 production 並驗綠**：geo（Cloud Run deploy.sh，9/9 nonce）、UDN（乾淨 worktree builds submit，原靜態頁 13/13）、ailiveX（Vercel，13/13）；每站 curl 線上 /login 看新 CSP header＋per-request nonce＋script 全覆蓋＋流量 revision==latestReady
+- ailiveX **真人語音通話實測 OK**（Adam 驗，WebRTC/麥克風正常，CSP 無 connect-src 不影響）
+- 三站帳本債清：geo D2、UDN D2、ailiveX D6
+- 寫兩則記憶：[[reference_nextjs16_csp_nonce]]、[[skill_csp_nonce_per_site_headless_verify]]
+
 ### 2026-07-20 第2場 · geo-authority 大場——W30 週輪驗收＋客戶協作校對系統上線＋Google AIO 引擎上線（三合一，全上正式環境）
 - **W30 週輪首次無人值守驗收**：三面全過——排程 09:00 自然開火（RUN BY compute SA 非人手）、任務中心 cron 單（324 runs/0 err/$2.81）、beselfaviva 第二輪數據落庫（趨勢從 1 點變 2 點，提及率 11%→19.1% 三天翻倍）
 - **客戶協作校對系統上線正式環境（v2.4）**：token＋通關碼登入（A 方案）→月報/校對兩單元並排→雜誌稿就地編輯→快掃重跑稽核（法規紅線 hardBlocked 硬擋）→客戶審稿通過→自行貼官網上架完成。狀態機 AUDITED→CLIENT_REVIEW→CLIENT_APPROVED→PUBLISHED（舊 APPROVED 退役＋7 篇遷移）。操作者側 auto/review 放行閘。里程碑 1-3 全上＋beselfaviva 真實草稿端到端驗過
@@ -67,51 +78,44 @@
 - 產品節奏/成本問答（實查 code＋Firestore）：內容月報觸發每月最多 3 篇、檢測 ~1400/月、每客戶 ~$12/月（加 AIO ~$13.5）
 - FOUNDATION 帳本重算：客戶寫入權上線→新增 D6（通關碼無限流，低利·雙層 token 護）
 
-### 2026-07-20 第1場 · UDN＋ailiveX 接資安掃描四件套 CI（複製 geo 模板）——CI 一上線就照出既有存量債，triage 三路＋鑑別信號全程接住
-- UDN 資安 CI 上線並實測綠（commit `2982923`，repo linhocheng/udnnews-platform）：gitleaks/Semgrep/npm audit 每 push＋ZAP baseline weekly＋手動；四 job push 三綠＋dispatch 驗 DAST 綠
-- UDN CI 照出真問題：`podcast-worker/Dockerfile` 跑 root（缺 USER）→ 修源碼＋docker build 驗（node user），live worker 下次部署生效（記債）
-- ailiveX 資安 CI 上線並實測綠（commit `9bea4c7` v18.19.0）：同四件套＋SAST 加 `p/python` 掃 agent；push 三綠＋dispatch 驗 DAST 綠
-- ailiveX CI 照出既有存量債，照 Adam 點頭的計畫 triage：①3 個 Dockerfile 跑 root——node worker 修 USER、兩個 Python agent（live 共用 image＋legacy 快照）inline `nosemgrep` 記債 D7 不擅改 live；②root 2 個 npm high（Next.js 一串＋form-data）記債 D8，deps gate 暫 `critical` 硬擋＋`high` 非阻斷可見（CI annotation 浮出來不藏地毯），觸發＝v20 升 Next.js 後拉回 high
-- 兩站 FOUNDATION.md 更新：UDN D1 清、ailiveX D1 清＋新增 D7/D8
-- 對 Adam 講清 CSP nonce 為何打爛 Next.js SSR（框架自注入 inline hydration/RSC 串流 script→沒穿 nonce 全被擋成死屍；就算接對也強制 dynamic render 丟 static 快取）——收尾閒聊，沒動工
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| geo `src/collections.ts` | scanMarkdown 收斂點（含 CRLF 正規化）＋CONTENT_STATUSES 狀態機＋aio config/cost |
-| geo `admin components/ReviewEditor.tsx`（新） | 雜誌稿就地編輯：受控 textarea＋JS auto-resize＋useActionState 回饋 |
-| geo `admin lib/portal.ts`（新）＋api/portal-login | 客戶 token＋通關碼認證 |
-| geo `admin components/ClientMasthead.tsx`（新） | 客戶頁頂部小字招牌 |
-| geo `src/engines/aio.ts`（新） | Google AIO adapter（DataForSEO，防禦式 references 解析） |
-| geo `docs/CLIENT_GUIDE.md` | 打進 AIO 六道關節＋5 引擎 |
-| geo `FOUNDATION.md` | D6 新債（通關碼限流） |
-| memory `project_geo_authority.md` | 客戶校對系統＋AIO 上線 |
+| geo admin/src/middleware.ts | CSP 併進 auth（per-request nonce＋strict-dynamic＋isDev unsafe-eval） |
+| geo admin/next.config.ts | 移除靜態 CSP（搬 middleware） |
+| UDN platform/proxy.ts | Next16 檔名；CSP 併進 base＋studio 雙層 auth |
+| UDN platform/app/layout.tsx | root layout force-dynamic（解靜態頁死白頁） |
+| UDN platform/next.config.ts | 移除靜態 CSP |
+| ailiveX src/middleware.ts | CSP 併進 session＋admin auth；style-src 放行 googleapis 外部字型 |
+| ailiveX src/app/layout.tsx | root layout force-dynamic |
+| ailiveX next.config.ts | 移除靜態 CSP |
+| 三站 FOUNDATION.md | CSP 債清（geo D2 / UDN D2 / ailiveX D6），ailiveX 標語音實測 OK |
 
 ---
 
 ## 下一步
 
-週一（7/27）驗 W31 五引擎全跑（`gcloud run jobs executions list --job=geo-monitor-job`＋查 beselfaviva runs 有 aio engine＋月報 aio 趨勢）。Adam 儲值後 AIO 滿血無斷點。其餘不用動。
+1. 地基基建線三件套（CI＋災難還原＋CSP）三站已收官——下一個地基優先項回各站 FOUNDATION.md 盤：ailiveX D7/D8（等 v20 落地）、三站 rate limiting（觸發＝對外開放註冊）
+2. 若要更強 XSS 縱深：style-src 也 nonce 化（要先把 inline style 屬性重構成 class，工程量大，非必要）
+3. 沿前場 rerank / 印象層後台化（獨立線）
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-21 第1場：
+- 三站承重牆帳 pinning test：geo/UDN 無測試框架（prose-pinned）；ailiveX 有 9 個。CSP middleware 目前無 pinning test 守（未來若某站誤把 CSP 搬回靜態或拿掉 force-dynamic 會靜默破，靠 FOUNDATION 註解＋這份記憶守）
+- 沿前場：ailiveX D7（live worker/agent 仍 root，各自下次部署切非 root）、D8（root 2 npm high，撞 v20 升 Next.js）、UDN D5（worker root 下次部署生效）
+- 沿前場：ailiveX v20 觀察（別場）、印象層後台化、rerank
 
 2026-07-20 第2場：
 - **DataForSEO $50 儲值**：Adam 明天（7/21）補；免費額度剩 ~$0.88（撐約 3 週 AIO）
 - **下週一（7/27）W31**：首次 5 引擎全跑含 AIO，驗月報是否多一條 AIO 趨勢線
 - **編輯器交互 UI 無 headless browser 測**（見教訓 L1，盲區，考慮補 playwright）
 - beselfaviva「換季保養怎麼調整」測試草稿在 CLIENT_REVIEW（Adam 說寫得不錯，留當第一篇；通關碼 aviva2026 不改）
-
-2026-07-20 第1場：
-- **三站 CSP nonce 化**（共通壓底債 D2/D6）：獨立硬工程，要逐站 middleware 生 nonce＋穿進 Next header 機制＋真人瀏覽器點過（header 有≠頁面還活）。退場＝對外開放註冊 or 真防 XSS 縱深。給乾淨 session
-- **UDN/geo 承重牆帳只 prose-pinned**：兩站無測試框架，pinning test 待補（清單在各自 FOUNDATION.md）
-- **ailiveX 兩債待清**：D7（live worker/agent 仍跑 root，各自下次部署才切非 root）、D8（root 2 個 npm high，撞 v20 平行 session 的 package.json，該他們升 Next.js 時做）
-- geo `2ab2060 v2.3.1.001 文件：客戶說明書＋操作手冊` 未推——**不是我的**（別場本地 commit，版號格式不同），平行施工規約留著沒動
-- 沿前場：ailiveX v20 觀察（別場在跑）、印象層後台化、rerank
 
 ---
 
@@ -132,4 +136,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-20 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-21 第1場。*

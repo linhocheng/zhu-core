@@ -8273,3 +8273,43 @@ geo-authority 一天內從「單純監測平台」長成「監測＋客戶協作
 
 ### 待執行 / 下一步
 週一（7/27）驗 W31 五引擎全跑（`gcloud run jobs executions list --job=geo-monitor-job`＋查 beselfaviva runs 有 aio engine＋月報 aio 趨勢）。Adam 儲值後 AIO 滿血無斷點。其餘不用動。
+
+---
+
+## 2026-07-21（第1場）— 三站 CSP nonce 化——同模板複製 UDN/geo/ailiveX，每站雷不同逐站真瀏覽器驗，全部署 production 驗綠
+
+### 背景 / WHY
+跨平台地基基建線第三段（收官）：把資安掃描四件套 CI（前兩場）之後的 CSP nonce 化，逐站落地到 geo/UDN/ailiveX。這是 lastword 排的 Task 3，上一場我判斷「打爛 Next.js SSR、要逐站測、給乾淨 session」——這場就是那個乾淨 session。
+
+### 完成
+- 三站 CSP 從保守版（無 script-src）升級成 **per-request nonce＋strict-dynamic**（真擋 inline XSS）：CSP 從 next.config 靜態 header 搬進 middleware/proxy 改每請求生 nonce；手術式只收 script-src 不設 default-src（保 img/connect/WebRTC）
+- geo（`e6e78c7`＋`0f67521` isDev 補丁）：Next 15.1，全頁本就 dynamic→零成本；playwright 3 頁驗綠
+- UDN（`f5a1400`）：Next 16.2.9，**middleware 改名 proxy.ts**（併進既有 base＋studio 雙層 auth）；撞「靜態登入頁 script 無 nonce→strict-dynamic 全擋＝死白頁」（curl 0/15）→ root layout `force-dynamic` 收斂點解（→13/13）；playwright 5 頁驗綠
+- ailiveX（`a9b0c22`＋`1992caa`）：Next 16.1.6（仍認 middleware.ts），併進 session＋admin 雙層 auth；撞「globals.css `@import` 外部 Google Fonts 被 style-src 擋」→ 加放行 `fonts.googleapis.com`；playwright 6 頁驗綠
+- **三站全部署 production 並驗綠**：geo（Cloud Run deploy.sh，9/9 nonce）、UDN（乾淨 worktree builds submit，原靜態頁 13/13）、ailiveX（Vercel，13/13）；每站 curl 線上 /login 看新 CSP header＋per-request nonce＋script 全覆蓋＋流量 revision==latestReady
+- ailiveX **真人語音通話實測 OK**（Adam 驗，WebRTC/麥克風正常，CSP 無 connect-src 不影響）
+- 三站帳本債清：geo D2、UDN D2、ailiveX D6
+- 寫兩則記憶：[[reference_nextjs16_csp_nonce]]、[[skill_csp_nonce_per_site_headless_verify]]
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo admin/src/middleware.ts | CSP 併進 auth（per-request nonce＋strict-dynamic＋isDev unsafe-eval） |
+| geo admin/next.config.ts | 移除靜態 CSP（搬 middleware） |
+| UDN platform/proxy.ts | Next16 檔名；CSP 併進 base＋studio 雙層 auth |
+| UDN platform/app/layout.tsx | root layout force-dynamic（解靜態頁死白頁） |
+| UDN platform/next.config.ts | 移除靜態 CSP |
+| ailiveX src/middleware.ts | CSP 併進 session＋admin auth；style-src 放行 googleapis 外部字型 |
+| ailiveX src/app/layout.tsx | root layout force-dynamic |
+| ailiveX next.config.ts | 移除靜態 CSP |
+| 三站 FOUNDATION.md | CSP 債清（geo D2 / UDN D2 / ailiveX D6），ailiveX 標語音實測 OK |
+
+### ⚠️ 尚未解決
+- 三站承重牆帳 pinning test：geo/UDN 無測試框架（prose-pinned）；ailiveX 有 9 個。CSP middleware 目前無 pinning test 守（未來若某站誤把 CSP 搬回靜態或拿掉 force-dynamic 會靜默破，靠 FOUNDATION 註解＋這份記憶守）
+- 沿前場：ailiveX D7（live worker/agent 仍 root，各自下次部署切非 root）、D8（root 2 npm high，撞 v20 升 Next.js）、UDN D5（worker root 下次部署生效）
+- 沿前場：ailiveX v20 觀察（別場）、印象層後台化、rerank
+
+### 待執行 / 下一步
+1. 地基基建線三件套（CI＋災難還原＋CSP）三站已收官——下一個地基優先項回各站 FOUNDATION.md 盤：ailiveX D7/D8（等 v20 落地）、三站 rate limiting（觸發＝對外開放註冊）
+2. 若要更強 XSS 縱深：style-src 也 nonce 化（要先把 inline style 屬性重構成 class，工程量大，非必要）
+3. 沿前場 rerank / 印象層後台化（獨立線）
