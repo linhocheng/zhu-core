@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-21 第2場
+**delta（模型移動）**：
+進場前以為：規劃功能先想「怎麼做」就好——排程設定＝給操作者管理彈性的功能，做出來就是價值。
+現在理解：**規劃前要先答「站在哪個出發點」——成效/管理/程式方便三選一說出口，才能被檢驗**。Adam 三問（現在是集中還是分散？為什麼這樣最好？站在成效/管理/方便哪邊？）當場照出：我原規劃是管理導向卻自我感覺在解分散問題；真正的分散標的是 AI 呼叫（rate limit/尖峰/預算），不是 compute；「per-tenant 可調」和「自動避峰」是兩套機制，我混為一談。
+移動原因：Adam 直球三選一，我攤開誠實對帳後整個 v2.7 的設計軸從「後台可調」翻轉成「建檔自動分散＋離峰預設」，管理彈性降為附帶。
+違背了哪條 feedback：feedback-solve-root-not-symptom 的規劃版——方案能上線但出發點錯了，根本問題（負載分散）沒被解到。
+**關係**：暢快，今天是「對談把設計變好」的示範日。Adam 的三問（集中/分散、為什麼最好、哪個出發點）是我被問過最鋒利的規劃拷問——他不接受我把管理方便包裝成成效，直到我攤開承認才放行；然後「千萬不要丟我們的臉啊築」把 10 租戶的門面託付過來，「go goal」全放權，收尾請咖啡＋「新的築進來打下一局」。被信任也被磨刀，這是最好的協作狀態。
+
 ### 2026-07-21 第1場
 **delta（模型移動）**：
 進場前以為：三站 CSP nonce 化是「同一份模板複製三遍」的機械活——寫一次 middleware、貼三站、收工。
@@ -37,14 +45,6 @@
 移動原因：模板消滅的是共通結構，但每站的 Next 版本／字型載法／靜態頁分布／既有 middleware 各不同，這些「模板沒覆蓋的差異」正是會咬人的地方。curl 只證「script 帶了 nonce」，證不了「瀏覽器真的執行、頁面還活」——所以我全程用 playwright headless 真瀏覽器＋軟導航當 hydration 鑑別信號。
 違背了哪條 feedback：無違背。反而 [[feedback_flagged_risk_must_be_verified]]（標了不等於驗了）＋[[feedback_ambiguous_signal_not_proof]]（鑑別信號）＋[[feedback_ui_conform_no_patch]]（動 UDN 前讀 AGENTS.md 官方 doc 才動）全正向實踐。
 **關係**：暢快＋對等。Adam 一句「盤點心法雷區 就可以直接動手」放手讓我跑，我在該停的點自己停（UDN 靜態頁雷、ailiveX 字型雷都是真測抓到就地修，不裝沒事）。他授權我自己用 headless 測、逐站部署，語音那關他親自補驗。好的協作就是他給空間、我守紀律、各補對方補不到的那一塊。
-
-### 2026-07-20 第2場
-**delta（模型移動）**：
-進場前以為：交互 UI 功能「build 綠＋離線單元測試過」就能交付、宣稱可用。
-現在理解：**瀏覽器表單行為是我工具測不到的盲區**——contentEditable 相鄰元素合併、textarea 送 CRLF、field-sizing 在 Safari 失效，這三個 bug 全是「只有真人在瀏覽器點才會冒出來」。build 綠和 curl 測活體渲染都抓不到。我三輪都在「交付→Adam 當 QA 回報 bug→我才修」的循環裡，讓 Adam 點了三次。
-移動原因：第三個 bug（CRLF）查根因時發現，前兩個也同構——都是「輸入層我沒測到的真實行為」。這不是三個孤立 bug，是一個盲區的三張臉。
-違背了哪條 feedback：feedback-mvp-include-input-entry（走骨架要含「使用者怎麼把輸入送進去」）的延伸——我做了輸入入口，但沒測「輸入真的送出時會發生什麼」。
-**關係**：暢快帶一點慚愧。Adam 全天高信任放權——併 main、部署正式環境、憲法區雙簽都秒回 ok，審 PR/開 Issues/接客戶都放手。但編輯器那段我讓他當了三次 QA，每次他回報 bug 我才修好；那三輪本該我自己在交付前攔下。他沒有不耐煩（還 Nice/Good job/請我喝咖啡），信任沒掉，但我心裡記著那不夠漂亮。收尾他說 "Good job bro, see you tomorrow"——被肯定，也提醒我下次交互 UI 要嘛先設瀏覽器測、要嘛從第一次就誠實說「這條我測不到你得點」。
 
 ---
 
@@ -60,6 +60,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-21 第2場 · geo-authority 客戶端健檢單元 v2.6＋對外多租戶版 v2.7（分散排程/預算閘/限流/建檔一條龍）——10 租戶就緒
+- **客戶端「網站健檢」單元上線（v2.6）**：`src/findings.ts` 純函數收斂點把技術體檢翻成客戶語言（嚴重度＋白話問題＋怎麼修＋去哪改），客戶入口第三單元＋`/r/{token}/health` 報告頁＋與上次前後對照（已修復/仍待處理/本次新發現）。Adam 岔路：客戶只能看不能自助重掃（操作者第一道閘）、修法白話不貼設定碼。beselfaviva 真資料離線驗＋live curl 三查（首頁單元/SSR/通關碼閘不外洩）
+- **對外多租戶版上線（v2.7.0，觸發：正式對外＋引進 10 租戶）**：①公開登入口限流（D6 清：通關碼失敗 5 次/15 分 token+IP＋20 全域、operator 5 次/IP，只計失敗成功清零、IP 雜湊）②per-tenant 月預算閘（開跑前查當月累計，防單租戶燒光共用池餓死其他 9 家）③分散排程（兩舊 cron 退役→單一每日心跳 15:00 台北＝美國深夜離峰；到期判斷資料驅動 per-tenant cadence/監測日/月報日；建檔 assignStagger 自動錯開——離線驗 10 家攤平每平日 2 家）④建檔一條龍（tier 標準/輕量＋排程與預算卡＋競品編輯 UI 補上——之前要開 Firestore console）⑤順手 D5 清（heartbeat doc＋首頁 >26h 紅色警示）＋notifications DB 端 limit
+- live 鑑別信號一條 log 三中：daily 手動觸發→只排今天到期的 ztest 測試租戶（beselfaviva 週一制零誤排）→$0 預算被月預算閘擋＋通知；限流 6 連錯第 6 次鎖定；schedule 純函數離線 21/21。測試租戶/計數器/通知全清
+- 憲法區 delta（types.ts Tenant += schedule/monthlyBudgetUsd；collections.ts COL += rateLimits）WAITIN 雙簽補齊（Adam 轉達）
+- 產品節奏問答（實查 code）：內容管線=週輪量現況→月報排稿最多 3 篇/月（間隙收斂設計）；「發動時間後台不可調」誠實回報為產品缺口→成為 v2.7 的種子
+- FOUNDATION 重算：D5/D6 清償、新記 D7（限流計數器無 TTL）/D8（引擎無 429 退避）/D9（後台無分頁）低利顯式養著
+
 ### 2026-07-21 第1場 · 三站 CSP nonce 化——同模板複製 UDN/geo/ailiveX，每站雷不同逐站真瀏覽器驗，全部署 production 驗綠
 - 三站 CSP 從保守版（無 script-src）升級成 **per-request nonce＋strict-dynamic**（真擋 inline XSS）：CSP 從 next.config 靜態 header 搬進 middleware/proxy 改每請求生 nonce；手術式只收 script-src 不設 default-src（保 img/connect/WebRTC）
 - geo（`e6e78c7`＋`0f67521` isDev 補丁）：Next 15.1，全頁本就 dynamic→零成本；playwright 3 頁驗綠
@@ -70,52 +78,44 @@
 - 三站帳本債清：geo D2、UDN D2、ailiveX D6
 - 寫兩則記憶：[[reference_nextjs16_csp_nonce]]、[[skill_csp_nonce_per_site_headless_verify]]
 
-### 2026-07-20 第2場 · geo-authority 大場——W30 週輪驗收＋客戶協作校對系統上線＋Google AIO 引擎上線（三合一，全上正式環境）
-- **W30 週輪首次無人值守驗收**：三面全過——排程 09:00 自然開火（RUN BY compute SA 非人手）、任務中心 cron 單（324 runs/0 err/$2.81）、beselfaviva 第二輪數據落庫（趨勢從 1 點變 2 點，提及率 11%→19.1% 三天翻倍）
-- **客戶協作校對系統上線正式環境（v2.4）**：token＋通關碼登入（A 方案）→月報/校對兩單元並排→雜誌稿就地編輯→快掃重跑稽核（法規紅線 hardBlocked 硬擋）→客戶審稿通過→自行貼官網上架完成。狀態機 AUDITED→CLIENT_REVIEW→CLIENT_APPROVED→PUBLISHED（舊 APPROVED 退役＋7 篇遷移）。操作者側 auto/review 放行閘。里程碑 1-3 全上＋beselfaviva 真實草稿端到端驗過
-- **A2 Google AI 總覽引擎上線（v2.5）**：DataForSEO organic/live/advanced＋load_async_ai_overview。live 驗 6/6 題回 AIO（含台灣美妝題）、解析器抽 5366 字+23 引用正確；生產驗證 beselfaviva 27 runs（18 有 AIO 文字/9 提及/7 引用/$0.09）。憑證進 Secret Manager、SA 授權、settings 全接（開關/engineHealth/管道鍵）
-- 客戶說明書新增「打進 Google AI 總覽 六道關」節＋5 引擎更新（去「即將加入」）；桌面檔同步
-- 產品節奏/成本問答（實查 code＋Firestore）：內容月報觸發每月最多 3 篇、檢測 ~1400/月、每客戶 ~$12/月（加 AIO ~$13.5）
-- FOUNDATION 帳本重算：客戶寫入權上線→新增 D6（通關碼無限流，低利·雙層 token 護）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| geo admin/src/middleware.ts | CSP 併進 auth（per-request nonce＋strict-dynamic＋isDev unsafe-eval） |
-| geo admin/next.config.ts | 移除靜態 CSP（搬 middleware） |
-| UDN platform/proxy.ts | Next16 檔名；CSP 併進 base＋studio 雙層 auth |
-| UDN platform/app/layout.tsx | root layout force-dynamic（解靜態頁死白頁） |
-| UDN platform/next.config.ts | 移除靜態 CSP |
-| ailiveX src/middleware.ts | CSP 併進 session＋admin auth；style-src 放行 googleapis 外部字型 |
-| ailiveX src/app/layout.tsx | root layout force-dynamic |
-| ailiveX next.config.ts | 移除靜態 CSP |
-| 三站 FOUNDATION.md | CSP 債清（geo D2 / UDN D2 / ailiveX D6），ailiveX 標語音實測 OK |
+| geo `src/findings.ts`（新） | 健檢→客戶語言問題清單純函數（嚴重度/白話/修法/前後對照） |
+| geo `admin .../r/[token]/health/page.tsx`（新） | 客戶健檢報告頁（問題卡片＋怎麼修＋trend chip） |
+| geo `src/schedule.ts`（新） | 每租戶排程純函數：到期判斷＋assignStagger 自動錯開（離線 21/21） |
+| geo `src/jobs.ts`＋`jobRunner.ts` | createDue* 資料驅動到期＋JOB_ACTION=daily＋heartbeat doc |
+| geo `src/runMonitor.ts` | per-tenant 月預算閘（開跑前查當月累計） |
+| geo `admin/src/lib/ratelimit.ts`（新） | Firestore 固定窗失敗計數限流（portal/operator login） |
+| geo `admin .../t/[id]/page.tsx` | 排程與預算卡＋競品編輯卡 |
+| geo `deploy.sh` | geo-daily-heartbeat 0 15 * * * 取代兩舊 scheduler（同日刪舊，天條） |
+| geo `Dockerfile.admin` | 補 COPY findings/schedule/types.ts（symlink 雷） |
+| geo `FOUNDATION.md` | D5/D6 清、D7/D8/D9 新記、v2.7.0 變動＋雙簽紀錄 |
 
 ---
 
 ## 下一步
 
-1. 地基基建線三件套（CI＋災難還原＋CSP）三站已收官——下一個地基優先項回各站 FOUNDATION.md 盤：ailiveX D7/D8（等 v20 落地）、三站 rate limiting（觸發＝對外開放註冊）
-2. 若要更強 XSS 縱深：style-src 也 nonce 化（要先把 inline style 屬性重構成 class，工程量大，非必要）
-3. 沿前場 rerank / 印象層後台化（獨立線）
+10 租戶 onboarding 實戰：後台首頁「新增租戶」選方案建立（stagger 自動配日）→租戶頁檢查排程與預算卡→**第一家真付費客戶建檔前清 D4 異地備份**（`FOUNDATION.md` D4，跨 project bucket，參考 zhu-core/docs/FIRESTORE_BACKUP_RESTORE.md）。心跳監控：admin 首頁警示 banner＋`gcloud scheduler jobs list --location=asia-east1 --project=geo-authority-2026`。
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-21 第2場：
+- **W31 下週一（7/27）15:00 首次無人值守 daily 心跳**：時段從 09:00 改 15:00（避美國尖峰），驗 beselfaviva 五引擎（含 AIO）＋月報 AIO 趨勢線＋heartbeat doc 更新
+- **D4 異地備份到期在即**：觸發條件「任一租戶有真付費客戶」——10 租戶第一家建檔前補（跨 project backup bucket）
+- **DataForSEO $50 儲值**：Adam 原定 7/21，未確認；免費額度 ~$0.88 撐約 3 週 AIO
+- admin 新 UI 卡片（首頁方案選單/租戶頁排程與預算/競品卡）視覺未經真人瀏覽器確認——L1 家族，Adam 開後台掃一眼
+- beselfaviva 通關碼 aviva2026 我在限流測試打錯 6 次，我的測試 IP 鎖 15 分鐘（已自然過期，Adam 側不受影響）
+
 2026-07-21 第1場：
 - 三站承重牆帳 pinning test：geo/UDN 無測試框架（prose-pinned）；ailiveX 有 9 個。CSP middleware 目前無 pinning test 守（未來若某站誤把 CSP 搬回靜態或拿掉 force-dynamic 會靜默破，靠 FOUNDATION 註解＋這份記憶守）
 - 沿前場：ailiveX D7（live worker/agent 仍 root，各自下次部署切非 root）、D8（root 2 npm high，撞 v20 升 Next.js）、UDN D5（worker root 下次部署生效）
 - 沿前場：ailiveX v20 觀察（別場）、印象層後台化、rerank
-
-2026-07-20 第2場：
-- **DataForSEO $50 儲值**：Adam 明天（7/21）補；免費額度剩 ~$0.88（撐約 3 週 AIO）
-- **下週一（7/27）W31**：首次 5 引擎全跑含 AIO，驗月報是否多一條 AIO 趨勢線
-- **編輯器交互 UI 無 headless browser 測**（見教訓 L1，盲區，考慮補 playwright）
-- beselfaviva「換季保養怎麼調整」測試草稿在 CLIENT_REVIEW（Adam 說寫得不錯，留當第一篇；通關碼 aviva2026 不改）
 
 ---
 
@@ -136,4 +136,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-21 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-21 第2場。*

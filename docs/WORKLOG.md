@@ -8313,3 +8313,42 @@ geo-authority 一天內從「單純監測平台」長成「監測＋客戶協作
 1. 地基基建線三件套（CI＋災難還原＋CSP）三站已收官——下一個地基優先項回各站 FOUNDATION.md 盤：ailiveX D7/D8（等 v20 落地）、三站 rate limiting（觸發＝對外開放註冊）
 2. 若要更強 XSS 縱深：style-src 也 nonce 化（要先把 inline style 屬性重構成 class，工程量大，非必要）
 3. 沿前場 rerank / 印象層後台化（獨立線）
+
+---
+
+## 2026-07-21（第2場）— geo-authority 客戶端健檢單元 v2.6＋對外多租戶版 v2.7（分散排程/預算閘/限流/建檔一條龍）——10 租戶就緒
+
+### 背景 / WHY
+geo-authority 從「單客戶平台」升級為「對外多租戶就緒」：v2.6 健檢閉環（點問題→給修法→重掃對照）＋v2.7 十租戶地基（分散/限流/預算隔離/一條龍建檔）。main＝prod＝46b5a8c..58aac70。Adam 下一步就是引進 10 個真租戶。
+
+### 完成
+- **客戶端「網站健檢」單元上線（v2.6）**：`src/findings.ts` 純函數收斂點把技術體檢翻成客戶語言（嚴重度＋白話問題＋怎麼修＋去哪改），客戶入口第三單元＋`/r/{token}/health` 報告頁＋與上次前後對照（已修復/仍待處理/本次新發現）。Adam 岔路：客戶只能看不能自助重掃（操作者第一道閘）、修法白話不貼設定碼。beselfaviva 真資料離線驗＋live curl 三查（首頁單元/SSR/通關碼閘不外洩）
+- **對外多租戶版上線（v2.7.0，觸發：正式對外＋引進 10 租戶）**：①公開登入口限流（D6 清：通關碼失敗 5 次/15 分 token+IP＋20 全域、operator 5 次/IP，只計失敗成功清零、IP 雜湊）②per-tenant 月預算閘（開跑前查當月累計，防單租戶燒光共用池餓死其他 9 家）③分散排程（兩舊 cron 退役→單一每日心跳 15:00 台北＝美國深夜離峰；到期判斷資料驅動 per-tenant cadence/監測日/月報日；建檔 assignStagger 自動錯開——離線驗 10 家攤平每平日 2 家）④建檔一條龍（tier 標準/輕量＋排程與預算卡＋競品編輯 UI 補上——之前要開 Firestore console）⑤順手 D5 清（heartbeat doc＋首頁 >26h 紅色警示）＋notifications DB 端 limit
+- live 鑑別信號一條 log 三中：daily 手動觸發→只排今天到期的 ztest 測試租戶（beselfaviva 週一制零誤排）→$0 預算被月預算閘擋＋通知；限流 6 連錯第 6 次鎖定；schedule 純函數離線 21/21。測試租戶/計數器/通知全清
+- 憲法區 delta（types.ts Tenant += schedule/monthlyBudgetUsd；collections.ts COL += rateLimits）WAITIN 雙簽補齊（Adam 轉達）
+- 產品節奏問答（實查 code）：內容管線=週輪量現況→月報排稿最多 3 篇/月（間隙收斂設計）；「發動時間後台不可調」誠實回報為產品缺口→成為 v2.7 的種子
+- FOUNDATION 重算：D5/D6 清償、新記 D7（限流計數器無 TTL）/D8（引擎無 429 退避）/D9（後台無分頁）低利顯式養著
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo `src/findings.ts`（新） | 健檢→客戶語言問題清單純函數（嚴重度/白話/修法/前後對照） |
+| geo `admin .../r/[token]/health/page.tsx`（新） | 客戶健檢報告頁（問題卡片＋怎麼修＋trend chip） |
+| geo `src/schedule.ts`（新） | 每租戶排程純函數：到期判斷＋assignStagger 自動錯開（離線 21/21） |
+| geo `src/jobs.ts`＋`jobRunner.ts` | createDue* 資料驅動到期＋JOB_ACTION=daily＋heartbeat doc |
+| geo `src/runMonitor.ts` | per-tenant 月預算閘（開跑前查當月累計） |
+| geo `admin/src/lib/ratelimit.ts`（新） | Firestore 固定窗失敗計數限流（portal/operator login） |
+| geo `admin .../t/[id]/page.tsx` | 排程與預算卡＋競品編輯卡 |
+| geo `deploy.sh` | geo-daily-heartbeat 0 15 * * * 取代兩舊 scheduler（同日刪舊，天條） |
+| geo `Dockerfile.admin` | 補 COPY findings/schedule/types.ts（symlink 雷） |
+| geo `FOUNDATION.md` | D5/D6 清、D7/D8/D9 新記、v2.7.0 變動＋雙簽紀錄 |
+
+### ⚠️ 尚未解決
+- **W31 下週一（7/27）15:00 首次無人值守 daily 心跳**：時段從 09:00 改 15:00（避美國尖峰），驗 beselfaviva 五引擎（含 AIO）＋月報 AIO 趨勢線＋heartbeat doc 更新
+- **D4 異地備份到期在即**：觸發條件「任一租戶有真付費客戶」——10 租戶第一家建檔前補（跨 project backup bucket）
+- **DataForSEO $50 儲值**：Adam 原定 7/21，未確認；免費額度 ~$0.88 撐約 3 週 AIO
+- admin 新 UI 卡片（首頁方案選單/租戶頁排程與預算/競品卡）視覺未經真人瀏覽器確認——L1 家族，Adam 開後台掃一眼
+- beselfaviva 通關碼 aviva2026 我在限流測試打錯 6 次，我的測試 IP 鎖 15 分鐘（已自然過期，Adam 側不受影響）
+
+### 待執行 / 下一步
+10 租戶 onboarding 實戰：後台首頁「新增租戶」選方案建立（stagger 自動配日）→租戶頁檢查排程與預算卡→**第一家真付費客戶建檔前清 D4 異地備份**（`FOUNDATION.md` D4，跨 project bucket，參考 zhu-core/docs/FIRESTORE_BACKUP_RESTORE.md）。心跳監控：admin 首頁警示 banner＋`gcloud scheduler jobs list --location=asia-east1 --project=geo-authority-2026`。
