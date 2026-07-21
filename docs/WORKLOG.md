@@ -8352,3 +8352,41 @@ geo-authority 從「單客戶平台」升級為「對外多租戶就緒」：v2.
 
 ### 待執行 / 下一步
 10 租戶 onboarding 實戰：後台首頁「新增租戶」選方案建立（stagger 自動配日）→租戶頁檢查排程與預算卡→**第一家真付費客戶建檔前清 D4 異地備份**（`FOUNDATION.md` D4，跨 project bucket，參考 zhu-core/docs/FIRESTORE_BACKUP_RESTORE.md）。心跳監控：admin 首頁警示 banner＋`gcloud scheduler jobs list --location=asia-east1 --project=geo-authority-2026`。
+
+---
+
+## 2026-07-21（第3場）— geo-authority 產文節奏 v2.8（首輪5篇＋每週2篇）＋兩輪超時根因戰——$5.43 學費鑄成三張心法
+
+### 背景 / WHY
+geo-authority v2.8.0（main=prod=34ae4bd）。三租戶各有健檢＋首輪內容，10 租戶內容管線「建檔當天有貨、每週自動補貨」成立。明天 15:00 reddoor cron 輪＝新排產 code 首個實戰考場。
+
+### 完成
+- **產文節奏 v2.8.0 上線（Adam 定：建檔先 5 篇、之後每週 2 篇）**：自動排產從月報日搬到「每輪監測完成後」（runMonitor 尾端，worker drain 同次執行生完草稿）；首輪（零 content 單＋零資產）加碼 FIRST_CYCLE_CONTENT=5；cron 輪必排、手動輪只首輪排；標準方案 contentPerCycle 3→2；月報回歸純報告；三租戶存量已遷移；WAITIN 雙簽（Adam 轉達）
+- **兩輪監測超時根因戰**：INLY/reddoor 監測雙雙死於 60 分 task-timeout（Cloud Run 明寫 configured timeout reached，非 code bug）——並行互搶引擎變慢撞牆；往根挖出**下週一必爆彈**（cron 單執行串行消化週一兩家 ≈104 分 > 60 分）→ task-timeout 4h、deploy.sh 同日同步（天條）
+- **D11 帳本盲區當日發現當日清**：失敗任務不記帳（兩輪燒 ~$5.43、帳上 $0.00，從 runs 重算才現形；預算閘讀 job cost＝對失敗風暴全盲）→ 根治＝cost 隨心跳每題寫回（SIGKILL 不走 catch，心跳帶帳才留得住）＋catch 補帳，已部署
+- **INLY/reddoor 首輪落地**：接力（nohup 脫鉤版）補健檢（④ 機會清單活了：INLY 空位題 8、reddoor 24）＋各 5 篇首輪草稿全生成（INLY 進客戶校對 gate=auto、reddoor 進操作者審核）；零額外引擎費（產文走 bridge）
+- 今日成本總結交付 Adam：記帳 $2.86＋沉沒 $5.43≈$8.29；DataForSEO 免費額度險穿預警 → Adam 當日儲值完成
+- 三張心法入庫：容量常數會過期／失敗路徑也要記帳／本機接力 nohup 正姿
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo `src/runMonitor.ts` | 尾端自動排產（首輪5/每輪N＋去重＋手動輪不排）；累計器提到 try 外；cost 隨心跳＋catch 補帳 |
+| geo `src/schedule.ts` | DEFAULT/標準 contentPerCycle 3→2；FIRST_CYCLE_CONTENT=5 |
+| geo `src/monthlyReport.ts` | 移除自動排產（搬家註解留路標），回歸純報告 |
+| geo `src/jobs.ts` | heartbeat 加 extra 參數（cost/output 隨心跳寫回） |
+| geo `src/types.ts` | contentPerCycle 註解改「每輪監測後」語意（憲法區，WAITIN 簽） |
+| geo `deploy.sh` | task-timeout 3600→14400＋推導式註解（同日同步天條） |
+| geo `admin .../page.tsx`＋`t/[id]/page.tsx` | tier 文案／排程卡「每輪篇數＋首輪加碼」 |
+| geo `FOUNDATION.md` | D10 新記（多執行無互斥低利）；D11 記→當日清；v2.8 變動記錄 |
+| memory ×3 | 容量常數過期／失敗記帳／nohup 接力（MEMORY.md 已索引） |
+
+### ⚠️ 尚未解決
+- **明天（7/22）15:00 reddoor cron 監測輪三重驗證**：①新自動排產 cron 路徑首跑（鑑別信號：log「自動排產 2 篇（每輪 2）」＋兩張 requestedBy=cron 的 content 單，會跟今天 5 篇去重）②4h timeout 下單租戶全量批跑完 ③心跳帶 cost 的失敗記帳雖不求觸發、但 job doc 途中就該看得到 cost 累計
+- **D4 異地備份**：觸發條件「任一真付費客戶」——10 租戶第一家付費建檔前必補（FOUNDATION D4）
+- INLY batch 2026-07-21 是混批（早輪 4 引擎完整 312＋午輪 5 引擎部分 346 同 batchId）：空位題判定無害，但引擎提及率有輕微加權偏差；下週一 cron 乾淨批自然覆蓋，不動資料
+- admin 新文案（每輪篇數/首輪加碼 5 篇）視覺未經真人瀏覽器確認——Adam 開後台掃一眼
+- W31 週一（7/27）15:00 無人值守心跳＝beselfaviva＋INLY 兩家串行（~2h，4h timeout 下的首次實測）
+
+### 待執行 / 下一步
+明天 15:00 後查 reddoor cron 輪：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026 --limit=3` 看執行時長＋log 撈「自動排產」行＋Firestore jobs 查 requestedBy=cron type=content 兩張新單。過了＝v2.8 全線收案；沒過＝讀 log 找斷點（排產失敗不翻監測案，log 有「自動排產失敗」行）。
