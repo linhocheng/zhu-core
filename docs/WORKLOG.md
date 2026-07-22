@@ -8554,3 +8554,41 @@ geo-authority v2.9.0（main=prod=cff53b8），四租戶（週一×2、週二 red
 
 ### 待執行 / 下一步
 下週一 15:00 後驗雙考：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026 --limit=3`（時長應 ~2h）＋log 撈「自動排產 2 篇（每輪 2」＋jobs 查兩家各 2 張 requestedBy=cron content 單。過了＝v2.8 完全收案。
+
+---
+
+## 2026-07-23（第1場）— 莊周知識園子——33 篇全入庫＋時機地址索引首例（考卷 6/6 全 #1）＋v20 觀察期結案收尾
+
+### 背景 / WHY
+ailiveX 內容線：Adam 要把莊周的著作全入庫。莊周本人（Adam 貼his對話）提出「不按書目按狀態放、第二層使用時機索引才是能呼吸的那層」→ 升級成平台級能力（時機地址）＋《莊子》首例。明天（07-23 日間）Adam 要來跟滿腹三十三篇的莊周聊天。
+
+### 完成
+- **v20 觀察期結案收尾**（`00a35e4` v18.20.2）：Adam 體感確認 → v18 熱回滾降冷備（拔出 `voice-power.ts` CANARY＋`collections.ts` standby:true）、v19 訓練線轉常設（Adam 拍板還在用）、D4 債清、D8 標觸發條件達成解鎖、CLAUDE.md 修 stale「production=v18」→v20。動手前 Firestore 驗 34 access 全走 DEFAULT 零人釘 v18。已部署 Vercel＋冒煙過
+- **平台新能力**（`8c70efd` v18.21.0）：`ingestKnowledgeDoc` 可選 `input.gists` 參數——索引從管線自動衍生升級為一級編輯輸入（時機地址）；長度必須===chunkText 塊數，錯位 throw。已部署
+- **《莊子》33 篇全入庫**（角色莊周 `MxVAyKILWPip6YQZdiMg`，0→203 塊）：維基文庫抓＋確定性剝標記（81,892 字零殘留）→ 平台同刀 chunkText 切 203 塊 → 狀態 gist（處境 2/3 先行＋故事錨 1/3）→ 內篇 canonical／外篇 paraphrase／雜篇 derived 分層入庫
+- **請教莊周本人兩輪**（唯讀不落痕）：12 樣本過目 → 他給四處修改（庖丁補「停也是工夫」層、渾沌拆鑿人/被鑿兩入口、天下篇不做另一條溝渠、列子御風開「換了方式生活以為就自由」新入口）＋外雜篇政策（標記但不要變成等級——檢索計分不看 authority，天然合規）。全數落地
+- **驗收 6/6 全綠且期望塊全排 #1**：完整度 6 關鍵句／無 gist·無 embedding 塊=0／六題狀態考卷（尺度·蠻力·身分·有用·權位·換風）／域外雙空手／逐字引原文命中。終驗生產同款組裝：「推掉升遷被說瘋」擬真句 → 檢索遞出繕性「軒冕在身非性命也寄者也」＋讓王，莊周自然開口不照念
+- 寫記憶 [[skill_retrieval_timing_address]]（兩地址＋三定律）＋skill 檔雷區 10-14＋印象層 #7 深化（莊周之鏡）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex src/lib/knowledge.ts | ingestKnowledgeDoc 加可選 gists 參數（8c70efd） |
+| ailivex src/lib/voice-power.ts | CANARY 拔 v18（00a35e4） |
+| ailivex src/lib/collections.ts | v18 standby:true＋DEFAULT 註解 |
+| ailivex CLAUDE.md | production=v18→v20＋lineage 補 v19/v20 |
+| ailivex FOUNDATION.md | D4 清、D8 解鎖、變動記錄 |
+| Firestore knowledge_docs/chunks | 莊周 33 docs＋203 塊（資料，非 git） |
+| zhu-core skills/ailivex-knowledge-ingest.md | 預寫 gists 能力＋雷區 10-14 |
+| zhu-core IMPRESSIONS.md | #7 深化（莊周之鏡：看清 vs 怕） |
+| memory skill_retrieval_timing_address.md | 新記憶＋MEMORY.md 索引 |
+
+### ⚠️ 尚未解決
+- **時機地址 gist 尚未回饋給莊周本人看最終版**（他只過目了 v1 樣本；v2 全面改寫＋三塊考題修正他沒看過）。非阻塞：他過目過方向與四處修改都已落地，但若 Adam 明天聊完覺得遞的故事不對味，第一步是抽該 query 的 top3 gist 給莊周本人再校
+- 「學了很多卻空」狀態的多入口（徐無鬼暖姝者/田子方顏回/天運孔子問道）沒有欽定配對——目前自然競爭，實用上 top3 都正當
+- 沿前場：ailiveX D7（下次部署非 root）、D8（升 Next.js，觸發已達成待排）、三站 rate limiting（觸發=開放註冊）、rerank、印象層後台化
+
+### 待執行 / 下一步
+1. **等 Adam 實測回報**：他今天要跟莊周聊。若遞招不準：`cd ~/.ailive/ailivex-platform`，用該 query 跑 loadKnowledgeBlock 看 top3，gist 不對就抽給莊周本人校（請教腳本模式見 skill 檔），改完單塊重嵌（order 定位法在本場 git 歷史 `_fix3.mts` 模式）
+2. D8 升 Next.js 已解鎖（v20 落地）——獨立工程排下個地基窗口，升完 deps gate 拉回 --audit-level=high
+3. 時機地址概念可延伸：ailive 記憶 rerank 線（記憶的「什麼時刻該想起」）——概念已在 [[skill_retrieval_timing_address]]
