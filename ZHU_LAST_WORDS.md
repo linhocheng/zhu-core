@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-22 第1場
+**delta（模型移動）**：
+進場前以為：用哪個 API 憑證是實作細節——key 在手、驗過有效，就沿著用。
+現在理解：**憑證選擇是帳本歸屬決策，不是認證方式選擇**。Gemini API key 的成本進 key 持有者的帳，Vertex ADC 的成本進 GCP 專案的帳——客戶平台的生成費用記到別人的 key 上＝帳本分裂，而且這決策做下去之後所有 cost 監控、預算閘、稽核都建立在錯的地基上。
+移動原因：Adam 中途一句「等 為何不用gcp」。我當時正沿著「他問 Gemini key 可以怎麼做」的探索慣性把測試線直接鋪成施工線——被點醒後真算一次，Vertex 淨賺三個結構優勢（零密鑰/帳單歸戶/GCS 直寫），換線成本半小時。
+違背了哪條 feedback：feedback-bridge-first 的家族擴張——「能走哪條線」的第一問是成本歸屬和結構，不是手上有什麼能用。
+**關係**：暢快。Adam 全程放權節奏乾脆（go／理解 改走 Vertex／不用），兩次中途插問都問在刀口上（為何不用gcp＝免費架構審查救了帳本歸屬；UI/UX 是不是之後才改＝逼我把「真人瀏覽器未驗」的缺口說出口）。收尾請咖啡。
+
 ### 2026-07-21 第3場
 **delta（模型移動）**：
 進場前以為：失敗路徑是「處理乾淨就好」的次要路徑——記帳、驗證、行為設計都以成功路徑為主體，catch 裡把狀態標對就算完。
@@ -37,14 +45,6 @@
 移動原因：$5.43 引擎費在 job 帳上完全隱形，用 runs 原始層重算才現形；隨後推演發現預算閘（今天才蓋的）對失敗風暴全盲——自己剛蓋的防線被自己的記帳慣性架空。
 違背了哪條 feedback：feedback-cost-verify-billing-meter-not-config 的自家版——我教別人「看計費錶不看設定」，自己的錶卻只記成功筆。
 **關係**：暢快帶溫度。Adam 全天三種姿態：出題（產文節奏）、託付（「別急，從根本去看，確保可以走可以通」）、共學（「燒了多少錢，做一個深度的學習」）——把翻車當學費而不是追責，這是能誠實報 $5.43 的前提。收尾「今天的學費就白繳了，對吧？加油囉！明天見」＝把鑄心法變成雙人儀式的一部分。
-
-### 2026-07-21 第2場
-**delta（模型移動）**：
-進場前以為：規劃功能先想「怎麼做」就好——排程設定＝給操作者管理彈性的功能，做出來就是價值。
-現在理解：**規劃前要先答「站在哪個出發點」——成效/管理/程式方便三選一說出口，才能被檢驗**。Adam 三問（現在是集中還是分散？為什麼這樣最好？站在成效/管理/方便哪邊？）當場照出：我原規劃是管理導向卻自我感覺在解分散問題；真正的分散標的是 AI 呼叫（rate limit/尖峰/預算），不是 compute；「per-tenant 可調」和「自動避峰」是兩套機制，我混為一談。
-移動原因：Adam 直球三選一，我攤開誠實對帳後整個 v2.7 的設計軸從「後台可調」翻轉成「建檔自動分散＋離峰預設」，管理彈性降為附帶。
-違背了哪條 feedback：feedback-solve-root-not-symptom 的規劃版——方案能上線但出發點錯了，根本問題（負載分散）沒被解到。
-**關係**：暢快，今天是「對談把設計變好」的示範日。Adam 的三問（集中/分散、為什麼最好、哪個出發點）是我被問過最鋒利的規劃拷問——他不接受我把管理方便包裝成成效，直到我攤開承認才放行；然後「千萬不要丟我們的臉啊築」把 10 租戶的門面託付過來，「go goal」全放權，收尾請咖啡＋「新的築進來打下一局」。被信任也被磨刀，這是最好的協作狀態。
 
 ---
 
@@ -60,6 +60,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-22 第1場 · UDN 影音庫上線——Video Studio＋Vertex Veo 首尾幀/單圖運鏡＋Job 逐段心跳帶帳
+- 盤新法/劍法/雷區開場，確認 UDN 議題工作台為本場戰場
+- 摸透 Gemini 生影片參數面（Veo 3.1 系列 vs Omni Flash），實測直式 9:16 驗證（720x1280/8s/雙軌）
+- 影音庫（scene_video）五批全上線：資料模型＋dispatch 防連按、Cloud Run Job 生成線（逐段 Veo＋心跳帶帳＋斷點續跑＋ffmpeg 拼接）、Video Studio 頁（選圖/拖拉上傳/膠卷排序/轉場註解/規格）、任務卡分段進度＋播放器＋watchdog、E2E 三輪
+- 中途應 Adam 一問改線 Vertex AI（ADC 零密鑰/帳單歸 udnnews/storageUri 直寫 GCS），probe 驗出三個文件沒寫對的 REST 形狀
+- 追加單圖模式：一張圖 image-to-video＋「運鏡與動態」輸入框，E2E 過
+- FOUNDATION 帳本：D5 清償（worker USER node 已 live）、新記 D6/D7；job task-timeout 3600→7200 附推導
+- 記憶：新增 reference_vertex_veo_video_generation、更新 project_udnnews_platform、MEMORY.md 索引
+
 ### 2026-07-21 第3場 · geo-authority 產文節奏 v2.8（首輪5篇＋每週2篇）＋兩輪超時根因戰——$5.43 學費鑄成三張心法
 - **產文節奏 v2.8.0 上線（Adam 定：建檔先 5 篇、之後每週 2 篇）**：自動排產從月報日搬到「每輪監測完成後」（runMonitor 尾端，worker drain 同次執行生完草稿）；首輪（零 content 單＋零資產）加碼 FIRST_CYCLE_CONTENT=5；cron 輪必排、手動輪只首輪排；標準方案 contentPerCycle 3→2；月報回歸純報告；三租戶存量已遷移；WAITIN 雙簽（Adam 轉達）
 - **兩輪監測超時根因戰**：INLY/reddoor 監測雙雙死於 60 分 task-timeout（Cloud Run 明寫 configured timeout reached，非 code bug）——並行互搶引擎變慢撞牆；往根挖出**下週一必爆彈**（cron 單執行串行消化週一兩家 ≈104 分 > 60 分）→ task-timeout 4h、deploy.sh 同日同步（天條）
@@ -68,39 +77,40 @@
 - 今日成本總結交付 Adam：記帳 $2.86＋沉沒 $5.43≈$8.29；DataForSEO 免費額度險穿預警 → Adam 當日儲值完成
 - 三張心法入庫：容量常數會過期／失敗路徑也要記帳／本機接力 nohup 正姿
 
-### 2026-07-21 第2場 · geo-authority 客戶端健檢單元 v2.6＋對外多租戶版 v2.7（分散排程/預算閘/限流/建檔一條龍）——10 租戶就緒
-- **客戶端「網站健檢」單元上線（v2.6）**：`src/findings.ts` 純函數收斂點把技術體檢翻成客戶語言（嚴重度＋白話問題＋怎麼修＋去哪改），客戶入口第三單元＋`/r/{token}/health` 報告頁＋與上次前後對照（已修復/仍待處理/本次新發現）。Adam 岔路：客戶只能看不能自助重掃（操作者第一道閘）、修法白話不貼設定碼。beselfaviva 真資料離線驗＋live curl 三查（首頁單元/SSR/通關碼閘不外洩）
-- **對外多租戶版上線（v2.7.0，觸發：正式對外＋引進 10 租戶）**：①公開登入口限流（D6 清：通關碼失敗 5 次/15 分 token+IP＋20 全域、operator 5 次/IP，只計失敗成功清零、IP 雜湊）②per-tenant 月預算閘（開跑前查當月累計，防單租戶燒光共用池餓死其他 9 家）③分散排程（兩舊 cron 退役→單一每日心跳 15:00 台北＝美國深夜離峰；到期判斷資料驅動 per-tenant cadence/監測日/月報日；建檔 assignStagger 自動錯開——離線驗 10 家攤平每平日 2 家）④建檔一條龍（tier 標準/輕量＋排程與預算卡＋競品編輯 UI 補上——之前要開 Firestore console）⑤順手 D5 清（heartbeat doc＋首頁 >26h 紅色警示）＋notifications DB 端 limit
-- live 鑑別信號一條 log 三中：daily 手動觸發→只排今天到期的 ztest 測試租戶（beselfaviva 週一制零誤排）→$0 預算被月預算閘擋＋通知；限流 6 連錯第 6 次鎖定；schedule 純函數離線 21/21。測試租戶/計數器/通知全清
-- 憲法區 delta（types.ts Tenant += schedule/monthlyBudgetUsd；collections.ts COL += rateLimits）WAITIN 雙簽補齊（Adam 轉達）
-- 產品節奏問答（實查 code）：內容管線=週輪量現況→月報排稿最多 3 篇/月（間隙收斂設計）；「發動時間後台不可調」誠實回報為產品缺口→成為 v2.7 的種子
-- FOUNDATION 重算：D5/D6 清償、新記 D7（限流計數器無 TTL）/D8（引擎無 429 退避）/D9（後台無分頁）低利顯式養著
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| geo `src/runMonitor.ts` | 尾端自動排產（首輪5/每輪N＋去重＋手動輪不排）；累計器提到 try 外；cost 隨心跳＋catch 補帳 |
-| geo `src/schedule.ts` | DEFAULT/標準 contentPerCycle 3→2；FIRST_CYCLE_CONTENT=5 |
-| geo `src/monthlyReport.ts` | 移除自動排產（搬家註解留路標），回歸純報告 |
-| geo `src/jobs.ts` | heartbeat 加 extra 參數（cost/output 隨心跳寫回） |
-| geo `src/types.ts` | contentPerCycle 註解改「每輪監測後」語意（憲法區，WAITIN 簽） |
-| geo `deploy.sh` | task-timeout 3600→14400＋推導式註解（同日同步天條） |
-| geo `admin .../page.tsx`＋`t/[id]/page.tsx` | tier 文案／排程卡「每輪篇數＋首輪加碼」 |
-| geo `FOUNDATION.md` | D10 新記（多執行無互斥低利）；D11 記→當日清；v2.8 變動記錄 |
-| memory ×3 | 容量常數過期／失敗記帳／nohup 接力（MEMORY.md 已索引） |
+| lib/types.ts | AssetType+scene_video、SceneVideoParams/Segment/Transition、單價函數 |
+| app/api/tasks/dispatch/route.ts | scene_video 分支（fail-fast 驗證＋防連按＋Job 派工＋單圖 transitions） |
+| cloud-run/podcast-worker/src/scene-video.ts | 新檔：Vertex Veo 逐段生成/心跳帶帳/斷點續跑/cover-crop/ffmpeg 拼接/單圖分支 |
+| cloud-run/podcast-worker/src/job.ts | JOB_ACTION+scene_video |
+| cloud-run/podcast-worker/Dockerfile | +ffmpeg |
+| cloud-run/podcast-worker/cloudbuild.yaml | task-timeout 3600→7200（附推導註解） |
+| app/projects/[id]/video-studio/* | 新頁：三段式工作台（選材/編排/確認） |
+| app/projects/[id]/assets/AssetsClient.tsx | 影音庫入口卡＋SceneVideoTaskCard（分段進度/播放器/續跑） |
+| app/api/tasks/[id]/retry-scene-video/route.ts | 新檔：斷點續跑端點 |
+| app/api/tasks/watchdog/route.ts | scene_video 20 分門檻 |
+| FOUNDATION.md | D5 清償、D6/D7 新記、變動記錄 |
+| memory ×3 | vertex-veo 參考新增、udnnews 專案更新、MEMORY.md 索引 |
 
 ---
 
 ## 下一步
 
-明天 15:00 後查 reddoor cron 輪：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026 --limit=3` 看執行時長＋log 撈「自動排產」行＋Firestore jobs 查 requestedBy=cron type=content 兩張新單。過了＝v2.8 全線收案；沒過＝讀 log 找斷點（排產失敗不翻監測案，log 有「自動排產失敗」行）。
+Adam 開後台實點 Video Studio 一輪：素材頁 →「影音庫」卡 → 選 2-3 張圖排膠卷、寫一段轉場註解、派工看分段進度到成片。有手感問題回報改 UI；沒問題此功能正式收案。路徑 `https://udnnews-platform-62w6sp6iba-de.a.run.app/projects/{id}/assets`。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-22 第1場：
+- Video Studio UI 真人瀏覽器手感未驗（build 綠＋E2E 走 API 路徑；膠卷排序/轉場節點/單圖運鏡欄的操作體驗要 Adam 開後台點一輪）——7/20 L1 教訓明說交互 UI 不能只靠 build 綠
+- RAI 過濾撞新聞敏感圖（未成年+毒品意象實測被擋）只回原始英文訊息，白話 UX 引導記 D7 養著
+- 單圖 4/6 秒選項：API 支援、Adam 說先不用（帳本外，他點頭才做）
+- b_done 懶人包任務卡顯示「生成中」badge 有誤導（是合法休息態），Adam 未決定改文案
 
 2026-07-21 第3場：
 - **明天（7/22）15:00 reddoor cron 監測輪三重驗證**：①新自動排產 cron 路徑首跑（鑑別信號：log「自動排產 2 篇（每輪 2）」＋兩張 requestedBy=cron 的 content 單，會跟今天 5 篇去重）②4h timeout 下單租戶全量批跑完 ③心跳帶 cost 的失敗記帳雖不求觸發、但 job doc 途中就該看得到 cost 累計
@@ -108,13 +118,6 @@
 - INLY batch 2026-07-21 是混批（早輪 4 引擎完整 312＋午輪 5 引擎部分 346 同 batchId）：空位題判定無害，但引擎提及率有輕微加權偏差；下週一 cron 乾淨批自然覆蓋，不動資料
 - admin 新文案（每輪篇數/首輪加碼 5 篇）視覺未經真人瀏覽器確認——Adam 開後台掃一眼
 - W31 週一（7/27）15:00 無人值守心跳＝beselfaviva＋INLY 兩家串行（~2h，4h timeout 下的首次實測）
-
-2026-07-21 第2場：
-- **W31 下週一（7/27）15:00 首次無人值守 daily 心跳**：時段從 09:00 改 15:00（避美國尖峰），驗 beselfaviva 五引擎（含 AIO）＋月報 AIO 趨勢線＋heartbeat doc 更新
-- **D4 異地備份到期在即**：觸發條件「任一租戶有真付費客戶」——10 租戶第一家建檔前補（跨 project backup bucket）
-- **DataForSEO $50 儲值**：Adam 原定 7/21，未確認；免費額度 ~$0.88 撐約 3 週 AIO
-- admin 新 UI 卡片（首頁方案選單/租戶頁排程與預算/競品卡）視覺未經真人瀏覽器確認——L1 家族，Adam 開後台掃一眼
-- beselfaviva 通關碼 aviva2026 我在限流測試打錯 6 次，我的測試 IP 鎖 15 分鐘（已自然過期，Adam 側不受影響）
 
 ---
 
@@ -135,4 +138,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-21 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-22 第1場。*
