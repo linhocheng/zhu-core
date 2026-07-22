@@ -8516,3 +8516,41 @@ UDN 議題工作台素材線——影音庫是繼懶人包視覺總監管線後�
 
 ### 待執行 / 下一步
 影音庫已全收案（UI/UX Adam 場內拍板 ✅）。下一動作＝等客戶用影音庫產出第一支真素材：順利＝功能自證；RAI 再撞（第二次）＝觸發 D7 灌白話引導（FOUNDATION 帳本有觸發條件）。無主動待辦。
+
+---
+
+## 2026-07-22（第2場）— geo v2.8.1-v2.9——通關碼鎖門＋15:00 三重實證＋承重牆 24 案測試進 CI（空檔自主補強日）
+
+### 背景 / WHY
+geo-authority v2.9.0（main=prod=cff53b8），四租戶（週一×2、週二 reddoor、週三達摩媒體），有測試看門的房子了。v2.8 全鏈除「非首輪每輪 2 篇」外全實證。
+
+### 完成
+- **「客戶看不到文章」根因戰（v2.8.1）**：Adam 開 portal 見空 → 真相＝**contentGate 與通關碼是兩顆開關**（gate 管草稿路由、通關碼管校對權限；沒碼＝入口唯讀＋token-only 不設防）。當場補設三家碼（inly2026/justar2026）＋結構根治：建檔強制通關碼＋token 即發、輪換原子換碼（不再有門沒鎖空窗）。誠實自首：我第一輪診斷漏讀 portal.ts line 38 唯讀模式，答錯過一次
+- **15:00 考場三重實證全過（用 Adam 早上新建的達摩媒體）**：①v2.8 cron 自動排產首戰——監測完自動排首輪 5 篇全生成零人手 ②4h timeout 提前拿鐵證——實跑 78 分，舊 60 分上限當天就會殺它 ③新建檔流第一個租戶「有門有鎖」出生。stagger 自動配週三＝建檔當天輪到，分散設計實戰
+- **成本盤點交付**：常駐 ≈$1-2/月（min=0＋Jobs 天條紅利）；真錢在監測 ~$3/租戶/輪＝標準方案 ~$12-13/租戶/月（報價錨點）；10 租戶滿載 ~$130/月
+- **空檔自主補強（Adam 放權「你想補什麼」，v2.9.0）**：①承重牆 24 案 pinning test（schedule/findings/scanMarkdown，node 內建 runner 對 dist 測零依賴，npm test 一行）＋CI tests job——昨天用完即丟的 21 案變永久資產 ②零題庫防呆（intake 沒完排監測改明確報錯，無聲 no-op 家族再拔一根）③混批根治（手動監測 batchId 帶時分）④CI 咬出 sharp 4 顆 high CVE → overrides ^0.35 清零，audit gate 復綠
+- 昨天對帳誠實化：「寫進教訓」≠「修進產品」——④ 空白占位提示昨天只寫了 L4 沒實作，今早補上（v2.8.0.005）
+- 日曆錯誤自首：昨天把 7/21 當週一、預告「明天週二 reddoor 考」——實際 7/21 就是週二，reddoor 建檔晚於心跳錯過本週窗口，下週二 7/28 自動補上
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo `admin/src/lib/actions.ts` | createTenant 強制通關碼＋token 即發；rotate 原子換碼；手動監測 batchId 帶時分 |
+| geo `admin .../page.tsx`＋`t/[id]/page.tsx` | 建檔/開通/輪換表單通關碼必填欄；文案更新 |
+| geo `admin .../audit/[auditId]/page.tsx` | ④ 機會清單無料時占位說明（L4 補實作） |
+| geo `test/*.test.mjs`（新×3） | 承重牆 24 案：schedule/findings/scanMarkdown |
+| geo `.github/workflows/security.yml` | tests job（pinned SHA 慣例） |
+| geo `src/runMonitor.ts` | 零題庫防呆報錯 |
+| geo `admin/package.json` | overrides sharp ^0.35（high CVE 清零） |
+| geo `FOUNDATION.md` | 承重牆帳更新（三面牆有測試看門） |
+| memory `project_geo_authority.md` | v2.8.1-v2.9 現況＋兩顆開關心法 |
+
+### ⚠️ 尚未解決
+- **下週一 7/27 15:00 雙考**：beselfaviva＋INLY 兩家串行（~2h，4h timeout 雙租戶日實測）＋「非首輪每輪 2 篇」排產路徑（兩家都有存量內容→應各排 2 篇＋去重）
+- **reddoor 下週二 7/28** 首次 cron 輪（乾淨全量批覆蓋 85% 混批）
+- Adam 後台 10 篇待審（reddoor 5＋達摩 5，都在內容審核）；beselfaviva 客戶端校對流未走完的照舊
+- D4 異地備份：第一家真付費客戶建檔前必補（FOUNDATION D4）
+- admin 新 UI（建檔通關碼欄/輪換欄/④ 占位）視覺未經真人瀏覽器掃——L1 家族
+
+### 待執行 / 下一步
+下週一 15:00 後驗雙考：`gcloud run jobs executions list --job=geo-monitor-job --region=asia-east1 --project=geo-authority-2026 --limit=3`（時長應 ~2h）＋log 撈「自動排產 2 篇（每輪 2」＋jobs 查兩家各 2 張 requestedBy=cron content 單。過了＝v2.8 完全收案。
