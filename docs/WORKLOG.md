@@ -8431,3 +8431,46 @@ UDN 議題工作台素材線——影音庫是繼懶人包視覺總監管線後�
 
 ### 待執行 / 下一步
 Adam 開後台實點 Video Studio 一輪：素材頁 →「影音庫」卡 → 選 2-3 張圖排膠卷、寫一段轉場註解、派工看分段進度到成片。有手感問題回報改 UI；沒問題此功能正式收案。路徑 `https://udnnews-platform-62w6sp6iba-de.a.run.app/projects/{id}/assets`。
+
+---
+
+## 2026-07-22（第1場）— UDN 影音庫上線——Video Studio＋Vertex Veo 首尾幀/單圖運鏡＋Job 逐段心跳帶帳
+
+### 背景 / WHY
+UDN 議題工作台素材線——影音庫是繼懶人包視覺總監管線後第二條視覺素材管線，同一批圖卡資產的第二出口。
+
+### 完成
+- 盤新法/劍法/雷區開場，確認 UDN 議題工作台為本場戰場
+- 摸透 Gemini 生影片參數面（Veo 3.1 系列 vs Omni Flash），實測直式 9:16 驗證（720x1280/8s/雙軌）
+- 影音庫（scene_video）五批全上線：資料模型＋dispatch 防連按、Cloud Run Job 生成線（逐段 Veo＋心跳帶帳＋斷點續跑＋ffmpeg 拼接）、Video Studio 頁（選圖/拖拉上傳/膠卷排序/轉場註解/規格）、任務卡分段進度＋播放器＋watchdog、E2E 三輪
+- 中途應 Adam 一問改線 Vertex AI（ADC 零密鑰/帳單歸 udnnews/storageUri 直寫 GCS），probe 驗出三個文件沒寫對的 REST 形狀
+- 追加單圖模式：一張圖 image-to-video＋「運鏡與動態」輸入框，E2E 過
+- FOUNDATION 帳本：D5 清償（worker USER node 已 live）、新記 D6/D7；job task-timeout 3600→7200 附推導
+- 記憶：新增 reference_vertex_veo_video_generation、更新 project_udnnews_platform、MEMORY.md 索引
+- 加場補刀（Adam 給空檔）：懶人包休息態 badge 正名（b_done→待生圖、a_done→待確認文案，鼠尾草色點）＋影音庫入口卡加跳頁「→」暗示；commit b900169 部署驗流量對齊 00090
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| lib/types.ts | AssetType+scene_video、SceneVideoParams/Segment/Transition、單價函數 |
+| app/api/tasks/dispatch/route.ts | scene_video 分支（fail-fast 驗證＋防連按＋Job 派工＋單圖 transitions） |
+| cloud-run/podcast-worker/src/scene-video.ts | 新檔：Vertex Veo 逐段生成/心跳帶帳/斷點續跑/cover-crop/ffmpeg 拼接/單圖分支 |
+| cloud-run/podcast-worker/src/job.ts | JOB_ACTION+scene_video |
+| cloud-run/podcast-worker/Dockerfile | +ffmpeg |
+| cloud-run/podcast-worker/cloudbuild.yaml | task-timeout 3600→7200（附推導註解） |
+| app/projects/[id]/video-studio/* | 新頁：三段式工作台（選材/編排/確認） |
+| app/projects/[id]/assets/AssetsClient.tsx | 影音庫入口卡＋SceneVideoTaskCard（分段進度/播放器/續跑） |
+| app/api/tasks/[id]/retry-scene-video/route.ts | 新檔：斷點續跑端點 |
+| app/api/tasks/watchdog/route.ts | scene_video 20 分門檻 |
+| FOUNDATION.md | D5 清償、D6/D7 新記、變動記錄 |
+| memory ×3 | vertex-veo 參考新增、udnnews 專案更新、MEMORY.md 索引 |
+| components/StatusBadge.tsx | TaskStatusBadge 加 labelOverride（phase 語意蓋 status 標籤） |
+| AssetsClient.tsx（加場） | 懶人包 badge 正名＋影音庫入口卡「→」 |
+
+### ⚠️ 尚未解決
+- Video Studio UI 真人瀏覽器手感未驗（build 綠＋E2E 走 API 路徑；膠卷排序/轉場節點/單圖運鏡欄的操作體驗要 Adam 開後台點一輪）——7/20 L1 教訓明說交互 UI 不能只靠 build 綠
+- RAI 過濾撞新聞敏感圖（未成年+毒品意象實測被擋）只回原始英文訊息，白話 UX 引導記 D7 養著
+- 單圖 4/6 秒選項：API 支援、Adam 說先不用（帳本外，他點頭才做）
+
+### 待執行 / 下一步
+Adam 開後台實點 Video Studio 一輪：素材頁 →「影音庫」卡 → 選 2-3 張圖排膠卷、寫一段轉場註解、派工看分段進度到成片。有手感問題回報改 UI；沒問題此功能正式收案。路徑 `https://udnnews-platform-62w6sp6iba-de.a.run.app/projects/{id}/assets`。

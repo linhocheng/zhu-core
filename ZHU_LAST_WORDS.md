@@ -68,6 +68,7 @@
 - 追加單圖模式：一張圖 image-to-video＋「運鏡與動態」輸入框，E2E 過
 - FOUNDATION 帳本：D5 清償（worker USER node 已 live）、新記 D6/D7；job task-timeout 3600→7200 附推導
 - 記憶：新增 reference_vertex_veo_video_generation、更新 project_udnnews_platform、MEMORY.md 索引
+- 加場補刀（Adam 給空檔）：懶人包休息態 badge 正名（b_done→待生圖、a_done→待確認文案，鼠尾草色點）＋影音庫入口卡加跳頁「→」暗示；commit b900169 部署驗流量對齊 00090
 
 ### 2026-07-21 第3場 · geo-authority 產文節奏 v2.8（首輪5篇＋每週2篇）＋兩輪超時根因戰——$5.43 學費鑄成三張心法
 - **產文節奏 v2.8.0 上線（Adam 定：建檔先 5 篇、之後每週 2 篇）**：自動排產從月報日搬到「每輪監測完成後」（runMonitor 尾端，worker drain 同次執行生完草稿）；首輪（零 content 單＋零資產）加碼 FIRST_CYCLE_CONTENT=5；cron 輪必排、手動輪只首輪排；標準方案 contentPerCycle 3→2；月報回歸純報告；三租戶存量已遷移；WAITIN 雙簽（Adam 轉達）
@@ -95,6 +96,8 @@
 | app/api/tasks/watchdog/route.ts | scene_video 20 分門檻 |
 | FOUNDATION.md | D5 清償、D6/D7 新記、變動記錄 |
 | memory ×3 | vertex-veo 參考新增、udnnews 專案更新、MEMORY.md 索引 |
+| components/StatusBadge.tsx | TaskStatusBadge 加 labelOverride（phase 語意蓋 status 標籤） |
+| AssetsClient.tsx（加場） | 懶人包 badge 正名＋影音庫入口卡「→」 |
 
 ---
 
@@ -110,7 +113,6 @@ Adam 開後台實點 Video Studio 一輪：素材頁 →「影音庫」卡 → �
 - Video Studio UI 真人瀏覽器手感未驗（build 綠＋E2E 走 API 路徑；膠卷排序/轉場節點/單圖運鏡欄的操作體驗要 Adam 開後台點一輪）——7/20 L1 教訓明說交互 UI 不能只靠 build 綠
 - RAI 過濾撞新聞敏感圖（未成年+毒品意象實測被擋）只回原始英文訊息，白話 UX 引導記 D7 養著
 - 單圖 4/6 秒選項：API 支援、Adam 說先不用（帳本外，他點頭才做）
-- b_done 懶人包任務卡顯示「生成中」badge 有誤導（是合法休息態），Adam 未決定改文案
 
 2026-07-21 第3場：
 - **明天（7/22）15:00 reddoor cron 監測輪三重驗證**：①新自動排產 cron 路徑首跑（鑑別信號：log「自動排產 2 篇（每輪 2）」＋兩張 requestedBy=cron 的 content 單，會跟今天 5 篇去重）②4h timeout 下單租戶全量批跑完 ③心跳帶 cost 的失敗記帳雖不求觸發、但 job doc 途中就該看得到 cost 累計
