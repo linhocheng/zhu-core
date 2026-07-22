@@ -155,9 +155,11 @@
 - [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本
 - [混合檢索融合兩個坑（RRF並列陷阱+加法計分救不了坍縮）](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域cosine坍縮用rank-based RRF(2:1)；未命中0分不給名次貢獻否則反壓真命中；白皮書公式也要過真實資料
 - [Cloud Run 版本退役紀律（vN 收案降 v(N-1) 常駐）](skill_cloudrun_version_retirement.md) — 16 台殭屍燒 $963/月教訓；LiveKit agent 降 0＝聾不是慢；帳單曲線只漲不跌就掃 minScale
+- [退役/降級資源前先查真實引用](feedback_verify_references_before_retiring.md) — 「它是回滾坑位應該沒人用」是架構推論不是事實；退 LiveKit 版本/API/欄位/flag 前 query 誰還指向它，零引用才安全退；ailiveX v18 退冷備前查 34 access 全走 DEFAULT 零人釘
 - [一 repo 連多 Vercel project = 成本 N 倍](feedback_one_repo_multi_vercel_project_multiplies_cost.md) — 同 repo 綁多 project 每次 push 全部署、cron 各跑一遍且帳單看不出；zhu-core-full 幽靈雙胞胎教訓；審計法掃全 project crons+env+protection，刪前核 link/commit
 - [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — middleware 只 gate 頁面、/api 全開；修法按呼叫者分類：後台鎖operator/前端頁面種cookie認cookie/匿名公開付費路由IP限流/內部worker-secret/cron設CRON_SECRET；curl body 才算驗
 - [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同embedding對不上；gist三雷：留成語/同開頭/格式漂移；門檻先量再定
+- [檢索索引的時機地址設計](skill_retrieval_timing_address.md) — 內容地址vs時機地址；稀釋律(處境2/3先行)/劫持律(一題一狀態)/押注律(預言必考試)；莊子203塊6/6實證；triggerDesc與觸發信號欄同構
 - [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣；Tracy 17套實戰
 - [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
 - [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份訓練輾過靈魂prompt擋不住；量尺/插座/驗收法落袋；18s首音瓶頸在共用開場路徑
