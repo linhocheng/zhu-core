@@ -210,6 +210,16 @@ metadata:
 - **概覽頁快速補充**：`QuickAddSources` 元件 + `POST /api/projects/[id]/sources` 增量端點（append＋只收新來源，seenUrls 預載既有文章 URL 跨次去重）；收集核心抽成 `lib/collect-core.ts` 兩入口共用
 - **踩雷刻進 platform/AGENTS.md**（下一棒必讀）：git push≠上雲（無 trigger，要手動 builds submit）；builds submit 打包工作目錄不是 commit（髒樹會把別 session 半成品上雲，部署前必 git status）；git root 在上層目錄 platform/ 是子目錄（git add 相對路徑勿帶 platform/ 前綴）；tsc 過濾 `.next/` 噪音；API 回「未授權」=端點存在非壞掉
 
+## 2026-07-22 影音庫（scene_video）上線（commit 9c20c4f→616655e→049731b）
+
+- **Video Studio**（/projects/[id]/video-studio）：專案圖卡選擇（優先無文字底圖）＋拖拉上傳（/api/uploads raw=1）＋膠卷排序＋卡間轉場註解＋單圖「運鏡與動態」欄＋場景描述＋規格（9:16/16:9、三檔畫質：fast720/fast1080/standard1080）
+- **生成線走 Vertex AI**（見 [[vertex-veo-video-generation]]）：Cloud Run Job（JOB_ACTION=scene_video）逐段 Veo 首尾幀（固定 8 秒/段）→ storageUri 直寫 GCS → 複製正規路徑 scene_video/{taskId}/segment-N.mp4 → ffmpeg 拼接 final.mp4；單圖＝image-to-video 一段、GCS 複製不過 ffmpeg
+- **防線**：心跳帶帳（每段完成寫 sceneVideoCostUsd）＋斷點續跑（done 段跳過不重燒，retry-scene-video 端點）＋防連按 409＋watchdog 20 分＋卡數上限 10（$7.2 封頂）＋首尾幀 ffmpeg cover-crop（與 UI 縮圖 CSS cover 同語意）
+- job task-timeout 3600→7200（推導：9 段 × 12 分上限 ≈110 分）
+- E2E 三輪全過：多圖成片 16s/720x1280/雙軌、單圖運鏡 8s、RAI 過濾失敗路徑＋續跑（cost 不重複累計、log 印「已完成，跳過」）
+- 帳本：D5 清償（worker USER node 已 live）、新記 D6（無月預算閘）/D7（RAI 白話提示）低利養著
+- 未驗：Video Studio UI 真人瀏覽器手感（Adam 要開後台點一輪）；秒數選項（單圖可 4/6/8）Adam 說先不用
+
 ## 環境資訊
 
 - Tavily key: tvly-dev-2iEczc-*（dev tier，1000次/月，上線前換）
