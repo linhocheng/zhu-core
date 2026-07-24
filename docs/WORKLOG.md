@@ -8631,3 +8631,42 @@ UDN 線新分支：同仁不斷丟素材進 Drive → 一鍵 Scan → Demo 頁�
 1. 等 UDN 素材館真實使用回饋（同仁上手後：cron 需求？新素材類型資料夾？）——改動入口 `~/Documents/UDN NEWS/demo-gallery/`，先讀 `DEVLOG.md`
 2. 莊周知識庫：Adam 跟他聊完若遞招不準，校準路徑在 SESSION_2026-07-23_1 接棒欄
 3. ailiveX D8（升 Next.js）排下個地基窗口
+
+---
+
+## 2026-07-24（第2場）— UDN 補充資料血管斷點三連修＋口播稿角色聲音選擇
+
+### 背景 / WHY
+UDN 議題工作台——素材供給線（Brief/補充資料 → 對話 → 口播/懶人包/podcast）的血管完整性。
+
+### 完成
+- 修復「補充完 Brief 資料角色讀不到」（毒癮悲歌案）三重斷點：①text/file 補充建檔即 adopted（原卡 screened 全線盲）②新增 Brief+補充咽喉 `lib/brief-context.ts`，四條生成線（對話/懶人包/口播/podcast 含 worker Jobs 路徑鏡像）全改吃 ③Brief 頁常駐重生成入口＋「落後 N 筆」提示（原本平常根本沒有重生成按鈕）
+- 資料手術：全平台掃卡 screened 的 text/file 文章——僅毒癮悲歌 6 篇（含《毒品悲歌》），全翻 adopted 並驗證
+- E2E 鑑別信號驗證：問角色《毒品悲歌》少年化名，答出「阿瑞／家裡開賭場」——只存在補充資料、v4 Brief 沒有，不可能是猜的；測試對話已刪、latestConvId 已還原
+- text:// 假連結根治：Brief 資料來源段不再渲染成 markdown 連結＋chat prompt 加站內代號說明（角色不再說「打不開」）
+- 口播稿生成音檔前可選角色聲音：AudioScriptCard 加「角色聲音」pill 列（只列有 Voice ID、預設撰稿角色）＋ generate-audio 接 voiceCharacterId、音檔 task 掛所選聲音角色；線上以「所選角色尚未設定 Voice ID」新文案 400 當鑑別信號驗證（檢查在建 task/扣額度之前，零成本）
+- 澄清 Alex 非 bug：archived 軟刪除是設計內；是我先前用 debug script 直撈 Firestore 繞過 archived 過濾、錯誤回報「四位角色都能選」——已向 Adam 收回更正
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| platform/lib/brief-context.ts | 新檔：Brief+補充資料咽喉（pickSupplementArticles/formatSupplementSection/getLatestBriefContext） |
+| platform/lib/collect-core.ts | processTextSource/processFileSource 建檔即 adopted；失敗路徑保住原文 |
+| platform/app/api/chat/route.ts | 補充資料注入 system prompt＋text:// 站內代號說明 |
+| platform/app/api/tasks/dispatch/route.ts | 懶人包/口播/podcast 三處改吃 getLatestBriefContext |
+| platform/app/api/tasks/[id]/generate-lazypak/route.ts | 同上換咽喉 |
+| platform/app/api/brief/generate/route.ts | text:///file:// 不渲染假連結 |
+| platform/app/projects/[id]/brief/page.tsx | 常駐重生成鈕＋落後 N 筆提示 |
+| platform/components/QuickAddSources.tsx | 完成訊息按型別說清楚可讀性 |
+| platform/cloud-run/podcast-worker/src/brief-context.ts | 新檔：worker 側鏡像 |
+| platform/cloud-run/podcast-worker/src/{job.ts,index.ts} | script/lazypak 兩處接鏡像 |
+| platform/app/api/tasks/[id]/generate-audio/route.ts | 接 voiceCharacterId、音檔掛所選角色 |
+| platform/app/projects/[id]/assets/AssetsClient.tsx | AudioScriptCard 角色聲音 pill 列＋角色庫載入條件擴充 |
+| memory ×2 | feedback_raw_query_not_ui_truth 新增、project_udnnews_platform 更新 |
+
+### ⚠️ 尚未解決
+- 網址型補充來源仍走人工採用（設計內的策展閘，QuickAdd 訊息已標註差異）；若客戶頻繁漏採用可考慮改自動採用＋收集頁排除
+- FOUNDATION D6/D7 未到期，顯式養著（觸發條件見帳本）
+
+### 待執行 / 下一步
+等客戶走一次「補充→對話→口播稿選聲音→生成音檔」全鏈路自證。Adam 可在 Brief 頁按「再次生成」把 6 筆補充收斂進 v5（角色已可即時讀取，不急）。無主動待辦。
