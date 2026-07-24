@@ -8670,3 +8670,40 @@ UDN 議題工作台——素材供給線（Brief/補充資料 → 對話 → 口
 
 ### 待執行 / 下一步
 等客戶走一次「補充→對話→口播稿選聲音→生成音檔」全鏈路自證。Adam 可在 Brief 頁按「再次生成」把 6 筆補充收斂進 v5（角色已可即時讀取，不急）。無主動待辦。
+
+---
+
+## 2026-07-25（第1場）— threads-radar 對外爬蟲 SaaS 開工（M0-M3 可行性全證明）＋ailivex 語音沒聲根因＋成本盤查＋billing export
+
+### 背景 / WHY
+threads-radar 是新開的對外爬蟲 SaaS 主戰場（repo ~/.ailive/threads-radar，GCP threads-radar-2026）。M0-M3 可行性全部證明，卡在收尾加固（neko 版本釘死、worker 抗抖動）。ailivex 語音/成本是插隊的營運問題，已定位待 Adam 處置。
+
+### 完成
+- **threads-radar 平台開工並蓋到 M3 可行性證明**（新對外 SaaS，客戶連自己 Threads 帳號設關鍵字+互動門檻爬爆文）：
+  - M0 打撈 molowe 爬蟲藍本；M1 資料憲法五類+分散排程(搬 GEO 心法)；M2 爬蟲 worker 核心(搜尋→抓讚/留言/轉發/分享→門檻→去重→反偵測，去 molowe 耦合改批次爆文清單)；M3 neko 登入橋接基礎設施
+  - **對真站驗證**：抓到「回覆→留言」aria-label 變更真 bug（記憶會說謊活教材，離線測不到）；真貼文讚78/留言138/轉發8/分享58
+  - **登入橋接可行性證明**：neko 裸連=Google 機房 IP 被 IG 擋 → gost 轉發 IPRoyal 住宅 sticky 修通 → 正確密碼登入 sessionid=true（Playwright 直登隔離變因，證明 neko 無辜、是密碼少個`!`）
+  - 專屬 GCP project threads-radar-2026 + KMS + Firestore + neko VM；session 信封加密承重牆(AES-256-GCM,KMS包DEK)；29 案 pinning test 全綠；FOUNDATION 對齊母版藍圖 v1.1（三張表齊備）
+- **ailivex 語音「沒聲音」根因**：不是 LiveKit/TTS/部署，是 **Anthropic API key 撞本月用量上限被鎖**（400 usage limit，8/1 UTC 解鎖）→ LLM 生不出話→TTS 串 0 bytes→沉默。修法要 Adam 去 console 調上限或換 key（花錢的事等他）
+- **成本盤查（每天~$10 體感）**：頭號嫌犯 Anthropic key（語音 v19/v20+GPT線+geo引擎，撞月上限=鐵證）；GCP 常駐 ~$5-6/天（ailivex v19/v20 兩台 minScale=1+ailive-realtime-agent 7/6 清後又復活+zhu-dev VM）；geo 引擎 ~$3/天(設計內)
+- **billing export 半程**：建好 BigQuery dataset billing_export(zhu-cloud-2026)、開好 API、給 Adam 兩帳戶各兩開關的精確路徑（他登入了但還沒點完「使用費用詳細資料」+「標準使用費用」）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| threads-radar `src/{types,collections,schedule,parse,sessionCrypto}.ts`（新） | 資料憲法+分散排程+抓數解析+session 信封加密 |
+| threads-radar `worker/scraper.mjs`（新） | 爬蟲核心（去 molowe 耦合，留言選擇器真站校準） |
+| threads-radar `neko/{provision,startup}.sh`（新） | neko VM+gost 住宅 proxy+chromium policy（infra as code） |
+| threads-radar `test/*.test.mjs`（新×5） | 29 案 pinning test |
+| threads-radar `FOUNDATION.md`（新） | 對齊母版 v1.1，D1-D5 債+承重牆帳 |
+| memory `project_threads_radar.md`（新） | 平台現況+教訓 |
+
+### ⚠️ 尚未解決
+- **threads-radar D5（活血，下場開工第一件）**：neko 版本用 latest 未釘，CVE-2026-39386 提權(CVSS 8.8，修於 3.0.11/3.1.2)。開 VM 前先查 github.com/m1k1o/neko/tags 確認 chromium 已修 tag（chromium flavor 可見 3.0.9=未修，不可盲賭；nvidia 變體有 3.1.4）再釘進 startup.sh。**暴露面已關閉**：firewall 8080 鎖 127.0.0.1/32+VM 停機
+- **threads-radar D4（活血）**：住宅 proxy 抽風（ERR_TIMED_OUT/ERR_TUNNEL_CONNECTION_FAILED），worker 每個 goto 要包重試+proxy 健康檢查+壞 IP 換 sticky。登入單次已證成功，連跑需抗抖動
+- **ailivex 語音**：Anthropic key 月上限被鎖，語音線全啞到 8/1（除非 Adam 調上限/換 key）
+- **billing export**：Adam 要去兩個帳單帳戶各點「使用費用詳細資料」+「標準使用費用」開關 → 指到 zhu-cloud-2026/billing_export。開完隔天資料進來我跑逐日逐服務榜
+- geo-authority W31 週一(7/27)15:00 雙租戶串行考+「每輪2篇」路徑（前場未解，仍在）
+
+### 待執行 / 下一步
+threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 proxy 重試(D4)③把登入的 session 用 sessionCrypto 加密存 Firestore、接給爬蟲跑「登入態穩定爬爆文」端到端④M4 客戶前台(身份門禁搬 GEO)。開 neko VM：`gcloud compute instances start neko-login --project=threads-radar-2026 --zone=asia-east1-b`，測試前先把 firewall neko-web 來源改回 Adam 當下 IP。

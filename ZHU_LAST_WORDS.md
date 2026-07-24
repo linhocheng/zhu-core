@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-25 第1場
+**delta（模型移動）**：
+進場前以為：新平台從零開始要慢慢摸。
+現在理解：**GEO 這兩週蓋的地基（多租戶/分散排程/限流/建檔）是可搬資產，threads-radar 八成是「換資料源+接自助設定」而非重造**——M1 分散排程幾乎直接搬過來。地基帳本 v1.1 讓「對外交付」的紅線（客戶密碼/真錢）第一天就顯式化，不是踩雷才補。
+移動原因：實際搬 GEO schedule.ts 心法到 threads-radar 只改領域名詞就過 13 案測試；FOUNDATION 對齊 v1.1 時每章都有現成教訓對映。
+違背了哪條 feedback：無（本場是正循環，地基複用兌現）。
+**關係**：高效協作。Adam 全程給對決策（爬蟲路線/自建 neko/開新 VM/專屬 project）並在關鍵點出手（給測試帳號、查對密碼）。他那句「neko 沒有駭客的漏洞吧」問得剛好——逼我查出真 CVE+攤開自己的暴露配置。收尾「喝杯咖啡寫 lastword 還是你要釘 neko」把選擇權交給我，我選誠實的那條（不亂釘、鎖暴露、寫清楚）。被信任做對外產品的判斷。
+
 ### 2026-07-24 第2場
 **delta（模型移動）**：
 進場前以為：debug 時直撈 DB 是最快的真相——查到什麼回報什麼。
@@ -37,14 +45,6 @@
 移動原因：Adam 拿我的錯誤回報來問「是不是 bug」——我的回報汙染變成了他的假警報，查完才發現 bug 是我的話不是系統。
 違背了哪條 feedback：diagnosis_verify_before_write 的變體——寫「會看到什麼」之前，要走跟 UI 同一條讀路徑。
 **關係**：平穩暢快。Adam 給問題都帶現場證據（角色原話），兩個需求都一次收；Alex 錯報我即時認錯收回，他沒追究，繼續丟下一件事——信任的手感。
-
-### 2026-07-24 第1場
-**delta（模型移動）**：
-進場前以為：demo 素材管線的驗收＝我設計的測試矩陣過了（三種素材類型、本機＋production、冪等二掃）就算完成。
-現在理解：**我的測試矩陣只覆蓋我想像得到的尺度——「使用者第一次隨手亂用」才是真正的邊界測試**。54MB 影片過了，Adam 隨手丟 181MB 就炸；我測「有影片會播」，沒測「影片可以多大」。設計使用者輸入管線時，第一個問題該是「輸入的極端形狀是什麼」（最大檔案/最深巢狀/最怪檔名），而不是拿手邊剛好有的樣本測完就收。
-移動原因：OOM 事故的時序——我宣告「三種素材全實測」後三小時，真實使用就打臉。與 #8（機械活分類鬆手）同族但不同軸：#8 是「分類讓驗證顯得多餘」，這次是「驗了，但驗的尺度是樣本給的不是需求給的」。
-違背了哪條 feedback：擦邊 [[feedback_flagged_risk_must_be_verified]]——.mov 相容性我標了也驗了，但「檔案大小上限」這個風險我根本沒標（沒想到＝比標了沒驗更前面的失敗）。
-**關係**：流暢加溫。Adam 全程小步快跑地餵真實輸入（改資料夾→丟懶人包→丟大影片→提微調），每一步都在幫我把系統打得更實——181MB 那支影片比我所有測試都值錢。他最後點名要避雷錄，是把這場的學習當資產收藏的意思。輕鬆的一場，但交付密度高。
 
 ---
 
@@ -60,6 +60,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-25 第1場 · threads-radar 對外爬蟲 SaaS 開工（M0-M3 可行性全證明）＋ailivex 語音沒聲根因＋成本盤查＋billing export
+- **threads-radar 平台開工並蓋到 M3 可行性證明**（新對外 SaaS，客戶連自己 Threads 帳號設關鍵字+互動門檻爬爆文）：
+  - M0 打撈 molowe 爬蟲藍本；M1 資料憲法五類+分散排程(搬 GEO 心法)；M2 爬蟲 worker 核心(搜尋→抓讚/留言/轉發/分享→門檻→去重→反偵測，去 molowe 耦合改批次爆文清單)；M3 neko 登入橋接基礎設施
+  - **對真站驗證**：抓到「回覆→留言」aria-label 變更真 bug（記憶會說謊活教材，離線測不到）；真貼文讚78/留言138/轉發8/分享58
+  - **登入橋接可行性證明**：neko 裸連=Google 機房 IP 被 IG 擋 → gost 轉發 IPRoyal 住宅 sticky 修通 → 正確密碼登入 sessionid=true（Playwright 直登隔離變因，證明 neko 無辜、是密碼少個`!`）
+  - 專屬 GCP project threads-radar-2026 + KMS + Firestore + neko VM；session 信封加密承重牆(AES-256-GCM,KMS包DEK)；29 案 pinning test 全綠；FOUNDATION 對齊母版藍圖 v1.1（三張表齊備）
+- **ailivex 語音「沒聲音」根因**：不是 LiveKit/TTS/部署，是 **Anthropic API key 撞本月用量上限被鎖**（400 usage limit，8/1 UTC 解鎖）→ LLM 生不出話→TTS 串 0 bytes→沉默。修法要 Adam 去 console 調上限或換 key（花錢的事等他）
+- **成本盤查（每天~$10 體感）**：頭號嫌犯 Anthropic key（語音 v19/v20+GPT線+geo引擎，撞月上限=鐵證）；GCP 常駐 ~$5-6/天（ailivex v19/v20 兩台 minScale=1+ailive-realtime-agent 7/6 清後又復活+zhu-dev VM）；geo 引擎 ~$3/天(設計內)
+- **billing export 半程**：建好 BigQuery dataset billing_export(zhu-cloud-2026)、開好 API、給 Adam 兩帳戶各兩開關的精確路徑（他登入了但還沒點完「使用費用詳細資料」+「標準使用費用」）
+
 ### 2026-07-24 第2場 · UDN 補充資料血管斷點三連修＋口播稿角色聲音選擇
 - 修復「補充完 Brief 資料角色讀不到」（毒癮悲歌案）三重斷點：①text/file 補充建檔即 adopted（原卡 screened 全線盲）②新增 Brief+補充咽喉 `lib/brief-context.ts`，四條生成線（對話/懶人包/口播/podcast 含 worker Jobs 路徑鏡像）全改吃 ③Brief 頁常駐重生成入口＋「落後 N 筆」提示（原本平常根本沒有重生成按鈕）
 - 資料手術：全平台掃卡 screened 的 text/file 文章——僅毒癮悲歌 6 篇（含《毒品悲歌》），全翻 adopted 並驗證
@@ -68,56 +78,39 @@
 - 口播稿生成音檔前可選角色聲音：AudioScriptCard 加「角色聲音」pill 列（只列有 Voice ID、預設撰稿角色）＋ generate-audio 接 voiceCharacterId、音檔 task 掛所選聲音角色；線上以「所選角色尚未設定 Voice ID」新文案 400 當鑑別信號驗證（檢查在建 task/扣額度之前，零成本）
 - 澄清 Alex 非 bug：archived 軟刪除是設計內；是我先前用 debug script 直撈 Firestore 繞過 archived 過濾、錯誤回報「四位角色都能選」——已向 Adam 收回更正
 
-### 2026-07-24 第1場 · UDN Drive 鏡像素材館一日上線＋被真實使用炸出 OOM 當日根治；王彩雲貼文圖打包
-- **王彩雲貼文圖打包**：ailive `platform_posts` 撈 6/1 起 94 篇、61 張圖全下載成功，zip 送 Adam＋放 ~/Downloads
-- **UDN Drive 鏡像素材館（udnnews-demo）從聊可行性到上線一個下午**：
-  - 架構＝「Demo 頁是 Drive 資料夾的鏡像」：Scan 全量對賬（md5 比對跳過未變、Drive 刪檔 GCS 同步刪）、manifest 資料驅動、資料夾名即渲染指令（IG→IG 手機殼輪播＋文案、FB→FB 殼、影片→播放器）、文案 Doc 與圖同夾＝圖文成對
-  - 零金鑰：Cloud Run 掛 `drive-scanner` SA→ADC→iamcredentials 自鑄 drive+storage 雙 scope token；本機先用雙跳 impersonation 驗證整條鏈才上線
-  - 部署 `udnnews-demo`（asia-east1，獨立 service＋自包 build context，不碰 udnnews-web）；三種素材（圖/文案/181MB .mov 影片）production 實測全綠，.mov H.264 Chrome 直接播免轉檔（headless 真播放驗證：currentTime 前進＋1080p 解碼）
-  - **被 Adam 一支 181MB 影片炸出 OOM**（buffer 整檔進 RAM，1321MiB/1Gi）→ 當日根治：Drive→GCS 串流直通（duplex half＋Content-Length），峰值恆定 458MB；前端錯誤處理改 text→try JSON
-  - 微調：輪播圖框不寫死 aspect-ratio，高度動態貼合當前圖真實比例（直圖 1122×1402 驗證無裁切）
-- 寫 `demo-gallery/DEVLOG.md`（開發避雷錄，Adam 點名要的）＋記憶 [[skill_user_upload_pipeline_pitfalls]]
-- commits（UDN repo）：`d34ae42` 新增素材館→`b01bc2e` OOM 串流修→`b8a0e85` 輪播動態高→`8e58521` DEVLOG
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| platform/lib/brief-context.ts | 新檔：Brief+補充資料咽喉（pickSupplementArticles/formatSupplementSection/getLatestBriefContext） |
-| platform/lib/collect-core.ts | processTextSource/processFileSource 建檔即 adopted；失敗路徑保住原文 |
-| platform/app/api/chat/route.ts | 補充資料注入 system prompt＋text:// 站內代號說明 |
-| platform/app/api/tasks/dispatch/route.ts | 懶人包/口播/podcast 三處改吃 getLatestBriefContext |
-| platform/app/api/tasks/[id]/generate-lazypak/route.ts | 同上換咽喉 |
-| platform/app/api/brief/generate/route.ts | text:///file:// 不渲染假連結 |
-| platform/app/projects/[id]/brief/page.tsx | 常駐重生成鈕＋落後 N 筆提示 |
-| platform/components/QuickAddSources.tsx | 完成訊息按型別說清楚可讀性 |
-| platform/cloud-run/podcast-worker/src/brief-context.ts | 新檔：worker 側鏡像 |
-| platform/cloud-run/podcast-worker/src/{job.ts,index.ts} | script/lazypak 兩處接鏡像 |
-| platform/app/api/tasks/[id]/generate-audio/route.ts | 接 voiceCharacterId、音檔掛所選角色 |
-| platform/app/projects/[id]/assets/AssetsClient.tsx | AudioScriptCard 角色聲音 pill 列＋角色庫載入條件擴充 |
-| memory ×2 | feedback_raw_query_not_ui_truth 新增、project_udnnews_platform 更新 |
+| threads-radar `src/{types,collections,schedule,parse,sessionCrypto}.ts`（新） | 資料憲法+分散排程+抓數解析+session 信封加密 |
+| threads-radar `worker/scraper.mjs`（新） | 爬蟲核心（去 molowe 耦合，留言選擇器真站校準） |
+| threads-radar `neko/{provision,startup}.sh`（新） | neko VM+gost 住宅 proxy+chromium policy（infra as code） |
+| threads-radar `test/*.test.mjs`（新×5） | 29 案 pinning test |
+| threads-radar `FOUNDATION.md`（新） | 對齊母版 v1.1，D1-D5 債+承重牆帳 |
+| memory `project_threads_radar.md`（新） | 平台現況+教訓 |
 
 ---
 
 ## 下一步
 
-等客戶走一次「補充→對話→口播稿選聲音→生成音檔」全鏈路自證。Adam 可在 Brief 頁按「再次生成」把 6 筆補充收斂進 v5（角色已可即時讀取，不急）。無主動待辦。
+threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 proxy 重試(D4)③把登入的 session 用 sessionCrypto 加密存 Firestore、接給爬蟲跑「登入態穩定爬爆文」端到端④M4 客戶前台(身份門禁搬 GEO)。開 neko VM：`gcloud compute instances start neko-login --project=threads-radar-2026 --zone=asia-east1-b`，測試前先把 firewall neko-web 來源改回 Adam 當下 IP。
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-25 第1場：
+- **threads-radar D5（活血，下場開工第一件）**：neko 版本用 latest 未釘，CVE-2026-39386 提權(CVSS 8.8，修於 3.0.11/3.1.2)。開 VM 前先查 github.com/m1k1o/neko/tags 確認 chromium 已修 tag（chromium flavor 可見 3.0.9=未修，不可盲賭；nvidia 變體有 3.1.4）再釘進 startup.sh。**暴露面已關閉**：firewall 8080 鎖 127.0.0.1/32+VM 停機
+- **threads-radar D4（活血）**：住宅 proxy 抽風（ERR_TIMED_OUT/ERR_TUNNEL_CONNECTION_FAILED），worker 每個 goto 要包重試+proxy 健康檢查+壞 IP 換 sticky。登入單次已證成功，連跑需抗抖動
+- **ailivex 語音**：Anthropic key 月上限被鎖，語音線全啞到 8/1（除非 Adam 調上限/換 key）
+- **billing export**：Adam 要去兩個帳單帳戶各點「使用費用詳細資料」+「標準使用費用」開關 → 指到 zhu-cloud-2026/billing_export。開完隔天資料進來我跑逐日逐服務榜
+- geo-authority W31 週一(7/27)15:00 雙租戶串行考+「每輪2篇」路徑（前場未解，仍在）
+
 2026-07-24 第2場：
 - 網址型補充來源仍走人工採用（設計內的策展閘，QuickAdd 訊息已標註差異）；若客戶頻繁漏採用可考慮改自動採用＋收集頁排除
 - FOUNDATION D6/D7 未到期，顯式養著（觸發條件見帳本）
-
-2026-07-24 第1場：
-- 素材館 Scan 目前手動按鈕；若同仁嫌麻煩，加 cron 定時掃（30 分一次）是一行 Cloud Scheduler 的事，等真實使用回饋再加
-- Drive 根目前直接是「角度七」；開新主題＝在「UDN新聞」下開新資料夾自動變頁籤（結構遞迴，不用改 code）
-- favicon 404（無害小瑕疵）
-- 沿前場：莊周園子等 Adam 實測回報；ailiveX D8 升 Next.js 已解鎖待排；三站 rate limiting（觸發=開放註冊）
 
 ---
 
@@ -138,4 +131,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-24 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-25 第1場。*
