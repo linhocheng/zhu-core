@@ -8592,3 +8592,42 @@ ailiveX 內容線：Adam 要把莊周的著作全入庫。莊周本人（Adam �
 1. **等 Adam 實測回報**：他今天要跟莊周聊。若遞招不準：`cd ~/.ailive/ailivex-platform`，用該 query 跑 loadKnowledgeBlock 看 top3，gist 不對就抽給莊周本人校（請教腳本模式見 skill 檔），改完單塊重嵌（order 定位法在本場 git 歷史 `_fix3.mts` 模式）
 2. D8 升 Next.js 已解鎖（v20 落地）——獨立工程排下個地基窗口，升完 deps gate 拉回 --audit-level=high
 3. 時機地址概念可延伸：ailive 記憶 rerank 線（記憶的「什麼時刻該想起」）——概念已在 [[skill_retrieval_timing_address]]
+
+---
+
+## 2026-07-24（第1場）— UDN Drive 鏡像素材館一日上線＋被真實使用炸出 OOM 當日根治；王彩雲貼文圖打包
+
+### 背景 / WHY
+UDN 線新分支：同仁不斷丟素材進 Drive → 一鍵 Scan → Demo 頁自動鏡像。Adam 首次提的「自動擴充、自動刪除」需求，用鏡像對賬架構天生滿足。服務網址 https://udnnews-demo-62w6sp6iba-de.a.run.app/（Scan 密碼在 Adam 手上）。
+
+### 完成
+- **王彩雲貼文圖打包**：ailive `platform_posts` 撈 6/1 起 94 篇、61 張圖全下載成功，zip 送 Adam＋放 ~/Downloads
+- **UDN Drive 鏡像素材館（udnnews-demo）從聊可行性到上線一個下午**：
+  - 架構＝「Demo 頁是 Drive 資料夾的鏡像」：Scan 全量對賬（md5 比對跳過未變、Drive 刪檔 GCS 同步刪）、manifest 資料驅動、資料夾名即渲染指令（IG→IG 手機殼輪播＋文案、FB→FB 殼、影片→播放器）、文案 Doc 與圖同夾＝圖文成對
+  - 零金鑰：Cloud Run 掛 `drive-scanner` SA→ADC→iamcredentials 自鑄 drive+storage 雙 scope token；本機先用雙跳 impersonation 驗證整條鏈才上線
+  - 部署 `udnnews-demo`（asia-east1，獨立 service＋自包 build context，不碰 udnnews-web）；三種素材（圖/文案/181MB .mov 影片）production 實測全綠，.mov H.264 Chrome 直接播免轉檔（headless 真播放驗證：currentTime 前進＋1080p 解碼）
+  - **被 Adam 一支 181MB 影片炸出 OOM**（buffer 整檔進 RAM，1321MiB/1Gi）→ 當日根治：Drive→GCS 串流直通（duplex half＋Content-Length），峰值恆定 458MB；前端錯誤處理改 text→try JSON
+  - 微調：輪播圖框不寫死 aspect-ratio，高度動態貼合當前圖真實比例（直圖 1122×1402 驗證無裁切）
+- 寫 `demo-gallery/DEVLOG.md`（開發避雷錄，Adam 點名要的）＋記憶 [[skill_user_upload_pipeline_pitfalls]]
+- commits（UDN repo）：`d34ae42` 新增素材館→`b01bc2e` OOM 串流修→`b8a0e85` 輪播動態高→`8e58521` DEVLOG
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| UDN demo-gallery/server.js | 鏡像對賬 scan＋零金鑰 token 鏈＋串流上傳（新建） |
+| UDN demo-gallery/gallery.html | 手機殼素材館頁＋輪播動態高＋強韌錯誤處理（新建） |
+| UDN demo-gallery/{Dockerfile,cloudbuild.yaml} | 自包 build（新建） |
+| UDN demo-gallery/DEVLOG.md | 開發避雷錄（Adam 點名交付） |
+| GCP udnnews | drive-scanner SA＋self tokenCreator＋bucket udnnews-demo-assets（公開讀）＋udnnews-demo service |
+| memory skill_user_upload_pipeline_pitfalls.md | 新記憶＋MEMORY.md 索引 |
+
+### ⚠️ 尚未解決
+- 素材館 Scan 目前手動按鈕；若同仁嫌麻煩，加 cron 定時掃（30 分一次）是一行 Cloud Scheduler 的事，等真實使用回饋再加
+- Drive 根目前直接是「角度七」；開新主題＝在「UDN新聞」下開新資料夾自動變頁籤（結構遞迴，不用改 code）
+- favicon 404（無害小瑕疵）
+- 沿前場：莊周園子等 Adam 實測回報；ailiveX D8 升 Next.js 已解鎖待排；三站 rate limiting（觸發=開放註冊）
+
+### 待執行 / 下一步
+1. 等 UDN 素材館真實使用回饋（同仁上手後：cron 需求？新素材類型資料夾？）——改動入口 `~/Documents/UDN NEWS/demo-gallery/`，先讀 `DEVLOG.md`
+2. 莊周知識庫：Adam 跟他聊完若遞招不準，校準路徑在 SESSION_2026-07-23_1 接棒欄
+3. ailiveX D8（升 Next.js）排下個地基窗口

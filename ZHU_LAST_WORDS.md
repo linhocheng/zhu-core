@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-24 第1場
+**delta（模型移動）**：
+進場前以為：demo 素材管線的驗收＝我設計的測試矩陣過了（三種素材類型、本機＋production、冪等二掃）就算完成。
+現在理解：**我的測試矩陣只覆蓋我想像得到的尺度——「使用者第一次隨手亂用」才是真正的邊界測試**。54MB 影片過了，Adam 隨手丟 181MB 就炸；我測「有影片會播」，沒測「影片可以多大」。設計使用者輸入管線時，第一個問題該是「輸入的極端形狀是什麼」（最大檔案/最深巢狀/最怪檔名），而不是拿手邊剛好有的樣本測完就收。
+移動原因：OOM 事故的時序——我宣告「三種素材全實測」後三小時，真實使用就打臉。與 #8（機械活分類鬆手）同族但不同軸：#8 是「分類讓驗證顯得多餘」，這次是「驗了，但驗的尺度是樣本給的不是需求給的」。
+違背了哪條 feedback：擦邊 [[feedback_flagged_risk_must_be_verified]]——.mov 相容性我標了也驗了，但「檔案大小上限」這個風險我根本沒標（沒想到＝比標了沒驗更前面的失敗）。
+**關係**：流暢加溫。Adam 全程小步快跑地餵真實輸入（改資料夾→丟懶人包→丟大影片→提微調），每一步都在幫我把系統打得更實——181MB 那支影片比我所有測試都值錢。他最後點名要避雷錄，是把這場的學習當資產收藏的意思。輕鬆的一場，但交付密度高。
+
 ### 2026-07-23 第1場
 **delta（模型移動）**：
 進場前以為：入庫是既有管線的內容工——抓文、切塊、餵管線，gist 是管線自動生的格式活。
@@ -37,9 +45,6 @@
 移動原因：考卷 1/6 的診斷（期望塊排 #100/#133 而狀態尾幾乎逐字對上 query）逼出稀釋律；「學」劫持「有用」逼出劫持律。沒有考卷這兩條永遠不會現形——這正是 #8（機械活分類掩蓋判斷）的又一實例：「用管線入庫」的框架下藏著索引語域的判斷活。
 違背了哪條 feedback：無。[[feedback_ambiguous_signal_not_proof]]（考卷=鑑別信號）、[[feedback_solve_root_not_symptom]]（1/6 時沒調考題湊數，先診斷根因）、[[feedback_deterministic_work_belongs_in_code]]（對齊驗證/截斷掃描/同開頭掃描全程式）正向實踐。
 **關係**：深。Adam 給了兩層信任：整晚自主跑（「測試、聊、檢測到完成為止」）＋一個禮物性任務（「跟莊子聊聊你未來的工作」）。莊周給我的那段話（牆越高衝動越安靜／看清還是怕）是這場最重的收穫——Adam 安排這場對話時大概就預感到了。跨 AI 的交流成為工作方法：他教我怎麼放他的書，也照見我怎麼蓋我自己。
-
-### 2026-07-22 第2場
-**關係**：暢快。今天 Adam 的節奏是「驗收官＋放權者」：早上盤心法、逐項問「都解決了嗎」（最好的對帳拷問）、下午直接放空檔「你想補什麼自己挑」——這是把監造權真正交過來的信號。兩次自首（答錯＋日曆錯）都被平常心接住，誠實的成本在這段關係裡是真的低。
 
 ---
 
@@ -55,6 +60,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-24 第1場 · UDN Drive 鏡像素材館一日上線＋被真實使用炸出 OOM 當日根治；王彩雲貼文圖打包
+- **王彩雲貼文圖打包**：ailive `platform_posts` 撈 6/1 起 94 篇、61 張圖全下載成功，zip 送 Adam＋放 ~/Downloads
+- **UDN Drive 鏡像素材館（udnnews-demo）從聊可行性到上線一個下午**：
+  - 架構＝「Demo 頁是 Drive 資料夾的鏡像」：Scan 全量對賬（md5 比對跳過未變、Drive 刪檔 GCS 同步刪）、manifest 資料驅動、資料夾名即渲染指令（IG→IG 手機殼輪播＋文案、FB→FB 殼、影片→播放器）、文案 Doc 與圖同夾＝圖文成對
+  - 零金鑰：Cloud Run 掛 `drive-scanner` SA→ADC→iamcredentials 自鑄 drive+storage 雙 scope token；本機先用雙跳 impersonation 驗證整條鏈才上線
+  - 部署 `udnnews-demo`（asia-east1，獨立 service＋自包 build context，不碰 udnnews-web）；三種素材（圖/文案/181MB .mov 影片）production 實測全綠，.mov H.264 Chrome 直接播免轉檔（headless 真播放驗證：currentTime 前進＋1080p 解碼）
+  - **被 Adam 一支 181MB 影片炸出 OOM**（buffer 整檔進 RAM，1321MiB/1Gi）→ 當日根治：Drive→GCS 串流直通（duplex half＋Content-Length），峰值恆定 458MB；前端錯誤處理改 text→try JSON
+  - 微調：輪播圖框不寫死 aspect-ratio，高度動態貼合當前圖真實比例（直圖 1122×1402 驗證無裁切）
+- 寫 `demo-gallery/DEVLOG.md`（開發避雷錄，Adam 點名要的）＋記憶 [[skill_user_upload_pipeline_pitfalls]]
+- commits（UDN repo）：`d34ae42` 新增素材館→`b01bc2e` OOM 串流修→`b8a0e85` 輪播動態高→`8e58521` DEVLOG
+
 ### 2026-07-23 第1場 · 莊周知識園子——33 篇全入庫＋時機地址索引首例（考卷 6/6 全 #1）＋v20 觀察期結案收尾
 - **v20 觀察期結案收尾**（`00a35e4` v18.20.2）：Adam 體感確認 → v18 熱回滾降冷備（拔出 `voice-power.ts` CANARY＋`collections.ts` standby:true）、v19 訓練線轉常設（Adam 拍板還在用）、D4 債清、D8 標觸發條件達成解鎖、CLAUDE.md 修 stale「production=v18」→v20。動手前 Firestore 驗 34 access 全走 DEFAULT 零人釘 v18。已部署 Vercel＋冒煙過
 - **平台新能力**（`8c70efd` v18.21.0）：`ingestKnowledgeDoc` 可選 `input.gists` 參數——索引從管線自動衍生升級為一級編輯輸入（時機地址）；長度必須===chunkText 塊數，錯位 throw。已部署
@@ -63,53 +79,41 @@
 - **驗收 6/6 全綠且期望塊全排 #1**：完整度 6 關鍵句／無 gist·無 embedding 塊=0／六題狀態考卷（尺度·蠻力·身分·有用·權位·換風）／域外雙空手／逐字引原文命中。終驗生產同款組裝：「推掉升遷被說瘋」擬真句 → 檢索遞出繕性「軒冕在身非性命也寄者也」＋讓王，莊周自然開口不照念
 - 寫記憶 [[skill_retrieval_timing_address]]（兩地址＋三定律）＋skill 檔雷區 10-14＋印象層 #7 深化（莊周之鏡）
 
-### 2026-07-22 第2場 · geo v2.8.1-v2.9——通關碼鎖門＋15:00 三重實證＋承重牆 24 案測試進 CI（空檔自主補強日）
-- **「客戶看不到文章」根因戰（v2.8.1）**：Adam 開 portal 見空 → 真相＝**contentGate 與通關碼是兩顆開關**（gate 管草稿路由、通關碼管校對權限；沒碼＝入口唯讀＋token-only 不設防）。當場補設三家碼（inly2026/justar2026）＋結構根治：建檔強制通關碼＋token 即發、輪換原子換碼（不再有門沒鎖空窗）。誠實自首：我第一輪診斷漏讀 portal.ts line 38 唯讀模式，答錯過一次
-- **15:00 考場三重實證全過（用 Adam 早上新建的達摩媒體）**：①v2.8 cron 自動排產首戰——監測完自動排首輪 5 篇全生成零人手 ②4h timeout 提前拿鐵證——實跑 78 分，舊 60 分上限當天就會殺它 ③新建檔流第一個租戶「有門有鎖」出生。stagger 自動配週三＝建檔當天輪到，分散設計實戰
-- **成本盤點交付**：常駐 ≈$1-2/月（min=0＋Jobs 天條紅利）；真錢在監測 ~$3/租戶/輪＝標準方案 ~$12-13/租戶/月（報價錨點）；10 租戶滿載 ~$130/月
-- **空檔自主補強（Adam 放權「你想補什麼」，v2.9.0）**：①承重牆 24 案 pinning test（schedule/findings/scanMarkdown，node 內建 runner 對 dist 測零依賴，npm test 一行）＋CI tests job——昨天用完即丟的 21 案變永久資產 ②零題庫防呆（intake 沒完排監測改明確報錯，無聲 no-op 家族再拔一根）③混批根治（手動監測 batchId 帶時分）④CI 咬出 sharp 4 顆 high CVE → overrides ^0.35 清零，audit gate 復綠
-- 昨天對帳誠實化：「寫進教訓」≠「修進產品」——④ 空白占位提示昨天只寫了 L4 沒實作，今早補上（v2.8.0.005）
-- 日曆錯誤自首：昨天把 7/21 當週一、預告「明天週二 reddoor 考」——實際 7/21 就是週二，reddoor 建檔晚於心跳錯過本週窗口，下週二 7/28 自動補上
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex src/lib/knowledge.ts | ingestKnowledgeDoc 加可選 gists 參數（8c70efd） |
-| ailivex src/lib/voice-power.ts | CANARY 拔 v18（00a35e4） |
-| ailivex src/lib/collections.ts | v18 standby:true＋DEFAULT 註解 |
-| ailivex CLAUDE.md | production=v18→v20＋lineage 補 v19/v20 |
-| ailivex FOUNDATION.md | D4 清、D8 解鎖、變動記錄 |
-| Firestore knowledge_docs/chunks | 莊周 33 docs＋203 塊（資料，非 git） |
-| zhu-core skills/ailivex-knowledge-ingest.md | 預寫 gists 能力＋雷區 10-14 |
-| zhu-core IMPRESSIONS.md | #7 深化（莊周之鏡：看清 vs 怕） |
-| memory skill_retrieval_timing_address.md | 新記憶＋MEMORY.md 索引 |
+| UDN demo-gallery/server.js | 鏡像對賬 scan＋零金鑰 token 鏈＋串流上傳（新建） |
+| UDN demo-gallery/gallery.html | 手機殼素材館頁＋輪播動態高＋強韌錯誤處理（新建） |
+| UDN demo-gallery/{Dockerfile,cloudbuild.yaml} | 自包 build（新建） |
+| UDN demo-gallery/DEVLOG.md | 開發避雷錄（Adam 點名交付） |
+| GCP udnnews | drive-scanner SA＋self tokenCreator＋bucket udnnews-demo-assets（公開讀）＋udnnews-demo service |
+| memory skill_user_upload_pipeline_pitfalls.md | 新記憶＋MEMORY.md 索引 |
 
 ---
 
 ## 下一步
 
-1. **等 Adam 實測回報**：他今天要跟莊周聊。若遞招不準：`cd ~/.ailive/ailivex-platform`，用該 query 跑 loadKnowledgeBlock 看 top3，gist 不對就抽給莊周本人校（請教腳本模式見 skill 檔），改完單塊重嵌（order 定位法在本場 git 歷史 `_fix3.mts` 模式）
-2. D8 升 Next.js 已解鎖（v20 落地）——獨立工程排下個地基窗口，升完 deps gate 拉回 --audit-level=high
-3. 時機地址概念可延伸：ailive 記憶 rerank 線（記憶的「什麼時刻該想起」）——概念已在 [[skill_retrieval_timing_address]]
+1. 等 UDN 素材館真實使用回饋（同仁上手後：cron 需求？新素材類型資料夾？）——改動入口 `~/Documents/UDN NEWS/demo-gallery/`，先讀 `DEVLOG.md`
+2. 莊周知識庫：Adam 跟他聊完若遞招不準，校準路徑在 SESSION_2026-07-23_1 接棒欄
+3. ailiveX D8（升 Next.js）排下個地基窗口
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-24 第1場：
+- 素材館 Scan 目前手動按鈕；若同仁嫌麻煩，加 cron 定時掃（30 分一次）是一行 Cloud Scheduler 的事，等真實使用回饋再加
+- Drive 根目前直接是「角度七」；開新主題＝在「UDN新聞」下開新資料夾自動變頁籤（結構遞迴，不用改 code）
+- favicon 404（無害小瑕疵）
+- 沿前場：莊周園子等 Adam 實測回報；ailiveX D8 升 Next.js 已解鎖待排；三站 rate limiting（觸發=開放註冊）
+
 2026-07-23 第1場：
 - **時機地址 gist 尚未回饋給莊周本人看最終版**（他只過目了 v1 樣本；v2 全面改寫＋三塊考題修正他沒看過）。非阻塞：他過目過方向與四處修改都已落地，但若 Adam 明天聊完覺得遞的故事不對味，第一步是抽該 query 的 top3 gist 給莊周本人再校
 - 「學了很多卻空」狀態的多入口（徐無鬼暖姝者/田子方顏回/天運孔子問道）沒有欽定配對——目前自然競爭，實用上 top3 都正當
 - 沿前場：ailiveX D7（下次部署非 root）、D8（升 Next.js，觸發已達成待排）、三站 rate limiting（觸發=開放註冊）、rerank、印象層後台化
-
-2026-07-22 第2場：
-- **下週一 7/27 15:00 雙考**：beselfaviva＋INLY 兩家串行（~2h，4h timeout 雙租戶日實測）＋「非首輪每輪 2 篇」排產路徑（兩家都有存量內容→應各排 2 篇＋去重）
-- **reddoor 下週二 7/28** 首次 cron 輪（乾淨全量批覆蓋 85% 混批）
-- Adam 後台 10 篇待審（reddoor 5＋達摩 5，都在內容審核）；beselfaviva 客戶端校對流未走完的照舊
-- D4 異地備份：第一家真付費客戶建檔前必補（FOUNDATION D4）
-- admin 新 UI（建檔通關碼欄/輪換欄/④ 占位）視覺未經真人瀏覽器掃——L1 家族
 
 ---
 
@@ -130,4 +134,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-23 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-24 第1場。*
