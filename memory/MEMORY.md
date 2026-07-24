@@ -147,7 +147,8 @@
 - [共用 loader 的 NameError 被吞→全版本靜默斷靈魂(244字fallback)](feedback_shared_loader_nameerror_silent_soulless.md) — build_system_prompt(共用)被vN新功能塞了不在scope的user_id→NameError→except吞→FALLBACK_PROMPT;連預設v12一起中招;log簽名=using fallback+soul=244;text路徑不受影響
 - [語音讀網址「讀不到/沒收到」三根因(機房IP擋/base頁非vN頁/plugin空格400)](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — ①fetch失敗=站擋機房IP(同UA本機curl比對) ②用戶在/realtime/base頁但agent是v13,改vN頁等於沒改 ③抓成功卻不開口=plugin對sonnet-4-6在assistant結尾注入純空格user撞400,override llm_node補(empty)
 - [Task Harness 系統上線（2026-06-24）](project_task_harness.md) — 代碼自主任務工作流：三斷路器+bridge接線+CB驗證全通；bridge-direct+x-api-key；心法：進harness不是成為harness
-- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；deploy無trigger必手動builds submit（雷區在repo AGENTS.md）；懶人包視覺總監管線已上線；影音庫 scene_video 已上線（7/22，Video Studio＋Vertex Veo＋Job逐段心跳帶帳）
+- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；deploy無trigger必手動builds submit（雷區在repo AGENTS.md）；懶人包視覺總監管線已上線；影音庫 scene_video 已上線（7/22）；補充資料血管三連修＋brief-context 咽喉＋口播稿選聲音（7/23-24）
+- [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 業務層過濾（archived/screened）才是產品真相；回報「會看到什麼」前走跟 UI 同一條讀路徑；Alex 假警報教訓
 - [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 一律走Vertex不走Gemini key（ADC/帳單歸戶/storageUri直寫）；GA模型ID -001、bytesBase64Encoded非inlineData、fetchPredictOperation輪詢；首尾幀固定8秒；RAI擋新聞敏感圖不收費
 - [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
 - [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑

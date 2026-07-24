@@ -220,6 +220,15 @@ metadata:
 - 帳本：D5 清償（worker USER node 已 live）、新記 D6（無月預算閘）/D7（RAI 白話提示）低利養著
 - 未驗：Video Studio UI 真人瀏覽器手感（Adam 要開後台點一輪）；秒數選項（單圖可 4/6/8）Adam 說先不用
 
+## 2026-07-23/24 補充資料血管三連修＋口播稿聲音選擇（commit 1da526e/1f05179，rev 00092）
+
+- **根因鏈（毒癮悲歌案）**：text 補充建檔卡 screened（生成線只讀 adopted）＋Brief 停舊版且 Brief 頁平常無重生成鈕＋四條生成線只讀 brief.content → 「補充完成」假中台
+- **修法（收斂點）**：`lib/brief-context.ts` 咽喉＝Brief+「Brief 後新採用文章」合成 content，chat/懶人包/口播/podcast 全改吃；worker 側鏡像 `cloud-run/podcast-worker/src/brief-context.ts`（Jobs 路徑 script/lazypak 用，**改邏輯兩邊同步**）；text/file 補充建檔即 adopted（第一方資料）；Brief 頁常駐重生成鈕＋落後 N 筆提示；text:// 不渲染假連結＋chat prompt 站內代號說明
+- **口播稿選聲音**：AudioScriptCard「角色聲音」pill 列（走 /api/characters 已過濾 archived；預設撰稿角色）→ generate-audio 收 voiceCharacterId，音檔 task 掛所選角色
+- 驗證手法可複用：補充資料類修復用「只存在補充裡的事實」當鑑別信號問角色；新 API 參數用「僅新代碼有的錯誤文案」零成本探針（檢查在建 task/扣額度之前）
+- 雷：worker cloudbuild 要從 platform/ 根 submit（`--config=cloud-run/podcast-worker/cloudbuild.yaml`），在子目錄跑會 `context not found`
+- Alex 角色已 archived（軟刪除設計內），UI 全走過濾——debug 直撈 DB 勿當 UI 真相回報（見 [[raw-query-not-ui-truth]]）
+
 ## 環境資訊
 
 - Tavily key: tvly-dev-2iEczc-*（dev tier，1000次/月，上線前換）
