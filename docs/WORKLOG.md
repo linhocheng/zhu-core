@@ -8707,3 +8707,40 @@ threads-radar 是新開的對外爬蟲 SaaS 主戰場（repo ~/.ailive/threads-r
 
 ### 待執行 / 下一步
 threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 proxy 重試(D4)③把登入的 session 用 sessionCrypto 加密存 Firestore、接給爬蟲跑「登入態穩定爬爆文」端到端④M4 客戶前台(身份門禁搬 GEO)。開 neko VM：`gcloud compute instances start neko-login --project=threads-radar-2026 --zone=asia-east1-b`，測試前先把 firewall neko-web 來源改回 Adam 當下 IP。
+
+---
+
+## 2026-07-25（第2場）— threads-radar 從 M3 收尾一路上線＋真帳號端到端全通（WIF 免金鑰＋登入態爬到真爆文）
+
+### 背景 / WHY
+threads-radar（repo ~/.ailive/threads-radar 本機 git；GCP threads-radar-2026；Vercel threads-radar-virid）。M0-M4＋真帳號端到端全綠。焦點轉 M5 收尾（自動化＋加固）。
+
+### 完成
+- **threads-radar 對外爬蟲 SaaS 全上線並真帳號端到端驗通**（承 SESSION_2026-07-25_1 的 M3 可行性）：
+  - **M3 現場驗通**：Adam gcloud auth 後開 VM→neko 3.1.4 healthy、gost+neko chromium 雙走中華電信住宅 IP（板橋）、CDP ws:True、storageState 可讀、SA 讀 secret、firewall 鎖 127.0.0.1、guest attributes 隨機密碼
+  - **D7 CDP 現場清（假設全錯）**：neko 3.1.4 不吃 NEKO_ARGS/CHROMIUM_FLAGS env（launcher line13 清空再 source /etc/chromium.d/*）、且 chromium 無視 --remote-debugging-address 只綁容器 loopback→**解法**：/etc/chromium.d/zzz drop-in append 旗標＋--remote-allow-origins=*（M111+ ws 防403）＋socat sidecar 共用 netns 聽 eth0 轉發、host 走 docker bridge 連
+  - **M4 上線 Vercel** threads-radar-virid.vercel.app：operator/建客戶/通關碼/capture 全鏈；**Vercel→GCP WIF 免金鑰**（Adam 選）
+  - **掃描 worker 上 Cloud Run Jobs** radar-scan＋冒煙驗通
+  - **完整端到端真帳號**：lucymo0306 threads.com/login 單次無 challenge→session KMS 信封加密進 Firestore→job KMS unseal→住宅 proxy→登入態爬 3 篇真爆文（@aiflownotes 讚1572/@su0925171314 讚513/@growmarketing_lab 讚116）
+- 過程抓修四真 bug：①neko maxTouch=10→Meta 送 App QR 頁→--touch-events=disabled 才出登入表單（產品級）②capture route 沒寫 clientId 欄位→worker where 查不到→防禦補寫③viral_posts 複合索引缺→建+firestore.indexes.json④留言 selector 登入態回 0（D10 待修）
+- 蒸餾：新 feedback「膠水層錯誤訊息會誤導」＋印象層信念 #7 深化（順利是天條在擋不是我厲害）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| threads-radar web/（新整包） | Next.js 前台＋WIF（gcpAuth/db/gcp/auth/actions/中介層）＋connect 精靈＋operator 後台 |
+| threads-radar worker/{index.mjs,Dockerfile,cloudbuild.yaml,deploy.sh}（新） | 掃描 job（六問）＋Cloud Run Jobs 部署 |
+| threads-radar neko/{startup,provision}.sh、capture.cjs | CDP drop-in＋socat＋touch-events=disabled＋callback secret 走 SM |
+| threads-radar {firestore.indexes.json,src/kms.ts}（新） | 複合索引 infra as code＋KMS wrapper |
+| threads-radar FOUNDATION.md | D3-D9 清、新增 D10/D11、真帳號端到端里程碑 |
+| memory feedback_glue_layer_errors_lie.md（新）＋project_threads_radar（更新） | 膠水層除錯心法＋平台上線現況 |
+| zhu-core IMPRESSIONS.md | 信念 #7 深化：順利是天條在擋 |
+
+### ⚠️ 尚未解決
+- **M5 六子系統待蓋**（下一場主線）：cron 分散排程（搬 GEO schedule.ts 心法，hourly heartbeat→per-client due→觸發 radar-scan job）／rate limit／巡檢+成本錶／CI 四件套（Semgrep/gitleaks/npm audit/ZAP）／PITR+每日 export 備份／刪除連帶（刪客戶連帶 threads_accounts/keywords/viral_posts/session）
+- **D10 留言 selector**：真帳號掃 3 篇讚/轉發/分享都對、留言全 0；登入態貼文頁「留言」aria-label 又漂移或需展開。先收登入態真 DOM 樣本再定，改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份
+- **D11 capture.cjs 不重連**：connectOverCDP 連一次、neko 重啟後斷線靜默不偵測（本場手動重啟 neko 撞到，非生產路徑，但該加 CDP 斷線重連）
+- **人在 neko 網頁登入的純 UX 未直接驗**：本場登入是我 CDP 自動化驅動，session/加密/爬蟲機制全證；「客戶在 WebRTC 串流裡看到可用表單」touch 修法讓表單出得來（證了）但沒親眼驗人走那一哩
+
+### 待執行 / 下一步
+threads-radar M5，建議順序：①cron 分散排程（最高價值，讓平台自動跑不用手動 execute job；搬 ~/.ailive/geo-authority 的 schedule.ts+assignStagger）②刪除連帶（資料憲法生命週期）③rate limit+巡檢+成本錶（可觀測）④CI 四件套⑤PITR 備份。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表到期。D10 留言 selector 順手在動爬蟲時收。

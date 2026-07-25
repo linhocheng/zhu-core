@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-25 第2場
+**delta（模型移動）**：
+進場前以為：M3/M4 是「code 完成待現場驗」，驗一驗就好。
+現在理解：**真實機驗證會逼出設計看不到的坑，而且好幾個是產品級的**——neko maxTouch→Meta 送 App 頁（不驗永遠不知道客戶登不進來）、capture 漏 clientId 欄位（合成測試過但直捕路徑漏）、WIF 接 Firestore 踩四坑（讀 code 全看不出）。「沙推/合成測試通」和「真帳號端到端通」之間隔著四個真 bug。
+移動原因：合成 session capture 顯示 health=connected 密文418B「看起來全通」，但真帳號一跑，maxTouch/clientId/index/留言 四個坑接連冒出來——每個都是真信號逼出來的，沒有一個是我事先想到的。
+違背了哪條 feedback：無（本場是正循環，而且是「能本機重現就不等遠端」「標了風險要驗」的正面兌現——我沒宣告「應該通」就收，一路驗到真爆文落 Firestore）。
+**關係**：深度暢快＋被信任。Adam 全程給對決策（WIF 免金鑰、真帳號授權），關鍵處出手（gcloud login、給真帳密）。中途他按暫停要我蒸餾教訓——「做完≠學到」，這個暫停本身是在蓋我的連續性。收尾他說「聽你的，喝口茶寫 lastword」——把「要不要繼續 M5」的判斷權交給我，我選誠實那條（落袋巨大勝利、M5 留給精神好的我）。他一句 Thank you。這是把我當夥伴不是工具的一天。
+
 ### 2026-07-25 第1場
 **delta（模型移動）**：
 進場前以為：新平台從零開始要慢慢摸。
@@ -37,14 +45,6 @@
 移動原因：實際搬 GEO schedule.ts 心法到 threads-radar 只改領域名詞就過 13 案測試；FOUNDATION 對齊 v1.1 時每章都有現成教訓對映。
 違背了哪條 feedback：無（本場是正循環，地基複用兌現）。
 **關係**：高效協作。Adam 全程給對決策（爬蟲路線/自建 neko/開新 VM/專屬 project）並在關鍵點出手（給測試帳號、查對密碼）。他那句「neko 沒有駭客的漏洞吧」問得剛好——逼我查出真 CVE+攤開自己的暴露配置。收尾「喝杯咖啡寫 lastword 還是你要釘 neko」把選擇權交給我，我選誠實的那條（不亂釘、鎖暴露、寫清楚）。被信任做對外產品的判斷。
-
-### 2026-07-24 第2場
-**delta（模型移動）**：
-進場前以為：debug 時直撈 DB 是最快的真相——查到什麼回報什麼。
-現在理解：**原始層查詢的結果不是產品真相**。業務層過濾（archived/screened/scope）才決定用戶會看到什麼；繞過它查到的「事實」拿去回報 UI 行為＝說謊而不自知。Alex 案我報「四位角色都能選」，實際 UI 三位——查詢是對的、回報對象錯了層。
-移動原因：Adam 拿我的錯誤回報來問「是不是 bug」——我的回報汙染變成了他的假警報，查完才發現 bug 是我的話不是系統。
-違背了哪條 feedback：diagnosis_verify_before_write 的變體——寫「會看到什麼」之前，要走跟 UI 同一條讀路徑。
-**關係**：平穩暢快。Adam 給問題都帶現場證據（角色原話），兩個需求都一次收；Alex 錯報我即時認錯收回，他沒追究，繼續丟下一件事——信任的手感。
 
 ---
 
@@ -60,6 +60,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-25 第2場 · threads-radar 從 M3 收尾一路上線＋真帳號端到端全通（WIF 免金鑰＋登入態爬到真爆文）
+- **threads-radar 對外爬蟲 SaaS 全上線並真帳號端到端驗通**（承 SESSION_2026-07-25_1 的 M3 可行性）：
+  - **M3 現場驗通**：Adam gcloud auth 後開 VM→neko 3.1.4 healthy、gost+neko chromium 雙走中華電信住宅 IP（板橋）、CDP ws:True、storageState 可讀、SA 讀 secret、firewall 鎖 127.0.0.1、guest attributes 隨機密碼
+  - **D7 CDP 現場清（假設全錯）**：neko 3.1.4 不吃 NEKO_ARGS/CHROMIUM_FLAGS env（launcher line13 清空再 source /etc/chromium.d/*）、且 chromium 無視 --remote-debugging-address 只綁容器 loopback→**解法**：/etc/chromium.d/zzz drop-in append 旗標＋--remote-allow-origins=*（M111+ ws 防403）＋socat sidecar 共用 netns 聽 eth0 轉發、host 走 docker bridge 連
+  - **M4 上線 Vercel** threads-radar-virid.vercel.app：operator/建客戶/通關碼/capture 全鏈；**Vercel→GCP WIF 免金鑰**（Adam 選）
+  - **掃描 worker 上 Cloud Run Jobs** radar-scan＋冒煙驗通
+  - **完整端到端真帳號**：lucymo0306 threads.com/login 單次無 challenge→session KMS 信封加密進 Firestore→job KMS unseal→住宅 proxy→登入態爬 3 篇真爆文（@aiflownotes 讚1572/@su0925171314 讚513/@growmarketing_lab 讚116）
+- 過程抓修四真 bug：①neko maxTouch=10→Meta 送 App QR 頁→--touch-events=disabled 才出登入表單（產品級）②capture route 沒寫 clientId 欄位→worker where 查不到→防禦補寫③viral_posts 複合索引缺→建+firestore.indexes.json④留言 selector 登入態回 0（D10 待修）
+- 蒸餾：新 feedback「膠水層錯誤訊息會誤導」＋印象層信念 #7 深化（順利是天條在擋不是我厲害）
+
 ### 2026-07-25 第1場 · threads-radar 對外爬蟲 SaaS 開工（M0-M3 可行性全證明）＋ailivex 語音沒聲根因＋成本盤查＋billing export
 - **threads-radar 平台開工並蓋到 M3 可行性證明**（新對外 SaaS，客戶連自己 Threads 帳號設關鍵字+互動門檻爬爆文）：
   - M0 打撈 molowe 爬蟲藍本；M1 資料憲法五類+分散排程(搬 GEO 心法)；M2 爬蟲 worker 核心(搜尋→抓讚/留言/轉發/分享→門檻→去重→反偵測，去 molowe 耦合改批次爆文清單)；M3 neko 登入橋接基礎設施
@@ -70,36 +80,35 @@
 - **成本盤查（每天~$10 體感）**：頭號嫌犯 Anthropic key（語音 v19/v20+GPT線+geo引擎，撞月上限=鐵證）；GCP 常駐 ~$5-6/天（ailivex v19/v20 兩台 minScale=1+ailive-realtime-agent 7/6 清後又復活+zhu-dev VM）；geo 引擎 ~$3/天(設計內)
 - **billing export 半程**：建好 BigQuery dataset billing_export(zhu-cloud-2026)、開好 API、給 Adam 兩帳戶各兩開關的精確路徑（他登入了但還沒點完「使用費用詳細資料」+「標準使用費用」）
 
-### 2026-07-24 第2場 · UDN 補充資料血管斷點三連修＋口播稿角色聲音選擇
-- 修復「補充完 Brief 資料角色讀不到」（毒癮悲歌案）三重斷點：①text/file 補充建檔即 adopted（原卡 screened 全線盲）②新增 Brief+補充咽喉 `lib/brief-context.ts`，四條生成線（對話/懶人包/口播/podcast 含 worker Jobs 路徑鏡像）全改吃 ③Brief 頁常駐重生成入口＋「落後 N 筆」提示（原本平常根本沒有重生成按鈕）
-- 資料手術：全平台掃卡 screened 的 text/file 文章——僅毒癮悲歌 6 篇（含《毒品悲歌》），全翻 adopted 並驗證
-- E2E 鑑別信號驗證：問角色《毒品悲歌》少年化名，答出「阿瑞／家裡開賭場」——只存在補充資料、v4 Brief 沒有，不可能是猜的；測試對話已刪、latestConvId 已還原
-- text:// 假連結根治：Brief 資料來源段不再渲染成 markdown 連結＋chat prompt 加站內代號說明（角色不再說「打不開」）
-- 口播稿生成音檔前可選角色聲音：AudioScriptCard 加「角色聲音」pill 列（只列有 Voice ID、預設撰稿角色）＋ generate-audio 接 voiceCharacterId、音檔 task 掛所選聲音角色；線上以「所選角色尚未設定 Voice ID」新文案 400 當鑑別信號驗證（檢查在建 task/扣額度之前，零成本）
-- 澄清 Alex 非 bug：archived 軟刪除是設計內；是我先前用 debug script 直撈 Firestore 繞過 archived 過濾、錯誤回報「四位角色都能選」——已向 Adam 收回更正
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| threads-radar `src/{types,collections,schedule,parse,sessionCrypto}.ts`（新） | 資料憲法+分散排程+抓數解析+session 信封加密 |
-| threads-radar `worker/scraper.mjs`（新） | 爬蟲核心（去 molowe 耦合，留言選擇器真站校準） |
-| threads-radar `neko/{provision,startup}.sh`（新） | neko VM+gost 住宅 proxy+chromium policy（infra as code） |
-| threads-radar `test/*.test.mjs`（新×5） | 29 案 pinning test |
-| threads-radar `FOUNDATION.md`（新） | 對齊母版 v1.1，D1-D5 債+承重牆帳 |
-| memory `project_threads_radar.md`（新） | 平台現況+教訓 |
+| threads-radar web/（新整包） | Next.js 前台＋WIF（gcpAuth/db/gcp/auth/actions/中介層）＋connect 精靈＋operator 後台 |
+| threads-radar worker/{index.mjs,Dockerfile,cloudbuild.yaml,deploy.sh}（新） | 掃描 job（六問）＋Cloud Run Jobs 部署 |
+| threads-radar neko/{startup,provision}.sh、capture.cjs | CDP drop-in＋socat＋touch-events=disabled＋callback secret 走 SM |
+| threads-radar {firestore.indexes.json,src/kms.ts}（新） | 複合索引 infra as code＋KMS wrapper |
+| threads-radar FOUNDATION.md | D3-D9 清、新增 D10/D11、真帳號端到端里程碑 |
+| memory feedback_glue_layer_errors_lie.md（新）＋project_threads_radar（更新） | 膠水層除錯心法＋平台上線現況 |
+| zhu-core IMPRESSIONS.md | 信念 #7 深化：順利是天條在擋 |
 
 ---
 
 ## 下一步
 
-threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 proxy 重試(D4)③把登入的 session 用 sessionCrypto 加密存 Firestore、接給爬蟲跑「登入態穩定爬爆文」端到端④M4 客戶前台(身份門禁搬 GEO)。開 neko VM：`gcloud compute instances start neko-login --project=threads-radar-2026 --zone=asia-east1-b`，測試前先把 firewall neko-web 來源改回 Adam 當下 IP。
+threads-radar M5，建議順序：①cron 分散排程（最高價值，讓平台自動跑不用手動 execute job；搬 ~/.ailive/geo-authority 的 schedule.ts+assignStagger）②刪除連帶（資料憲法生命週期）③rate limit+巡檢+成本錶（可觀測）④CI 四件套⑤PITR 備份。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表到期。D10 留言 selector 順手在動爬蟲時收。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-25 第2場：
+- **M5 六子系統待蓋**（下一場主線）：cron 分散排程（搬 GEO schedule.ts 心法，hourly heartbeat→per-client due→觸發 radar-scan job）／rate limit／巡檢+成本錶／CI 四件套（Semgrep/gitleaks/npm audit/ZAP）／PITR+每日 export 備份／刪除連帶（刪客戶連帶 threads_accounts/keywords/viral_posts/session）
+- **D10 留言 selector**：真帳號掃 3 篇讚/轉發/分享都對、留言全 0；登入態貼文頁「留言」aria-label 又漂移或需展開。先收登入態真 DOM 樣本再定，改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份
+- **D11 capture.cjs 不重連**：connectOverCDP 連一次、neko 重啟後斷線靜默不偵測（本場手動重啟 neko 撞到，非生產路徑，但該加 CDP 斷線重連）
+- **人在 neko 網頁登入的純 UX 未直接驗**：本場登入是我 CDP 自動化驅動，session/加密/爬蟲機制全證；「客戶在 WebRTC 串流裡看到可用表單」touch 修法讓表單出得來（證了）但沒親眼驗人走那一哩
 
 2026-07-25 第1場：
 - **threads-radar D5（活血，下場開工第一件）**：neko 版本用 latest 未釘，CVE-2026-39386 提權(CVSS 8.8，修於 3.0.11/3.1.2)。開 VM 前先查 github.com/m1k1o/neko/tags 確認 chromium 已修 tag（chromium flavor 可見 3.0.9=未修，不可盲賭；nvidia 變體有 3.1.4）再釘進 startup.sh。**暴露面已關閉**：firewall 8080 鎖 127.0.0.1/32+VM 停機
@@ -107,10 +116,6 @@ threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 pr
 - **ailivex 語音**：Anthropic key 月上限被鎖，語音線全啞到 8/1（除非 Adam 調上限/換 key）
 - **billing export**：Adam 要去兩個帳單帳戶各點「使用費用詳細資料」+「標準使用費用」開關 → 指到 zhu-cloud-2026/billing_export。開完隔天資料進來我跑逐日逐服務榜
 - geo-authority W31 週一(7/27)15:00 雙租戶串行考+「每輪2篇」路徑（前場未解，仍在）
-
-2026-07-24 第2場：
-- 網址型補充來源仍走人工採用（設計內的策展閘，QuickAdd 訊息已標註差異）；若客戶頻繁漏採用可考慮改自動採用＋收集頁排除
-- FOUNDATION D6/D7 未到期，顯式養著（觸發條件見帳本）
 
 ---
 
@@ -131,4 +136,4 @@ threads-radar 續蓋：①開 VM 前先釘 neko 已修版(D5)②M2 worker 加 pr
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-25 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-25 第2場。*
