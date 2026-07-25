@@ -8744,3 +8744,39 @@ threads-radar（repo ~/.ailive/threads-radar 本機 git；GCP threads-radar-2026
 
 ### 待執行 / 下一步
 threads-radar M5，建議順序：①cron 分散排程（最高價值，讓平台自動跑不用手動 execute job；搬 ~/.ailive/geo-authority 的 schedule.ts+assignStagger）②刪除連帶（資料憲法生命週期）③rate limit+巡檢+成本錶（可觀測）④CI 四件套⑤PITR 備份。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表到期。D10 留言 selector 順手在動爬蟲時收。
+
+---
+
+## 2026-07-25（第3場）— threads-radar M5 五子系統全綠＋CI 上 GitHub 轉綠（Semgrep 12 findings 逐條分真偽）
+
+### 背景 / WHY
+threads-radar（本機 git+GitHub 私有 linhocheng/threads-radar；GCP threads-radar-2026；Vercel threads-radar-virid）。M0-M5＋真帳號端到端＋CI 全綠。焦點：平台已達可對外完整度，剩產品體感細節（D10 留言數）。
+
+### 完成
+- **M5 五子系統全數落地並真驗**（承 SESSION_2026-07-25_2 的真帳號端到端）：
+  - **M5-1 cron 分散排程**：/api/cron/dispatch（CRON_SECRET Bearer 自驗）→讀 active 客戶→isScanDue(台北)+日上限+health precheck→WIF runScanJob。vendor schedule.ts→web、vercel.json crons hourly、middleware 放行。**真觸發驗通**：強制測試客戶 due→cron dispatched→Cloud Run 新 execution(4→5)→爬 2 篇真爆文→dispatch count=1。**平台現在自動駕駛**。
+  - **M5-2 刪除連帶**：deleteClientAction 連帶清 7 collection（threads_accounts 含加密 session/keywords/viral_posts/notifications/scan_status/rate_limits→最後 client doc）+admin 二段確認。seed 真測 7 collection 全歸零無孤兒。
+  - **M5-3 rate limit+成本錶+D12**：rateLimit.ts（Firestore 固定窗+transaction）客戶登入 10/10min、operator 5/10min；成本錶 scan_status.usage 本月掃描數 admin 可見；D12 worker lastRun.reason 覆蓋清。真驗：rate 5過2擋過窗歸零、掃後 usage=1/reason=null/state=done。
+  - **M5-4 CI 四件套**：推 GitHub 私有 repo linhocheng/threads-radar→.github/workflows/ci.yml（gitleaks/Semgrep/npm audit web+worker）+security-dast.yml（ZAP 週排程）。**CI 真跑轉綠**。
+  - **M5-5 災難還原**：Firestore PITR 開(7天)+每日備份排程(14天)+setup-firestore.sh。驗 PITR ENABLED/604800s、排程 1209600s。
+- 過程抓修真 bug（每個都真信號逼出，非猜）：①runScanJob 帶 CLIENT_ID override 需 `run.jobs.runWithOverrides`（run.invoker 只給 run.jobs.run）——第一層 403 截斷誤導，扒完整訊息才見真權限名②日額度計數寫在觸發前→失敗嘗試燒額度→改觸發成功才記帳③firebase-admin 是 db.ts 註解留下的未用依賴→拖進 5 個 google-cloud 傳遞漏洞，移除 16→11④Semgrep 首跑 12 blocking findings，逐條分真偽。
+- 天條紀律：三處手動雲端改動當日寫進腳本（web/setup-iam.sh 加 runWithOverrides、setup-firestore.sh PITR+備份）。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| web/src/app/api/cron/dispatch/route.ts（新） | cron 分派器（isScanDue+日上限+health precheck+成本錶+WIF 觸發） |
+| web/src/lib/{schedule,rateLimit}.ts（新）、vercel.json（新） | vendor 排程純函數＋防爆破固定窗＋crons hourly |
+| web/src/lib/actions.ts、app/{admin,login}/、api/login | 刪除連帶＋rate limit 接線＋成本錶欄＋二段確認 |
+| web/setup-iam.sh、setup-firestore.sh（新） | radar-web IAM＋Firestore PITR/備份唯一真相源（天條） |
+| .github/workflows/{ci,security-dast}.yml（新） | CI 四件套（gitleaks/Semgrep/npm audit/ZAP），Actions 釘 SHA |
+| src/{sessionCrypto,kms}.ts、web/.../sessionCrypto.ts、worker/{index.mjs,Dockerfile} | GCM authTagLength＋metadata nosemgrep＋lastRun.reason 清＋非 root pwuser |
+| src/types.ts、FOUNDATION.md | ScanStatus 補 dispatch/usage/lastRun＋D12清/D13新/M5 全綠 |
+
+### ⚠️ 尚未解決
+- **D10 留言 selector 登入態回 0**（最影響產品體感，下一步優先）：真帳號掃讚/轉發/分享都對、留言全 0。登入態貼文頁「留言」aria-label 漂移或需展開。改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份；先收登入態真 DOM 樣本再定 selector。
+- **CI DAST(ZAP) 未實跑過**：掛週排程（週日台北 02:00），首次自動跑或 workflow_dispatch 手動觸發才知會不會抓到東西/誤報。
+- **還原演練**（觸發：上線首月）、**巡檢 sweep cron**（暫緩，worker 已在真失敗發通知+admin 顯 health）、**D11 capture CDP 重連**、**人在 neko 網頁登入純 UX 未直接驗**（M3/M4 遺留）。
+
+### 待執行 / 下一步
+threads-radar **D10 留言 selector**（最影響產品體感）：開 neko VM→登入態→開一篇貼文頁→抓「留言」附近真 DOM（aria-label/文字/結構）→改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份（D2 兩份物理限制）→parse.test.mjs 補案例→真站驗。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表。若 Adam 要對外：先手動觸發 ZAP DAST 看報告。
