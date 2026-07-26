@@ -5,6 +5,12 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-26：錄音後處理全鏈上線（v18.22.0-.2 已 commit+部署）。**
+- admin 錄音頁兩鈕「轉文字稿」「分聲＋切人聲」＝**排單制**：平台只寫 queued，計算在 Adam Mac 跑 `scripts/voice-worker/worker.mjs`（Apple on-device STT，$0 零 LLM；Vercel 呼叫不到 Apple 引擎）。用法/故障排除表在該目錄 README
+- 分聲＝對話紀錄 role 文字 bigram 比對（**兩邊 opencc 轉簡體**——doc 存簡體、Apple 出繁體，不轉全滅＋假分數）；**語音逐字稿真身在 `conversations/ailivex-voice-<charId>-<userId>`**（50 則滾動窗、無 at 欄），`<userId>_<charId>` 是文字聊天；參照失效防呆＝0 句對上 assistant → 全標「？」不硬切
+- 監控鏈：心跳 voiceJobAt/進度% 每 chunk 寫、UI 終止鈕（transaction 護欄結果丟棄不蓋回）、watchdog 兩側鏡像（recording.ts reconcileVoiceJobs ↔ worker reconcileStale，心跳斷 10 分自動收失敗帳）
+- 新錄音**分軌**：webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress → `.human.mp4` 天生分離；egress_ended 依 humanEgressId 分帳。**待驗**：下通真通話看「純人聲版」自動出現；沒出現＝LiveKit 後台補開 track_published 事件。分軌費 +$0.005/分（下期帳單核錶）
+
 **2026-07-19：共創系統一日全迴圈＋v20 全用戶上線（v18.15.0-v18.17.1 已 commit+部署）。**
 - **共創系統**：文字線 [[PROPOSE_METHOD]]/[[PROPOSE_KNOWLEDGE]] 標記＋語音 v19 原生工具（propose_method/propose_knowledge，opencc s2tw 落庫轉繁）；雙閘 admin×`characters.methodProposalEnabled`；draft→後台「知識與方法」待審區→轉正（補嵌 triggerEmb 收斂點）/轉入庫（走 ingest 正式管線 authority=derived）才生效。知識**不給角色自我入庫直通管**——他會幻覺（Bacha Coffee 曾被記成 1876 咖啡），事實層審核權在 Adam
 - **語音版本佈局**：v20=LIVE DEFAULT（v18＋知識檢索 τ=0.68 top3＋遞招 τ=0.70 最佳單選＋走步工具 method_start/next/exit 狀態機＋exit 120s 冷卻；每輪背景 multilingual-002 query 嵌入，v15 動態想起管線，半拍延遲）；v19=訓練線（TRAINER_VOICE_LINE，通話頁「共創」鈕 admin 限定，沿用 GPT 第二線插座）；v18=熱回滾 min=1（數日後降冷備）；voice-power CANARY=['v19','v18']

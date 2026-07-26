@@ -166,6 +166,7 @@
 - [使用者上傳管線四雷](skill_user_upload_pipeline_pitfalls.md) — 大檔第一版就串流(54MB測過181MB炸OOM)/fetch不假設JSON/allow-unauthenticated要curl 200收案/視覺參數跟素材屬性走；鏡像對賬+零金鑰SA模式；UDN demo-gallery/DEVLOG.md
 - [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣；Tracy 17套實戰
 - [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
+- [Apple STT CLI 批次轉錄五雷](reference_apple_stt_cli_pitfalls.md) — 主執行緒死鎖/長檔靜默卡死要50s切塊/逐語句final/假時間戳過濾/輸出繁體要opencc；$0零雲端；真身 ailivex voice-worker
 - [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份訓練輾過靈魂prompt擋不住；量尺/插座/驗收法落袋；18s首音瓶頸在共用開場路徑
 - [GEO Authority 平台（Adam×WAITIN 協作）](project_geo_authority.md) — AI 搜尋可見度代操；月循環自動駕駛；白皮書 v1.0 領地=檔案邊界；月報零 LLM 是商品本體
 - [Next.js CSP nonce 化正解＋Next 16 三雷](reference_nextjs16_csp_nonce.md) — middleware/proxy per-request nonce＋strict-dynamic＋不設default-src；Next16雷：proxy.ts改名/nonce必配force-dynamic否則靜態頁死白頁/__next_f探針失效；外部字型要放行googleapis
