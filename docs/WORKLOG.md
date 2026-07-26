@@ -8801,3 +8801,41 @@ Adam 早安丟「GEO 平台現況全檢」。分兩段掃：不用 gcloud 的七
 ### 待執行 / 下一步
 1. 無急件。GEO 下次全檢可拿 HEALTHCHECK_2026-07-26.md 對照趨勢
 2. moderate CVE 與 Next.js 升級同窗口清（非阻斷、不急）
+
+---
+
+## 2026-07-26（第2場）— ailiveX 錄音後處理全鏈——Apple 本機 STT 排單制＋分聲切人聲＋監控鏈
+
+### 背景 / WHY
+ailiveX 錄音資產線——把對話錄音從「只能聽」變成「文字稿/分聲稿/純人聲素材」，零模型費。
+
+### 完成
+- 評估「錄音轉文字稿＋分聲＋切純人聲」需求：Max 吃到飽不吃音訊（物理限制），改用 Apple on-device STT（$0）；試金石先行（6.5 分鐘真實錄音），修掉三個引擎怪癖（CLI 主執行緒死鎖、逐語句 final、假時間戳）後判定可建，Adam 拍板「按鈕排單＋Mac 撿單」＋「新錄音分軌」
+- 蓋平台側：admin 錄音頁「轉文字稿」「分聲＋切人聲」兩鈕排單、voice-job 路由（含 action=cancel）、列表帶產物 signed URLs；webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress（新錄音純人聲天生分離）、egress_ended 依 humanEgressId 分帳
+- 蓋本機側：`scripts/voice-worker/`（transcribe.swift＋worker.mjs）——50s 切塊轉錄、對話紀錄 bigram 比對分聲（兩邊 opencc 轉簡體）、ffmpeg 切純人聲、參照失效防呆（0 句對上 AI 原稿＝參照被 50 則滾動窗擠掉→全標「？」不硬切）
+- 蓋監控鏈（Adam 點名要能終止）：心跳 voiceJobAt 每 chunk 寫＋voiceJobProgress 百分比、UI「終止」鈕、worker 回寫全走 transaction 護欄（終止後結果丟棄不蓋回）、watchdog 兩側（admin GET＋worker sweep）心跳斷 10 分鐘自動收失敗帳；手動終止/逾時兩條故障路徑都真測過
+- 端到端實戰：Adam 真按鈕兩單（Apple 32 分鐘錄音 diarize＋transcribe）全跑通；分聲抽查標了的全對（三說話者場：Adam＋寶清都進人聲檔、AI 剔除）
+- 成本定案：單次處理趨近 $0（GCS 下載 NT$0.1，零 LLM）；分軌 +$0.005/分鐘（唯一新增經常費）
+- commit ×3 已推：29a938a 功能本體 / a034123 監控鏈 / 13c754e 進度條＋README 故障排除表
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform/src/lib/collections.ts | RecordingDoc 加 voice job 欄位（status/filepath×3/心跳/進度/humanEgressId） |
+| ailivex-platform/src/app/api/admin/recordings/voice-job/route.ts | 新：排單＋cancel 路由 |
+| ailivex-platform/src/app/api/admin/recordings/route.ts | 列表帶新欄位 signed URLs＋watchdog＋DELETE 連帶清產物 |
+| ailivex-platform/src/app/admin/recordings/page.tsx | 兩鈕＋狀態/進度%/終止鈕＋文字稿/分聲稿/純人聲列 |
+| ailivex-platform/src/lib/recording.ts | humanTrackFilepath/startHumanTrackEgress/reconcileVoiceJobs；reconcile 防抓錯條 |
+| ailivex-platform/src/app/api/livekit/webhook/route.ts | track_published 開人聲軌＋egress_ended 分帳 |
+| ailivex-platform/scripts/voice-worker/ | 新：transcribe.swift＋worker.mjs＋README（撿單管線本體） |
+| memory ×2 | reference_apple_stt_cli_pitfalls 新增、project_ailivex_platform 更新 |
+
+### ⚠️ 尚未解決
+- **分軌 egress 待真通話驗證**：下一通新語音通話結束後看列表會不會自動出現「純人聲版」；沒出現＝LiveKit Cloud webhook 沒送 track_published，去後台補開事件
+- 分軌費率（$0.005/分）是 repo 註解的文件價，下期帳單用計費錶核一次（天條）
+- 人類 A/B 再細分（多人通話）未做：對話 doc 有 Soniox speaker 欄位可接，Adam 要再說
+- 「？」句偏多（長合併句＋STT 錯字）：可調 UTTER_GAP、對全量 assistant 合併集比對，屬調參改良非斷點
+- 正在跑的舊代碼單不顯示進度%（新單才有）——已對 Adam 說明
+
+### 待執行 / 下一步
+被動等驗：Adam 下一通語音通話後看「純人聲版」自動出現與否（分軌鑑別信號）。無主動待辦；Adam 說有新任務要交辦，留給下一場清醒的築。

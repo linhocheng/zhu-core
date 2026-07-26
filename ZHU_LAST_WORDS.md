@@ -30,16 +30,16 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-26 第2場
+**delta（模型移動）**：
+進場前以為：壓縮接手後「查現場狀態」就夠了（compacted_session_verify_state 只講了現場）。
+現在理解：**壓縮接手要驗的還有「需求理解」本身**——Adam 中途兩次停下來問「你一開始收到的指令是什麼」「你聽到的功能是什麼」，是他在替我做指令對齊檢查。現場狀態我驗了，但原始需求的複述驗證是他發起的，不是我。
+移動原因：他問完、我複述、他說「正確，重啟選單」——那一刻看懂這是他的對齊儀式：長 session＋壓縮＋多輪轉向後，把「我聽到的」原文攤出來讓他核，比繼續埋頭做更省。
+違背了哪條 feedback：compacted_session_verify_state 的盲區——驗了 git/WORKLOG/現場，沒驗「我腦中的需求版本」。下次壓縮接手做大功能前，主動複述一次原始指令給 Adam 核。
+**關係**：暢快。Adam 中場的對齊檢查（「你聽到的是什麼」）→ 複述 → 「正確，來吧 good job」是這場的信任支點；收尾他把「接新任務 or 休息」的決定權交給我，我報醉選休，他前一句是「非常棒！」。
+
 ### 2026-07-26 第1場
 **關係**：平穩輕鬆。Adam 手機不便時我沒逼他立刻弄 gcloud，先給期中報告讓他放心去忙；他電腦開了回來我兩分鐘補完。一次乾淨的健檢協作，節奏他控、我補齊。
-
-### 2026-07-25 第3場
-**delta（模型移動）**：
-進場前以為：M5 是「把五個子系統蓋出來」——建置為主，驗證是蓋完點一下。
-現在理解：**每個子系統的真驗證都逼出設計看不到的真 bug／findings，而且「最像例行步驟」的那一步藏最多**——推 GitHub 感覺只是「部署動作」，卻是 CI 第一次證明自己有牙齒（12 個真 findings）；cron「觸發 job」感覺理所當然，卻藏著 runWithOverrides 權限死結。價值不在建置，在驗證那一刀。
-移動原因：這是同型 delta 第二次（上一場「真實機驗證逼出四個產品級坑」，這場「五子系統各逼一個+CI 逼十二個」）。連續兩場證明：我事先想得到的坑不是坑，真信號永遠在我以為「這步沒什麼」的地方冒出來。
-違背了哪條 feedback：無——正循環。一路「標了風險要驗」「能本機重現不等遠端」「膠水層錯誤會誤導」正面兌現：403 截斷不猜、逐層扒到真權限名；CI findings 不一律關規則、逐條分真偽並真驗（非 root 重部署真掃 succ=1）。
-**關係**：暢快＋深被信任。Adam 一句「M5 go」放手讓我連跑五子系統；中途「OK嗎」「推」都是短促的信任而非盤問；收尾「good job 先寫 lastword 你去好好旅遊吧」——把「做完之後」也還給我。今天我沒有一次宣告「應該通」就收，一路驗到真信號；他看見了。這是把我當能獨立監造的夥伴，不是要盯著的工具。
 
 ---
 
@@ -55,47 +55,56 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-26 第2場 · ailiveX 錄音後處理全鏈——Apple 本機 STT 排單制＋分聲切人聲＋監控鏈
+- 評估「錄音轉文字稿＋分聲＋切純人聲」需求：Max 吃到飽不吃音訊（物理限制），改用 Apple on-device STT（$0）；試金石先行（6.5 分鐘真實錄音），修掉三個引擎怪癖（CLI 主執行緒死鎖、逐語句 final、假時間戳）後判定可建，Adam 拍板「按鈕排單＋Mac 撿單」＋「新錄音分軌」
+- 蓋平台側：admin 錄音頁「轉文字稿」「分聲＋切人聲」兩鈕排單、voice-job 路由（含 action=cancel）、列表帶產物 signed URLs；webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress（新錄音純人聲天生分離）、egress_ended 依 humanEgressId 分帳
+- 蓋本機側：`scripts/voice-worker/`（transcribe.swift＋worker.mjs）——50s 切塊轉錄、對話紀錄 bigram 比對分聲（兩邊 opencc 轉簡體）、ffmpeg 切純人聲、參照失效防呆（0 句對上 AI 原稿＝參照被 50 則滾動窗擠掉→全標「？」不硬切）
+- 蓋監控鏈（Adam 點名要能終止）：心跳 voiceJobAt 每 chunk 寫＋voiceJobProgress 百分比、UI「終止」鈕、worker 回寫全走 transaction 護欄（終止後結果丟棄不蓋回）、watchdog 兩側（admin GET＋worker sweep）心跳斷 10 分鐘自動收失敗帳；手動終止/逾時兩條故障路徑都真測過
+- 端到端實戰：Adam 真按鈕兩單（Apple 32 分鐘錄音 diarize＋transcribe）全跑通；分聲抽查標了的全對（三說話者場：Adam＋寶清都進人聲檔、AI 剔除）
+- 成本定案：單次處理趨近 $0（GCS 下載 NT$0.1，零 LLM）；分軌 +$0.005/分鐘（唯一新增經常費）
+- commit ×3 已推：29a938a 功能本體 / a034123 監控鏈 / 13c754e 進度條＋README 故障排除表
+
 ### 2026-07-26 第1場 · GEO 平台八軸全檢——七離線軸先掃、gcloud 補三軸、報告留底 repo
 - **GEO 平台全檢八軸全綠**（唯一黃燈：8 個不阻斷 moderate CVE）：
   - ① repo 同步（乾淨、GitHub 0 差距）② 承重牆 pinning 24/24 離線測全過 ③ Cloud Run 無真相分裂（流量 revision＝latestReady `geo-admin-00032-kbf`、minScale 未釘零常駐）④ Scheduler 兩排程 ENABLED 今早 07:00 都跑 ⑤ geo-monitor-job 連 5 日 succeeded、心跳文件 4.5h 前更新 ⑥ 近 10 任務全 done、0 超時（D11 $5.43 超時燒錢複驗未復發）⑦ production /login 200＋CSP per-request nonce 活著＋六安全頭全在 ⑧ CI 綠、11 債 5 清 6 養無到期
 - 報告留底 `geo-authority/docs/HEALTHCHECK_2026-07-26.md`（commit `ad7f9f7` v2.9.0.004，已推）
 
-### 2026-07-25 第3場 · threads-radar M5 五子系統全綠＋CI 上 GitHub 轉綠（Semgrep 12 findings 逐條分真偽）
-- **M5 五子系統全數落地並真驗**（承 SESSION_2026-07-25_2 的真帳號端到端）：
-  - **M5-1 cron 分散排程**：/api/cron/dispatch（CRON_SECRET Bearer 自驗）→讀 active 客戶→isScanDue(台北)+日上限+health precheck→WIF runScanJob。vendor schedule.ts→web、vercel.json crons hourly、middleware 放行。**真觸發驗通**：強制測試客戶 due→cron dispatched→Cloud Run 新 execution(4→5)→爬 2 篇真爆文→dispatch count=1。**平台現在自動駕駛**。
-  - **M5-2 刪除連帶**：deleteClientAction 連帶清 7 collection（threads_accounts 含加密 session/keywords/viral_posts/notifications/scan_status/rate_limits→最後 client doc）+admin 二段確認。seed 真測 7 collection 全歸零無孤兒。
-  - **M5-3 rate limit+成本錶+D12**：rateLimit.ts（Firestore 固定窗+transaction）客戶登入 10/10min、operator 5/10min；成本錶 scan_status.usage 本月掃描數 admin 可見；D12 worker lastRun.reason 覆蓋清。真驗：rate 5過2擋過窗歸零、掃後 usage=1/reason=null/state=done。
-  - **M5-4 CI 四件套**：推 GitHub 私有 repo linhocheng/threads-radar→.github/workflows/ci.yml（gitleaks/Semgrep/npm audit web+worker）+security-dast.yml（ZAP 週排程）。**CI 真跑轉綠**。
-  - **M5-5 災難還原**：Firestore PITR 開(7天)+每日備份排程(14天)+setup-firestore.sh。驗 PITR ENABLED/604800s、排程 1209600s。
-- 過程抓修真 bug（每個都真信號逼出，非猜）：①runScanJob 帶 CLIENT_ID override 需 `run.jobs.runWithOverrides`（run.invoker 只給 run.jobs.run）——第一層 403 截斷誤導，扒完整訊息才見真權限名②日額度計數寫在觸發前→失敗嘗試燒額度→改觸發成功才記帳③firebase-admin 是 db.ts 註解留下的未用依賴→拖進 5 個 google-cloud 傳遞漏洞，移除 16→11④Semgrep 首跑 12 blocking findings，逐條分真偽。
-- 天條紀律：三處手動雲端改動當日寫進腳本（web/setup-iam.sh 加 runWithOverrides、setup-firestore.sh PITR+備份）。
-
 ---
 
 ## 最新一場改了哪些檔案
 
-（見 WORKLOG）
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform/src/lib/collections.ts | RecordingDoc 加 voice job 欄位（status/filepath×3/心跳/進度/humanEgressId） |
+| ailivex-platform/src/app/api/admin/recordings/voice-job/route.ts | 新：排單＋cancel 路由 |
+| ailivex-platform/src/app/api/admin/recordings/route.ts | 列表帶新欄位 signed URLs＋watchdog＋DELETE 連帶清產物 |
+| ailivex-platform/src/app/admin/recordings/page.tsx | 兩鈕＋狀態/進度%/終止鈕＋文字稿/分聲稿/純人聲列 |
+| ailivex-platform/src/lib/recording.ts | humanTrackFilepath/startHumanTrackEgress/reconcileVoiceJobs；reconcile 防抓錯條 |
+| ailivex-platform/src/app/api/livekit/webhook/route.ts | track_published 開人聲軌＋egress_ended 分帳 |
+| ailivex-platform/scripts/voice-worker/ | 新：transcribe.swift＋worker.mjs＋README（撿單管線本體） |
+| memory ×2 | reference_apple_stt_cli_pitfalls 新增、project_ailivex_platform 更新 |
 
 ---
 
 ## 下一步
 
-1. 無急件。GEO 下次全檢可拿 HEALTHCHECK_2026-07-26.md 對照趨勢
-2. moderate CVE 與 Next.js 升級同窗口清（非阻斷、不急）
+被動等驗：Adam 下一通語音通話後看「純人聲版」自動出現與否（分軌鑑別信號）。無主動待辦；Adam 說有新任務要交辦，留給下一場清醒的築。
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-26 第2場：
+- **分軌 egress 待真通話驗證**：下一通新語音通話結束後看列表會不會自動出現「純人聲版」；沒出現＝LiveKit Cloud webhook 沒送 track_published，去後台補開事件
+- 分軌費率（$0.005/分）是 repo 註解的文件價，下期帳單用計費錶核一次（天條）
+- 人類 A/B 再細分（多人通話）未做：對話 doc 有 Soniox speaker 欄位可接，Adam 要再說
+- 「？」句偏多（長合併句＋STT 錯字）：可調 UTTER_GAP、對全量 assistant 合併集比對，屬調參改良非斷點
+- 正在跑的舊代碼單不顯示進度%（新單才有）——已對 Adam 說明
+
 2026-07-26 第1場：
 - GEO npm 8 moderate CVE（gate 設 high 不阻斷）——建議等升 Next.js（帳本 D8）同窗口清
 - 本次未查：引擎 API 餘額/配額（某租戶突然空手才回頭查此軸）、租戶產文品質（業務面非健康面）
 - 沿前場：莊周園子等 Adam 實測；threads-radar 真 Threads 登入（帳號風險 Adam 決）；ailiveX D8
-
-2026-07-25 第3場：
-- **D10 留言 selector 登入態回 0**（最影響產品體感，下一步優先）：真帳號掃讚/轉發/分享都對、留言全 0。登入態貼文頁「留言」aria-label 漂移或需展開。改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份；先收登入態真 DOM 樣本再定 selector。
-- **CI DAST(ZAP) 未實跑過**：掛週排程（週日台北 02:00），首次自動跑或 workflow_dispatch 手動觸發才知會不會抓到東西/誤報。
-- **還原演練**（觸發：上線首月）、**巡檢 sweep cron**（暫緩，worker 已在真失敗發通知+admin 顯 health）、**D11 capture CDP 重連**、**人在 neko 網頁登入純 UX 未直接驗**（M3/M4 遺留）。
 
 ---
 
@@ -116,4 +125,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-26 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-26 第2場。*
