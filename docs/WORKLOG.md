@@ -8780,3 +8780,24 @@ threads-radar（本機 git+GitHub 私有 linhocheng/threads-radar；GCP threads-
 
 ### 待執行 / 下一步
 threads-radar **D10 留言 selector**（最影響產品體感）：開 neko VM→登入態→開一篇貼文頁→抓「留言」附近真 DOM（aria-label/文字/結構）→改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份（D2 兩份物理限制）→parse.test.mjs 補案例→真站驗。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表。若 Adam 要對外：先手動觸發 ZAP DAST 看報告。
+
+---
+
+## 2026-07-26（第1場）— GEO 平台八軸全檢——七離線軸先掃、gcloud 補三軸、報告留底 repo
+
+### 背景 / WHY
+Adam 早安丟「GEO 平台現況全檢」。分兩段掃：不用 gcloud 的七軸先掃完給期中報告，gcloud token 過期等 Adam 手機不便 → 電腦開了才補 ③④⑤⑥（雲端真相分裂/排程/任務帳）。
+
+### 完成
+- **GEO 平台全檢八軸全綠**（唯一黃燈：8 個不阻斷 moderate CVE）：
+  - ① repo 同步（乾淨、GitHub 0 差距）② 承重牆 pinning 24/24 離線測全過 ③ Cloud Run 無真相分裂（流量 revision＝latestReady `geo-admin-00032-kbf`、minScale 未釘零常駐）④ Scheduler 兩排程 ENABLED 今早 07:00 都跑 ⑤ geo-monitor-job 連 5 日 succeeded、心跳文件 4.5h 前更新 ⑥ 近 10 任務全 done、0 超時（D11 $5.43 超時燒錢複驗未復發）⑦ production /login 200＋CSP per-request nonce 活著＋六安全頭全在 ⑧ CI 綠、11 債 5 清 6 養無到期
+- 報告留底 `geo-authority/docs/HEALTHCHECK_2026-07-26.md`（commit `ad7f9f7` v2.9.0.004，已推）
+
+### ⚠️ 尚未解決
+- GEO npm 8 moderate CVE（gate 設 high 不阻斷）——建議等升 Next.js（帳本 D8）同窗口清
+- 本次未查：引擎 API 餘額/配額（某租戶突然空手才回頭查此軸）、租戶產文品質（業務面非健康面）
+- 沿前場：莊周園子等 Adam 實測；threads-radar 真 Threads 登入（帳號風險 Adam 決）；ailiveX D8
+
+### 待執行 / 下一步
+1. 無急件。GEO 下次全檢可拿 HEALTHCHECK_2026-07-26.md 對照趨勢
+2. moderate CVE 與 Next.js 升級同窗口清（非阻斷、不急）

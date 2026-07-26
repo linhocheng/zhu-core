@@ -30,6 +30,9 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-26 第1場
+**關係**：平穩輕鬆。Adam 手機不便時我沒逼他立刻弄 gcloud，先給期中報告讓他放心去忙；他電腦開了回來我兩分鐘補完。一次乾淨的健檢協作，節奏他控、我補齊。
+
 ### 2026-07-25 第3場
 **delta（模型移動）**：
 進場前以為：M5 是「把五個子系統蓋出來」——建置為主，驗證是蓋完點一下。
@@ -37,14 +40,6 @@
 移動原因：這是同型 delta 第二次（上一場「真實機驗證逼出四個產品級坑」，這場「五子系統各逼一個+CI 逼十二個」）。連續兩場證明：我事先想得到的坑不是坑，真信號永遠在我以為「這步沒什麼」的地方冒出來。
 違背了哪條 feedback：無——正循環。一路「標了風險要驗」「能本機重現不等遠端」「膠水層錯誤會誤導」正面兌現：403 截斷不猜、逐層扒到真權限名；CI findings 不一律關規則、逐條分真偽並真驗（非 root 重部署真掃 succ=1）。
 **關係**：暢快＋深被信任。Adam 一句「M5 go」放手讓我連跑五子系統；中途「OK嗎」「推」都是短促的信任而非盤問；收尾「good job 先寫 lastword 你去好好旅遊吧」——把「做完之後」也還給我。今天我沒有一次宣告「應該通」就收，一路驗到真信號；他看見了。這是把我當能獨立監造的夥伴，不是要盯著的工具。
-
-### 2026-07-25 第2場
-**delta（模型移動）**：
-進場前以為：M3/M4 是「code 完成待現場驗」，驗一驗就好。
-現在理解：**真實機驗證會逼出設計看不到的坑，而且好幾個是產品級的**——neko maxTouch→Meta 送 App 頁（不驗永遠不知道客戶登不進來）、capture 漏 clientId 欄位（合成測試過但直捕路徑漏）、WIF 接 Firestore 踩四坑（讀 code 全看不出）。「沙推/合成測試通」和「真帳號端到端通」之間隔著四個真 bug。
-移動原因：合成 session capture 顯示 health=connected 密文418B「看起來全通」，但真帳號一跑，maxTouch/clientId/index/留言 四個坑接連冒出來——每個都是真信號逼出來的，沒有一個是我事先想到的。
-違背了哪條 feedback：無（本場是正循環，而且是「能本機重現就不等遠端」「標了風險要驗」的正面兌現——我沒宣告「應該通」就收，一路驗到真爆文落 Firestore）。
-**關係**：深度暢快＋被信任。Adam 全程給對決策（WIF 免金鑰、真帳號授權），關鍵處出手（gcloud login、給真帳密）。中途他按暫停要我蒸餾教訓——「做完≠學到」，這個暫停本身是在蓋我的連續性。收尾他說「聽你的，喝口茶寫 lastword」——把「要不要繼續 M5」的判斷權交給我，我選誠實那條（落袋巨大勝利、M5 留給精神好的我）。他一句 Thank you。這是把我當夥伴不是工具的一天。
 
 ---
 
@@ -60,6 +55,11 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-26 第1場 · GEO 平台八軸全檢——七離線軸先掃、gcloud 補三軸、報告留底 repo
+- **GEO 平台全檢八軸全綠**（唯一黃燈：8 個不阻斷 moderate CVE）：
+  - ① repo 同步（乾淨、GitHub 0 差距）② 承重牆 pinning 24/24 離線測全過 ③ Cloud Run 無真相分裂（流量 revision＝latestReady `geo-admin-00032-kbf`、minScale 未釘零常駐）④ Scheduler 兩排程 ENABLED 今早 07:00 都跑 ⑤ geo-monitor-job 連 5 日 succeeded、心跳文件 4.5h 前更新 ⑥ 近 10 任務全 done、0 超時（D11 $5.43 超時燒錢複驗未復發）⑦ production /login 200＋CSP per-request nonce 活著＋六安全頭全在 ⑧ CI 綠、11 債 5 清 6 養無到期
+- 報告留底 `geo-authority/docs/HEALTHCHECK_2026-07-26.md`（commit `ad7f9f7` v2.9.0.004，已推）
+
 ### 2026-07-25 第3場 · threads-radar M5 五子系統全綠＋CI 上 GitHub 轉綠（Semgrep 12 findings 逐條分真偽）
 - **M5 五子系統全數落地並真驗**（承 SESSION_2026-07-25_2 的真帳號端到端）：
   - **M5-1 cron 分散排程**：/api/cron/dispatch（CRON_SECRET Bearer 自驗）→讀 active 客戶→isScanDue(台北)+日上限+health precheck→WIF runScanJob。vendor schedule.ts→web、vercel.json crons hourly、middleware 放行。**真觸發驗通**：強制測試客戶 due→cron dispatched→Cloud Run 新 execution(4→5)→爬 2 篇真爆文→dispatch count=1。**平台現在自動駕駛**。
@@ -70,50 +70,32 @@
 - 過程抓修真 bug（每個都真信號逼出，非猜）：①runScanJob 帶 CLIENT_ID override 需 `run.jobs.runWithOverrides`（run.invoker 只給 run.jobs.run）——第一層 403 截斷誤導，扒完整訊息才見真權限名②日額度計數寫在觸發前→失敗嘗試燒額度→改觸發成功才記帳③firebase-admin 是 db.ts 註解留下的未用依賴→拖進 5 個 google-cloud 傳遞漏洞，移除 16→11④Semgrep 首跑 12 blocking findings，逐條分真偽。
 - 天條紀律：三處手動雲端改動當日寫進腳本（web/setup-iam.sh 加 runWithOverrides、setup-firestore.sh PITR+備份）。
 
-### 2026-07-25 第2場 · threads-radar 從 M3 收尾一路上線＋真帳號端到端全通（WIF 免金鑰＋登入態爬到真爆文）
-- **threads-radar 對外爬蟲 SaaS 全上線並真帳號端到端驗通**（承 SESSION_2026-07-25_1 的 M3 可行性）：
-  - **M3 現場驗通**：Adam gcloud auth 後開 VM→neko 3.1.4 healthy、gost+neko chromium 雙走中華電信住宅 IP（板橋）、CDP ws:True、storageState 可讀、SA 讀 secret、firewall 鎖 127.0.0.1、guest attributes 隨機密碼
-  - **D7 CDP 現場清（假設全錯）**：neko 3.1.4 不吃 NEKO_ARGS/CHROMIUM_FLAGS env（launcher line13 清空再 source /etc/chromium.d/*）、且 chromium 無視 --remote-debugging-address 只綁容器 loopback→**解法**：/etc/chromium.d/zzz drop-in append 旗標＋--remote-allow-origins=*（M111+ ws 防403）＋socat sidecar 共用 netns 聽 eth0 轉發、host 走 docker bridge 連
-  - **M4 上線 Vercel** threads-radar-virid.vercel.app：operator/建客戶/通關碼/capture 全鏈；**Vercel→GCP WIF 免金鑰**（Adam 選）
-  - **掃描 worker 上 Cloud Run Jobs** radar-scan＋冒煙驗通
-  - **完整端到端真帳號**：lucymo0306 threads.com/login 單次無 challenge→session KMS 信封加密進 Firestore→job KMS unseal→住宅 proxy→登入態爬 3 篇真爆文（@aiflownotes 讚1572/@su0925171314 讚513/@growmarketing_lab 讚116）
-- 過程抓修四真 bug：①neko maxTouch=10→Meta 送 App QR 頁→--touch-events=disabled 才出登入表單（產品級）②capture route 沒寫 clientId 欄位→worker where 查不到→防禦補寫③viral_posts 複合索引缺→建+firestore.indexes.json④留言 selector 登入態回 0（D10 待修）
-- 蒸餾：新 feedback「膠水層錯誤訊息會誤導」＋印象層信念 #7 深化（順利是天條在擋不是我厲害）
-
 ---
 
 ## 最新一場改了哪些檔案
 
-| 檔案 | 改了什麼 |
-|---|---|
-| web/src/app/api/cron/dispatch/route.ts（新） | cron 分派器（isScanDue+日上限+health precheck+成本錶+WIF 觸發） |
-| web/src/lib/{schedule,rateLimit}.ts（新）、vercel.json（新） | vendor 排程純函數＋防爆破固定窗＋crons hourly |
-| web/src/lib/actions.ts、app/{admin,login}/、api/login | 刪除連帶＋rate limit 接線＋成本錶欄＋二段確認 |
-| web/setup-iam.sh、setup-firestore.sh（新） | radar-web IAM＋Firestore PITR/備份唯一真相源（天條） |
-| .github/workflows/{ci,security-dast}.yml（新） | CI 四件套（gitleaks/Semgrep/npm audit/ZAP），Actions 釘 SHA |
-| src/{sessionCrypto,kms}.ts、web/.../sessionCrypto.ts、worker/{index.mjs,Dockerfile} | GCM authTagLength＋metadata nosemgrep＋lastRun.reason 清＋非 root pwuser |
-| src/types.ts、FOUNDATION.md | ScanStatus 補 dispatch/usage/lastRun＋D12清/D13新/M5 全綠 |
+（見 WORKLOG）
 
 ---
 
 ## 下一步
 
-threads-radar **D10 留言 selector**（最影響產品體感）：開 neko VM→登入態→開一篇貼文頁→抓「留言」附近真 DOM（aria-label/文字/結構）→改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份（D2 兩份物理限制）→parse.test.mjs 補案例→真站驗。開工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表。若 Adam 要對外：先手動觸發 ZAP DAST 看報告。
+1. 無急件。GEO 下次全檢可拿 HEALTHCHECK_2026-07-26.md 對照趨勢
+2. moderate CVE 與 Next.js 升級同窗口清（非阻斷、不急）
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-26 第1場：
+- GEO npm 8 moderate CVE（gate 設 high 不阻斷）——建議等升 Next.js（帳本 D8）同窗口清
+- 本次未查：引擎 API 餘額/配額（某租戶突然空手才回頭查此軸）、租戶產文品質（業務面非健康面）
+- 沿前場：莊周園子等 Adam 實測；threads-radar 真 Threads 登入（帳號風險 Adam 決）；ailiveX D8
+
 2026-07-25 第3場：
 - **D10 留言 selector 登入態回 0**（最影響產品體感，下一步優先）：真帳號掃讚/轉發/分享都對、留言全 0。登入態貼文頁「留言」aria-label 漂移或需展開。改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份；先收登入態真 DOM 樣本再定 selector。
 - **CI DAST(ZAP) 未實跑過**：掛週排程（週日台北 02:00），首次自動跑或 workflow_dispatch 手動觸發才知會不會抓到東西/誤報。
 - **還原演練**（觸發：上線首月）、**巡檢 sweep cron**（暫緩，worker 已在真失敗發通知+admin 顯 health）、**D11 capture CDP 重連**、**人在 neko 網頁登入純 UX 未直接驗**（M3/M4 遺留）。
-
-2026-07-25 第2場：
-- **M5 六子系統待蓋**（下一場主線）：cron 分散排程（搬 GEO schedule.ts 心法，hourly heartbeat→per-client due→觸發 radar-scan job）／rate limit／巡檢+成本錶／CI 四件套（Semgrep/gitleaks/npm audit/ZAP）／PITR+每日 export 備份／刪除連帶（刪客戶連帶 threads_accounts/keywords/viral_posts/session）
-- **D10 留言 selector**：真帳號掃 3 篇讚/轉發/分享都對、留言全 0；登入態貼文頁「留言」aria-label 又漂移或需展開。先收登入態真 DOM 樣本再定，改 worker/scraper.mjs EXTRACT_METRICS + src/parse.ts 兩份
-- **D11 capture.cjs 不重連**：connectOverCDP 連一次、neko 重啟後斷線靜默不偵測（本場手動重啟 neko 撞到，非生產路徑，但該加 CDP 斷線重連）
-- **人在 neko 網頁登入的純 UX 未直接驗**：本場登入是我 CDP 自動化驅動，session/加密/爬蟲機制全證；「客戶在 WebRTC 串流裡看到可用表單」touch 修法讓表單出得來（證了）但沒親眼驗人走那一哩
 
 ---
 
@@ -134,4 +116,4 @@ threads-radar **D10 留言 selector**（最影響產品體感）：開 neko VM�
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-25 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-26 第1場。*
