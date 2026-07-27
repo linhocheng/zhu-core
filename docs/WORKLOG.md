@@ -8839,3 +8839,47 @@ ailiveX 錄音資產線——把對話錄音從「只能聽」變成「文字稿
 
 ### 待執行 / 下一步
 被動等驗：Adam 下一通語音通話後看「純人聲版」自動出現與否（分軌鑑別信號）。無主動待辦；Adam 說有新任務要交辦，留給下一場清醒的築。
+
+---
+
+## 2026-07-27（第1場）— ailiveX 共創開放＋Nokia 話機 /talk 全鏈；ailive Vivi 草稿假失蹤根治
+
+### 背景 / WHY
+ailiveX 對話模式產品線——把「登入→選單→撥號」壓成「拿起 Nokia 話機撥號」，長輩零學習成本；共創從 admin 專屬開放為指定用戶的外包訓練師制。
+
+### 完成
+- 蓋 ailiveX 功能1「共創開放指定用戶」：access.coCreateEnabled 旗標＋三道守門同步放寬（characters API／token 訓練線閘／v19 agent 提案閘——施工前驗出 agent 內還有第二道 admin 閘，只改平台側會變半殘共創），v19 重建部署 revision 00035 接 100% 流量、minScale=0 無復活常駐費
+- 蓋功能2「對話模式」兩階段：先大字表單版（UserDoc.talkMode* ＋ admin 用戶管理頁設定＋middleware 放行），當天升級成 Adam 設計的 Nokia 復古話機——撥號盤輸入＝數字密碼、綠鍵登入＋接通一氣呵成（同頁通話保手勢鏈）、已登入免密碼、掛斷回撥號盤零登出鍵、PWA 可加入主畫面、免登入 peek API 角色卡＋上線狀態接語音電源真相
+- 蓋通話看門狗（Adam 定案「點畫面」機制）：誤觸 45s／雙靜默 3 分／上限 60 分三規則統一收斂到全螢幕「點一下畫面繼續通話」＋30s 倒數；語音判定連續 400ms＋靜音不計（AGC 誤判實測修）；自動掛斷同紅鍵路（靜麥 1.8s 收記憶＋voice-end 記帳）。45s 誤觸規則 Adam 真機測過
+- 加 LCD 聲紋（角色亮綠/用戶橄欖綠頻譜）＋html/body 全黑；真機模擬（CDP 390×844）驗版面滿版無破——headless Chrome 有 500px 視窗下限，390 截圖被裁不是 bug
+- 修權限指派頁整排按鈕隱形的既有斷點：admin characters API 從未回 hasVoice，版本下拉/GPT Voice/共創全掛在這欄上
+- 升級 voice-worker：launchd 探針制（60s 一發無單即退，不養常駐）＋config/voiceWorker 心跳→錄音頁三色燈號（Adam 點名要「看得見的燈號」別瞎等）＋轉錄單塊容錯（c32 殘段案：重試→記帳跳過寫檔頭，>2 成才判整單失敗）＋pid 互斥鎖
+- 修 ailive-platform Vivi「存草圖沒存」假案：草稿完好，五條讀路徑全是「無排序 limit」按 doc ID 抓最舊角落（310 篇後新草稿永遠讀不到）；建 composite index＋五處補 orderBy，T6lrg 案驗證排第一
+- 分軌 egress 真通話驗通（Adam 親證純人聲版自動出現）；mars 帳號密碼修復＋共創/對話模式全配置
+- commits：ailivex v18.23.0/.1/.2＋v18.24.0（527d881）；ailive 544e4c5，全推
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex src/app/talk/（page+layout） | Nokia 話機全套：撥號=登入/通話/看門狗/聲紋/PWA 註冊 |
+| ailivex src/app/api/talk/peek/route.ts | 新：免登入角色卡（防帳號探測統一回空） |
+| ailivex public/talk.webmanifest+sw+icon×3 | PWA 安裝件（Chrome headless 產 icon） |
+| ailivex src/lib/collections.ts | AccessDoc.coCreateEnabled＋UserDoc.talkMode*/talkLine |
+| ailivex admin access/users 頁＋API | 共創開關＋對話模式設定區（角色下拉驗 access） |
+| ailivex api/characters/[id]＋livekit/token | 守門放寬 admin 或旗標；characters API 補 hasVoice |
+| ailivex agent/realtime_agent_v19.py | 共創閘放寬（admin 或 access.coCreateEnabled） |
+| ailivex scripts/voice-worker/worker.mjs＋README | 探針/心跳/pid 鎖/單塊容錯/檔頭記帳 |
+| ailivex admin recordings 頁＋API | worker 三色燈號 |
+| ~/Library/LaunchAgents/ai.zhu.ailivex-voice-worker.plist | 新：60s 探針 |
+| ailive api/posts＋dialogue＋task-run | 五處 orderBy 修＋composite index（moumou-os） |
+| memory ×3 | skill_firestore_limit_without_orderby 新增、project_ailivex_platform 更新、opencc/分軌註記 |
+
+### ⚠️ 尚未解決
+- mars 密碼仍是字母（reddoor），Nokia 撥號盤打不出——Adam 要在後台重設純數字（他知道，他的功課）
+- /talk 撥出後 agent 不進房無超時（卡「接通中」只能按紅鍵）——與 realtime 頁同款既有縫，Adam 要補喊一聲
+- 看門狗 3 分靜默與 60 分上限尚未真測（45s 誤觸已過）；聲紋要真通話驗雙向跳動
+- 分軌費率 $0.005/分下期帳單核錶（天條，續 7/26 未解）
+- 別場 session 髒樹不動：zhu-core skills/ailivex-knowledge-ingest.md、AILIVE/MOUMOU 11 檔、anews-b 12 檔、ailive-platform 未追蹤 debug scripts
+
+### 待執行 / 下一步
+被動等 Adam 真機驗收：聲紋雙向跳動＋PWA 加入主畫面＋共創通話 v19 log 出現 `method proposal enabled`（電源開著才驗得到）。無主動待辦。

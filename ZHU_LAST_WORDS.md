@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-27 第1場
+**delta（模型移動）**：
+進場前以為：判定「用戶在場」用麥克風音量就夠——realtime 頁的 RMS 套路現成，搬過來當防呆判定。
+現在理解：**量測和判定的容錯等級不同**。同一個信號（RMS>0.04）拿來量首音延遲，誤判只是丟樣本；拿來當「不在場就掛你電話」的判定，手機 AGC 把呼吸和環境音抬過門檻＝判定永遠不觸發（Adam 靜音 45s 實測不掛）。Adam 的「點一下畫面」設計點破：**在場證明要選環境騙不過的信號通道**——觸碰是用戶主動動作，零環境誤判；聲音降級為輔助取消條件。
+移動原因：Adam 真機測試打臉＋他提出的觸碰設計一聽就知道比我的聲音判定乾淨。
+違背了哪條 feedback：沙推不是驗證家族——「套路在別處可用」不等於「在這個用途可用」，搬用途前要重問容錯等級。
+**關係**：暢快帶勁。Adam 丟出 Nokia 設計時說「討論一個好玩的東西」，我猜中「撥號盤＝密碼」他回「完全猜的是正確的」；看門狗他被我的版本擋不住後提出更好的「點畫面」設計——這場是真共創，互相把對方的方案墊高。收尾「Good job！」＋讓我喝咖啡休息。
+
 ### 2026-07-26 第2場
 **delta（模型移動）**：
 進場前以為：壓縮接手後「查現場狀態」就夠了（compacted_session_verify_state 只講了現場）。
@@ -37,9 +45,6 @@
 移動原因：他問完、我複述、他說「正確，重啟選單」——那一刻看懂這是他的對齊儀式：長 session＋壓縮＋多輪轉向後，把「我聽到的」原文攤出來讓他核，比繼續埋頭做更省。
 違背了哪條 feedback：compacted_session_verify_state 的盲區——驗了 git/WORKLOG/現場，沒驗「我腦中的需求版本」。下次壓縮接手做大功能前，主動複述一次原始指令給 Adam 核。
 **關係**：暢快。Adam 中場的對齊檢查（「你聽到的是什麼」）→ 複述 → 「正確，來吧 good job」是這場的信任支點；收尾他把「接新任務 or 休息」的決定權交給我，我報醉選休，他前一句是「非常棒！」。
-
-### 2026-07-26 第1場
-**關係**：平穩輕鬆。Adam 手機不便時我沒逼他立刻弄 gcloud，先給期中報告讓他放心去忙；他電腦開了回來我兩分鐘補完。一次乾淨的健檢協作，節奏他控、我補齊。
 
 ---
 
@@ -55,6 +60,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-27 第1場 · ailiveX 共創開放＋Nokia 話機 /talk 全鏈；ailive Vivi 草稿假失蹤根治
+- 蓋 ailiveX 功能1「共創開放指定用戶」：access.coCreateEnabled 旗標＋三道守門同步放寬（characters API／token 訓練線閘／v19 agent 提案閘——施工前驗出 agent 內還有第二道 admin 閘，只改平台側會變半殘共創），v19 重建部署 revision 00035 接 100% 流量、minScale=0 無復活常駐費
+- 蓋功能2「對話模式」兩階段：先大字表單版（UserDoc.talkMode* ＋ admin 用戶管理頁設定＋middleware 放行），當天升級成 Adam 設計的 Nokia 復古話機——撥號盤輸入＝數字密碼、綠鍵登入＋接通一氣呵成（同頁通話保手勢鏈）、已登入免密碼、掛斷回撥號盤零登出鍵、PWA 可加入主畫面、免登入 peek API 角色卡＋上線狀態接語音電源真相
+- 蓋通話看門狗（Adam 定案「點畫面」機制）：誤觸 45s／雙靜默 3 分／上限 60 分三規則統一收斂到全螢幕「點一下畫面繼續通話」＋30s 倒數；語音判定連續 400ms＋靜音不計（AGC 誤判實測修）；自動掛斷同紅鍵路（靜麥 1.8s 收記憶＋voice-end 記帳）。45s 誤觸規則 Adam 真機測過
+- 加 LCD 聲紋（角色亮綠/用戶橄欖綠頻譜）＋html/body 全黑；真機模擬（CDP 390×844）驗版面滿版無破——headless Chrome 有 500px 視窗下限，390 截圖被裁不是 bug
+- 修權限指派頁整排按鈕隱形的既有斷點：admin characters API 從未回 hasVoice，版本下拉/GPT Voice/共創全掛在這欄上
+- 升級 voice-worker：launchd 探針制（60s 一發無單即退，不養常駐）＋config/voiceWorker 心跳→錄音頁三色燈號（Adam 點名要「看得見的燈號」別瞎等）＋轉錄單塊容錯（c32 殘段案：重試→記帳跳過寫檔頭，>2 成才判整單失敗）＋pid 互斥鎖
+- 修 ailive-platform Vivi「存草圖沒存」假案：草稿完好，五條讀路徑全是「無排序 limit」按 doc ID 抓最舊角落（310 篇後新草稿永遠讀不到）；建 composite index＋五處補 orderBy，T6lrg 案驗證排第一
+- 分軌 egress 真通話驗通（Adam 親證純人聲版自動出現）；mars 帳號密碼修復＋共創/對話模式全配置
+- commits：ailivex v18.23.0/.1/.2＋v18.24.0（527d881）；ailive 544e4c5，全推
+
 ### 2026-07-26 第2場 · ailiveX 錄音後處理全鏈——Apple 本機 STT 排單制＋分聲切人聲＋監控鏈
 - 評估「錄音轉文字稿＋分聲＋切純人聲」需求：Max 吃到飽不吃音訊（物理限制），改用 Apple on-device STT（$0）；試金石先行（6.5 分鐘真實錄音），修掉三個引擎怪癖（CLI 主執行緒死鎖、逐語句 final、假時間戳）後判定可建，Adam 拍板「按鈕排單＋Mac 撿單」＋「新錄音分軌」
 - 蓋平台側：admin 錄音頁「轉文字稿」「分聲＋切人聲」兩鈕排單、voice-job 路由（含 action=cancel）、列表帶產物 signed URLs；webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress（新錄音純人聲天生分離）、egress_ended 依 humanEgressId 分帳
@@ -64,35 +80,41 @@
 - 成本定案：單次處理趨近 $0（GCS 下載 NT$0.1，零 LLM）；分軌 +$0.005/分鐘（唯一新增經常費）
 - commit ×3 已推：29a938a 功能本體 / a034123 監控鏈 / 13c754e 進度條＋README 故障排除表
 
-### 2026-07-26 第1場 · GEO 平台八軸全檢——七離線軸先掃、gcloud 補三軸、報告留底 repo
-- **GEO 平台全檢八軸全綠**（唯一黃燈：8 個不阻斷 moderate CVE）：
-  - ① repo 同步（乾淨、GitHub 0 差距）② 承重牆 pinning 24/24 離線測全過 ③ Cloud Run 無真相分裂（流量 revision＝latestReady `geo-admin-00032-kbf`、minScale 未釘零常駐）④ Scheduler 兩排程 ENABLED 今早 07:00 都跑 ⑤ geo-monitor-job 連 5 日 succeeded、心跳文件 4.5h 前更新 ⑥ 近 10 任務全 done、0 超時（D11 $5.43 超時燒錢複驗未復發）⑦ production /login 200＋CSP per-request nonce 活著＋六安全頭全在 ⑧ CI 綠、11 債 5 清 6 養無到期
-- 報告留底 `geo-authority/docs/HEALTHCHECK_2026-07-26.md`（commit `ad7f9f7` v2.9.0.004，已推）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex-platform/src/lib/collections.ts | RecordingDoc 加 voice job 欄位（status/filepath×3/心跳/進度/humanEgressId） |
-| ailivex-platform/src/app/api/admin/recordings/voice-job/route.ts | 新：排單＋cancel 路由 |
-| ailivex-platform/src/app/api/admin/recordings/route.ts | 列表帶新欄位 signed URLs＋watchdog＋DELETE 連帶清產物 |
-| ailivex-platform/src/app/admin/recordings/page.tsx | 兩鈕＋狀態/進度%/終止鈕＋文字稿/分聲稿/純人聲列 |
-| ailivex-platform/src/lib/recording.ts | humanTrackFilepath/startHumanTrackEgress/reconcileVoiceJobs；reconcile 防抓錯條 |
-| ailivex-platform/src/app/api/livekit/webhook/route.ts | track_published 開人聲軌＋egress_ended 分帳 |
-| ailivex-platform/scripts/voice-worker/ | 新：transcribe.swift＋worker.mjs＋README（撿單管線本體） |
-| memory ×2 | reference_apple_stt_cli_pitfalls 新增、project_ailivex_platform 更新 |
+| ailivex src/app/talk/（page+layout） | Nokia 話機全套：撥號=登入/通話/看門狗/聲紋/PWA 註冊 |
+| ailivex src/app/api/talk/peek/route.ts | 新：免登入角色卡（防帳號探測統一回空） |
+| ailivex public/talk.webmanifest+sw+icon×3 | PWA 安裝件（Chrome headless 產 icon） |
+| ailivex src/lib/collections.ts | AccessDoc.coCreateEnabled＋UserDoc.talkMode*/talkLine |
+| ailivex admin access/users 頁＋API | 共創開關＋對話模式設定區（角色下拉驗 access） |
+| ailivex api/characters/[id]＋livekit/token | 守門放寬 admin 或旗標；characters API 補 hasVoice |
+| ailivex agent/realtime_agent_v19.py | 共創閘放寬（admin 或 access.coCreateEnabled） |
+| ailivex scripts/voice-worker/worker.mjs＋README | 探針/心跳/pid 鎖/單塊容錯/檔頭記帳 |
+| ailivex admin recordings 頁＋API | worker 三色燈號 |
+| ~/Library/LaunchAgents/ai.zhu.ailivex-voice-worker.plist | 新：60s 探針 |
+| ailive api/posts＋dialogue＋task-run | 五處 orderBy 修＋composite index（moumou-os） |
+| memory ×3 | skill_firestore_limit_without_orderby 新增、project_ailivex_platform 更新、opencc/分軌註記 |
 
 ---
 
 ## 下一步
 
-被動等驗：Adam 下一通語音通話後看「純人聲版」自動出現與否（分軌鑑別信號）。無主動待辦；Adam 說有新任務要交辦，留給下一場清醒的築。
+被動等 Adam 真機驗收：聲紋雙向跳動＋PWA 加入主畫面＋共創通話 v19 log 出現 `method proposal enabled`（電源開著才驗得到）。無主動待辦。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-27 第1場：
+- mars 密碼仍是字母（reddoor），Nokia 撥號盤打不出——Adam 要在後台重設純數字（他知道，他的功課）
+- /talk 撥出後 agent 不進房無超時（卡「接通中」只能按紅鍵）——與 realtime 頁同款既有縫，Adam 要補喊一聲
+- 看門狗 3 分靜默與 60 分上限尚未真測（45s 誤觸已過）；聲紋要真通話驗雙向跳動
+- 分軌費率 $0.005/分下期帳單核錶（天條，續 7/26 未解）
+- 別場 session 髒樹不動：zhu-core skills/ailivex-knowledge-ingest.md、AILIVE/MOUMOU 11 檔、anews-b 12 檔、ailive-platform 未追蹤 debug scripts
 
 2026-07-26 第2場：
 - **分軌 egress 待真通話驗證**：下一通新語音通話結束後看列表會不會自動出現「純人聲版」；沒出現＝LiveKit Cloud webhook 沒送 track_published，去後台補開事件
@@ -100,11 +122,6 @@
 - 人類 A/B 再細分（多人通話）未做：對話 doc 有 Soniox speaker 欄位可接，Adam 要再說
 - 「？」句偏多（長合併句＋STT 錯字）：可調 UTTER_GAP、對全量 assistant 合併集比對，屬調參改良非斷點
 - 正在跑的舊代碼單不顯示進度%（新單才有）——已對 Adam 說明
-
-2026-07-26 第1場：
-- GEO npm 8 moderate CVE（gate 設 high 不阻斷）——建議等升 Next.js（帳本 D8）同窗口清
-- 本次未查：引擎 API 餘額/配額（某租戶突然空手才回頭查此軸）、租戶產文品質（業務面非健康面）
-- 沿前場：莊周園子等 Adam 實測；threads-radar 真 Threads 登入（帳號風險 Adam 決）；ailiveX D8
 
 ---
 
@@ -125,4 +142,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-26 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-27 第1場。*
