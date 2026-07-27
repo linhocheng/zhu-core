@@ -5,11 +5,18 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-27：共創開放指定用戶＋對話模式 Nokia 話機（v18.23.0-v18.24.0 已 commit+部署）。**
+- **共創開放**：`access.coCreateEnabled`（權限指派頁「共創」鈕，在 GPT Voice 旁）；三道守門同步放寬＝characters API（按鈕顯示）＋token 訓練線閘＋**v19 agent 提案閘**（`check_method_proposal_gate` 讀 access doc——只放寬平台側會半殘：聽得到提不了案）。提案照舊進後台審核
+- **對話模式 /talk＝Nokia 復古話機**（Adam 設計）：`?u=帳號` 專屬連結、撥號盤輸入＝**數字密碼**、綠鍵登入＋接通一氣呵成（通話同頁做——跳頁斷手勢鏈 iOS 無聲）；已登入免密碼直撥；掛斷回撥號盤、無登出鍵；PWA（manifest+零快取 SW+綠話筒 icon）；免登入 `/api/talk/peek` 回角色卡（只認開通帳號），「上線中」接語音電源真相。設定在用戶管理頁（talkModeEnabled/talkCharacterId/talkLine——選 trainer 綠鍵直撥共創線，後端驗 coCreate 防死路）
+- **通話看門狗（Adam 定案）**：任何自動掛斷前必跳全螢幕「點一下畫面繼續通話」＋30s 倒數——觸碰是零誤判在場信號（手機 AGC 讓聲音判定天生高誤判：連續 400ms 才算講話、靜音不計）。三規則：誤觸 45s／雙靜默 3 分／上限 60 分（點畫面續 15 分）。自動掛斷同紅鍵路（靜麥 1.8s＋voice-end 記帳）
+- 修 admin characters API 缺 `hasVoice` 欄——權限指派頁整排按鈕（版本/GPT Voice/共創）因此全隱形的既有斷點
+- voice-worker 升級：launchd 探針制（60s 一發，無單 0.1s 退出不養常駐；pid 鎖防撞單）＋後台燈號（`config/voiceWorker` 心跳→錄音頁 在線待命/處理中%/離線）＋轉錄單塊容錯（失敗重試→記帳跳過寫檔頭，>2 成才判整單失敗）。分軌 egress 真通話驗通
+
 **2026-07-26：錄音後處理全鏈上線（v18.22.0-.2 已 commit+部署）。**
 - admin 錄音頁兩鈕「轉文字稿」「分聲＋切人聲」＝**排單制**：平台只寫 queued，計算在 Adam Mac 跑 `scripts/voice-worker/worker.mjs`（Apple on-device STT，$0 零 LLM；Vercel 呼叫不到 Apple 引擎）。用法/故障排除表在該目錄 README
 - 分聲＝對話紀錄 role 文字 bigram 比對（**兩邊 opencc 轉簡體**——doc 存簡體、Apple 出繁體，不轉全滅＋假分數）；**語音逐字稿真身在 `conversations/ailivex-voice-<charId>-<userId>`**（50 則滾動窗、無 at 欄），`<userId>_<charId>` 是文字聊天；參照失效防呆＝0 句對上 assistant → 全標「？」不硬切
 - 監控鏈：心跳 voiceJobAt/進度% 每 chunk 寫、UI 終止鈕（transaction 護欄結果丟棄不蓋回）、watchdog 兩側鏡像（recording.ts reconcileVoiceJobs ↔ worker reconcileStale，心跳斷 10 分自動收失敗帳）
-- 新錄音**分軌**：webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress → `.human.mp4` 天生分離；egress_ended 依 humanEgressId 分帳。**待驗**：下通真通話看「純人聲版」自動出現；沒出現＝LiveKit 後台補開 track_published 事件。分軌費 +$0.005/分（下期帳單核錶）
+- 新錄音**分軌**：webhook track_published 對人類 audio track 開第二條 TrackCompositeEgress → `.human.mp4` 天生分離；egress_ended 依 humanEgressId 分帳。**2026-07-27 真通話驗通**（純人聲版自動出現，Adam 親證）。分軌費 +$0.005/分（下期帳單核錶仍待）
 
 **2026-07-19：共創系統一日全迴圈＋v20 全用戶上線（v18.15.0-v18.17.1 已 commit+部署）。**
 - **共創系統**：文字線 [[PROPOSE_METHOD]]/[[PROPOSE_KNOWLEDGE]] 標記＋語音 v19 原生工具（propose_method/propose_knowledge，opencc s2tw 落庫轉繁）；雙閘 admin×`characters.methodProposalEnabled`；draft→後台「知識與方法」待審區→轉正（補嵌 triggerEmb 收斂點）/轉入庫（走 ingest 正式管線 authority=derived）才生效。知識**不給角色自我入庫直通管**——他會幻覺（Bacha Coffee 曾被記成 1876 咖啡），事實層審核權在 Adam

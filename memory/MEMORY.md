@@ -157,6 +157,7 @@
 - [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版
 - [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本
 - [混合檢索融合兩個坑（RRF並列陷阱+加法計分救不了坍縮）](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域cosine坍縮用rank-based RRF(2:1)；未命中0分不給名次貢獻否則反壓真命中；白皮書公式也要過真實資料
+- [Firestore 無排序 limit 抓最舊角落](skill_firestore_limit_without_orderby.md) — .where().limit() 不帶 orderBy＝doc ID 序永遠回古董；「存了但看不到」靜默壞法；Vivi 310 篇五讀路徑全中
 - [Cloud Run 版本退役紀律（vN 收案降 v(N-1) 常駐）](skill_cloudrun_version_retirement.md) — 16 台殭屍燒 $963/月教訓；LiveKit agent 降 0＝聾不是慢；帳單曲線只漲不跌就掃 minScale
 - [退役/降級資源前先查真實引用](feedback_verify_references_before_retiring.md) — 「它是回滾坑位應該沒人用」是架構推論不是事實；退 LiveKit 版本/API/欄位/flag 前 query 誰還指向它，零引用才安全退；ailiveX v18 退冷備前查 34 access 全走 DEFAULT 零人釘
 - [一 repo 連多 Vercel project = 成本 N 倍](feedback_one_repo_multi_vercel_project_multiplies_cost.md) — 同 repo 綁多 project 每次 push 全部署、cron 各跑一遍且帳單看不出；zhu-core-full 幽靈雙胞胎教訓；審計法掃全 project crons+env+protection，刪前核 link/commit
