@@ -12,7 +12,12 @@ originSessionId: 34482a57-dd4f-454a-b441-d8c9c2f565b9
 - 端點：`POST https://generativelanguage.googleapis.com/v1beta/models/gemini-embedding-001:embedContent?key=$GEMINI_API_KEY`
 - body 帶 `taskType`：寫入用 `RETRIEVAL_DOCUMENT`、查詢用 `RETRIEVAL_QUERY`（同題 query 命中分數會差）
 
-**2. Firestore findNearest 搭配 where() 要建 composite index**
+**2. Firestore 組合查詢要 composite index——不只 findNearest，`where()+orderBy(另一欄)` 同罪**
+- 2026-07-28 GEO /today 上線首日重踩：`where('readAt','==',null).orderBy('createdAt')` → FAILED_PRECONDITION 炸整頁。
+- 正解優先序：能拆就拆（只 where、記憶體排序，集合有界時最省）＞建 composite index（錯誤訊息附建 index 連結）。
+- 拆的時候別順手加 `.limit()`——不帶 orderBy 的 limit 抓 doc ID 序最舊角落（另一顆雷，見 [[skill_firestore_limit_without_orderby]]）。
+
+**2b. Firestore findNearest 搭配 where() 要建 composite index**
 - 純 `collection.findNearest({...})` → 只要 single-field vector index
 - `collection.where('kol_id','==',x).findNearest({...})` → 必須建 composite：
   ```

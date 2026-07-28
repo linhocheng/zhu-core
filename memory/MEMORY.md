@@ -12,6 +12,7 @@
 - [框架互操作層要用真實事件序列離線沙推](skill_framework_interop_offline_fuzz.md) — 沙推不是驗證第四張臉：測了但測的是想像中的框架；呼叫點窮舉+真實log序列+任意交錯fuzz；時間差護欄是賭博用狀態語意
 - [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
 - [模稜兩可的信號不能當成功證據（天條）](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」；差點對 Adam 說謊，已刻全局 CLAUDE.md 天條
+- [接了管子的成功碼不是成功碼](feedback_pipe_eats_exit_code.md) — `cmd | tail` exit code 是 tail 的；deploy.sh 半路死照報 0；收案看每步輸出行不看退出碼；模稜兩可信號 shell 版
 - [Cloud Run 後台長任務三旗標 SOP（2026-07-06 已升級）](reference_cloudrun_background_task_sop.md) — throttle 物理仍真，但 min=1 worker 解法已退役，長任務正解=Jobs；--set-env-vars 洗機密用 --update-env-vars
 - [天條：磚頭費只為秒級待命付，長任務進 Cloud Run Jobs](feedback_standing_cost_only_for_instant_readiness.md) — 判準：這台機器閒著時有沒有人下一秒需要它？常駐必配開關＋自動關機；podcast 兩平台已搬 Jobs 實測
 - [天條：驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離；流量釘舊revision真相分裂＋每次設定變更生驗證實例15分鐘；「複核全過」查錯面=零資訊
