@@ -14,7 +14,7 @@ activation:
 
 # Platform Foundation — 平台地基 SOP v1.0
 
-> 母版藍圖（11 章地基＋檢查表＋技術債規則＋承重牆帳＋滾動規則）：同目錄 `BLUEPRINT.md`。
+> 母版藍圖（12 章地基＋檢查表＋技術債規則＋承重牆帳＋滾動規則）：同目錄 `BLUEPRINT.md`。
 > 本檔只管「怎麼執行」。
 
 ## 觸發判準
