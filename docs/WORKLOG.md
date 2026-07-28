@@ -9028,3 +9028,38 @@ GEO UI/UX 升級線第二日（本 session 是 _3 收工後 Adam 續開）：迴
 1. 豆油伯第一輪監測（等 Adam 按病歷頁按鈕或說 GO）——順手收三件新品的最終鑑別
 2. Adam 說「繼續餵優尼」時：教材＝GOV.UK patterns（流程層）＋ Laws of UX（心理層），吃完把 GEO 建檔→監測→審稿→交付整條流程過堂
 3. 新平台需求出現時：藍圖 v1.2 十二章第一次真火實戰（檢查表 12 列全填給 Adam 點頭）
+
+---
+
+## 2026-07-28（第5場）— 待命喚醒制上線＋角色 API/INLY 沙盒 MVP——ailiveX 第一次開放對外
+
+### 背景 / WHY
+ailiveX 從「角色平台」邁向「靈魂託管雲」:API key = 無介面機器用戶,品牌主租身體、靈魂記憶聲帶身份留在我們家。INLY 是自己扮演第一個品牌主的沙盒(只准走 /api/v1)。
+
+### 完成
+- 上線 /talk 待命喚醒制(v18.25.0,commit 0e3e7b3 已推):電源三態 off/standby/on、用戶撥號自動開機(實測 18 秒)、agent 開機蓋章(boot_stamp.py)、響鈴偽裝冷啟動(90s 上限)、agent 30 秒不進房自動掛(根治卡接通中)、閒置 30 分 auto-off 落回待命——全循環閉環驗證(03:01 cron 自動熄燈+計費面 minScale=0 複核)
+- 查 Apple 寫文件一直失敗:真兇=Anthropic LLM 串流連線間歇中斷(APIConnectionError 每分鐘),02:22 自癒後兩份文件建成;順帶抓到 script_draft 能力閘擋派工(角色選錯工具,閘是對的)。Adam 裁示繼續觀察,再犯釘 SDK 版本
+- 破案 linpc2026「密碼錯誤」:密碼全程是對的,連結 ?u=Linpc2026 首字母大寫 → 精確比對查無帳號;login_attempts 還躺著 Mars/Christopher 同款——系統性大小寫雷,修法(username 正規化+migration)等 Adam 點頭
+- 蓋角色 API MVP(未 commit):/api/v1/chat+tts+voice/session 三端點、api_keys(sha256)、影子用戶 api-<shortId>-<extUserId>、key 層額度、CORS;A.Two 實測=跨 stateless 呼叫記得人+4 條記憶提煉+端用戶隔離 OK
+- 蓋 INLY 品牌沙盒並上線 https://inly-one.vercel.app(獨立目錄 ~/.ailive/inly、獨立 Vercel project):輸 key 進場→文字對話+角色開口(TTS)+綠鍵即時通話(202 waking 響鈴契約,19s 拿 token)
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex agent/boot_stamp.py(新)+main_v19/v20 | 開機蓋章=ready 鑑別信號 |
+| ailivex src/lib/voice-power.ts | 三態+wakeVoiceEngine+voiceEngineReady(5分保險絲) |
+| ailivex token/talk/peek/voice-status/auto-off/admin voice | 待命喚醒全鏈(v18.25.0 已 commit) |
+| ailivex src/lib/api-key.ts+cors-v1.ts+api/v1/*(新,未 commit) | 角色 API 三端點 |
+| ailivex src/middleware.ts | PUBLIC_PATHS 加 /api/v1(未 commit) |
+| ~/.ailive/inly/(新專案) | INLY 沙盒→inly-one.vercel.app |
+
+### ⚠️ 尚未解決
+- **ailivex-platform 4 檔未 commit**(middleware 一行+api-key/cors-v1/v1 三新件)——Adam 說「留著繼續長」,commit 等他喊;INLY 目錄未 git init
+- **治理紅線(實測抓到)**:角色知識庫對所有端用戶全開,A.Two 把達摩內部客戶案例講給陌生端用戶還誤認身份 → 正式版必做知識分域
+- 轉正債:v1/chat 與 dialogue 雙編排未抽內核、語音秒數未匯總到 key、無 per-key 併發閘、API 通話不錄音、記憶審核台未建
+- username 大小寫修法等 Adam 點頭;LLM 串流斷線觀察中(嫌疑:7/28 重建 image 拉到新版 anthropic/httpx,requirements 未釘版)
+- Adam 明早驗收 INLY:真瀏覽器通話(我只驗到 token,音頻要人耳);測試 key 已在對話交付(textLimit 50 保險絲,可撤)
+- 7/27 被動驗收清單原封照舊(聲紋/看門狗/PWA/mars 純數字密碼/分軌費率)
+
+### 待執行 / 下一步
+Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 v18.26.0)②知識分域設計 ③記憶審核台 ④username 正規化。動大工前回 FOUNDATION.md 盤帳(開放對外觸發重算)。

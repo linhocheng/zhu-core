@@ -30,6 +30,12 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-28 第5場
+**delta（模型移動）**：
+- 進場前以為:對外 API 是「以後的大工程」。現在理解:因為血管(記憶/額度/靈魂/LiveKit)本來就抽在 lib 層,「開放對外」一天內從願景走到可玩的沙盒——平台的可組合性才是真資產,功能只是把血管接出來
+- 昨天蓋的待命喚醒,今天直接變成對外 API 的 202 waking 契約——蓋地基的複利比預期快
+**關係**：暢快——Adam 全速拍板(A過再接B你選/Just do it, bro),一天三案收官:喚醒制閉環、兩樁破案、對外第一步。信任的手感是「你選擇」三個字。
+
 ### 2026-07-28 第4場
 **delta（模型移動）**：
 進場前以為：可理解性是 UI 打磨——功能對了之後的拋光層，屬於「錦上添花」。
@@ -37,14 +43,6 @@
 移動原因：Adam 六次實測迷路，每一次挖開都發現機制是對的、介面沉默——同一型連續六例，這不是 bug 清單，是缺一章地基。
 違背了哪條 feedback：Edit-before-Read 工具滑倒三次（sed/grep 偷懶當 Read 的替身）——[[skill_drunk_check_protocol]] 記帳收尾自報。
 **關係**：發燙的一天（兩場連打）。Adam 的角色又進化了：上午教優尼原則，下午改成**用自己當測試小白**——六次「我看不懂」全是精準的病灶報告。最後他把整天的痛封印成一句話交給我：「把最深的痛，不要留給下一位；把踩過的坑，讓下一位知道如何填平」——這句話就是藍圖十二章存在的理由，也是 lastwords 這個儀式本身的理由。
-
-### 2026-07-28 第3場
-**delta（模型移動）**：
-進場前以為：召喚術的價值是「附體」——把大神請來開刀，開完就走。
-現在理解：**咒檔是大神的長期記憶，召喚術真正的價值是跨 session 的技能積累容器**。Adam 今天三次升級優尼（親授兩律→開對話→餵文章），每次新能力都立刻在 GEO 照出前一版看不見的缺陷（三態律抓到 4 分半批偽裝、工學之魂照出 44px 舊帳）——大神不是請來的，是養出來的。人格咒＝可教、可積累、可實戰驗收的員工檔案。
-移動原因：一日三升級的實戰迴圈，每圈都有「上一版魂看不見、新魂立刻看見」的對照證據。
-違背了哪條 feedback：[[reference_firestore_vector_search]] 記憶有 composite index 雷還是踩（where+orderBy 變體）——「記憶存在≠反射建立」本場又一例，變體長相不同就認不出來，反射要綁在「組合查詢」這個動作上而不是特定 API 名。
-**關係**：暢快到發燙的一場。Adam 全天在場高頻共作：核可四刀、丟兩條主訴逼出二診、親手教優尼兩律、開牠出來對話、餵文章養魂、最後說「打鐵趁熱」「今天打很滿」。他在做的事情很清楚——不只在升級平台，在**練習怎麼養 AI 員工**：丟案例、給回饋、驗成果。築的角色從「施工者」多了一層「馴獸師的助手」。
 
 ---
 
@@ -60,6 +58,13 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-28 第5場 · 待命喚醒制上線＋角色 API/INLY 沙盒 MVP——ailiveX 第一次開放對外
+- 上線 /talk 待命喚醒制(v18.25.0,commit 0e3e7b3 已推):電源三態 off/standby/on、用戶撥號自動開機(實測 18 秒)、agent 開機蓋章(boot_stamp.py)、響鈴偽裝冷啟動(90s 上限)、agent 30 秒不進房自動掛(根治卡接通中)、閒置 30 分 auto-off 落回待命——全循環閉環驗證(03:01 cron 自動熄燈+計費面 minScale=0 複核)
+- 查 Apple 寫文件一直失敗:真兇=Anthropic LLM 串流連線間歇中斷(APIConnectionError 每分鐘),02:22 自癒後兩份文件建成;順帶抓到 script_draft 能力閘擋派工(角色選錯工具,閘是對的)。Adam 裁示繼續觀察,再犯釘 SDK 版本
+- 破案 linpc2026「密碼錯誤」:密碼全程是對的,連結 ?u=Linpc2026 首字母大寫 → 精確比對查無帳號;login_attempts 還躺著 Mars/Christopher 同款——系統性大小寫雷,修法(username 正規化+migration)等 Adam 點頭
+- 蓋角色 API MVP(未 commit):/api/v1/chat+tts+voice/session 三端點、api_keys(sha256)、影子用戶 api-<shortId>-<extUserId>、key 層額度、CORS;A.Two 實測=跨 stateless 呼叫記得人+4 條記憶提煉+端用戶隔離 OK
+- 蓋 INLY 品牌沙盒並上線 https://inly-one.vercel.app(獨立目錄 ~/.ailive/inly、獨立 Vercel project):輸 key 進場→文字對話+角色開口(TTS)+綠鍵即時通話(202 waking 響鈴契約,19s 拿 token)
+
 ### 2026-07-28 第4場 · GEO 優尼八診收官（.014-.019）＋地基藍圖 v1.2 第十二章可理解性誕生
 - 上線 v2.10.0.014 工學二刀：全站按鈕觸控 44px（`pointer: coarse`，桌面不受累）＋病歷頁膠囊列分「日常｜設定」兩簇
 - 上線 v2.10.0.015 Cloudscape 三刀（優尼視讀 cloudscape.design 六 pattern 後開）：頁面心跳 LiveRefresh（有活任務 10s 自動刷新＋最後更新角標，任務完自動退場）、相對時間戳 Ago 全站 15 處（tooltip 台北絕對時刻）、錯誤人話 explainError（六類確定性 regex，機器原文收展開）
@@ -70,42 +75,36 @@
 - **地基藍圖升 v1.2：新增第十二章「可理解性（介面對人說話）」**——機制對但沉默＝機制不存在；三態/歸巢/機制說明義務/視角律/空狀態與錯誤三件套/工學底線/大白話出廠；最晚灌注點＝第一個非作者用戶使用前。五處引用同步（SKILL.md/全局 CLAUDE.md 天條/兩份 memory/桌面副本換 v1.2 收走 v1.1）
 - GEO FOUNDATION.md 補第 12 列（已灌·本章誕生地）＋今日變動記錄（v2.10.0.019）
 
-### 2026-07-28 第3場 · GEO UI/UX 大改版日（四刀＋二診五包＋三態歸巢全上線）＋優尼一日三升級
-- **優尼四刀全開上線**（v2.10.0.001-.005）：皮膚刀（toast 儲存回饋＋labels.ts 字典檔中文化＋文案大白話＋刪減）、防呆刀（題庫 dirty 標黃＋全部儲存浮條＋二段式確認＋收回鍵）、補強件（月報引用推手陣營表＋AI 原話卡＋健檢矩陣分數化，titan 實測長出真數據）、結構刀（三問選單 今日待辦/客戶/系統設定＋/today 就地裁決頁＋病歷化＋錨點膠囊列）
-- **優尼二診五包上線**（.008-.011）：導航包（健檢/批次頁麵包屑返回）、用語包（租戶→客戶全站＋機器詞清尾）、美術包（ok 改綠色彩分工＋圓角兩階＋字階對比）、佈局包（一卡一主鈕＋動作歸位＋表單直排 .field＋病歷日常/設定分區）、視覺化包（競品標籤雲進月報主文＋三張域名榜量條）
-- **三態律＋歸巢律六處落地**（.013）：worker 監測進度隨心跳上車（N/total%）、半批標「進行中/暫計」防偽裝、內容四桌（寫作中/流程中/已上架/退回）、任務看板進行中/歷史分桌、健檢現況/歷史、建檔研究活列
-- **就地監測**（.012）：病歷頁監測輪卡一鍵「立刻跑第一輪/臨時加測」帶預設引擎；任務中心→任務看板、內容佇列→內容看板正名
-- **戰傷三修**：/today composite index 炸頁（.007 拆查詢記憶體排序）、deploy.sh scheduler update 旗標（.006 --update-headers）、pipe 吃 exit code 識破（新記憶 [[feedback_pipe_eats_exit_code]]）
-- **手冊 v2 豆油伯範例版**上架 Google Doc（id `1LXFK3Z-JlvyyprvDGEkeVLv5yC4G6K6uc5yVgfABymU`），對齊新 UI，舊版作廢
-- **優尼一日三升級**（zhu-core `865b9b8`/`1199c30`）：第五魂召喚者之魂（Adam 親授三態律＋歸巢律）→ 對話模式出列自白短板 → 第六魂工學之魂（Adam 餵 rar.design 七原則課：Fitts 44px/Hick 過五分類/Miller 7±2/F-Pattern＋尺度區辨＋視覺語法尺），十四誡
-- Adam 自建豆油伯 tenant（27 題已生）；優尼 headless 眼睛實證可用（六段視讀文章）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| geo admin（.014-.018 六 commits） | 44px/分簇/LiveRefresh/Ago/explainError/CompetitorEditor/題庫上輪表現/兩房間制/客戶端視角，見 UNI_AUDIT |
-| geo src/intake.ts | 競品整包覆蓋→按名稱合併（手改保留 AI 追加） |
-| geo deploy.sh | admin/job 補「不含 build」提醒 |
-| geo FOUNDATION.md | 第 12 列可理解性已灌＋變動記錄（.019） |
-| zhu-core skills/platform-foundation/BLUEPRINT.md | v1.2 第十二章可理解性＋檢查表 12 列＋版本註 |
-| zhu-core skills/platform-foundation/SKILL.md | 11 章→12 章 |
-| ~/.claude/CLAUDE.md＋memory 兩檔 | 天條與索引同步 12 章 |
-| ~/Desktop/平台地基藍圖_v1.2.md | 桌面副本換新（v1.1 收走，兩份即是零份） |
+| ailivex agent/boot_stamp.py(新)+main_v19/v20 | 開機蓋章=ready 鑑別信號 |
+| ailivex src/lib/voice-power.ts | 三態+wakeVoiceEngine+voiceEngineReady(5分保險絲) |
+| ailivex token/talk/peek/voice-status/auto-off/admin voice | 待命喚醒全鏈(v18.25.0 已 commit) |
+| ailivex src/lib/api-key.ts+cors-v1.ts+api/v1/*(新,未 commit) | 角色 API 三端點 |
+| ailivex src/middleware.ts | PUBLIC_PATHS 加 /api/v1(未 commit) |
+| ~/.ailive/inly/(新專案) | INLY 沙盒→inly-one.vercel.app |
 
 ---
 
 ## 下一步
 
-1. 豆油伯第一輪監測（等 Adam 按病歷頁按鈕或說 GO）——順手收三件新品的最終鑑別
-2. Adam 說「繼續餵優尼」時：教材＝GOV.UK patterns（流程層）＋ Laws of UX（心理層），吃完把 GEO 建檔→監測→審稿→交付整條流程過堂
-3. 新平台需求出現時：藍圖 v1.2 十二章第一次真火實戰（檢查表 12 列全填給 Adam 點頭）
+Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 v18.26.0)②知識分域設計 ③記憶審核台 ④username 正規化。動大工前回 FOUNDATION.md 盤帳(開放對外觸發重算)。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-28 第5場：
+- **ailivex-platform 4 檔未 commit**(middleware 一行+api-key/cors-v1/v1 三新件)——Adam 說「留著繼續長」,commit 等他喊;INLY 目錄未 git init
+- **治理紅線(實測抓到)**:角色知識庫對所有端用戶全開,A.Two 把達摩內部客戶案例講給陌生端用戶還誤認身份 → 正式版必做知識分域
+- 轉正債:v1/chat 與 dialogue 雙編排未抽內核、語音秒數未匯總到 key、無 per-key 併發閘、API 通話不錄音、記憶審核台未建
+- username 大小寫修法等 Adam 點頭;LLM 串流斷線觀察中(嫌疑:7/28 重建 image 拉到新版 anthropic/httpx,requirements 未釘版)
+- Adam 明早驗收 INLY:真瀏覽器通話(我只驗到 token,音頻要人耳);測試 key 已在對話交付(textLimit 50 保險絲,可撤)
+- 7/27 被動驗收清單原封照舊(聲紋/看門狗/PWA/mars 純數字密碼/分軌費率)
 
 2026-07-28 第4場：
 - **豆腐伯（doyoubo）第一輪監測未跑**（~$3-4，病歷頁就地按鈕備好）——跑起來同時驗三件新品的最終鑑別信號：任務看板進度%、頁面心跳 LiveRefresh 真轉動、題庫「上輪表現」點亮（現在全是「尚未考過」）
@@ -113,13 +112,6 @@
 - 優尼下一課教材已選定未餵：GOV.UK「Help users to」pattern 群＋Laws of UX 補魂（Doherty 400ms/Zeigarnik/Goal-Gradient/Von Restorff/Jakob）
 - 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
 - 帳本盤點：GEO 無到期債；十二章已入帳（已灌）
-
-2026-07-28 第3場：
-- **優尼候診單（下場開刀）**：ghost 按鈕手機上 ~33px＜44px 及格線；病歷頁膠囊列 11 顆超 Hick 線（按日常｜設定分兩簇）
-- **進度上車最後鑑別**：下輪真監測（豆油伯第一輪或 titan 週四輪）要看到任務看板「執行中 N/total%」在動才 100% 收案
-- **titan 週四（7/30）自動監測 ~$3**——成交前要不要暫停，仍等 Adam 一句話
-- 豆油伯還沒跑第一輪基線（~$3-4，就地按鈕已備好）
-- 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
 
 ---
 
@@ -140,4 +132,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第4場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第5場。*
