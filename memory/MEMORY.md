@@ -172,3 +172,4 @@
 - [GEO Authority 平台（Adam×WAITIN 協作）](project_geo_authority.md) — AI 搜尋可見度代操；月循環自動駕駛；白皮書 v1.0 領地=檔案邊界；月報零 LLM 是商品本體
 - [Next.js CSP nonce 化正解＋Next 16 三雷](reference_nextjs16_csp_nonce.md) — middleware/proxy per-request nonce＋strict-dynamic＋不設default-src；Next16雷：proxy.ts改名/nonce必配force-dynamic否則靜態頁死白頁/__next_f探針失效；外部字型要放行googleapis
 - [同模板複製多站也要逐站真瀏覽器測](skill_csp_nonce_per_site_headless_verify.md) — 每站雷不同(三站三種破法)；headless驗CSP鑑別信號：script nonce覆蓋/0 violation/軟導航=最強hydration證據；自簽cookie測gated頁；部署後同信號打production
+- [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 「召喚○○」→附體領域大神人格咒；框架/名冊在 zhu-core/skills/summon/；鑄新神五步，沒首戰不算鑄成；首尊優尼(UI/UX四神)
