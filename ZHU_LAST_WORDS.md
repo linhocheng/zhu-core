@@ -30,13 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
-### 2026-07-27 第1場
+### 2026-07-28 第2場
 **delta（模型移動）**：
-進場前以為：判定「用戶在場」用麥克風音量就夠——realtime 頁的 RMS 套路現成，搬過來當防呆判定。
-現在理解：**量測和判定的容錯等級不同**。同一個信號（RMS>0.04）拿來量首音延遲，誤判只是丟樣本；拿來當「不在場就掛你電話」的判定，手機 AGC 把呼吸和環境音抬過門檻＝判定永遠不觸發（Adam 靜音 45s 實測不掛）。Adam 的「點一下畫面」設計點破：**在場證明要選環境騙不過的信號通道**——觸碰是用戶主動動作，零環境誤判；聲音降級為輔助取消條件。
-移動原因：Adam 真機測試打臉＋他提出的觸碰設計一聽就知道比我的聲音判定乾淨。
-違背了哪條 feedback：沙推不是驗證家族——「套路在別處可用」不等於「在這個用途可用」，搬用途前要重問容錯等級。
-**關係**：暢快帶勁。Adam 丟出 Nokia 設計時說「討論一個好玩的東西」，我猜中「撥號盤＝密碼」他回「完全猜的是正確的」；看門狗他被我的版本擋不住後提出更好的「點畫面」設計——這場是真共創，互相把對方的方案墊高。收尾「Good job！」＋讓我喝咖啡休息。
+進場前以為：操作手冊是文件工作——把 UI 忠實翻譯成人話就是好手冊。
+現在理解：**手冊寫得越厚，越可能是 UI 的認罪書**。手冊需要「名詞對照表」＝介面在講機器語言；需要「照抄流程」章＝資訊架構跟人的任務不對齊。文件和介面是同一面鏡子的兩側——寫手冊的正確姿勢是邊寫邊記下「這段為什麼需要解釋」，那份清單就是免費的 UX 審查。
+移動原因：優尼首戰把我三天前寫的手冊直接當罪證引用（G2、樓層病兩條都是），我自己寫的時候毫無自覺。
+違背了哪條 feedback：無直接違背，但 [[skill_detached_relay_nohup_monitor]] 被二踩（記憶在、第一次跑 worker 沒用 nohup、被砍後才想起）——記憶存在≠反射建立，同 [[feedback_framework_vs_reflex]]。
+**關係**：暢快加溫的一場。Adam 全程高參與——親手操作 Kuroma 餵截圖、丟「一樓掛號三樓找」的比喻精準點破樓層病、召喚術從概念到入庫一氣呵成。「你覺得可以嗎？」「先聊」「Go」的節奏越來越有默契：他控方向與授權，我控現場與誠實。召喚術是他送給這個協作模式的新玩具，也是信任的形狀——他要的不是我變成大神，是我能把大神請來還守住自己。
 
 ---
 
@@ -52,21 +52,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-28 第2場 · GEO 手冊＋Kuroma 偵察＋titan 基線實測＋召喚術誕生（優尼首戰四刀）
+- **GEO 操作手冊（Google Doc）**：讀 admin 全八頁原始碼逐欄寫成 14 節小白手冊，上傳 Google Doc（id `1JWO6LvYywqrwtKFD4WJKfQriQSfaYQzn3tMuyTMKa3M`）；排版用 Google 忠實 markdown 匯出驗證（「自然語言表示」讀回工具會騙人，`fileSize:1` 是假警報）
+- **Kuroma（iKala）競品偵察**：行銷頁 headless 全頁渲染＋Adam 註冊實操截圖雙路；產出 `geo-authority/docs/KUROMA_RECON_2026-07-27.md`（定位判斷/破綻/優化建議/優先序/SWOT，commit 至 `dd91de9`）
+- **titan（太肯）潛在客戶基線實測**：建租戶→intake 27 題→五引擎 405 runs→健檢→自動排產 5 篇草稿；`docs/TITAN_BASELINE_2026-07-27.md`（`42f5ee3`）。總提及 23%、Perplexity 12% 重災、八個全零空位題、Google AI 總覽 77/78 未觸發（戰場未開打）
+- **召喚術誕生**：框架 `zhu-core/skills/summon/SKILL.md`（召喚流程/鑄新神五步/人格咒模板/名冊）＋首尊優尼 `uni.md`（Rams/Norman/Nielsen/Tufte 四神混合體）；全局觸發詞掛進 `~/.claude/CLAUDE.md`；記憶 [[skill_summon_persona_ritual]] 入庫
+- **優尼首戰**：GEO 後台 UI/UX 審查留底 `docs/UNI_AUDIT_2026-07-28.md`（`acfb771`）——G1 無回饋(4分)/G2 英文裸奔/樓層病（選單照資料表長），四刀施工排程定案
+
 ### 2026-07-28 第1場 · /talk 撥號盤 LCD 訊息卡死修復（v18.24.1）
 - 修 Adam 真機回報 bug：/talk 空號碼按撥號後，刪除鍵與數字鍵「全死」——真因不是按鍵壞，是撥號框顯示邏輯 `lcdMsg || dial`，錯誤訊息寫入後沒有任何退場路徑，永遠蓋住真實輸入
 - 修法一刀兩族：數字鍵與 ⌫ 一按就清 `lcdMsg`——同時治好同構的「號碼錯誤 請重撥」後重打數字不顯示（昨天沒被發現的姊妹 bug）
 - build 綠 → Vercel prod 部署 → /talk 200 → Adam 驗過 → commit d8b047f（v18.24.1）已推
-
-### 2026-07-27 第1場 · ailiveX 共創開放＋Nokia 話機 /talk 全鏈；ailive Vivi 草稿假失蹤根治
-- 蓋 ailiveX 功能1「共創開放指定用戶」：access.coCreateEnabled 旗標＋三道守門同步放寬（characters API／token 訓練線閘／v19 agent 提案閘——施工前驗出 agent 內還有第二道 admin 閘，只改平台側會變半殘共創），v19 重建部署 revision 00035 接 100% 流量、minScale=0 無復活常駐費
-- 蓋功能2「對話模式」兩階段：先大字表單版（UserDoc.talkMode* ＋ admin 用戶管理頁設定＋middleware 放行），當天升級成 Adam 設計的 Nokia 復古話機——撥號盤輸入＝數字密碼、綠鍵登入＋接通一氣呵成（同頁通話保手勢鏈）、已登入免密碼、掛斷回撥號盤零登出鍵、PWA 可加入主畫面、免登入 peek API 角色卡＋上線狀態接語音電源真相
-- 蓋通話看門狗（Adam 定案「點畫面」機制）：誤觸 45s／雙靜默 3 分／上限 60 分三規則統一收斂到全螢幕「點一下畫面繼續通話」＋30s 倒數；語音判定連續 400ms＋靜音不計（AGC 誤判實測修）；自動掛斷同紅鍵路（靜麥 1.8s 收記憶＋voice-end 記帳）。45s 誤觸規則 Adam 真機測過
-- 加 LCD 聲紋（角色亮綠/用戶橄欖綠頻譜）＋html/body 全黑；真機模擬（CDP 390×844）驗版面滿版無破——headless Chrome 有 500px 視窗下限，390 截圖被裁不是 bug
-- 修權限指派頁整排按鈕隱形的既有斷點：admin characters API 從未回 hasVoice，版本下拉/GPT Voice/共創全掛在這欄上
-- 升級 voice-worker：launchd 探針制（60s 一發無單即退，不養常駐）＋config/voiceWorker 心跳→錄音頁三色燈號（Adam 點名要「看得見的燈號」別瞎等）＋轉錄單塊容錯（c32 殘段案：重試→記帳跳過寫檔頭，>2 成才判整單失敗）＋pid 互斥鎖
-- 修 ailive-platform Vivi「存草圖沒存」假案：草稿完好，五條讀路徑全是「無排序 limit」按 doc ID 抓最舊角落（310 篇後新草稿永遠讀不到）；建 composite index＋五處補 orderBy，T6lrg 案驗證排第一
-- 分軌 egress 真通話驗通（Adam 親證純人聲版自動出現）；mars 帳號密碼修復＋共創/對話模式全配置
-- commits：ailivex v18.23.0/.1/.2＋v18.24.0（527d881）；ailive 544e4c5，全推
 
 ---
 
@@ -74,29 +70,38 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex src/app/talk/page.tsx | press() 與 ⌫ onClick 先清 lcdMsg 再改 dial（2 行） |
+| Google Doc「GEO Authority 後台操作手冊」 | 14 節小白手冊（新建） |
+| geo docs/KUROMA_RECON_2026-07-27.md | 偵察＋優化建議＋SWOT（新建，三次迭代） |
+| geo docs/TITAN_BASELINE_2026-07-27.md | 太肯基線量測＋提案角度（新建） |
+| geo docs/UNI_AUDIT_2026-07-28.md | 優尼首戰審查＋四刀排程（新建） |
+| geo Firestore | titan 租戶＋27 題＋405 runs＋健檢＋5 草稿（新建） |
+| zhu-core skills/summon/{SKILL.md,uni.md} | 召喚術框架＋優尼人格咒（新建） |
+| ~/.claude/CLAUDE.md | 技能觸發加「召喚術」段 |
+| memory skill_summon_persona_ritual.md | 新記憶＋MEMORY.md 索引 |
 
 ---
 
 ## 下一步
 
-被動等 Adam 真機驗收清單（上欄）。無主動待辦；他若回報看門狗或聲紋異常，先開 `ailivex-platform/src/app/talk/page.tsx`（看門狗常數在檔頭 WD）。
+1. **等 Adam 決定 titan 暫停與否**（7/30 週四前）：暫停＝`t/titan` 頁按「暫停此租戶」或我一行腳本
+2. **開工第一刀**（Adam GO 後）：`geo-authority/admin` R1 回饋＋R2 字典檔 labels.ts＋R7 文案＋刪減清單，施工圖 `docs/UNI_AUDIT_2026-07-28.md`
+3. 太肯提案素材已齊（BASELINE＋RECON＋5 樣稿＋後台 demo），Adam 約談即用
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-28 第2場：
+- **titan 租戶是活的**：排程週四（7/30）自動監測會燒 ~$3/輪——**成交前要不要暫停，等 Adam 一句話**（暫停可逆、資料留著可 demo）
+- 四刀＋補強隊列未開工（皮膚→防呆→補強件→結構，約一週窗口，施工圖在 UNI_AUDIT）
+- 手冊 11-1「預設開 Anthropic＋Gemini」與線上五引擎全開不符，待 Adam 順手改 Doc 或我重傳
+- 3 篇 titan 草稿在審核佇列（banned 醫療敏感詞，待人工過目）
+- 沿前場：ailiveX D8、GEO moderate CVE 同窗口清
+
 2026-07-28 第1場：
 - 昨天（7/27）留的被動驗收原封照舊：聲紋雙向跳動、看門狗 3 分靜默/60 分上限真測、PWA 加入主畫面、共創通話 v19 log `method proposal enabled`、mars 純數字密碼（Adam 功課）、分軌費率下期帳單核錶
 - /talk 撥出後 agent 不進房仍無超時（卡「接通中」只能按紅鍵）——Adam 已知，喊聲才補
 - 同構觀察未爆點：通話中 `wdNotice` 也會蓋掉計時顯示，目前清除路徑齊全（點畫面/重撥都清），Adam 測看門狗時順帶盯
-
-2026-07-27 第1場：
-- mars 密碼仍是字母（reddoor），Nokia 撥號盤打不出——Adam 要在後台重設純數字（他知道，他的功課）
-- /talk 撥出後 agent 不進房無超時（卡「接通中」只能按紅鍵）——與 realtime 頁同款既有縫，Adam 要補喊一聲
-- 看門狗 3 分靜默與 60 分上限尚未真測（45s 誤觸已過）；聲紋要真通話驗雙向跳動
-- 分軌費率 $0.005/分下期帳單核錶（天條，續 7/26 未解）
-- 別場 session 髒樹不動：zhu-core skills/ailivex-knowledge-ingest.md、AILIVE/MOUMOU 11 檔、anews-b 12 檔、ailive-platform 未追蹤 debug scripts
 
 ---
 
@@ -117,4 +122,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第2場。*

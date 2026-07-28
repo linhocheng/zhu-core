@@ -8908,3 +8908,41 @@ ailiveX 對話模式 Nokia 話機——上線後真機使用期的第一顆現�
 
 ### 待執行 / 下一步
 被動等 Adam 真機驗收清單（上欄）。無主動待辦；他若回報看門狗或聲紋異常，先開 `ailivex-platform/src/app/talk/page.tsx`（看門狗常數在檔頭 WD）。
+
+---
+
+## 2026-07-28（第2場）— GEO 手冊＋Kuroma 偵察＋titan 基線實測＋召喚術誕生（優尼首戰四刀）
+
+### 背景 / WHY
+GEO Authority 線：從「平台健康」推進到「商業武裝」——手冊給同仁、偵察定戰略、titan 基線是第一發提案彈藥、優尼四刀是下一週的施工圖。
+
+### 完成
+- **GEO 操作手冊（Google Doc）**：讀 admin 全八頁原始碼逐欄寫成 14 節小白手冊，上傳 Google Doc（id `1JWO6LvYywqrwtKFD4WJKfQriQSfaYQzn3tMuyTMKa3M`）；排版用 Google 忠實 markdown 匯出驗證（「自然語言表示」讀回工具會騙人，`fileSize:1` 是假警報）
+- **Kuroma（iKala）競品偵察**：行銷頁 headless 全頁渲染＋Adam 註冊實操截圖雙路；產出 `geo-authority/docs/KUROMA_RECON_2026-07-27.md`（定位判斷/破綻/優化建議/優先序/SWOT，commit 至 `dd91de9`）
+- **titan（太肯）潛在客戶基線實測**：建租戶→intake 27 題→五引擎 405 runs→健檢→自動排產 5 篇草稿；`docs/TITAN_BASELINE_2026-07-27.md`（`42f5ee3`）。總提及 23%、Perplexity 12% 重災、八個全零空位題、Google AI 總覽 77/78 未觸發（戰場未開打）
+- **召喚術誕生**：框架 `zhu-core/skills/summon/SKILL.md`（召喚流程/鑄新神五步/人格咒模板/名冊）＋首尊優尼 `uni.md`（Rams/Norman/Nielsen/Tufte 四神混合體）；全局觸發詞掛進 `~/.claude/CLAUDE.md`；記憶 [[skill_summon_persona_ritual]] 入庫
+- **優尼首戰**：GEO 後台 UI/UX 審查留底 `docs/UNI_AUDIT_2026-07-28.md`（`acfb771`）——G1 無回饋(4分)/G2 英文裸奔/樓層病（選單照資料表長），四刀施工排程定案
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| Google Doc「GEO Authority 後台操作手冊」 | 14 節小白手冊（新建） |
+| geo docs/KUROMA_RECON_2026-07-27.md | 偵察＋優化建議＋SWOT（新建，三次迭代） |
+| geo docs/TITAN_BASELINE_2026-07-27.md | 太肯基線量測＋提案角度（新建） |
+| geo docs/UNI_AUDIT_2026-07-28.md | 優尼首戰審查＋四刀排程（新建） |
+| geo Firestore | titan 租戶＋27 題＋405 runs＋健檢＋5 草稿（新建） |
+| zhu-core skills/summon/{SKILL.md,uni.md} | 召喚術框架＋優尼人格咒（新建） |
+| ~/.claude/CLAUDE.md | 技能觸發加「召喚術」段 |
+| memory skill_summon_persona_ritual.md | 新記憶＋MEMORY.md 索引 |
+
+### ⚠️ 尚未解決
+- **titan 租戶是活的**：排程週四（7/30）自動監測會燒 ~$3/輪——**成交前要不要暫停，等 Adam 一句話**（暫停可逆、資料留著可 demo）
+- 四刀＋補強隊列未開工（皮膚→防呆→補強件→結構，約一週窗口，施工圖在 UNI_AUDIT）
+- 手冊 11-1「預設開 Anthropic＋Gemini」與線上五引擎全開不符，待 Adam 順手改 Doc 或我重傳
+- 3 篇 titan 草稿在審核佇列（banned 醫療敏感詞，待人工過目）
+- 沿前場：ailiveX D8、GEO moderate CVE 同窗口清
+
+### 待執行 / 下一步
+1. **等 Adam 決定 titan 暫停與否**（7/30 週四前）：暫停＝`t/titan` 頁按「暫停此租戶」或我一行腳本
+2. **開工第一刀**（Adam GO 後）：`geo-authority/admin` R1 回饋＋R2 字典檔 labels.ts＋R7 文案＋刪減清單，施工圖 `docs/UNI_AUDIT_2026-07-28.md`
+3. 太肯提案素材已齊（BASELINE＋RECON＋5 樣稿＋後台 demo），Adam 約談即用
