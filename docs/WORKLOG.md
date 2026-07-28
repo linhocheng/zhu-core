@@ -8987,3 +8987,44 @@ GEO UI/UX 升級線——本場把「Adam 邊用邊教 → 優尼吸收成魂 �
 1. **下場開工優尼候診二刀**：`geo-authority/admin` globals.css 按鈕 min-height 44px（手機 media query）＋膠囊列分簇——半小時內收
 2. Adam 預告「下一個 GEO 的 uiux 再升級」——等他丟方向或教材（召喚優尼直接接）
 3. 豆油伯第一輪監測等 Adam 按（順便驗進度%鑑別信號）
+
+---
+
+## 2026-07-28（第4場）— GEO 優尼八診收官（.014-.019）＋地基藍圖 v1.2 第十二章可理解性誕生
+
+### 背景 / WHY
+GEO UI/UX 升級線第二日（本 session 是 _3 收工後 Adam 續開）：迴圈升級成「Adam 實測丟主訴 → 優尼診斷報告 → GO → 施工上線 → 再測」，跑了六輪。終點是把整天的痛蒸餾進藍圖十二章——從修一個平台變成修所有未來的平台。
+
+### 完成
+- 上線 v2.10.0.014 工學二刀：全站按鈕觸控 44px（`pointer: coarse`，桌面不受累）＋病歷頁膠囊列分「日常｜設定」兩簇
+- 上線 v2.10.0.015 Cloudscape 三刀（優尼視讀 cloudscape.design 六 pattern 後開）：頁面心跳 LiveRefresh（有活任務 10s 自動刷新＋最後更新角標，任務完自動退場）、相對時間戳 Ago 全站 15 處（tooltip 台北絕對時刻）、錯誤人話 explainError（六類確定性 regex，機器原文收展開）
+- 上線 v2.10.0.016 五診（Adam 主訴競品難用＋題庫看不懂）：競品標籤式編輯器 CompetitorEditor 取代｜分隔 textarea；intake 競品**整包覆蓋改按名稱合併**（嚴4 資料丟失雷）；題庫機制三句人話＋每題「上輪表現 提及 m/n」欄；盲點五句話（預算擋單/成本標估/引擎指路/門牌鑰匙/月報覆蓋——含抓掉「免登入即可觀看」假文案）
+- 上線 v2.10.0.017 六診收迷路（Adam 問「待辦是否搬進客戶底下」）：裁定房間只留兩種（今天的桌子＋每個客戶的家），跨戶看板降級「進階」；今日待辦跳轉改指病歷頁錨點；病歷頁待辦膠囊＋全文就地展開＋退回鍵；零客戶引導；客戶端「客戶審稿通過」→「我審好了，通過」＋待校對置頂橫幅
+- 上線 v2.10.0.018 客戶協作校對整卡搬到客戶月報正下方（通關碼說明緊鄰輪換表單）
+- 優尼讀書：判讀「Cloud Design Scales」真身＝Cloudscape Design System 並深讀六 pattern；書單掃描（GOV.UK patterns／Polaris voice／Laws of UX 26 條未吃）
+- **地基藍圖升 v1.2：新增第十二章「可理解性（介面對人說話）」**——機制對但沉默＝機制不存在；三態/歸巢/機制說明義務/視角律/空狀態與錯誤三件套/工學底線/大白話出廠；最晚灌注點＝第一個非作者用戶使用前。五處引用同步（SKILL.md/全局 CLAUDE.md 天條/兩份 memory/桌面副本換 v1.2 收走 v1.1）
+- GEO FOUNDATION.md 補第 12 列（已灌·本章誕生地）＋今日變動記錄（v2.10.0.019）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo admin（.014-.018 六 commits） | 44px/分簇/LiveRefresh/Ago/explainError/CompetitorEditor/題庫上輪表現/兩房間制/客戶端視角，見 UNI_AUDIT |
+| geo src/intake.ts | 競品整包覆蓋→按名稱合併（手改保留 AI 追加） |
+| geo deploy.sh | admin/job 補「不含 build」提醒 |
+| geo FOUNDATION.md | 第 12 列可理解性已灌＋變動記錄（.019） |
+| zhu-core skills/platform-foundation/BLUEPRINT.md | v1.2 第十二章可理解性＋檢查表 12 列＋版本註 |
+| zhu-core skills/platform-foundation/SKILL.md | 11 章→12 章 |
+| ~/.claude/CLAUDE.md＋memory 兩檔 | 天條與索引同步 12 章 |
+| ~/Desktop/平台地基藍圖_v1.2.md | 桌面副本換新（v1.1 收走，兩份即是零份） |
+
+### ⚠️ 尚未解決
+- **豆腐伯（doyoubo）第一輪監測未跑**（~$3-4，病歷頁就地按鈕備好）——跑起來同時驗三件新品的最終鑑別信號：任務看板進度%、頁面心跳 LiveRefresh 真轉動、題庫「上輪表現」點亮（現在全是「尚未考過」）
+- **titan 週四 7/30 自動監測 ~$3**——成交前要不要暫停，仍等 Adam 一句話（第三場提醒）
+- 優尼下一課教材已選定未餵：GOV.UK「Help users to」pattern 群＋Laws of UX 補魂（Doherty 400ms/Zeigarnik/Goal-Gradient/Von Restorff/Jakob）
+- 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
+- 帳本盤點：GEO 無到期債；十二章已入帳（已灌）
+
+### 待執行 / 下一步
+1. 豆油伯第一輪監測（等 Adam 按病歷頁按鈕或說 GO）——順手收三件新品的最終鑑別
+2. Adam 說「繼續餵優尼」時：教材＝GOV.UK patterns（流程層）＋ Laws of UX（心理層），吃完把 GEO 建檔→監測→審稿→交付整條流程過堂
+3. 新平台需求出現時：藍圖 v1.2 十二章第一次真火實戰（檢查表 12 列全填給 Adam 點頭）
