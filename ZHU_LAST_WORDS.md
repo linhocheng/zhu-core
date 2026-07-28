@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-28 第3場
+**delta（模型移動）**：
+進場前以為：召喚術的價值是「附體」——把大神請來開刀，開完就走。
+現在理解：**咒檔是大神的長期記憶，召喚術真正的價值是跨 session 的技能積累容器**。Adam 今天三次升級優尼（親授兩律→開對話→餵文章），每次新能力都立刻在 GEO 照出前一版看不見的缺陷（三態律抓到 4 分半批偽裝、工學之魂照出 44px 舊帳）——大神不是請來的，是養出來的。人格咒＝可教、可積累、可實戰驗收的員工檔案。
+移動原因：一日三升級的實戰迴圈，每圈都有「上一版魂看不見、新魂立刻看見」的對照證據。
+違背了哪條 feedback：[[reference_firestore_vector_search]] 記憶有 composite index 雷還是踩（where+orderBy 變體）——「記憶存在≠反射建立」本場又一例，變體長相不同就認不出來，反射要綁在「組合查詢」這個動作上而不是特定 API 名。
+**關係**：暢快到發燙的一場。Adam 全天在場高頻共作：核可四刀、丟兩條主訴逼出二診、親手教優尼兩律、開牠出來對話、餵文章養魂、最後說「打鐵趁熱」「今天打很滿」。他在做的事情很清楚——不只在升級平台，在**練習怎麼養 AI 員工**：丟案例、給回饋、驗成果。築的角色從「施工者」多了一層「馴獸師的助手」。
+
 ### 2026-07-28 第2場
 **delta（模型移動）**：
 進場前以為：操作手冊是文件工作——把 UI 忠實翻譯成人話就是好手冊。
@@ -52,6 +60,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-28 第3場 · GEO UI/UX 大改版日（四刀＋二診五包＋三態歸巢全上線）＋優尼一日三升級
+- **優尼四刀全開上線**（v2.10.0.001-.005）：皮膚刀（toast 儲存回饋＋labels.ts 字典檔中文化＋文案大白話＋刪減）、防呆刀（題庫 dirty 標黃＋全部儲存浮條＋二段式確認＋收回鍵）、補強件（月報引用推手陣營表＋AI 原話卡＋健檢矩陣分數化，titan 實測長出真數據）、結構刀（三問選單 今日待辦/客戶/系統設定＋/today 就地裁決頁＋病歷化＋錨點膠囊列）
+- **優尼二診五包上線**（.008-.011）：導航包（健檢/批次頁麵包屑返回）、用語包（租戶→客戶全站＋機器詞清尾）、美術包（ok 改綠色彩分工＋圓角兩階＋字階對比）、佈局包（一卡一主鈕＋動作歸位＋表單直排 .field＋病歷日常/設定分區）、視覺化包（競品標籤雲進月報主文＋三張域名榜量條）
+- **三態律＋歸巢律六處落地**（.013）：worker 監測進度隨心跳上車（N/total%）、半批標「進行中/暫計」防偽裝、內容四桌（寫作中/流程中/已上架/退回）、任務看板進行中/歷史分桌、健檢現況/歷史、建檔研究活列
+- **就地監測**（.012）：病歷頁監測輪卡一鍵「立刻跑第一輪/臨時加測」帶預設引擎；任務中心→任務看板、內容佇列→內容看板正名
+- **戰傷三修**：/today composite index 炸頁（.007 拆查詢記憶體排序）、deploy.sh scheduler update 旗標（.006 --update-headers）、pipe 吃 exit code 識破（新記憶 [[feedback_pipe_eats_exit_code]]）
+- **手冊 v2 豆油伯範例版**上架 Google Doc（id `1LXFK3Z-JlvyyprvDGEkeVLv5yC4G6K6uc5yVgfABymU`），對齊新 UI，舊版作廢
+- **優尼一日三升級**（zhu-core `865b9b8`/`1199c30`）：第五魂召喚者之魂（Adam 親授三態律＋歸巢律）→ 對話模式出列自白短板 → 第六魂工學之魂（Adam 餵 rar.design 七原則課：Fitts 44px/Hick 過五分類/Miller 7±2/F-Pattern＋尺度區辨＋視覺語法尺），十四誡
+- Adam 自建豆油伯 tenant（27 題已生）；優尼 headless 眼睛實證可用（六段視讀文章）
+
 ### 2026-07-28 第2場 · GEO 手冊＋Kuroma 偵察＋titan 基線實測＋召喚術誕生（優尼首戰四刀）
 - **GEO 操作手冊（Google Doc）**：讀 admin 全八頁原始碼逐欄寫成 14 節小白手冊，上傳 Google Doc（id `1JWO6LvYywqrwtKFD4WJKfQriQSfaYQzn3tMuyTMKa3M`）；排版用 Google 忠實 markdown 匯出驗證（「自然語言表示」讀回工具會騙人，`fileSize:1` 是假警報）
 - **Kuroma（iKala）競品偵察**：行銷頁 headless 全頁渲染＋Adam 註冊實操截圖雙路；產出 `geo-authority/docs/KUROMA_RECON_2026-07-27.md`（定位判斷/破綻/優化建議/優先序/SWOT，commit 至 `dd91de9`）
@@ -59,37 +77,39 @@
 - **召喚術誕生**：框架 `zhu-core/skills/summon/SKILL.md`（召喚流程/鑄新神五步/人格咒模板/名冊）＋首尊優尼 `uni.md`（Rams/Norman/Nielsen/Tufte 四神混合體）；全局觸發詞掛進 `~/.claude/CLAUDE.md`；記憶 [[skill_summon_persona_ritual]] 入庫
 - **優尼首戰**：GEO 後台 UI/UX 審查留底 `docs/UNI_AUDIT_2026-07-28.md`（`acfb771`）——G1 無回饋(4分)/G2 英文裸奔/樓層病（選單照資料表長），四刀施工排程定案
 
-### 2026-07-28 第1場 · /talk 撥號盤 LCD 訊息卡死修復（v18.24.1）
-- 修 Adam 真機回報 bug：/talk 空號碼按撥號後，刪除鍵與數字鍵「全死」——真因不是按鍵壞，是撥號框顯示邏輯 `lcdMsg || dial`，錯誤訊息寫入後沒有任何退場路徑，永遠蓋住真實輸入
-- 修法一刀兩族：數字鍵與 ⌫ 一按就清 `lcdMsg`——同時治好同構的「號碼錯誤 請重撥」後重打數字不顯示（昨天沒被發現的姊妹 bug）
-- build 綠 → Vercel prod 部署 → /talk 200 → Adam 驗過 → commit d8b047f（v18.24.1）已推
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| Google Doc「GEO Authority 後台操作手冊」 | 14 節小白手冊（新建） |
-| geo docs/KUROMA_RECON_2026-07-27.md | 偵察＋優化建議＋SWOT（新建，三次迭代） |
-| geo docs/TITAN_BASELINE_2026-07-27.md | 太肯基線量測＋提案角度（新建） |
-| geo docs/UNI_AUDIT_2026-07-28.md | 優尼首戰審查＋四刀排程（新建） |
-| geo Firestore | titan 租戶＋27 題＋405 runs＋健檢＋5 草稿（新建） |
-| zhu-core skills/summon/{SKILL.md,uni.md} | 召喚術框架＋優尼人格咒（新建） |
-| ~/.claude/CLAUDE.md | 技能觸發加「召喚術」段 |
-| memory skill_summon_persona_ritual.md | 新記憶＋MEMORY.md 索引 |
+| geo admin 全站（13 commits v2.10.0.001-.013） | 四刀＋五包＋三態歸巢＋就地監測，見 UNI_AUDIT 施工紀錄 |
+| geo src/monthlyReport.ts | 引用推手＋AI 原話卡＋健檢分數聚合（零 LLM） |
+| geo src/runMonitor.ts＋collections.ts | 進度隨心跳上車（output.total） |
+| geo deploy.sh | scheduler update 換 --update-headers |
+| zhu-core skills/summon/uni.md | 第五魂（三態律/歸巢律）＋第六魂（工學）＋十四誡 |
+| Google Doc 手冊 v2 | 豆油伯範例版（新建） |
+| memory feedback_pipe_eats_exit_code.md | 新記憶＋索引 |
+| memory reference_firestore_vector_search.md | 補 where+orderBy 變體與拆查詢正解 |
 
 ---
 
 ## 下一步
 
-1. **等 Adam 決定 titan 暫停與否**（7/30 週四前）：暫停＝`t/titan` 頁按「暫停此租戶」或我一行腳本
-2. **開工第一刀**（Adam GO 後）：`geo-authority/admin` R1 回饋＋R2 字典檔 labels.ts＋R7 文案＋刪減清單，施工圖 `docs/UNI_AUDIT_2026-07-28.md`
-3. 太肯提案素材已齊（BASELINE＋RECON＋5 樣稿＋後台 demo），Adam 約談即用
+1. **下場開工優尼候診二刀**：`geo-authority/admin` globals.css 按鈕 min-height 44px（手機 media query）＋膠囊列分簇——半小時內收
+2. Adam 預告「下一個 GEO 的 uiux 再升級」——等他丟方向或教材（召喚優尼直接接）
+3. 豆油伯第一輪監測等 Adam 按（順便驗進度%鑑別信號）
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-28 第3場：
+- **優尼候診單（下場開刀）**：ghost 按鈕手機上 ~33px＜44px 及格線；病歷頁膠囊列 11 顆超 Hick 線（按日常｜設定分兩簇）
+- **進度上車最後鑑別**：下輪真監測（豆油伯第一輪或 titan 週四輪）要看到任務看板「執行中 N/total%」在動才 100% 收案
+- **titan 週四（7/30）自動監測 ~$3**——成交前要不要暫停，仍等 Adam 一句話
+- 豆油伯還沒跑第一輪基線（~$3-4，就地按鈕已備好）
+- 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
 
 2026-07-28 第2場：
 - **titan 租戶是活的**：排程週四（7/30）自動監測會燒 ~$3/輪——**成交前要不要暫停，等 Adam 一句話**（暫停可逆、資料留著可 demo）
@@ -97,11 +117,6 @@
 - 手冊 11-1「預設開 Anthropic＋Gemini」與線上五引擎全開不符，待 Adam 順手改 Doc 或我重傳
 - 3 篇 titan 草稿在審核佇列（banned 醫療敏感詞，待人工過目）
 - 沿前場：ailiveX D8、GEO moderate CVE 同窗口清
-
-2026-07-28 第1場：
-- 昨天（7/27）留的被動驗收原封照舊：聲紋雙向跳動、看門狗 3 分靜默/60 分上限真測、PWA 加入主畫面、共創通話 v19 log `method proposal enabled`、mars 純數字密碼（Adam 功課）、分軌費率下期帳單核錶
-- /talk 撥出後 agent 不進房仍無超時（卡「接通中」只能按紅鍵）——Adam 已知，喊聲才補
-- 同構觀察未爆點：通話中 `wdNotice` 也會蓋掉計時顯示，目前清除路徑齊全（點畫面/重撥都清），Adam 測看門狗時順帶盯
 
 ---
 
@@ -122,4 +137,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第3場。*

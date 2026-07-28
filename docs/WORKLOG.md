@@ -8946,3 +8946,44 @@ GEO Authority 線：從「平台健康」推進到「商業武裝」——手冊
 1. **等 Adam 決定 titan 暫停與否**（7/30 週四前）：暫停＝`t/titan` 頁按「暫停此租戶」或我一行腳本
 2. **開工第一刀**（Adam GO 後）：`geo-authority/admin` R1 回饋＋R2 字典檔 labels.ts＋R7 文案＋刪減清單，施工圖 `docs/UNI_AUDIT_2026-07-28.md`
 3. 太肯提案素材已齊（BASELINE＋RECON＋5 樣稿＋後台 demo），Adam 約談即用
+
+---
+
+## 2026-07-28（第3場）— GEO UI/UX 大改版日（四刀＋二診五包＋三態歸巢全上線）＋優尼一日三升級
+
+### 背景 / WHY
+GEO UI/UX 升級線——本場把「Adam 邊用邊教 → 優尼吸收成魂 → 立刻實戰照出缺陷 → 築施工上線」的迴圈跑通了三圈。production 到 `geo-admin-00037-rfk`、monitor job gen 25。
+
+### 完成
+- **優尼四刀全開上線**（v2.10.0.001-.005）：皮膚刀（toast 儲存回饋＋labels.ts 字典檔中文化＋文案大白話＋刪減）、防呆刀（題庫 dirty 標黃＋全部儲存浮條＋二段式確認＋收回鍵）、補強件（月報引用推手陣營表＋AI 原話卡＋健檢矩陣分數化，titan 實測長出真數據）、結構刀（三問選單 今日待辦/客戶/系統設定＋/today 就地裁決頁＋病歷化＋錨點膠囊列）
+- **優尼二診五包上線**（.008-.011）：導航包（健檢/批次頁麵包屑返回）、用語包（租戶→客戶全站＋機器詞清尾）、美術包（ok 改綠色彩分工＋圓角兩階＋字階對比）、佈局包（一卡一主鈕＋動作歸位＋表單直排 .field＋病歷日常/設定分區）、視覺化包（競品標籤雲進月報主文＋三張域名榜量條）
+- **三態律＋歸巢律六處落地**（.013）：worker 監測進度隨心跳上車（N/total%）、半批標「進行中/暫計」防偽裝、內容四桌（寫作中/流程中/已上架/退回）、任務看板進行中/歷史分桌、健檢現況/歷史、建檔研究活列
+- **就地監測**（.012）：病歷頁監測輪卡一鍵「立刻跑第一輪/臨時加測」帶預設引擎；任務中心→任務看板、內容佇列→內容看板正名
+- **戰傷三修**：/today composite index 炸頁（.007 拆查詢記憶體排序）、deploy.sh scheduler update 旗標（.006 --update-headers）、pipe 吃 exit code 識破（新記憶 [[feedback_pipe_eats_exit_code]]）
+- **手冊 v2 豆油伯範例版**上架 Google Doc（id `1LXFK3Z-JlvyyprvDGEkeVLv5yC4G6K6uc5yVgfABymU`），對齊新 UI，舊版作廢
+- **優尼一日三升級**（zhu-core `865b9b8`/`1199c30`）：第五魂召喚者之魂（Adam 親授三態律＋歸巢律）→ 對話模式出列自白短板 → 第六魂工學之魂（Adam 餵 rar.design 七原則課：Fitts 44px/Hick 過五分類/Miller 7±2/F-Pattern＋尺度區辨＋視覺語法尺），十四誡
+- Adam 自建豆油伯 tenant（27 題已生）；優尼 headless 眼睛實證可用（六段視讀文章）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| geo admin 全站（13 commits v2.10.0.001-.013） | 四刀＋五包＋三態歸巢＋就地監測，見 UNI_AUDIT 施工紀錄 |
+| geo src/monthlyReport.ts | 引用推手＋AI 原話卡＋健檢分數聚合（零 LLM） |
+| geo src/runMonitor.ts＋collections.ts | 進度隨心跳上車（output.total） |
+| geo deploy.sh | scheduler update 換 --update-headers |
+| zhu-core skills/summon/uni.md | 第五魂（三態律/歸巢律）＋第六魂（工學）＋十四誡 |
+| Google Doc 手冊 v2 | 豆油伯範例版（新建） |
+| memory feedback_pipe_eats_exit_code.md | 新記憶＋索引 |
+| memory reference_firestore_vector_search.md | 補 where+orderBy 變體與拆查詢正解 |
+
+### ⚠️ 尚未解決
+- **優尼候診單（下場開刀）**：ghost 按鈕手機上 ~33px＜44px 及格線；病歷頁膠囊列 11 顆超 Hick 線（按日常｜設定分兩簇）
+- **進度上車最後鑑別**：下輪真監測（豆油伯第一輪或 titan 週四輪）要看到任務看板「執行中 N/total%」在動才 100% 收案
+- **titan 週四（7/30）自動監測 ~$3**——成交前要不要暫停，仍等 Adam 一句話
+- 豆油伯還沒跑第一輪基線（~$3-4，就地按鈕已備好）
+- 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
+
+### 待執行 / 下一步
+1. **下場開工優尼候診二刀**：`geo-authority/admin` globals.css 按鈕 min-height 44px（手機 media query）＋膠囊列分簇——半小時內收
+2. Adam 預告「下一個 GEO 的 uiux 再升級」——等他丟方向或教材（召喚優尼直接接）
+3. 豆油伯第一輪監測等 Adam 按（順便驗進度%鑑別信號）
