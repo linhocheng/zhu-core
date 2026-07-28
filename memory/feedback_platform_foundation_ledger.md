@@ -1,13 +1,13 @@
 ---
 name: platform-foundation-ledger
-description: 天條：蓋平台先鋪地基帳本——11 章標配默認全含、調度清單 Adam 點頭才動工、排後必帶觸發條件、技術債看利率不看年齡
+description: 天條：蓋平台先鋪地基帳本——12 章標配默認全含（含可理解性）、調度清單 Adam 點頭才動工、排後必帶觸發條件、技術債看利率不看年齡
 metadata: 
   node_type: memory
   type: feedback
   originSessionId: d1be1fc9-5905-4fa1-b92a-07a9c2bc4fb6
 ---
 
-**規則**：新平台需求進來 → 讀 `~/.ailive/zhu-core/skills/platform-foundation/BLUEPRINT.md`（11 章地基：門禁/資料憲法/安全威脅/濫用/可觀測/任務基建/後台/部署/成本/災難還原/擴建），列調度清單（首期灌／排後＋觸發條件／砍掉）給 Adam 點頭才動工；repo root 建 `FOUNDATION.md` 帳本；lastword 盤到期項。
+**規則**：新平台需求進來 → 讀 `~/.ailive/zhu-core/skills/platform-foundation/BLUEPRINT.md`（12 章地基：門禁/資料憲法/安全威脅/濫用/可觀測/任務基建/後台/部署/成本/災難還原/擴建/可理解性——第十二章 2026-07-28 GEO 六診立，執行工具＝優尼咒），列調度清單（首期灌／排後＋觸發條件／砍掉）給 Adam 點頭才動工；repo root 建 `FOUNDATION.md` 帳本；lastword 盤到期項。
 
 **Why**：2026-07-19 Adam 點破——舊天條全是踩雷才立的（不二踩），沒有一條管「第一次就該有」。功能是皮，地基是管道間水錶門禁消防；沒地基＝樣品屋。當時誠實盤點：ailiveX 被誤刪一個 collection 沒有還原路徑、安全威脅模型從沒做過。
 
