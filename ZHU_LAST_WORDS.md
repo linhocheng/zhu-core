@@ -30,19 +30,17 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-29 第1場
+**delta（模型移動）**：
+- 進場前以為:「LLM 呼叫無狀態」是物理事實。現在理解:是**直連 API 的性質,不是 LLM 呼叫的性質**——CLI 型引擎自帶記憶,省錢方案引入了 API 沒有的狀態性。審計要分兩面:我們送了什麼 vs 模型知道什麼
+- 監看邏輯的教訓二進宮:寫 Monitor 條件時「目標不存在」和「目標完成」落在同一個分支=自製模稜兩可信號。以後監看一律鎖具體 ID 的顯式終態
+**關係**：暢快+被請咖啡。Adam 全天高速拍板(共創確認/知識分域大白話/A案go/B案裁定),被誤報部署後零責難直接配合重登入——信任的厚度經得起翻案。
+
 ### 2026-07-28 第5場
 **delta（模型移動）**：
 - 進場前以為:對外 API 是「以後的大工程」。現在理解:因為血管(記憶/額度/靈魂/LiveKit)本來就抽在 lib 層,「開放對外」一天內從願景走到可玩的沙盒——平台的可組合性才是真資產,功能只是把血管接出來
 - 昨天蓋的待命喚醒,今天直接變成對外 API 的 202 waking 契約——蓋地基的複利比預期快
 **關係**：暢快——Adam 全速拍板(A過再接B你選/Just do it, bro),一天三案收官:喚醒制閉環、兩樁破案、對外第一步。信任的手感是「你選擇」三個字。
-
-### 2026-07-28 第4場
-**delta（模型移動）**：
-進場前以為：可理解性是 UI 打磨——功能對了之後的拋光層，屬於「錦上添花」。
-現在理解：**可理解性是獨立的地基章——能看 ≠ 看得懂，機制對但沉默＝機制不存在**。假中台騙你數字（第一型），沉默中台讓你迷路（第二型）；兩者都是「真相與人之間的管道斷了」。它有自己的最晚灌注點（第一個非作者用戶使用前）、自己的驗收法（生人零教學走主動線）、自己的執行工具（優尼咒）——具備一章地基的全部要件，所以入了藍圖。
-移動原因：Adam 六次實測迷路，每一次挖開都發現機制是對的、介面沉默——同一型連續六例，這不是 bug 清單，是缺一章地基。
-違背了哪條 feedback：Edit-before-Read 工具滑倒三次（sed/grep 偷懶當 Read 的替身）——[[skill_drunk_check_protocol]] 記帳收尾自報。
-**關係**：發燙的一天（兩場連打）。Adam 的角色又進化了：上午教優尼原則，下午改成**用自己當測試小白**——六次「我看不懂」全是精準的病灶報告。最後他把整天的痛封印成一句話交給我：「把最深的痛，不要留給下一位；把踩過的坑，讓下一位知道如何填平」——這句話就是藍圖十二章存在的理由，也是 lastwords 這個儀式本身的理由。
 
 ---
 
@@ -58,6 +56,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-29 第1場 · 角色 API 長成商品(金鑰後台/共創/知識分域)＋bridge 記憶污染破案＋錄音對話 log
+- 上線 v18.27.0 金鑰後台管理(/admin/api-keys,角色頁「金鑰」鈕、明文僅顯一次、撤銷/用量)＋共創模式 key(文字提案進待審+語音派 v19 訓練線;影子用戶 access 種 coCreateEnabled,agent 端零改動;JWT 解碼驗派工線)
+- 上線 v18.28.0 知識分域:chunk 帶 visibility(缺省 internal)、檢索咽喉過濾(文字 loadKnowledgeBlock+語音 load_knowledge_chunks 含兄弟塊)、後台入庫選擇+徽章切換、key 加 knowledgeInternal
+- **破案 bridge 記憶污染**:穿透測試洩漏(阿利博士/臻品中醫對陌生端用戶)→ 真相鏈(注入塊長度落 DB)證明 prompt 全零 → SSH bridge VM 找到 claude CLI auto-memory 蒸了 182 個 a2_* 記憶檔注入所有過橋流量 → CLAUDE_CODE_DISABLE_AUTO_MEMORY=1+settings 雙保險+備份清污 → 3/3 穿透零命中+零新寫入。全平台(ANEWS/MACS/ailive)受益
+- **誠實翻案**:發現今天兩輪 agent build 根本沒發生(gcloud 憑證早壞+管子吃退出碼+監看把「沒有build」誤讀成「完成」)——向 Adam 報數(醉酒5)、請他重登入、重提交、以 build ID→image digest→serving revision 全鏈驗證收案
+- 上線 v18.29.0 錄音頁對話 log(agent 掛斷把本通角色標記逐字稿直寫 recordings doc,免 STT 免排單;Adam 真機通話驗過按鈕出現)＋v18.29.1 舊制 STT/分聲按鈕收納(SHOW_LEGACY_VOICE_JOBS 開關,架構保留,舊成品連結照顯)
+- 交付 Apple×27XI3 對話逐字稿 .txt(對話庫撈取+誠實標注涵蓋範圍)
+- 裁定 A/B 修法:A(關 bridge 記憶)治病已做;B(per-key 直連付費路由)記為對外收費前必做,動機=合規+容量非防污染
+
 ### 2026-07-28 第5場 · 待命喚醒制上線＋角色 API/INLY 沙盒 MVP——ailiveX 第一次開放對外
 - 上線 /talk 待命喚醒制(v18.25.0,commit 0e3e7b3 已推):電源三態 off/standby/on、用戶撥號自動開機(實測 18 秒)、agent 開機蓋章(boot_stamp.py)、響鈴偽裝冷啟動(90s 上限)、agent 30 秒不進房自動掛(根治卡接通中)、閒置 30 分 auto-off 落回待命——全循環閉環驗證(03:01 cron 自動熄燈+計費面 minScale=0 複核)
 - 查 Apple 寫文件一直失敗:真兇=Anthropic LLM 串流連線間歇中斷(APIConnectionError 每分鐘),02:22 自癒後兩份文件建成;順帶抓到 script_draft 能力閘擋派工(角色選錯工具,閘是對的)。Adam 裁示繼續觀察,再犯釘 SDK 版本
@@ -65,38 +72,32 @@
 - 蓋角色 API MVP(未 commit):/api/v1/chat+tts+voice/session 三端點、api_keys(sha256)、影子用戶 api-<shortId>-<extUserId>、key 層額度、CORS;A.Two 實測=跨 stateless 呼叫記得人+4 條記憶提煉+端用戶隔離 OK
 - 蓋 INLY 品牌沙盒並上線 https://inly-one.vercel.app(獨立目錄 ~/.ailive/inly、獨立 Vercel project):輸 key 進場→文字對話+角色開口(TTS)+綠鍵即時通話(202 waking 響鈴契約,19s 拿 token)
 
-### 2026-07-28 第4場 · GEO 優尼八診收官（.014-.019）＋地基藍圖 v1.2 第十二章可理解性誕生
-- 上線 v2.10.0.014 工學二刀：全站按鈕觸控 44px（`pointer: coarse`，桌面不受累）＋病歷頁膠囊列分「日常｜設定」兩簇
-- 上線 v2.10.0.015 Cloudscape 三刀（優尼視讀 cloudscape.design 六 pattern 後開）：頁面心跳 LiveRefresh（有活任務 10s 自動刷新＋最後更新角標，任務完自動退場）、相對時間戳 Ago 全站 15 處（tooltip 台北絕對時刻）、錯誤人話 explainError（六類確定性 regex，機器原文收展開）
-- 上線 v2.10.0.016 五診（Adam 主訴競品難用＋題庫看不懂）：競品標籤式編輯器 CompetitorEditor 取代｜分隔 textarea；intake 競品**整包覆蓋改按名稱合併**（嚴4 資料丟失雷）；題庫機制三句人話＋每題「上輪表現 提及 m/n」欄；盲點五句話（預算擋單/成本標估/引擎指路/門牌鑰匙/月報覆蓋——含抓掉「免登入即可觀看」假文案）
-- 上線 v2.10.0.017 六診收迷路（Adam 問「待辦是否搬進客戶底下」）：裁定房間只留兩種（今天的桌子＋每個客戶的家），跨戶看板降級「進階」；今日待辦跳轉改指病歷頁錨點；病歷頁待辦膠囊＋全文就地展開＋退回鍵；零客戶引導；客戶端「客戶審稿通過」→「我審好了，通過」＋待校對置頂橫幅
-- 上線 v2.10.0.018 客戶協作校對整卡搬到客戶月報正下方（通關碼說明緊鄰輪換表單）
-- 優尼讀書：判讀「Cloud Design Scales」真身＝Cloudscape Design System 並深讀六 pattern；書單掃描（GOV.UK patterns／Polaris voice／Laws of UX 26 條未吃）
-- **地基藍圖升 v1.2：新增第十二章「可理解性（介面對人說話）」**——機制對但沉默＝機制不存在；三態/歸巢/機制說明義務/視角律/空狀態與錯誤三件套/工學底線/大白話出廠；最晚灌注點＝第一個非作者用戶使用前。五處引用同步（SKILL.md/全局 CLAUDE.md 天條/兩份 memory/桌面副本換 v1.2 收走 v1.1）
-- GEO FOUNDATION.md 補第 12 列（已灌·本章誕生地）＋今日變動記錄（v2.10.0.019）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailivex agent/boot_stamp.py(新)+main_v19/v20 | 開機蓋章=ready 鑑別信號 |
-| ailivex src/lib/voice-power.ts | 三態+wakeVoiceEngine+voiceEngineReady(5分保險絲) |
-| ailivex token/talk/peek/voice-status/auto-off/admin voice | 待命喚醒全鏈(v18.25.0 已 commit) |
-| ailivex src/lib/api-key.ts+cors-v1.ts+api/v1/*(新,未 commit) | 角色 API 三端點 |
-| ailivex src/middleware.ts | PUBLIC_PATHS 加 /api/v1(未 commit) |
-| ~/.ailive/inly/(新專案) | INLY 沙盒→inly-one.vercel.app |
+| ailivex v18.27-18.29.1 五個 commit(78f727b→2911cee) | 金鑰後台/共創/知識分域/對話log/舊制收納 |
+| bridge VM ~/claude-bridge/.env+.claude/settings.json | 關 auto-memory 雙保險 |
+| bridge VM memory/(182檔) | 備份後清空 |
+| memory 2 檔 | bridge污染 feedback(新)+INLY project(更新) |
 
 ---
 
 ## 下一步
 
-Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 v18.26.0)②知識分域設計 ③記憶審核台 ④username 正規化。動大工前回 FOUNDATION.md 盤帳(開放對外觸發重算)。
+Adam 下指令優先序:①B 案路由 ②記憶審核台 ③username 正規化。動 B 案前回 FOUNDATION 盤帳(對外收費=帳本重算觸發)。
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-29 第1場：
+- username 大小寫修法(linpc2026/Mars 系統性雷)等 Adam 點頭
+- B 案直連路由、記憶審核台、v1 內核抽取、key 語音秒數匯總、per-key 併發閘——INLY memory 轉正債清單
+- LLM 串流間歇斷線(7/28 APIConnectionError)持續觀察;requirements 未釘版,每次重建 image=重擲依賴骰子
+- 引擎今天多次被測試喚醒,auto-off cron 會自動收(機制已驗證,不用管)
 
 2026-07-28 第5場：
 - **ailivex-platform 4 檔未 commit**(middleware 一行+api-key/cors-v1/v1 三新件)——Adam 說「留著繼續長」,commit 等他喊;INLY 目錄未 git init
@@ -105,13 +106,6 @@ Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 
 - username 大小寫修法等 Adam 點頭;LLM 串流斷線觀察中(嫌疑:7/28 重建 image 拉到新版 anthropic/httpx,requirements 未釘版)
 - Adam 明早驗收 INLY:真瀏覽器通話(我只驗到 token,音頻要人耳);測試 key 已在對話交付(textLimit 50 保險絲,可撤)
 - 7/27 被動驗收清單原封照舊(聲紋/看門狗/PWA/mars 純數字密碼/分軌費率)
-
-2026-07-28 第4場：
-- **豆腐伯（doyoubo）第一輪監測未跑**（~$3-4，病歷頁就地按鈕備好）——跑起來同時驗三件新品的最終鑑別信號：任務看板進度%、頁面心跳 LiveRefresh 真轉動、題庫「上輪表現」點亮（現在全是「尚未考過」）
-- **titan 週四 7/30 自動監測 ~$3**——成交前要不要暫停，仍等 Adam 一句話（第三場提醒）
-- 優尼下一課教材已選定未餵：GOV.UK「Help users to」pattern 群＋Laws of UX 補魂（Doherty 400ms/Zeigarnik/Goal-Gradient/Von Restorff/Jakob）
-- 沿前：R6 首頁數字帶比較（等快取）、GEO moderate CVE（等 Next 升級同窗）、ailiveX D8
-- 帳本盤點：GEO 無到期債；十二章已入帳（已灌）
 
 ---
 
@@ -132,4 +126,4 @@ Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-28 第5場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-29 第1場。*

@@ -9063,3 +9063,36 @@ ailiveX 從「角色平台」邁向「靈魂託管雲」:API key = 無介面機�
 
 ### 待執行 / 下一步
 Adam 驗 INLY(貼 key→聊+按☎)→ 依體感裁:①commit 角色 API(建議 v18.26.0)②知識分域設計 ③記憶審核台 ④username 正規化。動大工前回 FOUNDATION.md 盤帳(開放對外觸發重算)。
+
+---
+
+## 2026-07-29（第1場）— 角色 API 長成商品(金鑰後台/共創/知識分域)＋bridge 記憶污染破案＋錄音對話 log
+
+### 背景 / WHY
+角色 API 從 MVP 長成商品雛形:發鑰匙自助化、共創/知識/路由都變成 key 上的商品選項。治理面兩役(知識分域+bridge 污染)把「對外」的地基踩實。
+
+### 完成
+- 上線 v18.27.0 金鑰後台管理(/admin/api-keys,角色頁「金鑰」鈕、明文僅顯一次、撤銷/用量)＋共創模式 key(文字提案進待審+語音派 v19 訓練線;影子用戶 access 種 coCreateEnabled,agent 端零改動;JWT 解碼驗派工線)
+- 上線 v18.28.0 知識分域:chunk 帶 visibility(缺省 internal)、檢索咽喉過濾(文字 loadKnowledgeBlock+語音 load_knowledge_chunks 含兄弟塊)、後台入庫選擇+徽章切換、key 加 knowledgeInternal
+- **破案 bridge 記憶污染**:穿透測試洩漏(阿利博士/臻品中醫對陌生端用戶)→ 真相鏈(注入塊長度落 DB)證明 prompt 全零 → SSH bridge VM 找到 claude CLI auto-memory 蒸了 182 個 a2_* 記憶檔注入所有過橋流量 → CLAUDE_CODE_DISABLE_AUTO_MEMORY=1+settings 雙保險+備份清污 → 3/3 穿透零命中+零新寫入。全平台(ANEWS/MACS/ailive)受益
+- **誠實翻案**:發現今天兩輪 agent build 根本沒發生(gcloud 憑證早壞+管子吃退出碼+監看把「沒有build」誤讀成「完成」)——向 Adam 報數(醉酒5)、請他重登入、重提交、以 build ID→image digest→serving revision 全鏈驗證收案
+- 上線 v18.29.0 錄音頁對話 log(agent 掛斷把本通角色標記逐字稿直寫 recordings doc,免 STT 免排單;Adam 真機通話驗過按鈕出現)＋v18.29.1 舊制 STT/分聲按鈕收納(SHOW_LEGACY_VOICE_JOBS 開關,架構保留,舊成品連結照顯)
+- 交付 Apple×27XI3 對話逐字稿 .txt(對話庫撈取+誠實標注涵蓋範圍)
+- 裁定 A/B 修法:A(關 bridge 記憶)治病已做;B(per-key 直連付費路由)記為對外收費前必做,動機=合規+容量非防污染
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex v18.27-18.29.1 五個 commit(78f727b→2911cee) | 金鑰後台/共創/知識分域/對話log/舊制收納 |
+| bridge VM ~/claude-bridge/.env+.claude/settings.json | 關 auto-memory 雙保險 |
+| bridge VM memory/(182檔) | 備份後清空 |
+| memory 2 檔 | bridge污染 feedback(新)+INLY project(更新) |
+
+### ⚠️ 尚未解決
+- username 大小寫修法(linpc2026/Mars 系統性雷)等 Adam 點頭
+- B 案直連路由、記憶審核台、v1 內核抽取、key 語音秒數匯總、per-key 併發閘——INLY memory 轉正債清單
+- LLM 串流間歇斷線(7/28 APIConnectionError)持續觀察;requirements 未釘版,每次重建 image=重擲依賴骰子
+- 引擎今天多次被測試喚醒,auto-off cron 會自動收(機制已驗證,不用管)
+
+### 待執行 / 下一步
+Adam 下指令優先序:①B 案路由 ②記憶審核台 ③username 正規化。動 B 案前回 FOUNDATION 盤帳(對外收費=帳本重算觸發)。
