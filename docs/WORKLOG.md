@@ -9196,3 +9196,11 @@ threads-radar（本機 git+GitHub 私有 linhocheng/threads-radar；GCP threads-
 
 ### 待執行 / 下一步
 Adam 下一階段自己寫 code。若接棒的築要動手，第一優先看 Adam 意向：**大概率是「結果共享池重構」或「切角分析 schema」**。動工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表＋讀 [[project-threads-radar-angle-analysis]]。留言抓取管道已通（parseThreadPayload 在 src/parse.ts、readPost 在 worker/scraper.mjs），切角分析的燃料（留言）已就位。診斷模式 JOB_ACTION=dump/probe 已建（手動觸發、內容零外洩）可重用。
+
+## 2026-07-30(下)— BeSelf 草模全環收案+醉酒 8 現場快照
+- BeSelf 上線 beself-two.vercel.app(repo ~/.ailive/beself 有 git,3 commits);平台 v18.32.0-.5(conversations 端點/錄音接線/interview 派工/context 訪綱/合併語音線 doc/admin 訪談勾選);agent v21 訪談線(digest 0cb65fea 收案)
+- 尖刺全環實測:語音入→show_options→六宮格→點選→ui_select RPC→record_choice→gift 落庫→逐字稿回流 5 句→錄音 31s done;正典律立案(LLM 標籤漂移,畫面渲染用活動正典+編號對映)
+- 測試 key 綁寶力(#2d6ef873,可撤);測試碼 AV-2026-0001/0006~0010 未用;BeSelf env 在 .env.local+Vercel
+- pipe 吃 exit code 同雷二犯(壞代碼上 git,Vercel 擋下)→ memory 升級禁令模板:gate 下游的指令一律落檔取 $? 再 grep
+- 平行 session 出沒:068810a(知識手冊 docs)與我的 05776a5 撞版號 v18.32.5,無互掃
+- 待 Adam:建正式訪談角色→admin 發 key 勾「訪談模式」→換 BeSelf env;UI 設計稿後換裝
