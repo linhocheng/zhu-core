@@ -9123,3 +9123,34 @@ GEO UI/UX 線暫歇，Adam 換班接手。本班是昨晚 _4 場的晨間尾巴�
 1. titan 明天（7/30）自動監測前，Adam 若說暫停 → `gcloud scheduler` 或租戶頁暫停；沒說＝照跑 ~$3
 2. 豆油伯第一輪等 Adam 按（病歷頁就地按鈕）
 3. 接 GEO UI/UX 線先讀 `geo-authority/docs/UNI_AUDIT_2026-07-28.md`＋藍圖 v1.2 十二章
+
+---
+
+## 2026-07-30（第1場）— 排隊二事收案(帳號大小寫+記憶審核台)＋talk 琉璃話機雙版型＋INLY 換裝新設計
+
+### 背景 / WHY
+ailiveX 對外三面同天推進:治理面(審核台閉環)、家用面(talk 雙版型)、品牌面(INLY 正裝)。角色 API 商品化的皮與骨都齊了,剩計費。
+
+### 完成
+- 收案 v18.29.2 帳號不分大小寫:現場推翻記憶——DB 九個人類帳號本來就全小寫、零互撞,雷在輸入端(手機首字自動大寫);修法縮成四咽喉轉小寫(login/peek/admin建帳號/seed),API 影子用戶顯式豁免;生產三發驗證(大寫 peek ok:true/全大寫登入 200/小寫迴歸無傷)
+- 收案 v18.30.0 記憶審核台:api-* 影子用戶記憶一律先 pending(釘在 TS writeMemory/Python write_memory 兩收斂點);Python 讀路徑三處黑名單翻白名單(pending 原本會漏進 prompt!);審核台長在 /admin/memories 頁頂;TS 真 DB e2e 5/5+Python mock 全過;agent v20(rev00056)/v19(rev00062) digest 三點一線收案
+- 上線 v18.31.0-31.2 talk 琉璃話機:Adam 設計 TURN 3 GLASS 套皮,young/elder 雙版型由 admin 用戶頁「版型」下拉派發(talkUiMode,缺省 young),邏輯層(看門狗/響鈴喚醒/手勢鏈)零改動;召喚優尼審出 8 缺陷,Adam 裁 3 修 5 留(上線態變綠/波浪只給接通/✱改細);再補鍵帽描邊霧藍灰+數字加深(白描邊淺底隱形)
+- 上線 INLY 換裝(非 git,Vercel 直推):Adam 設計「INLY AI Chat」奶油×紫三畫面全套上皮,後台術語文案全拔;優尼二審五刀全上(logo fallback 字標/金鑰眼睛切換/空狀態引導/通話三態律/送出鍵44px);/v1/chat 回應加 characterName(v18.31.3)
+- B 案(per-key 直連付費路由)Adam 裁定註銷不做,已刻回 memory
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex v18.29.2→31.3 七個 commit(696da5b→ebbd744) | 大小寫/審核台/talk雙版型/優尼三修/對比修/chat回characterName |
+| agent v20 rev00056 / v19 rev00062 | pending 閘+白名單,digest 三點一線 |
+| ~/.ailive/inly/app/page.tsx+layout.tsx | 整站換裝 INLY AI Chat 設計 |
+| memory project_inly_character_api.md | B案註銷+審核台+INLY換裝進度 |
+
+### ⚠️ 尚未解決
+- **INLY logo PNG 待補**:design 資產 base64 經我手抄必損毀(11KB 抄壞一次),現用 INLY 字標 fallback;Adam 從 claude.design 下載真檔丟 `~/.ailive/inly/public/assets/logo-inly.png` 重新 `npx vercel --prod --yes` 即換回。四個 Memphis 形狀是 SVG 重繪非原檔
+- INLY 真 key 的 e2e 沒跑(手上無現役 key,測試 key 前已撤銷)——皮驗過、API 契約沒動過,首次真用時看一眼即可
+- 審核台 Python 端是離線 mock 驗證(SA secret 被權限系統擋)——第一通 API 語音來電的記憶出現在待審區=活體閉環
+- username 修法四咽喉不含 talk 頁 localStorage 舊值(存的是原樣輸入)——peek 端已正規化所以無感,純知識點
+
+### 待執行 / 下一步
+等 Adam 醒來裁定:①INLY logo 真檔補上 ②發行正式 API key 給 INLY(後台 /admin/api-keys)③talk 版型派發給真用戶(admin 用戶頁「版型」下拉)。無新指令時別動 INLY——皮已照設計稿,再動要新設計稿。

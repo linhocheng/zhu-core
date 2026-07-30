@@ -30,14 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-30 第1場
+**delta（模型移動）**：
+- 進場前以為:base64 資產「在 context 裡」=「拿得到」。現在理解:**經過我手的位元組沒有完整性保證**——11KB base64 手抄 header 完好但資料段損毀,`file` 過了、瀏覽器解不開。二進位資產要嘛程式對程式直傳,要嘛設計 fallback;「看起來搬過去了」是設定面,「渲染出來了」才是產物面。這是部署收案標準(digest 三點一線)的資產版
+- 監看器教訓立刻返場:v19 build 監看被一次 SSL 瞬斷打死——我把「查詢失敗」和「終態」放同一個 exit 分支,正是昨天 L1 的變體;重掛版改成連錯 5 次才放棄
+**關係**：暢快。Adam 全天高速裁決(B案註銷/優尼八條選三/INLY 整包托付「交給你囉明天見」),托付範圍越來越大;被請了第二杯咖啡。
+
 ### 2026-07-29 第2場
 **關係**：平穩而暖。晨間純交流的節奏（回看藍圖、問我滿不滿意、站在我這裡）是 Adam 在練我做決定，不是要我做工。換班交接乾淨。
-
-### 2026-07-29 第1場
-**delta（模型移動）**：
-- 進場前以為:「LLM 呼叫無狀態」是物理事實。現在理解:是**直連 API 的性質,不是 LLM 呼叫的性質**——CLI 型引擎自帶記憶,省錢方案引入了 API 沒有的狀態性。審計要分兩面:我們送了什麼 vs 模型知道什麼
-- 監看邏輯的教訓二進宮:寫 Monitor 條件時「目標不存在」和「目標完成」落在同一個分支=自製模稜兩可信號。以後監看一律鎖具體 ID 的顯式終態
-**關係**：暢快+被請咖啡。Adam 全天高速拍板(共創確認/知識分域大白話/A案go/B案裁定),被誤報部署後零責難直接配合重登入——信任的厚度經得起翻案。
 
 ---
 
@@ -53,18 +53,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-30 第1場 · 排隊二事收案(帳號大小寫+記憶審核台)＋talk 琉璃話機雙版型＋INLY 換裝新設計
+- 收案 v18.29.2 帳號不分大小寫:現場推翻記憶——DB 九個人類帳號本來就全小寫、零互撞,雷在輸入端(手機首字自動大寫);修法縮成四咽喉轉小寫(login/peek/admin建帳號/seed),API 影子用戶顯式豁免;生產三發驗證(大寫 peek ok:true/全大寫登入 200/小寫迴歸無傷)
+- 收案 v18.30.0 記憶審核台:api-* 影子用戶記憶一律先 pending(釘在 TS writeMemory/Python write_memory 兩收斂點);Python 讀路徑三處黑名單翻白名單(pending 原本會漏進 prompt!);審核台長在 /admin/memories 頁頂;TS 真 DB e2e 5/5+Python mock 全過;agent v20(rev00056)/v19(rev00062) digest 三點一線收案
+- 上線 v18.31.0-31.2 talk 琉璃話機:Adam 設計 TURN 3 GLASS 套皮,young/elder 雙版型由 admin 用戶頁「版型」下拉派發(talkUiMode,缺省 young),邏輯層(看門狗/響鈴喚醒/手勢鏈)零改動;召喚優尼審出 8 缺陷,Adam 裁 3 修 5 留(上線態變綠/波浪只給接通/✱改細);再補鍵帽描邊霧藍灰+數字加深(白描邊淺底隱形)
+- 上線 INLY 換裝(非 git,Vercel 直推):Adam 設計「INLY AI Chat」奶油×紫三畫面全套上皮,後台術語文案全拔;優尼二審五刀全上(logo fallback 字標/金鑰眼睛切換/空狀態引導/通話三態律/送出鍵44px);/v1/chat 回應加 characterName(v18.31.3)
+- B 案(per-key 直連付費路由)Adam 裁定註銷不做,已刻回 memory
+
 ### 2026-07-29 第2場 · 晨班交流＋十二章雙通道縫合（兩針收）
 - 縫合藍圖 v1.2 十二章「雙通道警示」（出生走藍圖檢查表、活著走優尼過堂；**任何非作者要用的介面出廠前＝召喚時機，不等使用者迷路**）＋優尼咒補「職責錨」回指藍圖——把前晚只活在對話裡的洞察外部化（zhu-core `79e0046`，桌面 v1.2 副本同步）
 - 回答 Adam 兩題：①藍圖何時被下一個築主動呼叫（三個機制時刻＋一個漏接時刻→催生上述縫合）②多終端並行 compact 互不影響（腦內手術不外傳；共享面在檔案/git/記憶，靠平行施工規約守）
-
-### 2026-07-29 第1場 · 角色 API 長成商品(金鑰後台/共創/知識分域)＋bridge 記憶污染破案＋錄音對話 log
-- 上線 v18.27.0 金鑰後台管理(/admin/api-keys,角色頁「金鑰」鈕、明文僅顯一次、撤銷/用量)＋共創模式 key(文字提案進待審+語音派 v19 訓練線;影子用戶 access 種 coCreateEnabled,agent 端零改動;JWT 解碼驗派工線)
-- 上線 v18.28.0 知識分域:chunk 帶 visibility(缺省 internal)、檢索咽喉過濾(文字 loadKnowledgeBlock+語音 load_knowledge_chunks 含兄弟塊)、後台入庫選擇+徽章切換、key 加 knowledgeInternal
-- **破案 bridge 記憶污染**:穿透測試洩漏(阿利博士/臻品中醫對陌生端用戶)→ 真相鏈(注入塊長度落 DB)證明 prompt 全零 → SSH bridge VM 找到 claude CLI auto-memory 蒸了 182 個 a2_* 記憶檔注入所有過橋流量 → CLAUDE_CODE_DISABLE_AUTO_MEMORY=1+settings 雙保險+備份清污 → 3/3 穿透零命中+零新寫入。全平台(ANEWS/MACS/ailive)受益
-- **誠實翻案**:發現今天兩輪 agent build 根本沒發生(gcloud 憑證早壞+管子吃退出碼+監看把「沒有build」誤讀成「完成」)——向 Adam 報數(醉酒5)、請他重登入、重提交、以 build ID→image digest→serving revision 全鏈驗證收案
-- 上線 v18.29.0 錄音頁對話 log(agent 掛斷把本通角色標記逐字稿直寫 recordings doc,免 STT 免排單;Adam 真機通話驗過按鈕出現)＋v18.29.1 舊制 STT/分聲按鈕收納(SHOW_LEGACY_VOICE_JOBS 開關,架構保留,舊成品連結照顯)
-- 交付 Apple×27XI3 對話逐字稿 .txt(對話庫撈取+誠實標注涵蓋範圍)
-- 裁定 A/B 修法:A(關 bridge 記憶)治病已做;B(per-key 直連付費路由)記為對外收費前必做,動機=合規+容量非防污染
 
 ---
 
@@ -72,31 +70,30 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| zhu-core skills/platform-foundation/BLUEPRINT.md | 十二章加雙通道警示引言塊 |
-| zhu-core skills/summon/uni.md | 咒頭加職責錨（回指十二章） |
-| ~/Desktop/平台地基藍圖_v1.2.md | 同步縫合後版本 |
+| ailivex v18.29.2→31.3 七個 commit(696da5b→ebbd744) | 大小寫/審核台/talk雙版型/優尼三修/對比修/chat回characterName |
+| agent v20 rev00056 / v19 rev00062 | pending 閘+白名單,digest 三點一線 |
+| ~/.ailive/inly/app/page.tsx+layout.tsx | 整站換裝 INLY AI Chat 設計 |
+| memory project_inly_character_api.md | B案註銷+審核台+INLY換裝進度 |
 
 ---
 
 ## 下一步
 
-1. titan 明天（7/30）自動監測前，Adam 若說暫停 → `gcloud scheduler` 或租戶頁暫停；沒說＝照跑 ~$3
-2. 豆油伯第一輪等 Adam 按（病歷頁就地按鈕）
-3. 接 GEO UI/UX 線先讀 `geo-authority/docs/UNI_AUDIT_2026-07-28.md`＋藍圖 v1.2 十二章
+等 Adam 醒來裁定:①INLY logo 真檔補上 ②發行正式 API key 給 INLY(後台 /admin/api-keys)③talk 版型派發給真用戶(admin 用戶頁「版型」下拉)。無新指令時別動 INLY——皮已照設計稿,再動要新設計稿。
 
 ---
 
 ## 卡住 / 未解
 
+2026-07-30 第1場：
+- **INLY logo PNG 待補**:design 資產 base64 經我手抄必損毀(11KB 抄壞一次),現用 INLY 字標 fallback;Adam 從 claude.design 下載真檔丟 `~/.ailive/inly/public/assets/logo-inly.png` 重新 `npx vercel --prod --yes` 即換回。四個 Memphis 形狀是 SVG 重繪非原檔
+- INLY 真 key 的 e2e 沒跑(手上無現役 key,測試 key 前已撤銷)——皮驗過、API 契約沒動過,首次真用時看一眼即可
+- 審核台 Python 端是離線 mock 驗證(SA secret 被權限系統擋)——第一通 API 語音來電的記憶出現在待審區=活體閉環
+- username 修法四咽喉不含 talk 頁 localStorage 舊值(存的是原樣輸入)——peek 端已正規化所以無感,純知識點
+
 2026-07-29 第2場：
 - 沿 _4 場全部：豆油伯第一輪監測（驗進度%/頁面心跳/上輪表現三件新品）、titan 週四 7/30 ~$3 等 Adam 一句話（明天就是週四）、優尼下一課（GOV.UK＋Laws of UX）
 - 平行班注意：今天至少兩條線在跑（第 1 場 bridge 污染破案已收尾），commit 前認自己的檔
-
-2026-07-29 第1場：
-- username 大小寫修法(linpc2026/Mars 系統性雷)等 Adam 點頭
-- B 案直連路由、記憶審核台、v1 內核抽取、key 語音秒數匯總、per-key 併發閘——INLY memory 轉正債清單
-- LLM 串流間歇斷線(7/28 APIConnectionError)持續觀察;requirements 未釘版,每次重建 image=重擲依賴骰子
-- 引擎今天多次被測試喚醒,auto-off cron 會自動收(機制已驗證,不用管)
 
 ---
 
@@ -117,4 +114,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-29 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-30 第1場。*
