@@ -9204,3 +9204,42 @@ Adam 下一階段自己寫 code。若接棒的築要動手，第一優先看 Ada
 - pipe 吃 exit code 同雷二犯(壞代碼上 git,Vercel 擋下)→ memory 升級禁令模板:gate 下游的指令一律落檔取 $? 再 grep
 - 平行 session 出沒:068810a(知識手冊 docs)與我的 05776a5 撞版號 v18.32.5,無互掃
 - 待 Adam:建正式訪談角色→admin 發 key 勾「訪談模式」→換 BeSelf env;UI 設計稿後換裝
+
+---
+
+## 2026-07-31（第1場）— BeSelf 訪談平台從白皮書到量表 demo 一日全程＋INLY 真檔收尾＋API 對接指南
+
+### 背景 / WHY
+BeSelf=角色 API 的第一個 B2B 商品化戰場(AVIVA beself by self 首客)。MVP 已過,Adam 宣告下一階段:完整平台企劃書＋正式角色進場。
+
+### 完成
+- 收尾 INLY:logo/四底紋真檔上位——Adam 貼圖,程式從 session jsonl 解 base64 直落地(零 LLM 轉錄,L1 正解),全量解碼+角落 alpha 驗真透明;登入卡 logo 置中放大(優尼裁「放大置中」勝,根因=原檔烤了 69% 透明留白,程式裁 trim 檔)
+- 寫角色 API 對接指南(`ailivex-platform/docs/API_V1_對接指南.md`,490efa2)——給合作團隊工程師的大白話版,照源碼契約寫
+- BeSelf 平台一日全程:白皮書+地基帳本(Adam 全表點頭「二個行」)→ 草模三頁五血管 → 尖刺全環 → Adam 真玩兩場 → 三裁決 → 量表 demo 頁,全上線 https://beself-two.vercel.app
+- 平台側 v18.32.0-.6:`GET /api/v1/conversations`(逐字稿可攜,合併語音/文字兩線 doc)、API 通話錄音接線(char.recordingEnabled→egress,債清)、interview key 派工、`context` 活動訪綱注入(換活動不換角色)、ui_select 先 interrupt、admin 發鑰匙「訪談模式」勾選
+- agent v21 訪談線鑄成(=v20+show_options/record_choice data channel {type,payload}+ui_select RPC),兩輪部署 digest 三點一線
+- 尖刺全自動實測:WebAudio 注入合成語音當假訪客→9 秒格子亮→RPC 回流→禮物落庫→逐字稿回流→錄音 31s done;一碼一訪閘實測擋重入
+- Adam 三裁落地:①禮物一律 AI 語音操控(點選拆除)②摩斯定訪談萃取方法論(五篩,docs/ANALYSIS_SPEC.md)③評分表禁令(訪綱評分句已拔)
+- 量表卡+活動解析 demo 頁(優尼規格:分母/證據原句/(估)/再行銷行動/排除硬濾),Adam 場真萃取:正面具體(信心高)+3 感官證詞+「反嗆訪談員」不經意訊號
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ~/.ailive/beself(整個 repo,8 commits) | 白皮書/帳本/三頁五血管/量表卡/活動解析/分析規格 |
+| ailivex-platform v18.32.0-.6(7 commits) | conversations 端點/錄音接線/interview 派工/context 注入/ui_select interrupt/admin 勾選 |
+| agent v21(main/realtime/cloudbuild) | 訪談線:UI 事件工具+RPC;digest 8f26e165 收案 |
+| ~/.ailive/inly | logo/底紋真檔+登入卡置中(Vercel 直推,無 git) |
+| memory project_beself_platform.md(新)+project_inly_character_api.md+feedback_pipe_eats_exit_code.md | BeSelf 立檔/INLY 資產收案/pipe 雷升級禁令模板 |
+
+### ⚠️ 尚未解決
+- **beself repo 只有本地 git,無 GitHub 遠端**——筆電死=歷史沒了,下一棒第一件事 `gh repo create`
+- Adam 場 0006(31 句)未跑量表——留給 Adam 自己按「跑量表」體驗,或下一棒代跑
+- 醉酒指數本場高峰 8(壓縮接手+pipe二犯+工具滑倒),已照 protocol 刻現場;本檔寫於指數仍高的狀態,接棒先驗證再信
+- 平台 v18.32.5 版號撞號(068810a 別場 docs commit 同號)——歷史已推不重寫,純記錄
+- 別場髒樹照舊未動(AILIVE/anews-b/ailive-platform scripts/zhu-core ingest)
+
+### 待執行 / 下一步
+1. **寫 BeSelf 完整平台企劃書**(Adam 已下單):多檔活動(campaign 精靈+key 綁定)、B2B 自助前台(品牌自己上傳本次調查的產品/品項/禮物)、角色庫調用(靈魂同模組,不同專案不同訪綱)、CSV 匯入、報告室正式版;**參考 `~/Documents/UDN NEWS/platform/` 的議題工作台玩法**(Adam 明示會有啟發——多檔專案/工作流編排的概念可搬)
+2. Adam 建正式訪談角色 → admin 發 key 勾「訪談模式」→ 換 beself .env.local+Vercel env 的 AILIVEX_API_KEY → 撤銷寶力測試 key(#2d6ef873)
+3. `cd ~/.ailive/beself && gh repo create`(私有)補遠端
+4. 前後台規劃已給 Adam(活動室/名單室/訪談室/報告室),他點頭「活動室+名單室」先動工
