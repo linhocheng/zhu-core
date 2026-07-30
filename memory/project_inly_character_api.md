@@ -20,4 +20,6 @@ metadata:
 - **記憶審核台已上線(v18.30.0,2026-07-29)**:API 影子用戶(uid `api-*`)寫入的記憶一律先 `pending`,admin 記憶頁「審核台」面板通過→active 進檢索/駁回→rejected 留檔;寫入閘釘在兩個收斂點(TS `writeMemory`/Python `write_memory`),讀路徑 TS+Python 三處全翻白名單 `status==='active'`。
 - 願景藍圖(Adam 拍板):三平面=品牌現場(對方UI+LiveKit直連)/控制面(key/token/額度)/治理面(記憶審核+知識庫+方法論)。收費=月費額度包,計量全程式。
 
-相關:[[project-ailivex-platform]]、待命喚醒制(v18.25.0,撥號自動開機/閒置30分熄燈,同日上線,voice/session 直接復用)。
+- **2026-07-30 API 再長兩塊肌肉(BeSelf 逼出)**:`GET /api/v1/conversations`(key 主人拉自己端用戶逐字稿;語音線 doc=`ailivex-voice-<charId>-<uid>` 與文字線 `<uid>_<charId>` 兩個家,端點合併讀);voice/session 收 `context` 欄位(限 interview key,活動訪綱每通注入 v21——換活動不換角色);API 通話錄音接線(char.recordingEnabled→egress,錄音債已清)。
+
+相關:[[project-ailivex-platform]]、[[project-beself-platform]]、待命喚醒制(v18.25.0,撥號自動開機/閒置30分熄燈,同日上線,voice/session 直接復用)。

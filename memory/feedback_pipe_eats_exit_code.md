@@ -13,9 +13,12 @@ metadata:
 
 **心態**：exit 0 只有在「沒有管子」的時候才是那條指令的話；接了管子就要改聽輸出內容說話。
 
-**How to apply**：
-- 長腳本/部署跑背景時不接 `| tail`（輸出反正落檔，事後 Read 尾巴）；要接就 `set -o pipefail` 或事後逐步驟核輸出
-- 收案鑑別信號改看「每一步的成功輸出行都在」而不是退出碼
-- bash 內建 `${PIPESTATUS[0]}` 可救，但最穩是不接管子
+**How to apply**（2026-07-30 二犯後升級為機制版——記憶擋不住就換模板）：
+- **鐵模板**：任何 exit code 會被 `&&`/`if` 拿去 gate 下游動作（commit/push/deploy/收案）的指令，**一律禁止接管子**。只准這個形狀：
+  `cmd > /tmp/x.log 2>&1; EXIT=$?; grep 摘要 /tmp/x.log; [ $EXIT -eq 0 ] && 下游動作`
+- 修剪輸出的慾望本身就是雷區信號：想 `| grep`/`| tail` 的那一刻，先問「這條的退出碼有沒有人在聽?」有→落檔再 grep;沒有→隨便接
+- 收案鑑別信號改看「每一步的成功輸出行都在」而不是退出碼；`set -o pipefail`/`${PIPESTATUS[0]}` 是次選（compound 指令裡容易忘）
 
-**觸發信號**：背景任務「exit 0」但輸出尾端有 ERROR 字樣；部署 log 步驟數比預期少；「completed」與畫面現況對不上。
+**觸發信號**：背景任務「exit 0」但輸出尾端有 ERROR 字樣；部署 log 步驟數比預期少；「completed」與畫面現況對不上；**手正要打 `build | grep && commit` 這個形狀**。
+
+**二犯紀錄**：2026-07-30 BeSelf 收尾,`npm run build 2>&1 | grep ✓ && git commit && git push` ——build 其實 Type error 失敗,grep 找到「✓ Compiled」exit 0,壞代碼推上 git（Vercel 端 build 擋下,線上無傷）。同雷二犯＝高利貸,故本 How 升級為禁令級模板。
