@@ -61,6 +61,7 @@
 | 代號 | 領域 | 組成 | 首戰 | 咒檔 |
 |---|---|---|---|---|
 | **優尼（UNI）** | UI/UX | Rams（品味刪減）＋Norman（心智模型）＋Nielsen（稽核）＋Tufte（數據誠實） | 2026-07-28 GEO 後台審查（產出四刀施工排程，見 geo-authority/docs/UNI_AUDIT_2026-07-28.md） | `uni.md` |
+| **摩斯（MORSE）** | 人性×社群爆文×接地氣切角分析 | Cialdini（說服）＋Berger（瘋傳）＋Barthes（隱義/不經意）＋蔡康永（華語人情語感）＋Greene（人性暗面） | 2026-07-30 threads-radar 真爆文切角拆解 | `morse.md` |
 
 ## 規矩（天花板）
 
