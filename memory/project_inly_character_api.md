@@ -12,7 +12,7 @@ metadata:
 - 端點:`/api/v1/chat`(文字+key層額度)、`/api/v1/tts`(角色開口,聲紋不出門)、`/api/v1/voice/session`(LiveKit 直連;202 waking=待命喚醒響鈴契約)。CORS 全開(key 即門禁)。
 - key 存 `api_keys/{sha256}`,scopes=[chat,tts,voice],明文只出現一次、可撤銷。
 - **INLY 沙盒**:`~/.ailive/inly`(獨立目錄+獨立 Vercel project,非 git)→ https://inly-one.vercel.app。鐵律:只准碰 /api/v1,不共用平台代碼——API 做不到的它就做不到。
-- **2026-07-30 換裝 Adam 設計「INLY AI Chat」**(claude.design ca472091):奶油#fff9f2×紫#7f55f5×深紫#3e0f5e三畫面(登入卡/對話泡泡/通話頁),Instrument Sans;後台術語文案全拔;優尼審五刀(logo壞圖fallback字標/金鑰眼睛切換/空狀態引導/三態律通話狀態/送出鍵44px)。**logo PNG 待補**:design 資產 base64 手抄會損毀,現用字標 fallback,真檔丟 `public/assets/logo-inly.png` 即自動換回;四個 Memphis 形狀是 SVG 重繪。/v1/chat 回應新增 characterName(v18.31.3)。
+- **2026-07-30 換裝 Adam 設計「INLY AI Chat」**(claude.design ca472091):奶油#fff9f2×紫#7f55f5×深紫#3e0f5e三畫面(登入卡/對話泡泡/通話頁),Instrument Sans;後台術語文案全拔;優尼審五刀(logo壞圖fallback字標/金鑰眼睛切換/空狀態引導/三態律通話狀態/送出鍵44px)。**品牌資產已全真檔(2026-07-30)**:Adam 貼圖 5 張(logo+star橘/x粉/z紫/N酒紅),用程式從 session jsonl 解 base64 直落地(零 LLM 轉錄,L1 正解),全量解碼+角落 alpha=0 驗真透明;SVG 重繪全退役,`Shape` img 組件吃 public/assets/;logo 含影領字樣故登入卡重複文字已拔。/v1/chat 回應新增 characterName(v18.31.3)。
 - 2026-07-28 實測:A.Two 跨 stateless 呼叫記得端用戶(小林/手工皮件+提煉4條記憶)、端用戶隔離 OK、TTS 真 mp3、waking 19s→200 token。
 - **治理紅線(實測抓到)**:角色知識庫對所有端用戶全開——A.Two 把達摩內部客戶案例講給陌生端用戶還誤認身份。正式版必做知識分域(per-key scope)。
 - **2026-07-29 進度**:後台金鑰管理頁上線(/admin/api-keys,角色頁「金鑰」鈕;明文僅顯示一次);key 新增 coCreate(共創=訓練師待遇:提案進待審+語音派 v19 訓練線,影子用戶 access 種 coCreateEnabled,agent 零改)與 knowledgeInternal(可讀內部知識,預設關);知識分域上線(v18.28,chunk 帶 visibility 缺省 internal,檢索咽喉過濾,文字+語音);錄音頁對話 log(v18.29,agent 掛斷直寫逐字稿免 STT;v18.29.1 舊制 STT 按鈕藏於 SHOW_LEGACY_VOICE_JOBS)。

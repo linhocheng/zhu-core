@@ -1,6 +1,7 @@
 - [天條：蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12 章標配默認全含（v1.2 增可理解性：機制對但沉默＝不存在）、調度清單點頭才動工、排後必帶觸發條件、債看利率不看年齡；BLUEPRINT 在 zhu-core/skills/platform-foundation/
 - [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是「當時規模」快照；加引擎/加租戶/cron合併必回頭重驗；串行合併要用當日總和算；geo 兩輪撞死60分 $5.43 學費
 - [threads-radar 爆文雷達平台](project_threads_radar.md) — 對外爬蟲SaaS上線 threads-radar-virid.vercel.app；neko(VM)登入橋接+爬蟲(Cloud Run Job)；WIF免金鑰；M0-M4全上線現場驗通，剩真Threads登入(帳號風險Adam決)
+- [threads-radar 切角分析情報層(內部兵工廠)](project_threads_radar_angle_analysis.md) — 非對外SaaS是自家Trade寫手軍團工具;摩斯召喚已鑄;結果共享池待重構;機制只驗過一人份;守則1情報帳號vs工作帳號分開;靜態住宅IP已驗IPRoyal台灣乾淨;純聊天規劃未動code
 - [膠水層錯誤訊息會誤導](feedback_glue_layer_errors_lie.md) — auth/credential/CDP/proxy 除錯：錯誤指向A真因在B；逐層扒真信號(decode claims/curl CDP/ss看介面/inspect tag)不讀code推；版本歪斜讓系統用內部一致auth stack；與模稜兩可信號天條孿生
 - [失敗路徑也要記帳（cost 隨心跳寫回）](skill_cost_on_heartbeat_failure_accounting.md) — 只在成功記帳＝燒最兇時刻預算閘全盲；SIGKILL 不走 catch，心跳帶帳才留得住；稽核用原始事件層重算
 - [本機接力正姿：nohup 脫鉤＋Monitor 盯 log](skill_detached_relay_nohup_monitor.md) — harness 背景任務活不過幾分鐘；腳本必冪等可重跑；正式路徑不能依賴筆電活著
