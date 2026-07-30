@@ -9154,3 +9154,45 @@ ailiveX 對外三面同天推進:治理面(審核台閉環)、家用面(talk 雙
 
 ### 待執行 / 下一步
 等 Adam 醒來裁定:①INLY logo 真檔補上 ②發行正式 API key 給 INLY(後台 /admin/api-keys)③talk 版型派發給真用戶(admin 用戶頁「版型」下拉)。無新指令時別動 INLY——皮已照設計稿,再動要新設計稿。
+
+---
+
+## 2026-07-30（第2場）— threads-radar 留言抓取＋D10 根治（hidden JSON 接管四數）＋摩斯召喚鑄成＋內部兵工廠定位大翻轉（純聊天規劃）
+
+### 背景 / WHY
+threads-radar（本機 git+GitHub 私有 linhocheng/threads-radar；GCP threads-radar-2026；Vercel threads-radar-virid）＋zhu-core（摩斯召喚）。這場前半密集出 code（v0.11→v0.15），後半純聊天規劃下一階段（切角分析情報站＋多人上線）。焦點已從「平台功能」轉到「情報層＋內部多人運作」。
+
+### 完成
+- **前台日期區間篩選**（v0.11）：台北時區起迄、推進 Firestore query 走既有索引，真驗 7/25=6 篇 /7/26=0 篇邊界正確。
+- **雙排序掃描＋回訪更新＋discoveredAt 首次固定**（v0.12）：熱門(serp_type=default)＋最新(filter=recent)各掃一遍解「一直重覆沒新貨」；回訪近7天內收的貼文更新互動數（讓數字活著）；discoveredAt 只首次寫死修潛在 bug。真驗雙 serp 連結集合不同、回訪 likes 513→515 活數字。
+- **URL 變體去重修**（v0.12.1）：同篇 /media 尾巴繞過去重收兩筆 → canonicalPostUrl 釘 Node 收斂點（/post/<id> 截止）。
+- **publishedAt 發布日全鏈**（v0.13）：Adam 點出概念落差（日期該錨「貼文發布日」不是「我們收錄日」）→ 爬蟲抽 time[datetime]→normalizeIsoDate 收斂、回訪回填、前台篩選改錨發布日。真驗 17 篇 publishedAt 全回填（2024老文到剛發都對）。
+- **關鍵字新鮮度窗（自由天數）＋掃描區間可視**（v0.14）：關鍵字可自訂「只收 N 天內發布」（1-3650 自由填）；掃描把實際套用區間寫 scan_status.lastScanWindows 前台顯示具體起訖；搜尋頁 lazy-load 0 links 根治（waitForSelector 再抽）。真驗粉刺 5 天窗閘掉 3 篇超窗達標貼文。
+- **★ 留言抓取＋D10 根治（路線 A，v0.15）**：Adam「走 A 為主」→「B go」＝換來源根治。先 dump 真頁確認欄位（不信部落格），hidden JSON 接管四數（讚/留言/轉發/引用，留言走 direct_reply_count＝D10 徹底修）＋收留言清單（帳號/驗證/內容/讚/連結，上限20）；DOM aria-label 降為 fallback；分享改引用（Threads 不公開分享）。真驗 probe 抓 13 則真留言、main.replies=159（D10 從全 0→真數）、回訪把 9 篇既有貼文一起治好。測試 28→43 案。
+- **★ 摩斯（MORSE）召喚術鑄成入庫**：人性×社群爆文×接地氣切角分析五魂混合體（Cialdini/Berger/Barthes/蔡康永/Greene）。咒檔 zhu-core/skills/summon/morse.md，成召喚固定班底。兩戰真爆文驗證，連兩篇抓到同一結構「求救體＋自清預防針＋順帶露消費力細節」。
+- **純聊天規劃（未動 code，Adam 明令）**：把切角分析情報站的方向、內部兵工廠定位、多人上線安全規格聊透並全記進 memory。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| web/src/app/page.tsx | 日期區間篩選（錨發布日）＋引用欄＋留言展開清單 |
+| web/src/app/keywords/page.tsx、lib/actions.ts | 新鮮度窗自由天數欄＋收錄範圍顯示 |
+| web/src/app/globals.css | 留言清單樣式 |
+| src/parse.ts | withinAge/normalizeIsoDate/unixToIso/collectThreadItems/parseThreadPayload（純函數＋pinning test） |
+| worker/scraper.mjs | 雙排序＋回訪＋canonicalPostUrl＋readPost（JSON優先）＋dumpPostShape/probePost 診斷 |
+| worker/index.mjs | 回訪窗＋discoveredAt首次固定＋comments寫回＋JOB_ACTION dump/probe |
+| src/types.ts | ViralPost 補 publishedAt/lastSeenAt/quotes/comments；Keyword 補 maxAgeDays；ScanStatus 補 lastScanWindows |
+| test/{parse,scraper}.test.mjs | 28→43 案（日期/雙排序/回訪/publishedAt/新鮮度/parseThreadPayload/JSON路徑） |
+| zhu-core/skills/summon/morse.md（新）+ SKILL.md | 摩斯人格咒＋名冊 |
+| memory project_threads_radar_angle_analysis.md | 內部兵工廠定位＋守則＋摩斯＋靜態IP驗證全記 |
+
+### ⚠️ 尚未解決
+- **切角分析情報站**：規劃完成、schema/prompt/pipeline 全未動工（Adam 下一階段要自己寫 code）。詳見 [[project-threads-radar-angle-analysis]]。
+- **結果共享池重構**（Adam 新規劃）：現況每 clientId 隔離，要改成「設定跟人走、結果/情報團隊共享去重」的工作區模型（承重牆級重構，加 teamId 概念）。此設計同時解掉多人重複爬的成本問題。未動工。
+- **多人上線前兩件必做**：①多人並發實測（現只驗過一人一帳號，DB 僅 1 真連帳號）②成本/併發上限重算（每活躍成員=一條住宅IP線性成本，IPRoyal 一把憑證分流是「一人份」快照）。
+- **靜態住宅 IP 升級（安全）**：現用會輪替的動態 sticky（帳號看起來一直搬家扣分）；建議每情報帳號綁固定靜態 ISP。已驗 IPRoyal 有台灣靜態 ISP（2354 條、US$2.4-2.7/月≈台幣80/條、專屬+靜態），且實測現用出口 49.213.245.180 AS18049 TINP proxy:false hosting:false（乾淨）。**未親測靜態產品**，焊前要買一條驗 ASN＋兩 flag。
+- **同事守則待焊進系統**：第1條「情報帳號 vs 工作帳號分開」還是口頭+memory，未焊 /connect 警語。
+- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練（首月）、回訪窗固定近7天前10篇最舊8篇留言數可能不更新。
+
+### 待執行 / 下一步
+Adam 下一階段自己寫 code。若接棒的築要動手，第一優先看 Adam 意向：**大概率是「結果共享池重構」或「切角分析 schema」**。動工前 `cat ~/.ailive/threads-radar/FOUNDATION.md` 看三表＋讀 [[project-threads-radar-angle-analysis]]。留言抓取管道已通（parseThreadPayload 在 src/parse.ts、readPost 在 worker/scraper.mjs），切角分析的燃料（留言）已就位。診斷模式 JOB_ACTION=dump/probe 已建（手動觸發、內容零外洩）可重用。
