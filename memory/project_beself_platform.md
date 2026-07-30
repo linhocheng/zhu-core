@@ -17,6 +17,7 @@ metadata:
 - 安全閥:人數上限(campaign.maxInterviews)+15 分鐘前端鬧鐘(伺服器硬閘排後)+一碼一訪(transaction)+consent 未勾不建 doc+入口速率粗閘。
 - 待辦(帳本排後,正式開跑前):伺服器 15 分鐘硬閘/CSV 匯入/秒數計量匯總 key/失敗通知/生人驗收;報告管線未動工(NPS 訪談內直問,抽取升級 agent 工具直寫是壓底債)。
 - 後台 /admin 密碼在 .env.local BESELF_ADMIN_PASSWORD(Vercel env 同步)。
-- **2026-07-31 Adam 三裁+量表上線**:①禮物一律 AI 語音操控(點選拆除,record_choice 即定案自動落庫)②分析=摩斯五篩(感官證詞/具體時空/推薦意願四級/抱怨/不經意;規格 docs/ANALYSIS_SPEC.md;走 bridge+程式驗證,再行銷行動=確定性映射)③**評分表禁令**——真角色不打分數,訪綱評分句已拔;「分數是句點不是鑰匙」(Adam 場實證:9分要到但1分扣哪被玩笑擋掉)。量表卡+活動解析 demo 頁上線(真資料);demo 場勾 excluded 硬濾聚合。**repo 只有本地 git 無遠端**。下一棒:完整企劃書(多檔活動/B2B 自助上傳/角色庫調用/參考 UDN)。
+- **2026-07-31 Adam 三裁+量表上線**:①禮物一律 AI 語音操控(點選拆除,record_choice 即定案自動落庫)②分析=摩斯五篩(感官證詞/具體時空/推薦意願四級/抱怨/不經意;規格 docs/ANALYSIS_SPEC.md;走 bridge+程式驗證,再行銷行動=確定性映射)③**評分表禁令**——真角色不打分數,訪綱評分句已拔;「分數是句點不是鑰匙」(Adam 場實證:9分要到但1分扣哪被玩笑擋掉)。量表卡+活動解析 demo 頁上線(真資料);demo 場勾 excluded 硬濾聚合。
+- **2026-07-31 深夜:遠端已補(github linhocheng/beself 私有)+企劃書 v1.0(docs/PLATFORM_PLAN.md:四房間/B2B 兩階段/一品牌一 key 建議)+M1 收案**:後台=活動列表→活動室(精靈/上線預檢/狀態機)+名單室(CSV 先預覽再落庫/作廢還原/匯出)+訪談房;入口 `/?c=<campaignId>`;externalUserId=`<campaignId>-<orderNo>`(demo 舊規則不動)。訪綱組裝唯一咽喉 lib/context.ts(評分句禁令釘組裝層)。**新雷**:record_choice 工具開火機率性(嘴說記了沒 call)→確定性兜底 lib/giftmap.ts(選擇對映:中文數字/簡繁漂移;逐字稿受訪者親口「N號」回填,接 complete+admin 對帳兩落地點),production 真訪談 2 場實測通。M1 測試活動 aviva-ms7su5e0 可整檔作廢。待 Adam 裁:企劃書第八章五個裁決點。
 
 相關:[[project-inly-character-api]]、[[project-ailivex-platform]]
