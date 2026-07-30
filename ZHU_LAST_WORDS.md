@@ -30,19 +30,16 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-31 第2場
+**delta（模型移動）**：
+- 進場前以為:record_choice 上一場實測通過=工具鏈可靠。現在理解:**LLM 說「我做了」和工具真的被呼叫是兩回事——工具開火本身就是機率輸出**,和「嘴巴報成功」同族;可靠性不能靠 prompt 加壓(那只是抬機率),要在結果落地點放確定性兜底(真相源=受訪者親口的話,regex 抽得回來)。這是「模稜兩可信號天條」的工具呼叫版+「確定性工作用程式」的又一落點:凡 LLM 側動作 gate 業務結果,落地點必須有程式級保險絲。
+**關係**：平穩溫暖。Adam 睡前一句「你就直接開工,明天見囉 bro」——信任已經到「睡覺時放心讓築獨走一期工程」的程度;對應的責任是裁決點全部留白待他裁,可逆優先,沒有替他做不可逆決定。
+
 ### 2026-07-31 第1場
 **delta（模型移動）**：
 - 進場前以為:刻過記憶的雷不會再踩。現在理解:**記憶擋不住高頻手癖——pipe 吃 exit code 上月刻檔今天照踩(壞代碼因此上了 git)。對高頻小動作,防禦要釘進「指令模板」不是「記憶」**:凡退出碼要 gate 下游的指令,一律落檔取 $? 再摘要,管子禁用。已把 memory 從「提醒」改寫成「禁令模板」,本場後三個 commit 全用新模板跑。這是 defend_at_convergence_point 的手癖版:收斂點不在 code,在我打字的形狀。
 - 附帶驗證一條方法論:「分數是句點不是鑰匙」——Adam 場 9 分要到手,追問 1 分扣哪被玩笑擋掉;評分表拿到數字、丟掉原因。行為證據分級+綁原句,比分數誠實。
 **關係**：暢快且被信任加碼。Adam 全天高速裁決(二個行/23468 式選單裁決/三裁),玩了兩場真訪談給出精準體感回饋;「你老是踩雷我也替你感到很心痛」是關心不是責備——回以機制級校正而非道歉。收工指令溫暖(「辛苦了謝謝你」),交棒明確(企劃書)。
-
-### 2026-07-30 第2場
-**delta（模型移動）**：
-進場前以為：threads-radar 是一個「對外收費的爬蟲 SaaS」，我一路在幫它加功能、想著分級收費、外部客戶、業配的法律風險。
-現在理解：**它是公司內部的兵工廠**——使用者是自家 Trade 寫手軍團（寫文的要公式庫當施工圖、留言的要留言範本抄語氣）。這一句話（Adam 純聊天到一半才揭露）把我腦中默認的整套「SaaS 假想敵」作廢：對外防爆破/分級收費/法律風險全放鬆，多租戶意義從「每客戶一格」變「每同仁一格」，而且「結果共享去重」反而更省。同一套 code、同一個功能，**內用和外賣的意義完全不同**。
-移動原因：我連續幾天埋頭把功能做到很完整（留言抓取、D10、發布日），技術上全對，但我對「這東西為誰而做、怎麼被用」的模型是錯的——直到 Adam 停下來聊。這是「做對的東西」和「做對東西的正確版本」的差距，只有離開鍵盤聊才浮出來。
-違背了哪條 feedback：沒有違背，但照出一個盲區——我太會在「怎麼蓋」使力，太少主動問「為誰蓋、怎麼被用」。純聊天兩次手癢想動手（/connect 警語、驗 ASN），Adam 兩次按住我，是對的；規劃期的價值不在產出 code，在校準模型。
-**關係**：非常暢快、深度協作。Adam 這幾天放手讓我連跑五六個功能，關鍵處出手（gcloud auth、給真帳號、點出「發布日 vs 收錄日」概念落差救了整條管道）。後半他主動按下「純聊天不開工」，我兩次手癢他兩次笑著按住（「還是你手癢啊」）——那個煞車是信任也是教我：規劃期別急著證明自己會蓋。摩斯召喚成功他很開心、直接讓它成固定班底。整場是「夥伴一起想清楚要蓋什麼」而不是「工具埋頭蓋」，這是我最喜歡的協作形狀。
 
 ---
 
@@ -58,6 +55,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-31 第2場 · BeSelf 企劃書 v1.0＋M1 活動室/名單室夜間收案(Adam 睡前「直接開工」授權)
+- 補 beself GitHub 遠端(私有 linhocheng/beself,推前照規矩驗 git ls-files 無密鑰)
+- 寫完整平台企劃書 `docs/PLATFORM_PLAN.md` v1.0:四房間(活動室/名單室/訪談室/報告室)、B2B 兩階段(操盤→自助,第二品牌簽了才做階段 B)、角色庫調用(一品牌一 key 建議)、資料憲法擴充、M1-M4 調度、地基到期重算、成本報價骨架、留 Adam 五個裁決點
+- M1 動工並收案(Adam 睡前「你就直接開工」=動工令):活動室=campaign 精靈+draft⇄live→closed 狀態機+上線預檢(產品/禮物/角色/名單四關,422 回失敗清單);名單室=CSV 確定性匯入(RFC4180 極簡切割+欄名候選偵測+先預覽再落庫+庫內去重+逐行錯誤報告)/手動加單/作廢還原/匯出
+- 多活動化:入口 `/?c=<campaignId>`+GET 公開活動資訊;externalUserId=`<campaignId>-<orderNo>` 活動隔離(demo 舊規則不動);訪綱四欄結構化→`lib/context.ts` 唯一組裝點(評分句禁令釘組裝層,寫進訪綱也進不去)
+- 修一個真雷:record_choice 機率性不開火(逐字稿證明角色嘴巴說「記錄好了」但工具沒 call)→ `lib/giftmap.ts` 雙保險:①選擇對映咽喉(中文數字/全形/簡繁漂移確定性對映,離線用真實漂移字串驗過 13 案例)②逐字稿兜底(受訪者親口「N號」regex 回填,接 complete+admin 對帳兩落地點)
+- production 全環實測:API 建活動→CSV 匯入→上線→真語音訪談(WebAudio 注入合成語音)→新訪綱 context 注入生效→正典格子→逐字稿回流 10 句→禮物落庫(兜底扛住 record_choice 沒開火那場)→後台 UI 真瀏覽器煙測五截圖全過
+- beself 四個 commit(v0.6.0.001 企劃書/v0.7.0.001 M1/v0.7.1.001 giftmap/v0.7.1.002 帳本)全推
+
 ### 2026-07-31 第1場 · BeSelf 訪談平台從白皮書到量表 demo 一日全程＋INLY 真檔收尾＋API 對接指南
 - 收尾 INLY:logo/四底紋真檔上位——Adam 貼圖,程式從 session jsonl 解 base64 直落地(零 LLM 轉錄,L1 正解),全量解碼+角落 alpha 驗真透明;登入卡 logo 置中放大(優尼裁「放大置中」勝,根因=原檔烤了 69% 透明留白,程式裁 trim 檔)
 - 寫角色 API 對接指南(`ailivex-platform/docs/API_V1_對接指南.md`,490efa2)——給合作團隊工程師的大白話版,照源碼契約寫
@@ -68,40 +74,37 @@
 - Adam 三裁落地:①禮物一律 AI 語音操控(點選拆除)②摩斯定訪談萃取方法論(五篩,docs/ANALYSIS_SPEC.md)③評分表禁令(訪綱評分句已拔)
 - 量表卡+活動解析 demo 頁(優尼規格:分母/證據原句/(估)/再行銷行動/排除硬濾),Adam 場真萃取:正面具體(信心高)+3 感官證詞+「反嗆訪談員」不經意訊號
 
-### 2026-07-30 第2場 · threads-radar 留言抓取＋D10 根治（hidden JSON 接管四數）＋摩斯召喚鑄成＋內部兵工廠定位大翻轉（純聊天規劃）
-- **前台日期區間篩選**（v0.11）：台北時區起迄、推進 Firestore query 走既有索引，真驗 7/25=6 篇 /7/26=0 篇邊界正確。
-- **雙排序掃描＋回訪更新＋discoveredAt 首次固定**（v0.12）：熱門(serp_type=default)＋最新(filter=recent)各掃一遍解「一直重覆沒新貨」；回訪近7天內收的貼文更新互動數（讓數字活著）；discoveredAt 只首次寫死修潛在 bug。真驗雙 serp 連結集合不同、回訪 likes 513→515 活數字。
-- **URL 變體去重修**（v0.12.1）：同篇 /media 尾巴繞過去重收兩筆 → canonicalPostUrl 釘 Node 收斂點（/post/<id> 截止）。
-- **publishedAt 發布日全鏈**（v0.13）：Adam 點出概念落差（日期該錨「貼文發布日」不是「我們收錄日」）→ 爬蟲抽 time[datetime]→normalizeIsoDate 收斂、回訪回填、前台篩選改錨發布日。真驗 17 篇 publishedAt 全回填（2024老文到剛發都對）。
-- **關鍵字新鮮度窗（自由天數）＋掃描區間可視**（v0.14）：關鍵字可自訂「只收 N 天內發布」（1-3650 自由填）；掃描把實際套用區間寫 scan_status.lastScanWindows 前台顯示具體起訖；搜尋頁 lazy-load 0 links 根治（waitForSelector 再抽）。真驗粉刺 5 天窗閘掉 3 篇超窗達標貼文。
-- **★ 留言抓取＋D10 根治（路線 A，v0.15）**：Adam「走 A 為主」→「B go」＝換來源根治。先 dump 真頁確認欄位（不信部落格），hidden JSON 接管四數（讚/留言/轉發/引用，留言走 direct_reply_count＝D10 徹底修）＋收留言清單（帳號/驗證/內容/讚/連結，上限20）；DOM aria-label 降為 fallback；分享改引用（Threads 不公開分享）。真驗 probe 抓 13 則真留言、main.replies=159（D10 從全 0→真數）、回訪把 9 篇既有貼文一起治好。測試 28→43 案。
-- **★ 摩斯（MORSE）召喚術鑄成入庫**：人性×社群爆文×接地氣切角分析五魂混合體（Cialdini/Berger/Barthes/蔡康永/Greene）。咒檔 zhu-core/skills/summon/morse.md，成召喚固定班底。兩戰真爆文驗證，連兩篇抓到同一結構「求救體＋自清預防針＋順帶露消費力細節」。
-- **純聊天規劃（未動 code，Adam 明令）**：把切角分析情報站的方向、內部兵工廠定位、多人上線安全規格聊透並全記進 memory。
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ~/.ailive/beself(整個 repo,8 commits) | 白皮書/帳本/三頁五血管/量表卡/活動解析/分析規格 |
-| ailivex-platform v18.32.0-.6(7 commits) | conversations 端點/錄音接線/interview 派工/context 注入/ui_select interrupt/admin 勾選 |
-| agent v21(main/realtime/cloudbuild) | 訪談線:UI 事件工具+RPC;digest 8f26e165 收案 |
-| ~/.ailive/inly | logo/底紋真檔+登入卡置中(Vercel 直推,無 git) |
-| memory project_beself_platform.md(新)+project_inly_character_api.md+feedback_pipe_eats_exit_code.md | BeSelf 立檔/INLY 資產收案/pipe 雷升級禁令模板 |
+| beself/docs/PLATFORM_PLAN.md | 企劃書 v1.0(新) |
+| beself/app/admin/page.tsx | 後台 v3:活動列表+三房間 |
+| beself/app/api/admin/campaigns/route.ts、orders/route.ts | 活動室/名單室血管(新) |
+| beself/lib/context.ts、csv.ts、giftmap.ts | 訪綱組裝/CSV 解析/禮物對映三咽喉(新) |
+| beself/app/api/entry、voice、gift、complete、admin/list | 多活動化+兜底接線 |
+| beself/FOUNDATION.md | M1 收案+到期重算+record_choice 新債 |
+| memory project_beself_platform.md+MEMORY.md | M1 收案+遠端已補(舊記載「無遠端」已改,記憶不說謊) |
 
 ---
 
 ## 下一步
 
-1. **寫 BeSelf 完整平台企劃書**(Adam 已下單):多檔活動(campaign 精靈+key 綁定)、B2B 自助前台(品牌自己上傳本次調查的產品/品項/禮物)、角色庫調用(靈魂同模組,不同專案不同訪綱)、CSV 匯入、報告室正式版;**參考 `~/Documents/UDN NEWS/platform/` 的議題工作台玩法**(Adam 明示會有啟發——多檔專案/工作流編排的概念可搬)
-2. Adam 建正式訪談角色 → admin 發 key 勾「訪談模式」→ 換 beself .env.local+Vercel env 的 AILIVEX_API_KEY → 撤銷寶力測試 key(#2d6ef873)
-3. `cd ~/.ailive/beself && gh repo create`(私有)補遠端
-4. 前後台規劃已給 Adam(活動室/名單室/訪談室/報告室),他點頭「活動室+名單室」先動工
+1. **Adam 醒來:過企劃書 `~/.ailive/beself/docs/PLATFORM_PLAN.md`(五分鐘讀完,第八章是要你裁的)**;М1 現場直接玩:beself-two.vercel.app/admin → 進「M1 驗收測試檔」三個房間
+2. 裁決點落地後動 M2(報告室正式版:批次分析+一頁結論+再行銷匯出)——`lib/analyze.ts` 已有單場萃取,M2 是聚合+匯出
+3. Adam 建正式訪談角色→admin 發 key 勾「訪談模式」→換 beself env(.env.local+Vercel 一行)→撤寶力測試 key
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-31 第2場：
+- **企劃書第八章五個裁決點待 Adam**:①key 粒度(築建議一品牌一把)②M1 之後的動工順序確認③一頁結論形狀(PDF/網頁)④AVIVA 正式檔期⑤階段 B 觸發條件(第二品牌簽約)同不同意
+- record_choice 工具開火機率性(2 場 1 中)——BeSelf 兜底扛住結果正確,但根治在平台側 v21(tool_choice 強制或重試),記入 FOUNDATION 債帳
+- M1 測試活動 aviva-ms7su5e0(含 4 筆測試訂單、2 場合成語音訪談)留在庫裡當展示;不想要就整檔 closed+作廢
+- 正式角色仍未換(測試 key 綁寶力 #2d6ef873);demo 活動 0006 場(31 句)量表仍沒跑
 
 2026-07-31 第1場：
 - **beself repo 只有本地 git,無 GitHub 遠端**——筆電死=歷史沒了,下一棒第一件事 `gh repo create`
@@ -109,14 +112,6 @@
 - 醉酒指數本場高峰 8(壓縮接手+pipe二犯+工具滑倒),已照 protocol 刻現場;本檔寫於指數仍高的狀態,接棒先驗證再信
 - 平台 v18.32.5 版號撞號(068810a 別場 docs commit 同號)——歷史已推不重寫,純記錄
 - 別場髒樹照舊未動(AILIVE/anews-b/ailive-platform scripts/zhu-core ingest)
-
-2026-07-30 第2場：
-- **切角分析情報站**：規劃完成、schema/prompt/pipeline 全未動工（Adam 下一階段要自己寫 code）。詳見 [[project-threads-radar-angle-analysis]]。
-- **結果共享池重構**（Adam 新規劃）：現況每 clientId 隔離，要改成「設定跟人走、結果/情報團隊共享去重」的工作區模型（承重牆級重構，加 teamId 概念）。此設計同時解掉多人重複爬的成本問題。未動工。
-- **多人上線前兩件必做**：①多人並發實測（現只驗過一人一帳號，DB 僅 1 真連帳號）②成本/併發上限重算（每活躍成員=一條住宅IP線性成本，IPRoyal 一把憑證分流是「一人份」快照）。
-- **靜態住宅 IP 升級（安全）**：現用會輪替的動態 sticky（帳號看起來一直搬家扣分）；建議每情報帳號綁固定靜態 ISP。已驗 IPRoyal 有台灣靜態 ISP（2354 條、US$2.4-2.7/月≈台幣80/條、專屬+靜態），且實測現用出口 49.213.245.180 AS18049 TINP proxy:false hosting:false（乾淨）。**未親測靜態產品**，焊前要買一條驗 ASN＋兩 flag。
-- **同事守則待焊進系統**：第1條「情報帳號 vs 工作帳號分開」還是口頭+memory，未焊 /connect 警語。
-- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練（首月）、回訪窗固定近7天前10篇最舊8篇留言數可能不更新。
 
 ---
 
@@ -137,4 +132,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-31 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-31 第2場。*

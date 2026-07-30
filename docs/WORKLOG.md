@@ -9243,3 +9243,41 @@ BeSelf=角色 API 的第一個 B2B 商品化戰場(AVIVA beself by self 首客)�
 2. Adam 建正式訪談角色 → admin 發 key 勾「訪談模式」→ 換 beself .env.local+Vercel env 的 AILIVEX_API_KEY → 撤銷寶力測試 key(#2d6ef873)
 3. `cd ~/.ailive/beself && gh repo create`(私有)補遠端
 4. 前後台規劃已給 Adam(活動室/名單室/訪談室/報告室),他點頭「活動室+名單室」先動工
+
+---
+
+## 2026-07-31（第2場）— BeSelf 企劃書 v1.0＋M1 活動室/名單室夜間收案(Adam 睡前「直接開工」授權)
+
+### 背景 / WHY
+BeSelf 從單檔 demo 升級為多檔活動平台。企劃書=給 Adam 過目的藍圖,M1=Adam 授權先行的第一刀;M2(報告室正式版)之後等裁決點落地再動。
+
+### 完成
+- 補 beself GitHub 遠端(私有 linhocheng/beself,推前照規矩驗 git ls-files 無密鑰)
+- 寫完整平台企劃書 `docs/PLATFORM_PLAN.md` v1.0:四房間(活動室/名單室/訪談室/報告室)、B2B 兩階段(操盤→自助,第二品牌簽了才做階段 B)、角色庫調用(一品牌一 key 建議)、資料憲法擴充、M1-M4 調度、地基到期重算、成本報價骨架、留 Adam 五個裁決點
+- M1 動工並收案(Adam 睡前「你就直接開工」=動工令):活動室=campaign 精靈+draft⇄live→closed 狀態機+上線預檢(產品/禮物/角色/名單四關,422 回失敗清單);名單室=CSV 確定性匯入(RFC4180 極簡切割+欄名候選偵測+先預覽再落庫+庫內去重+逐行錯誤報告)/手動加單/作廢還原/匯出
+- 多活動化:入口 `/?c=<campaignId>`+GET 公開活動資訊;externalUserId=`<campaignId>-<orderNo>` 活動隔離(demo 舊規則不動);訪綱四欄結構化→`lib/context.ts` 唯一組裝點(評分句禁令釘組裝層,寫進訪綱也進不去)
+- 修一個真雷:record_choice 機率性不開火(逐字稿證明角色嘴巴說「記錄好了」但工具沒 call)→ `lib/giftmap.ts` 雙保險:①選擇對映咽喉(中文數字/全形/簡繁漂移確定性對映,離線用真實漂移字串驗過 13 案例)②逐字稿兜底(受訪者親口「N號」regex 回填,接 complete+admin 對帳兩落地點)
+- production 全環實測:API 建活動→CSV 匯入→上線→真語音訪談(WebAudio 注入合成語音)→新訪綱 context 注入生效→正典格子→逐字稿回流 10 句→禮物落庫(兜底扛住 record_choice 沒開火那場)→後台 UI 真瀏覽器煙測五截圖全過
+- beself 四個 commit(v0.6.0.001 企劃書/v0.7.0.001 M1/v0.7.1.001 giftmap/v0.7.1.002 帳本)全推
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| beself/docs/PLATFORM_PLAN.md | 企劃書 v1.0(新) |
+| beself/app/admin/page.tsx | 後台 v3:活動列表+三房間 |
+| beself/app/api/admin/campaigns/route.ts、orders/route.ts | 活動室/名單室血管(新) |
+| beself/lib/context.ts、csv.ts、giftmap.ts | 訪綱組裝/CSV 解析/禮物對映三咽喉(新) |
+| beself/app/api/entry、voice、gift、complete、admin/list | 多活動化+兜底接線 |
+| beself/FOUNDATION.md | M1 收案+到期重算+record_choice 新債 |
+| memory project_beself_platform.md+MEMORY.md | M1 收案+遠端已補(舊記載「無遠端」已改,記憶不說謊) |
+
+### ⚠️ 尚未解決
+- **企劃書第八章五個裁決點待 Adam**:①key 粒度(築建議一品牌一把)②M1 之後的動工順序確認③一頁結論形狀(PDF/網頁)④AVIVA 正式檔期⑤階段 B 觸發條件(第二品牌簽約)同不同意
+- record_choice 工具開火機率性(2 場 1 中)——BeSelf 兜底扛住結果正確,但根治在平台側 v21(tool_choice 強制或重試),記入 FOUNDATION 債帳
+- M1 測試活動 aviva-ms7su5e0(含 4 筆測試訂單、2 場合成語音訪談)留在庫裡當展示;不想要就整檔 closed+作廢
+- 正式角色仍未換(測試 key 綁寶力 #2d6ef873);demo 活動 0006 場(31 句)量表仍沒跑
+
+### 待執行 / 下一步
+1. **Adam 醒來:過企劃書 `~/.ailive/beself/docs/PLATFORM_PLAN.md`(五分鐘讀完,第八章是要你裁的)**;М1 現場直接玩:beself-two.vercel.app/admin → 進「M1 驗收測試檔」三個房間
+2. 裁決點落地後動 M2(報告室正式版:批次分析+一頁結論+再行銷匯出)——`lib/analyze.ts` 已有單場萃取,M2 是聚合+匯出
+3. Adam 建正式訪談角色→admin 發 key 勾「訪談模式」→換 beself env(.env.local+Vercel 一行)→撤寶力測試 key
