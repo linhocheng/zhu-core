@@ -22,4 +22,9 @@ metadata:
 
 - **2026-07-31 白天:M2 報告室+圖片上傳收案(v0.8.0)**:第四房間=批次量表(client 逐場,無背景任務不欠六問)+一頁結論(程式聚合+bridge 歸納段明標 AI;雷:「平均 3.1 分」被讀成評分→facts 寫「通話時長 X 分鐘」)+再行銷/金句 CSV+列印 PDF;圖片上傳走 ailivex-2026-assets 公開桶 beself/ 前綴(4MB 白名單,giftImages 與 gifts 同索引同交易)。**素材桶 IAM 已收權**:allUsers objectViewer→legacyObjectReader(匿名可整桶列舉是真洞;documents/ 公開是功能語意)。訪談角色 Ava 已建全裝,待 Adam 發訪談 key 換 env 撤寶力。
 
+- **2026-08-01 商品庫+兜底雙升級**:①品牌層商品庫(beself_products)上線,品項/禮物單一真相源,活動勾選制+快照凍結;真貨=Vivi(moumou-os platform_products)策展 10 件 AVIVA 商品含圖(圖已重傳自家桶)。②record_choice **四場三失**(升架構警報,治本在平台側工具強制);逐字稿兜底加品名比對(禮物階段後/唯一命中/複述跳過),production 無數字純品名場驗通;**限制**:STT 簡體 vs 繁體品名字形不同時比對不到(安全失敗回 null),根治候選 opencc-js 待 Adam 裁。
+- **2026-08-01 Adam 三裁**:①禮物履行(寄送/地址)=**範圍外**,平台只保證「完成+不重複」(一碼一訪);②**觸達層是已知空白**——邀請發送/轉換漏斗(發送→進站→完訪)未規劃,第一檔用品牌自發連結土法,**未來做多品牌或報告要漏斗數字時要回來補**;③法遵頁 /privacy 已上線(v0.9.0,保存 12 個月是築暫定可調)。前台=beself-two.vercel.app/?c=<id>,後台=/admin。
+
+- **2026-08-01 晚:後台換裝 v1.0.0**:Adam 的 claude.ai/design 稿(WeGrowth-AVIVA,經 DesignSync MCP 拉稿)整件實作——襯線+金棕+2px 直角語言;登入/列表/商品庫卡片牆/四分頁(名單/訪談/活動解析/設定)/一頁式報告獨立畫面;brandmark AVIF→PNG 入 public。稿多的去(示範密碼/公開分享連結/刪除鈕),稿少的造(勾選制/CSV 預覽/狀態機/量表卡/匯出/圖上傳)。邏輯零改動,八頁真瀏覽器煙測(圖片驗到 naturalWidth)。雷:煙測探針要兩段等(先等卡片 render 再等圖解碼),搶拍會把好 App 誤診成斷圖。商品「玩美淨顏慕斯花」正名「完美淨顏慕絲花」(Adam 裁)。
+
 相關:[[project-inly-character-api]]、[[project-ailivex-platform]]

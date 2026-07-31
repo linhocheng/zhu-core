@@ -226,3 +226,5 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 **其他待完成：** ailiveX-platform git init + push GitHub；清 3 個 pending doc jobs。
 
 **How to apply:** 處理 ailiveX 相關問題時，認識這是全新 GCP 專案（ailivex-2026）與 ailive 完全隔離。admin 密碼已輪換不存記憶（見上）。語音「沒聲音」先查 LLM/Bridge 串流斷點，不是 TTS 也不是 dispatch。
+
+- **2026-08-01 Ava→Nina + 產品知識全裝**:Adam 把 Ava(IukZrq77)改名 Nina、靈魂擴到 11,808 字(aliases 只剩 Nina)。Vivi(moumou-os platform_products/platform_knowledge)十件 AVIVA 產品知識搬入 Nina:一品一 doc、段落程式組裝零 LLM 改寫、全公開、authority=canonical,驗收 11/11 綠(關鍵句/gist 0 漏/白話+域外+原句三測)。Adam 正名裁決:「**完美**淨顏慕絲花」(玩美是誤植),庫內引用處全域替換重入,beself 商品庫同步改名。雷:源庫 re-ingest 過的產品主檔 knowledgeIds 是死鏈(段落被刪),搬運前先驗連結,fallback=標題前綴查活段落→主檔欄位。
