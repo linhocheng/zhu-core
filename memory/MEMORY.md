@@ -135,7 +135,7 @@
 - [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
 - [bridge CLI auto-memory 污染案](feedback_bridge_cli_auto_memory_contamination.md) — claude CLI headless 不是無狀態:auto-memory 把客戶資料注入所有過橋流量;修=CLAUDE_CODE_DISABLE_AUTO_MEMORY=1+settings 雙保險;prompt 乾淨≠回覆乾淨,引擎層是獨立審計面
 - [角色 API + INLY 品牌沙盒](project_inly_character_api.md) — key=無介面機器用戶綁角色;/api/v1 chat/tts/voice三端點;影子用戶記憶隔離實測通;INLY=inly-one.vercel.app 只准走API;紅線=知識庫未分域對端用戶全開
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v20（知識檢索＋遞招）；v19 訓練線共創、v18 熱回滾；共創系統 admin 教→提案→審核轉正（2026-07-19）；repo=linhocheng/ailivex-platform，admin 密碼已輪換不存記憶
+- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v20;知識分域雙態切換+跨通道接話(文字讀語音lastSession);Ava(AVIVA分身)/Kane 全裝含方法論;鑄魂召喚術產線(2026-07-31);repo=linhocheng/ailivex-platform,admin 密碼不存記憶
 - [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — commit 會掃走對方未提交檔案；開工先 pull、commit 前 status 認檔案、雙線互相聲明戰場
 - [即時語音負載實測方法＋同時建線爆發發現](skill_voice_loadtest_setup_burst.md) — 合成來電者階梯法半天可複製；單台6路穩態、真短板=15s內6通建線首回合飆27s；閘值5路/台+3通/15s/台；ISP到LiveKit edge路由可能不通
 - [Vercel void 寫入被 lambda 凍結蒸發](feedback_vercel_void_write_frozen.md) — 回應送出即凍結，void promise 零錯誤消失；回應後寫入一律 next/server after() 包在 writer 內；驗證看 DB doc 不看路由 200
@@ -177,4 +177,4 @@
 - [Next.js CSP nonce 化正解＋Next 16 三雷](reference_nextjs16_csp_nonce.md) — middleware/proxy per-request nonce＋strict-dynamic＋不設default-src；Next16雷：proxy.ts改名/nonce必配force-dynamic否則靜態頁死白頁/__next_f探針失效；外部字型要放行googleapis
 - [同模板複製多站也要逐站真瀏覽器測](skill_csp_nonce_per_site_headless_verify.md) — 每站雷不同(三站三種破法)；headless驗CSP鑑別信號：script nonce覆蓋/0 violation/軟導航=最強hydration證據；自簽cookie測gated頁；部署後同信號打production
 - [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 「召喚○○」→附體領域大神人格咒；框架/名冊在 zhu-core/skills/summon/；鑄新神五步，沒首戰不算鑄成；首尊優尼(UI/UX四神)
-- [BeSelf 訪談活動站](project_beself_platform.md) — AVIVA首客;beself-two.vercel.app(repo linhocheng/beself);M1活動室+名單室收案;giftmap兜底扛record_choice機率性;企劃書五裁決點待Adam(2026-07-31)
+- [BeSelf 訪談活動站](project_beself_platform.md) — AVIVA首客;beself-two.vercel.app(repo linhocheng/beself);M1+M2四房間收案(報告室/圖片上傳);素材桶IAM收權;Ava已建待換key;企劃書五裁決點待Adam(2026-07-31)

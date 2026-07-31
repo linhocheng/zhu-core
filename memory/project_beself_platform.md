@@ -20,4 +20,6 @@ metadata:
 - **2026-07-31 Adam 三裁+量表上線**:①禮物一律 AI 語音操控(點選拆除,record_choice 即定案自動落庫)②分析=摩斯五篩(感官證詞/具體時空/推薦意願四級/抱怨/不經意;規格 docs/ANALYSIS_SPEC.md;走 bridge+程式驗證,再行銷行動=確定性映射)③**評分表禁令**——真角色不打分數,訪綱評分句已拔;「分數是句點不是鑰匙」(Adam 場實證:9分要到但1分扣哪被玩笑擋掉)。量表卡+活動解析 demo 頁上線(真資料);demo 場勾 excluded 硬濾聚合。
 - **2026-07-31 深夜:遠端已補(github linhocheng/beself 私有)+企劃書 v1.0(docs/PLATFORM_PLAN.md:四房間/B2B 兩階段/一品牌一 key 建議)+M1 收案**:後台=活動列表→活動室(精靈/上線預檢/狀態機)+名單室(CSV 先預覽再落庫/作廢還原/匯出)+訪談房;入口 `/?c=<campaignId>`;externalUserId=`<campaignId>-<orderNo>`(demo 舊規則不動)。訪綱組裝唯一咽喉 lib/context.ts(評分句禁令釘組裝層)。**新雷**:record_choice 工具開火機率性(嘴說記了沒 call)→確定性兜底 lib/giftmap.ts(選擇對映:中文數字/簡繁漂移;逐字稿受訪者親口「N號」回填,接 complete+admin 對帳兩落地點),production 真訪談 2 場實測通。M1 測試活動 aviva-ms7su5e0 可整檔作廢。待 Adam 裁:企劃書第八章五個裁決點。
 
+- **2026-07-31 白天:M2 報告室+圖片上傳收案(v0.8.0)**:第四房間=批次量表(client 逐場,無背景任務不欠六問)+一頁結論(程式聚合+bridge 歸納段明標 AI;雷:「平均 3.1 分」被讀成評分→facts 寫「通話時長 X 分鐘」)+再行銷/金句 CSV+列印 PDF;圖片上傳走 ailivex-2026-assets 公開桶 beself/ 前綴(4MB 白名單,giftImages 與 gifts 同索引同交易)。**素材桶 IAM 已收權**:allUsers objectViewer→legacyObjectReader(匿名可整桶列舉是真洞;documents/ 公開是功能語意)。訪談角色 Ava 已建全裝,待 Adam 發訪談 key 換 env 撤寶力。
+
 相關:[[project-inly-character-api]]、[[project-ailivex-platform]]

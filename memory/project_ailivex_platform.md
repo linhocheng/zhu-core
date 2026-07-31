@@ -5,6 +5,13 @@ type: project
 originSessionId: d44171fd-41c9-4648-9b8d-6bd6aaaee3ef
 ---
 
+**2026-07-31:知識分域可編輯+跨通道接話+Ava/Kane 全裝(v18.32.7-.8 已 commit+部署)。**
+- **知識分域雙態切換**:後台知識庫「內部|公開」segmented control(原藥丸看起來像狀態標籤沒人知道能點——機制對但沉默=不存在);底層 setKnowledgeDocVisibility 本來就母表+全塊同步,純可理解性修
+- **跨通道接話**:文字 dialogue prompt 注入【上次語音通話】block(`loadVoiceLastSessionBlock`,conversation.ts)——讀語音線 `ailivex-voice-<cid>-<uid>` 的 lastSession,唯讀不併帳、帶相對時間、>30 天不注入。兩線記憶合併真相:**逐字稿兩本帳永不合併,共池的是 memories(文字=回覆後秒級/語音=掛斷 finalize ~15-30s)+日記+relationship**
+- **Ava 上線**(characters/IukZrq77rjjHyFokmd7Z):AVIVA 品牌聲線分身,鑄魂產線 B 首戰(21 篇品牌語料+官網公開面);靈魂 1230 字(主矛盾=賣家卻教人少買;「這話沒錯,但也沒說完」接法;語音節奏段)+知識庫 9 份 10 塊(canonical/internal)+方法論 6 套(選瓶/步驟數/化妝水稠薄/精華分流/分區簡化/外油內乾馴化),驗收全過(遞招 6/6、不誤觸、交叉矩陣 margin≥0.062)。**分身紀律:有真語料不虛構傷口;不冒充創辦人本人**。待:聲線/頭像/本人校準五項(壓力形變只有半個樣本)
+- **Kane 整理**(GHi7GWBN8GtzmKgJpHFA):Peggy 訓練存的知識 23→16 份(同標題重複 7 份去重)、全切公開;帶客流程萃成方法論 5 套(前期需求診斷/走期檔期對齊/預算期望拆解/論壇內容配比/灰產應對),驗證全過(預算拆解法 margin 0.005→銳化 desc 後 0.030)。**共創審核轉正會重複入庫同一課——待補冪等**
+- 鑄魂(SOULFORGE)召喚術 v2.1 入 zhu-core 名冊:四魂+庫學三師(Apple 證據四級/寶力陰影/tracy 語音節奏)+九刀戒律,雙產線(品牌虛構/真人分身)
+
 **2026-07-27：共創開放指定用戶＋對話模式 Nokia 話機（v18.23.0-v18.24.0 已 commit+部署）。**
 - **共創開放**：`access.coCreateEnabled`（權限指派頁「共創」鈕，在 GPT Voice 旁）；三道守門同步放寬＝characters API（按鈕顯示）＋token 訓練線閘＋**v19 agent 提案閘**（`check_method_proposal_gate` 讀 access doc——只放寬平台側會半殘：聽得到提不了案）。提案照舊進後台審核
 - **對話模式 /talk＝Nokia 復古話機**（Adam 設計）：`?u=帳號` 專屬連結、撥號盤輸入＝**數字密碼**、綠鍵登入＋接通一氣呵成（通話同頁做——跳頁斷手勢鏈 iOS 無聲）；已登入免密碼直撥；掛斷回撥號盤、無登出鍵；PWA（manifest+零快取 SW+綠話筒 icon）；免登入 `/api/talk/peek` 回角色卡（只認開通帳號），「上線中」接語音電源真相。設定在用戶管理頁（talkModeEnabled/talkCharacterId/talkLine——選 trainer 綠鍵直撥共創線，後端驗 coCreate 防死路）
