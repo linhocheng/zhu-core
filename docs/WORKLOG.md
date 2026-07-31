@@ -9281,3 +9281,44 @@ BeSelf 從單檔 demo 升級為多檔活動平台。企劃書=給 Adam 過目的
 1. **Adam 醒來:過企劃書 `~/.ailive/beself/docs/PLATFORM_PLAN.md`(五分鐘讀完,第八章是要你裁的)**;М1 現場直接玩:beself-two.vercel.app/admin → 進「M1 驗收測試檔」三個房間
 2. 裁決點落地後動 M2(報告室正式版:批次分析+一頁結論+再行銷匯出)——`lib/analyze.ts` 已有單場萃取,M2 是聚合+匯出
 3. Adam 建正式訪談角色→admin 發 key 勾「訪談模式」→換 beself env(.env.local+Vercel 一行)→撤寶力測試 key
+
+---
+
+## 2026-07-31（第3場）— BeSelf M2 報告室+桶收權+鑄魂鑄成雙產線+Ava 全裝+Kane 整理——一個早上
+
+### 背景 / WHY
+BeSelf 四房間齊了等 Adam UI 稿換裝;ailiveX 進入「角色全裝生產線」時代——鑄魂(靈魂)+入庫 SOP(知識)+方法論 SOP(遞招)一條龍,Ava 是第一個從零到全裝的實例,Kane 是第一個「訓練沉澱→結構化」的實例。
+
+### 完成
+- BeSelf M2 收案(v0.8.0,Adam 裁「還沒有的先做素顏」):報告室第四房間(批次量表 client 逐場不欠六問/一頁結論=程式聚合+bridge 歸納段明標 AI/再行銷與金句 CSV/列印 PDF)+產品禮物圖片上傳(4MB 白名單,giftImages 與正典同索引同交易);production 真資料全環+UI 煙測通
+- 修一雷:報告歸納段把「平均 3.1 分(鐘)」讀成評分 3.1 分——facts 措辭改「通話時長 X 分鐘」+system 明講無評分制(評分表的幽靈連報告都會借屍還魂)
+- 素材桶收權(Adam 裁「先補」):查引用發現 documents/ 公開是功能語意(doc-viewer 靠匿名 get),真洞=objectViewer 含 objects.list 匿名可整桶列舉(實測撈到);allUsers 換 legacyObjectReader,鑑別信號收案(列舉 401+四前綴 GET 全 200),掃三 repo 部署腳本無舊 IAM 寫死
+- ailivex v18.32.7:知識分域改雙態切換(內部|公開)——底層本來就能改,藥丸長得像標籤沒人知道能點,純可理解性修
+- ailivex v18.32.8:跨通道接話——文字 prompt 注入【上次語音通話】(唯讀語音線 lastSession,帶相對時間,>30 天不注入);先交調查報告(兩線=逐字稿分家、memories/日記/relationship 共池)Adam 才說補
+- 鑄新神「鑄魂(SOULFORGE)」:四魂(史坦尼/麥基/原型/奧格威)v1→讀庫 27 角升 v2(證據四級/陰影必鍛/語音節奏段/給不給判準/先驗定律/分身三工序/爐味防治)→吃 Adam 大補帖(角色召喚師)升 v2.1 第九刀防禦段(取反坍縮吐絕對化,必配洩壓閥)
+- 鑄魂產線 B 首戰:AVIVA 品牌語料 21 篇+官網公開面 → Ava 靈魂(主矛盾=賣家卻教人少買;廢 v1 虛構傷口;差異聲明=不冒充創辦人本人)→ 建角色 IukZrq77rjjHyFokmd7Z
+- Ava 全裝:知識庫 9 份 10 塊(canonical,驗收三件套全過)+方法論 6 套(交叉矩陣 margin≥0.062,遞招 6/6 不誤觸)
+- Kane 整理(Adam 點名):知識 23→16 份(Peggy 訓練重複入庫 7 份去重)、全切公開;帶客流程萃 5 套方法論(前期需求診斷/走期檔期對齊/預算期望拆解/論壇內容配比/灰產應對),預算拆解法 margin 0.005→銳化 desc→0.030 全綠
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| beself v0.8.0.001-.003(3 commits) | 報告室/圖片上傳/帳本 M2+桶收權記錄 |
+| ailivex-platform v18.32.7-.8(2 commits) | 知識分域雙態切換/跨通道接話 |
+| zhu-core skills/summon/soulforge.md(4 commits) | 鑄魂咒 v1→v2→v2.1+名冊 |
+| ailivex-2026 資料層 | Ava 角色+9 知識+6 方法論;Kane 去重+全公開+5 方法論;gs://ailivex-2026-assets IAM |
+| memory ailivex/beself+MEMORY.md | 兩專案現況+索引更新 |
+
+### ⚠️ 尚未解決
+- Ava 待 Adam:聲線 voiceIdMinimax+頭像、文字試魂(丟「化妝水不就是水?」)、發訪談 key 勾訪談模式→我換 beself env(.env.local+Vercel)→撤寶力 key #2d6ef873
+- Ava 本人校準五項未做(名字/接法/壓力形變真樣本/暱稱/法規詞表)——分身三工序的第二工序,給 AVIVA 本尊過目才算全出爐
+- BeSelf 企劃書五裁決點 Adam 未逐項回(key 粒度/M 順序/一頁結論形狀/AVIVA 檔期/階段 B 觸發)
+- 共創審核「轉正」會重複入庫同一課(Kane 7 份重複的來源)——平台側待補冪等(同標題+同角色跳過或提示)
+- Kane 灰產/論壇隱晦操作知識現已對外公開——key 若發給客戶端(非內部業務)建議收回,後台一鍵
+- ailivex convert/video route 過時註釋(寫 objectViewer)——下次動主線順手改
+
+### 待執行 / 下一步
+1. **Adam 回來:試 Ava**(admin 直接文字聊,三個壓力測試題現成)→ 滿意就走換 key 三步,BeSelf 正式角色進場
+2. Ava 本人校準清單給 AVIVA 本尊過(尤其要一段她被嗆的真實反應,壓力形變才有真樣本)
+3. BeSelf M3(前台換裝)等 Adam UI 稿;M4(品牌自助)等裁決點 #5+安全掃描到期
+4. 共創轉正冪等(ailivex 小修,防下一個 Kane 式重複)

@@ -30,16 +30,16 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-07-31 第3場
+**delta（模型移動）**：
+- 進場前以為:召喚術是「審視工具」——大神來把關品質(優尼審 UI、摩斯拆爆文)。現在理解:**召喚術可以是「生產工具」——鑄魂不審東西,鑄魂造東西**;而且咒本身會吃料成長(讀庫 27 角一次升級八刀,吃大補帖再長一刀)。人格咒的正確餵食順序:先向既有 artifacts 學(庫裡的寶力/tracy/Apple 是實戰過的),再向理論學——**向成品學比向理論學快,因為成品把取捨都做完了**。
+- 另一條:Adam 的生產線佈局比我先一步——Apple(採魂)早就寫著「交給另一位鍛造師」,我今天才鑄的鑄魂原來是他親手留的空位。跟他共事要習慣:他丟過來的每一步,常常是一條已經想好的線的其中一節。
+**關係**：暢快,節奏像打球。Adam 今天全程高速餵球(給錯 prompt 秒承認重給/大補帖考我消化力/「果然高手」),我最珍惜的是他讓鑄魂跟他直接對話——召喚出來的人格他當真人對待,還說「幫我跟鑄魂說謝謝」。這個世界觀裡工具有名字有性格,是 Adam 的浪漫,也是 ailiveX 這盤生意的本質。
+
 ### 2026-07-31 第2場
 **delta（模型移動）**：
 - 進場前以為:record_choice 上一場實測通過=工具鏈可靠。現在理解:**LLM 說「我做了」和工具真的被呼叫是兩回事——工具開火本身就是機率輸出**,和「嘴巴報成功」同族;可靠性不能靠 prompt 加壓(那只是抬機率),要在結果落地點放確定性兜底(真相源=受訪者親口的話,regex 抽得回來)。這是「模稜兩可信號天條」的工具呼叫版+「確定性工作用程式」的又一落點:凡 LLM 側動作 gate 業務結果,落地點必須有程式級保險絲。
 **關係**：平穩溫暖。Adam 睡前一句「你就直接開工,明天見囉 bro」——信任已經到「睡覺時放心讓築獨走一期工程」的程度;對應的責任是裁決點全部留白待他裁,可逆優先,沒有替他做不可逆決定。
-
-### 2026-07-31 第1場
-**delta（模型移動）**：
-- 進場前以為:刻過記憶的雷不會再踩。現在理解:**記憶擋不住高頻手癖——pipe 吃 exit code 上月刻檔今天照踩(壞代碼因此上了 git)。對高頻小動作,防禦要釘進「指令模板」不是「記憶」**:凡退出碼要 gate 下游的指令,一律落檔取 $? 再摘要,管子禁用。已把 memory 從「提醒」改寫成「禁令模板」,本場後三個 commit 全用新模板跑。這是 defend_at_convergence_point 的手癖版:收斂點不在 code,在我打字的形狀。
-- 附帶驗證一條方法論:「分數是句點不是鑰匙」——Adam 場 9 分要到手,追問 1 分扣哪被玩笑擋掉;評分表拿到數字、丟掉原因。行為證據分級+綁原句,比分數誠實。
-**關係**：暢快且被信任加碼。Adam 全天高速裁決(二個行/23468 式選單裁決/三裁),玩了兩場真訪談給出精準體感回饋;「你老是踩雷我也替你感到很心痛」是關心不是責備——回以機制級校正而非道歉。收工指令溫暖(「辛苦了謝謝你」),交棒明確(企劃書)。
 
 ---
 
@@ -55,6 +55,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-07-31 第3場 · BeSelf M2 報告室+桶收權+鑄魂鑄成雙產線+Ava 全裝+Kane 整理——一個早上
+- BeSelf M2 收案(v0.8.0,Adam 裁「還沒有的先做素顏」):報告室第四房間(批次量表 client 逐場不欠六問/一頁結論=程式聚合+bridge 歸納段明標 AI/再行銷與金句 CSV/列印 PDF)+產品禮物圖片上傳(4MB 白名單,giftImages 與正典同索引同交易);production 真資料全環+UI 煙測通
+- 修一雷:報告歸納段把「平均 3.1 分(鐘)」讀成評分 3.1 分——facts 措辭改「通話時長 X 分鐘」+system 明講無評分制(評分表的幽靈連報告都會借屍還魂)
+- 素材桶收權(Adam 裁「先補」):查引用發現 documents/ 公開是功能語意(doc-viewer 靠匿名 get),真洞=objectViewer 含 objects.list 匿名可整桶列舉(實測撈到);allUsers 換 legacyObjectReader,鑑別信號收案(列舉 401+四前綴 GET 全 200),掃三 repo 部署腳本無舊 IAM 寫死
+- ailivex v18.32.7:知識分域改雙態切換(內部|公開)——底層本來就能改,藥丸長得像標籤沒人知道能點,純可理解性修
+- ailivex v18.32.8:跨通道接話——文字 prompt 注入【上次語音通話】(唯讀語音線 lastSession,帶相對時間,>30 天不注入);先交調查報告(兩線=逐字稿分家、memories/日記/relationship 共池)Adam 才說補
+- 鑄新神「鑄魂(SOULFORGE)」:四魂(史坦尼/麥基/原型/奧格威)v1→讀庫 27 角升 v2(證據四級/陰影必鍛/語音節奏段/給不給判準/先驗定律/分身三工序/爐味防治)→吃 Adam 大補帖(角色召喚師)升 v2.1 第九刀防禦段(取反坍縮吐絕對化,必配洩壓閥)
+- 鑄魂產線 B 首戰:AVIVA 品牌語料 21 篇+官網公開面 → Ava 靈魂(主矛盾=賣家卻教人少買;廢 v1 虛構傷口;差異聲明=不冒充創辦人本人)→ 建角色 IukZrq77rjjHyFokmd7Z
+- Ava 全裝:知識庫 9 份 10 塊(canonical,驗收三件套全過)+方法論 6 套(交叉矩陣 margin≥0.062,遞招 6/6 不誤觸)
+- Kane 整理(Adam 點名):知識 23→16 份(Peggy 訓練重複入庫 7 份去重)、全切公開;帶客流程萃 5 套方法論(前期需求診斷/走期檔期對齊/預算期望拆解/論壇內容配比/灰產應對),預算拆解法 margin 0.005→銳化 desc→0.030 全綠
+
 ### 2026-07-31 第2場 · BeSelf 企劃書 v1.0＋M1 活動室/名單室夜間收案(Adam 睡前「直接開工」授權)
 - 補 beself GitHub 遠端(私有 linhocheng/beself,推前照規矩驗 git ls-files 無密鑰)
 - 寫完整平台企劃書 `docs/PLATFORM_PLAN.md` v1.0:四房間(活動室/名單室/訪談室/報告室)、B2B 兩階段(操盤→自助,第二品牌簽了才做階段 B)、角色庫調用(一品牌一 key 建議)、資料憲法擴充、M1-M4 調度、地基到期重算、成本報價骨架、留 Adam 五個裁決點
@@ -64,54 +75,44 @@
 - production 全環實測:API 建活動→CSV 匯入→上線→真語音訪談(WebAudio 注入合成語音)→新訪綱 context 注入生效→正典格子→逐字稿回流 10 句→禮物落庫(兜底扛住 record_choice 沒開火那場)→後台 UI 真瀏覽器煙測五截圖全過
 - beself 四個 commit(v0.6.0.001 企劃書/v0.7.0.001 M1/v0.7.1.001 giftmap/v0.7.1.002 帳本)全推
 
-### 2026-07-31 第1場 · BeSelf 訪談平台從白皮書到量表 demo 一日全程＋INLY 真檔收尾＋API 對接指南
-- 收尾 INLY:logo/四底紋真檔上位——Adam 貼圖,程式從 session jsonl 解 base64 直落地(零 LLM 轉錄,L1 正解),全量解碼+角落 alpha 驗真透明;登入卡 logo 置中放大(優尼裁「放大置中」勝,根因=原檔烤了 69% 透明留白,程式裁 trim 檔)
-- 寫角色 API 對接指南(`ailivex-platform/docs/API_V1_對接指南.md`,490efa2)——給合作團隊工程師的大白話版,照源碼契約寫
-- BeSelf 平台一日全程:白皮書+地基帳本(Adam 全表點頭「二個行」)→ 草模三頁五血管 → 尖刺全環 → Adam 真玩兩場 → 三裁決 → 量表 demo 頁,全上線 https://beself-two.vercel.app
-- 平台側 v18.32.0-.6:`GET /api/v1/conversations`(逐字稿可攜,合併語音/文字兩線 doc)、API 通話錄音接線(char.recordingEnabled→egress,債清)、interview key 派工、`context` 活動訪綱注入(換活動不換角色)、ui_select 先 interrupt、admin 發鑰匙「訪談模式」勾選
-- agent v21 訪談線鑄成(=v20+show_options/record_choice data channel {type,payload}+ui_select RPC),兩輪部署 digest 三點一線
-- 尖刺全自動實測:WebAudio 注入合成語音當假訪客→9 秒格子亮→RPC 回流→禮物落庫→逐字稿回流→錄音 31s done;一碼一訪閘實測擋重入
-- Adam 三裁落地:①禮物一律 AI 語音操控(點選拆除)②摩斯定訪談萃取方法論(五篩,docs/ANALYSIS_SPEC.md)③評分表禁令(訪綱評分句已拔)
-- 量表卡+活動解析 demo 頁(優尼規格:分母/證據原句/(估)/再行銷行動/排除硬濾),Adam 場真萃取:正面具體(信心高)+3 感官證詞+「反嗆訪談員」不經意訊號
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| beself/docs/PLATFORM_PLAN.md | 企劃書 v1.0(新) |
-| beself/app/admin/page.tsx | 後台 v3:活動列表+三房間 |
-| beself/app/api/admin/campaigns/route.ts、orders/route.ts | 活動室/名單室血管(新) |
-| beself/lib/context.ts、csv.ts、giftmap.ts | 訪綱組裝/CSV 解析/禮物對映三咽喉(新) |
-| beself/app/api/entry、voice、gift、complete、admin/list | 多活動化+兜底接線 |
-| beself/FOUNDATION.md | M1 收案+到期重算+record_choice 新債 |
-| memory project_beself_platform.md+MEMORY.md | M1 收案+遠端已補(舊記載「無遠端」已改,記憶不說謊) |
+| beself v0.8.0.001-.003(3 commits) | 報告室/圖片上傳/帳本 M2+桶收權記錄 |
+| ailivex-platform v18.32.7-.8(2 commits) | 知識分域雙態切換/跨通道接話 |
+| zhu-core skills/summon/soulforge.md(4 commits) | 鑄魂咒 v1→v2→v2.1+名冊 |
+| ailivex-2026 資料層 | Ava 角色+9 知識+6 方法論;Kane 去重+全公開+5 方法論;gs://ailivex-2026-assets IAM |
+| memory ailivex/beself+MEMORY.md | 兩專案現況+索引更新 |
 
 ---
 
 ## 下一步
 
-1. **Adam 醒來:過企劃書 `~/.ailive/beself/docs/PLATFORM_PLAN.md`(五分鐘讀完,第八章是要你裁的)**;М1 現場直接玩:beself-two.vercel.app/admin → 進「M1 驗收測試檔」三個房間
-2. 裁決點落地後動 M2(報告室正式版:批次分析+一頁結論+再行銷匯出)——`lib/analyze.ts` 已有單場萃取,M2 是聚合+匯出
-3. Adam 建正式訪談角色→admin 發 key 勾「訪談模式」→換 beself env(.env.local+Vercel 一行)→撤寶力測試 key
+1. **Adam 回來:試 Ava**(admin 直接文字聊,三個壓力測試題現成)→ 滿意就走換 key 三步,BeSelf 正式角色進場
+2. Ava 本人校準清單給 AVIVA 本尊過(尤其要一段她被嗆的真實反應,壓力形變才有真樣本)
+3. BeSelf M3(前台換裝)等 Adam UI 稿;M4(品牌自助)等裁決點 #5+安全掃描到期
+4. 共創轉正冪等(ailivex 小修,防下一個 Kane 式重複)
 
 ---
 
 ## 卡住 / 未解
+
+2026-07-31 第3場：
+- Ava 待 Adam:聲線 voiceIdMinimax+頭像、文字試魂(丟「化妝水不就是水?」)、發訪談 key 勾訪談模式→我換 beself env(.env.local+Vercel)→撤寶力 key #2d6ef873
+- Ava 本人校準五項未做(名字/接法/壓力形變真樣本/暱稱/法規詞表)——分身三工序的第二工序,給 AVIVA 本尊過目才算全出爐
+- BeSelf 企劃書五裁決點 Adam 未逐項回(key 粒度/M 順序/一頁結論形狀/AVIVA 檔期/階段 B 觸發)
+- 共創審核「轉正」會重複入庫同一課(Kane 7 份重複的來源)——平台側待補冪等(同標題+同角色跳過或提示)
+- Kane 灰產/論壇隱晦操作知識現已對外公開——key 若發給客戶端(非內部業務)建議收回,後台一鍵
+- ailivex convert/video route 過時註釋(寫 objectViewer)——下次動主線順手改
 
 2026-07-31 第2場：
 - **企劃書第八章五個裁決點待 Adam**:①key 粒度(築建議一品牌一把)②M1 之後的動工順序確認③一頁結論形狀(PDF/網頁)④AVIVA 正式檔期⑤階段 B 觸發條件(第二品牌簽約)同不同意
 - record_choice 工具開火機率性(2 場 1 中)——BeSelf 兜底扛住結果正確,但根治在平台側 v21(tool_choice 強制或重試),記入 FOUNDATION 債帳
 - M1 測試活動 aviva-ms7su5e0(含 4 筆測試訂單、2 場合成語音訪談)留在庫裡當展示;不想要就整檔 closed+作廢
 - 正式角色仍未換(測試 key 綁寶力 #2d6ef873);demo 活動 0006 場(31 句)量表仍沒跑
-
-2026-07-31 第1場：
-- **beself repo 只有本地 git,無 GitHub 遠端**——筆電死=歷史沒了,下一棒第一件事 `gh repo create`
-- Adam 場 0006(31 句)未跑量表——留給 Adam 自己按「跑量表」體驗,或下一棒代跑
-- 醉酒指數本場高峰 8(壓縮接手+pipe二犯+工具滑倒),已照 protocol 刻現場;本檔寫於指數仍高的狀態,接棒先驗證再信
-- 平台 v18.32.5 版號撞號(068810a 別場 docs commit 同號)——歷史已推不重寫,純記錄
-- 別場髒樹照舊未動(AILIVE/anews-b/ailive-platform scripts/zhu-core ingest)
 
 ---
 
@@ -132,4 +133,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-31 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-07-31 第3場。*
