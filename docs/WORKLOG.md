@@ -9431,3 +9431,42 @@ BeSelf 後台功能面收斂完成(四房間+商品庫+法遵+換裝+真刪除);
 1. Adam 給 Nina 聲線+頭像+訪談 key → 築一行 env 換好(beself .env.local+Vercel),寶力退役
 2. 前台換裝稿來了照後台同語言施工(DesignSync 拉稿→多的去少的造→煙測兩段等圖)
 3. BeSelf 企劃書五裁決點還欠著,下次開場順口催
+
+---
+
+## 2026-08-01（第4場）— threads-radar 日班三連發——靜態 ISP 綁定＋C期貢獻儀式排隊鎖＋E期意圖層（ground truth 一字不差）；醉酒指數 8 收工
+
+### 背景 / WHY
+threads-radar 中央統管全型態完工：A/B/C/E 四期＋靜態 IP＋守則焊接，一天之內。系統自動駕駛（台北 02:00 cron 掃＋意圖自動標）。
+
+### 完成
+- **靜態 ISP 上線＋B期終驗全收**（v0.19）：Adam 購 IPRoyal TW 靜態一條（211.167.34.101，$2.70/30天吃到飽，根治 402 斷糧病根）。四源交叉驗（geo 全 TW、proxy/vpn/abuser 乾淨；ASN Sky Digital 灰帶 2:1 分裂判決）→ 裁判交給 Threads 本人：真掃 connected、2 篇新入庫。worker buildProxy 單一咽喉（帳號 proxyEnv→靜態直連／缺→動態閘道；靜態不輪替 session id）。@lucymo0306 綁死固定出口。B 期終驗補收（discoveredByAccountId ✓）。
+- **依賴圖攤開（Adam 點的「多走一步」）**：D 被單帳號可行性擋、C 不被擋→串行改並行。「測完可行」從感覺定義成硬閘：**7 天觀察窗（至 ~8/8）**，過閘＝連續 connected/每輪有貨/零 challenge；紅燈任一即換 ASN 重測（帳號不換）。
+- **C期貢獻儀式**（v0.20）：/connect 語意改「貢獻情報帳號進團隊池」＋排隊鎖（lockDecision 純函數：15 分 TTL 過期接手/自己續用/別人排隊；423＋15s 自動重試；capture/cancel/開機失敗三路放鎖）＋**修承重雷：舊 start 會把在役帳號 sessionCiphertext 洗 null**（意圖/資產分離，captured 判定改 capturedAt>connectStartedAt）＋admin 池管理（線路欄+移除）。生產雙人真演七信號全中。順修 radarWebCompute 缺 compute.networks.updatePolicy（改火牆要兩權限，403→補角色+setup-iam.sh 同步）。
+- **E期意圖層**（v0.21，Adam 需求「關鍵字之外加意圖維度」）：先一吋蛋糕人肉當意圖引擎跑 14 篇（意圖光譜從資料長出來：問產品/說好用/皮膚求救/求服務/無料）→ Adam 拍板三模式（只字/只意圖/二合一）→ 蓋：只意圖 LLM 展開召回字快取（掃描照字走）、掃後批次 bridge 判定（direct/adjacent/none＋樣態＋**證據原句鐵律寫進程式：引不出＝降 none**＋信心值，15篇/掃）、前台意圖篩選＋hover 證據。**真驗對答案：@linnn_0926 DIRECT 證據與人肉版一字不差**、噪音全 none、UI 篩 7 卡全中。測試 43→66 案。
+- bridge 接進 threads-radar：BRIDGE_SECRET 由 anews env 記憶體鏡像進 SM（radar-bridge-secret）＋deploy.sh 掛載（update 分支用 --update-env-vars 天條）。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| worker/index.mjs | buildProxy 咽喉＋意圖展開/批次判定＋bridgeCall |
+| src/intent.ts＋test（新） | 意圖層純函數（prompt/extract/validate/證據鐵律） |
+| src/connectLock.ts＋web vendored＋test（新） | 排隊鎖判斷 |
+| src/dispatch.ts | explodeKeywords 三模式展開 |
+| web api/connect/{start,cancel,status,capture} | 排隊鎖＋意圖資產分離＋放鎖三路 |
+| web connect/{page,wizard} | 貢獻語意＋waiting 排隊態 |
+| web keywords/page＋actions | 意圖欄三模式＋removeAccountAction |
+| web app/page.tsx | 意圖篩選 chips＋卡片標籤 hover 證據 |
+| worker/deploy.sh＋web/setup-iam.sh | bridge secret/URL＋networks.updatePolicy（天條同步） |
+| FOUNDATION.md | 靜態ISP/C期/E期三筆帳 |
+
+### ⚠️ 尚未解決
+- **觀察閘跑至 ~8/8**：@lucymo0306 靜態 IP 七天窗。每天看一眼 scan_status/admin 即可；紅燈（challenge/expired）→ 換一條指名家用 ISP ASN 重測。Sky Digital ASN 灰帶是唯一懸念。
+- **D 期餘**：過閘後買第二條 IP＋第二帳號走貢獻儀式→並發實測自然發生；成本按關鍵字量重算。過閘才放同事進來。
+- 意圖層舊貨補判中（15篇/掃，32 篇池子兩三輪掃完）；意圖展開字 Adam 尚未真用過「只意圖」模式（機制真驗過 expandedTexts 路徑但生產只建了二合一設定）。
+- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練、回訪窗最舊留言可能不更新。
+
+### 待執行 / 下一步
+1. **每天瞄一眼觀察閘**（admin 隊狀態卡或 scan_status/default：lastRun=done、health=connected、found>0）。
+2. 8/8 過閘 → 買第二條靜態 ISP（同 SOP：四源驗→printf 封 SM→deploy.sh 掛載→帳號 doc proxyEnv）→ 第二帳號走貢獻儀式 → D 並發實測。
+3. Adam 可能想玩「只意圖」模式真身——建一個純意圖設定看召回字展開品質。

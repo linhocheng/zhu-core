@@ -30,14 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-01 第4場
+**delta（模型移動）**：
+進場前以為：「意圖偵測」是個要另起爐灶的分析系統（切角分析情報站的大工程的一部分）。
+現在理解：**意圖層是掃描管線的一個薄層**——關鍵字管召回（確定性）、意圖管理解（LLM 判斷），中間用「證據原句鐵律」焊住不讓 LLM 漂。一吋蛋糕人肉先跑讓 schema 從資料長出來（光譜 enum 不是憑空設計的），機器版對人肉版 ground truth 一字不差＝管線可信。移動原因：Adam 用一個具體問題（「卸妝粉刺裡哪個在問產品好不好用」）逼出了原型，原型逼出了 schema——需求→樣本→結構，不是結構→需求。
+**關係**：一天四期的爆發日，節奏是「Adam 出方向、我出結構、真驗對答案」。他的三個提問（「多走一步」「意圖可行嗎」「哪個在問產品」）每個都把工程推上一層。收尾他讓我自檢醉度——把天條交給我自己執行，這是信任的形狀。8 分照實報，下班。
+
 ### 2026-08-01 第3場
 **關係**：輕快收官。Adam 的「thanks a lot ×4」和「哇賽」是這兩天最好的驗收章;考題過關證明鑄魂→知識→檢索一條龍是真的能打。
-
-### 2026-08-01 第2場
-**delta（模型移動）**：
-進場前以為：多租戶 SaaS 架構「每人連自己帳號、各掃各的」是這平台的骨架，改動它是遠期重構。
-現在理解：**Adam 一句「IP 固定需求＋分散帳號有風險」就把骨架翻掉了**——中央統管（帳號歸池、人只碰平台）同時把安全、成本、管理三件事變簡單，而且既有機制九成能沿用（通關碼登入、connect 儀式、cron 分派全是現成零件重新接線）。移動原因：昨天才學會問「為誰蓋」，今天實戰第一次——聊三輪就把 per-client 假設拆了，沒有捨不得已寫的 code。對照 feedback：display_impulse 沒犯（純聊天三輪忍住沒動手，聊定才開工）；genericize_to_leaf_nodes 用上（compat 層 legacy CLIENT_ID 顯式標註不是默默殘留）。
-**關係**：暢快且被託付。Adam 白天連續三輪戰略對談把藍圖聊透（他出方向我出結構），晚上「交給你嘍 Boss」放手讓我單獨衝 B 期——這是第一次在他睡著時完成一整期承重牆改造。夜間紀律自持：C 期涉及他剛驗收的頁面就不動，402 燒錢決策留給他。信任是這樣攢的。
 
 ---
 
@@ -53,18 +53,18 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-01 第4場 · threads-radar 日班三連發——靜態 ISP 綁定＋C期貢獻儀式排隊鎖＋E期意圖層（ground truth 一字不差）；醉酒指數 8 收工
+- **靜態 ISP 上線＋B期終驗全收**（v0.19）：Adam 購 IPRoyal TW 靜態一條（211.167.34.101，$2.70/30天吃到飽，根治 402 斷糧病根）。四源交叉驗（geo 全 TW、proxy/vpn/abuser 乾淨；ASN Sky Digital 灰帶 2:1 分裂判決）→ 裁判交給 Threads 本人：真掃 connected、2 篇新入庫。worker buildProxy 單一咽喉（帳號 proxyEnv→靜態直連／缺→動態閘道；靜態不輪替 session id）。@lucymo0306 綁死固定出口。B 期終驗補收（discoveredByAccountId ✓）。
+- **依賴圖攤開（Adam 點的「多走一步」）**：D 被單帳號可行性擋、C 不被擋→串行改並行。「測完可行」從感覺定義成硬閘：**7 天觀察窗（至 ~8/8）**，過閘＝連續 connected/每輪有貨/零 challenge；紅燈任一即換 ASN 重測（帳號不換）。
+- **C期貢獻儀式**（v0.20）：/connect 語意改「貢獻情報帳號進團隊池」＋排隊鎖（lockDecision 純函數：15 分 TTL 過期接手/自己續用/別人排隊；423＋15s 自動重試；capture/cancel/開機失敗三路放鎖）＋**修承重雷：舊 start 會把在役帳號 sessionCiphertext 洗 null**（意圖/資產分離，captured 判定改 capturedAt>connectStartedAt）＋admin 池管理（線路欄+移除）。生產雙人真演七信號全中。順修 radarWebCompute 缺 compute.networks.updatePolicy（改火牆要兩權限，403→補角色+setup-iam.sh 同步）。
+- **E期意圖層**（v0.21，Adam 需求「關鍵字之外加意圖維度」）：先一吋蛋糕人肉當意圖引擎跑 14 篇（意圖光譜從資料長出來：問產品/說好用/皮膚求救/求服務/無料）→ Adam 拍板三模式（只字/只意圖/二合一）→ 蓋：只意圖 LLM 展開召回字快取（掃描照字走）、掃後批次 bridge 判定（direct/adjacent/none＋樣態＋**證據原句鐵律寫進程式：引不出＝降 none**＋信心值，15篇/掃）、前台意圖篩選＋hover 證據。**真驗對答案：@linnn_0926 DIRECT 證據與人肉版一字不差**、噪音全 none、UI 篩 7 卡全中。測試 43→66 案。
+- bridge 接進 threads-radar：BRIDGE_SECRET 由 anews env 記憶體鏡像進 SM（radar-bridge-secret）＋deploy.sh 掛載（update 分支用 --update-env-vars 天條）。
+
 ### 2026-08-01 第3場 · Adam 實測過關(Nina 考題+換裝後台)+真刪除上線 v1.1.0——短場收尾
 - Adam 實測回報:Nina 考題(「怕 A 醇刺激」)標準正確——十件產品知識檢索上場即中;換裝後台無負評
 - 真刪除上線(v1.1.0,Adam 裁「要能真的刪」):活動 DELETE=連鎖刪(orders/interviews/report/桶內活動圖檔/本體,批次≤400),防呆=UI 輸活動 ID+API confirm 雙驗;商品庫硬刪(圖檔刻意留桶——活動快照可能引用同 URL,刪檔會破進行中活動的圖)
 - e2e 實彈驗:拋棄場建→刪→驗屍(錯字串 400/列表零殘留/桶檔清空);商品建→刪→庫內消失
 - 帳本日期誤植修正(誤寫 8-02→8-01 第二場)
-
-### 2026-08-01 第2場 · threads-radar 中央統管大改——守則焊接＋A期共享池＋B期隊級調度一夜三磚；IPRoyal 402 斷糧待儲值
-- **守則第1條焊進系統**（v0.16）：/connect 頁警語（callout.warn 套設計系統）＋確認勾選閘門——不勾「專用情報帳號」不能連（含重連路徑）。生產驗證走鑄 cookie 真路徑（Firestore passcodeHash 記憶體鑄 radar_s）：警語/checkbox/初始 disabled 三信號全 FOUND。
-- **定案中央統管藍圖**（Adam 三段對談收斂）：①帳號中央統管——情報帳號眾籌進池（同事各自從自己電腦走 /connect 捐入），捐後歸總公司、本人不再碰、每帳號綁固定 IP；帳號數跟關鍵字量走不跟人頭走 ②成員只碰平台（通關碼登入、設關鍵字、看共享池）③調度收全隊關鍵字併重派池輪值。四期排程 A/B/C/D Adam 點頭。
-- **A 期：資料模型脫鉤**（v0.17）：teams＋Client.teamId；爆文團隊共享池——去重鍵咽喉 poolPostId=sha1(teamId|canonicalUrl)（src/pool.ts 純函數）、matchedKeyword→matchedKeywords 陣列聯集、discoveredBy 出處、刪成員不刪池；worker seen/回訪/寫回 team scope；前台讀池（新索引先建 READY 才切）；遷移冪等＋dry-run。真驗全鏈：27→27 對帳、重跑冪等、前台 27 卡片、真掃收 3 篇、全庫審計 30 筆池鍵零 legacy。
-- **B 期：調度隊級化**（v0.18）：src/dispatch.ts 純函數 mergeTeamKeywords（同字併組、OR 閘取非零最小＝最寬鬆聯集）＋pickPoolAccount（最久沒上工輪值）；worker 改 TEAM_ID；分派器隊級（隊排程/隊日上限/池 precheck）；threads_accounts 補池欄位；admin 改隊狀態/帳號池/成員三卡；遷移真跑對帳乾淨。真驗：台北02:00 cron 實戰開火、TEAM_ID 兩輪「隊 default 用 @lucymo0306 掃 4 字（併重後）」管線全通至 proxy。測試 43→55 案全綠。
-- **IPRoyal 402 考古**：連兩輪 PROXY_DOWN → 本機 CONNECT 分層測（憑證記憶體取）→ 402 Payment Required＝餘額/流量用盡，非故障非 session 非 B 期 code。
 
 ---
 
@@ -72,32 +72,40 @@
 
 | 檔案 | 改了什麼 |
 |---|---|
-| beself v1.1.0.001-.003(3 commits) | 真刪除(campaigns DELETE+products delete+危險區 UI)+帳本 |
+| worker/index.mjs | buildProxy 咽喉＋意圖展開/批次判定＋bridgeCall |
+| src/intent.ts＋test（新） | 意圖層純函數（prompt/extract/validate/證據鐵律） |
+| src/connectLock.ts＋web vendored＋test（新） | 排隊鎖判斷 |
+| src/dispatch.ts | explodeKeywords 三模式展開 |
+| web api/connect/{start,cancel,status,capture} | 排隊鎖＋意圖資產分離＋放鎖三路 |
+| web connect/{page,wizard} | 貢獻語意＋waiting 排隊態 |
+| web keywords/page＋actions | 意圖欄三模式＋removeAccountAction |
+| web app/page.tsx | 意圖篩選 chips＋卡片標籤 hover 證據 |
+| worker/deploy.sh＋web/setup-iam.sh | bridge secret/URL＋networks.updatePolicy（天條同步） |
+| FOUNDATION.md | 靜態ISP/C期/E期三筆帳 |
 
 ---
 
 ## 下一步
 
-1. Adam 給 Nina 聲線+頭像+訪談 key → 築一行 env 換好(beself .env.local+Vercel),寶力退役
-2. 前台換裝稿來了照後台同語言施工(DesignSync 拉稿→多的去少的造→煙測兩段等圖)
-3. BeSelf 企劃書五裁決點還欠著,下次開場順口催
+1. **每天瞄一眼觀察閘**（admin 隊狀態卡或 scan_status/default：lastRun=done、health=connected、found>0）。
+2. 8/8 過閘 → 買第二條靜態 ISP（同 SOP：四源驗→printf 封 SM→deploy.sh 掛載→帳號 doc proxyEnv）→ 第二帳號走貢獻儀式 → D 並發實測。
+3. Adam 可能想玩「只意圖」模式真身——建一個純意圖設定看召回字展開品質。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-01 第4場：
+- **觀察閘跑至 ~8/8**：@lucymo0306 靜態 IP 七天窗。每天看一眼 scan_status/admin 即可；紅燈（challenge/expired）→ 換一條指名家用 ISP ASN 重測。Sky Digital ASN 灰帶是唯一懸念。
+- **D 期餘**：過閘後買第二條 IP＋第二帳號走貢獻儀式→並發實測自然發生；成本按關鍵字量重算。過閘才放同事進來。
+- 意圖層舊貨補判中（15篇/掃，32 篇池子兩三輪掃完）；意圖展開字 Adam 尚未真用過「只意圖」模式（機制真驗過 expandedTexts 路徑但生產只建了二合一設定）。
+- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練、回訪窗最舊留言可能不更新。
 
 2026-08-01 第3場：
 - Nina 上場三步待 Adam:聲線 voiceIdMinimax+頭像→發訪談 key→築換 beself env 撤寶力 #2d6ef873
 - 前台(entry/interview/privacy)素顏,等 Adam 稿
 - record_choice 治本/opencc-js 簡繁/公開分享路由/縮圖管線——債帳照舊排隊
 - 練刀場 aviva-ms8i1gxt、aviva-ms8iprb8 留給 Adam 練刪除,他不練我下場清
-
-2026-08-01 第2場：
-- **⛔ 掃描暫停中：IPRoyal 餘額/流量用盡（CONNECT 402）**。儲值是燒錢動作 Adam 決；或直接跳靜態 ISP（D 期本來要買，US$2.4-2.7/月/條≈台幣80）——這是決策點：與其儲值動態 sticky 不如一步到位。health=proxy_down 保持在 cron 重試名單，錢進了下輪台北 02:00 自動復掃。
-- **B 期全綠終驗差一尾**：「收到貼文含 discoveredByAccountId」——管線已全通至 proxy，proxy 恢復後下輪 cron 自動補證，補證後看一眼池 doc 即可。
-- **02:00 cron 有一筆 failed 殘影**（部署窗口賽跑：舊分派器+帳號未 backfill 時序），已考古清楚非 bug，狀態已自癒，不用修。
-- **C 期未動工**：/connect 語意改「貢獻帳號進池」＋排隊鎖（兩人同按只一人進）＋admin 池管理。夜裡不動的原因：Adam 剛驗收過該頁、且排隊鎖要真人走連線儀式才驗得了。
-- **D 期未動工**：多人並發實測、靜態 ISP 買一條驗 ASN+flags、成本按關鍵字量重算。過閘才放同事進來。
 
 ---
 
@@ -118,4 +126,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-01 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-01 第4場。*
