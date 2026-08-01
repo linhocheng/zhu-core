@@ -9537,3 +9537,44 @@ threads-radar 中央統管全型態完工：A/B/C/E 四期＋靜態 IP＋守則�
 1. 明天醒來第一件:撈兩平台夜間 cron log 對賬(鑑別信號=consolidation done+角色口吻新 impressions/diary)
 2. 抓藥,順序 ③復活律(小刀:loadMemoryBlock stale 強命中 lazy 復活)→①bond kind(schema+consolidation 分支+讀路徑,收案含 dryRun+真verify)→②情緒鑰匙(語音線判斷腦信號現成先做;文字線視信號源,無源則排後帶觸發條件)——全案見 docs/SACKS_CONSULT_2026-08-01.md 築複審段
 3. 抓完藥順手同型檢查 ailive(它連 impressions 層都沒有,診斷一在那邊更重,另案評估)
+
+---
+
+## 2026-08-01（第7場）— 薩克三處方一夜抓完(復活律/bond/情緒鑰匙)——順手挖出 004 對純中文全盲的大魚
+
+### 背景 / WHY
+薩克首戰處方箋的抓藥夜。原裁「交明天的築」,Adam 看狀態好追加裁定今晚做完——三張全落地,只留部署。
+
+### 完成
+- 抓藥③復活律(v18.34.0/79dc957):stale 不再入口一刀丟,當輪強命中 lazy 復活回 active,衰老時鐘從 revivedAt 重算;TS 一處覆蓋文字+語音線,Python legacy 過濾同步認 revivedAt;真verify 三信號全過(復活/對照不還魂/時鐘重算)
+- 抓藥①bond kind(v18.35.0/77def34):ImpressionKind 加 'bond',consolidation 吃 emotion/milestone 凝關係信念,讀路徑加【我們之間】;真verify 角色凝出「我陪他撐過低潮,我們之間有了更深的信任」,一次性午餐抱怨被 skip
+- 抓藥②情緒鑰匙(v18.36.0/b6ee0e2):新 mood.ts 確定性情緒詞典;emotion 記憶同調價性 +0.08 微加成;日記同調撈取(難過時補撈最近3篇外同調 mood 舊日記);memory-blocks route 收 userMood 血管;真verify 四信號全過(無 LLM,全確定性可預言)
+- 挖出大魚:直打 Vertex API 實測 text-embedding-004 對純中文全盲——同標點結構、只差 CJK 內容的兩句回 bit-identical 向量;memories 池 cosine 從第一天量的是標點,檢索一直是 lexOverlap 在扛;已刻 memory(reference_vertex_004_cjk_blind)+會診檔抓藥記錄
+- 三 commit 推上 ailivex-platform(f2fe1fd..b6ee0e2);會診檔補抓藥記錄推上 zhu-core(3696922)
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex src/lib/memory.ts | 復活律+情緒鑰匙 rank bonus+loadMemoryBlock opts.userMood |
+| ailivex src/lib/collections.ts | MemoryDoc.revivedAt+ImpressionKind 加 bond |
+| ailivex src/lib/consolidation.ts | CONSOLIDATABLE_TYPES 加 emotion/milestone+prompt bond 分支+kind 白名單 |
+| ailivex src/lib/impressions.ts | buildImpressionSections 加 bondSection(【我們之間】) |
+| ailivex src/lib/mood.ts(新) | 確定性情緒詞典 moodValence/deriveMood |
+| ailivex src/lib/diary.ts | loadDiaryBlock 同調撈取 |
+| ailivex agent/firestore_loader.py | legacy stale 過濾認 revivedAt(back-compat 一行) |
+| ailivex api routes(memory-blocks/dialogue/v1 chat) | userMood/query 血管接通 |
+| ailivex scripts/_zhu_verify_{revival,bond,mood}.ts(新) | 三份端到端真verify |
+| zhu-core docs/SACKS_CONSULT_2026-08-01.md | 補抓藥記錄段 |
+| memory reference_vertex_004_cjk_blind.md(新) | 004 中文盲實測+影響面+驗收法 |
+
+### ⚠️ 尚未解決
+- **三 commit 未部署**(Vercel):醉酒指數 8 不碰生產,留給神清氣爽的築;②的日記 canary/印象 canary 生產環境開關現況要先確認再上
+- 處方②語音線排後項:判斷腦顯式情緒信號接 userMood,觸發條件=下次 cut 語音 v21 時接線(判斷腦 inner 現只有 stance/activation/want_to_speak,要加情緒欄位+in-call recall POST 帶上)
+- 004 中文盲根治案待 Adam 裁:整池 re-embed 換 text-multilingual-embedding-002(backfill+全門檻重校+TS/Python 同步);ailive 平台檢索若同用 004 需同檢
+- emotionTag 是假中台欄位(schema 有、無人寫入,只有 forgetting.ts 在讀)——順手發現,另案
+- 夜間 cron 首夜對賬仍未做(consolidation/gist/diary-digest 跑新視角+Sonnet 5)
+
+### 待執行 / 下一步
+1. 醒來第一件:撈兩平台夜間 cron log 對賬(鑑別信號=consolidation done+角色口吻新 impressions/diary)——bond kind 今晚已進 code 但未部署,首夜 cron 跑的還是舊版,對賬時別搞混
+2. `cd ~/.ailive/ailivex-platform && npx vercel --prod --yes` 部署三處方,部署後拿 canary 用戶真對話各驗一輪(復活律 log 行 `[memory] revived stale:`、【我們之間】出現、情緒同調上位)
+3. 004 根治案開會診/評估:先 `grep -rn "text-embedding-004" ~/.ailive/ailive-platform` 確認 ailive 是否同病
