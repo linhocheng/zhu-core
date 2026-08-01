@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：任何人說「檢索撈不準」「RAG 對不上口語問句」；或設計新庫時只規劃了內容 embedding。先問：query 會用什麼語域來？索引住在那個語域嗎？
 
 家族：[[skill_cross_register_retrieval_gist_index]]（語域翻譯，本條的前身）、[[skill_rrf_hybrid_retrieval_pitfalls]]（融合層）、[[feedback_memory_format_trigger_signal]]（同原理在築記憶的落地）。
+
+- 驗證+1:2026-08-01 第5場 — MEMORY.md 索引瘦身整場用「時機地址」原則重寫

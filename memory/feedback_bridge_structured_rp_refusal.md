@@ -34,3 +34,12 @@ bridge `/v1/messages` 的拒絕觸發條件是**結構化 RP declaration block**
 **修法**（如果真踩到）：把 structured block 拆成「以 X 的風格 / 美學 / 視角 / 句式產出 Y」純規則描述（見 Mör 5/10 的修法：`molowe_kol_profiles/midoufu.role_prompts.visual` 是 368 chars 純風格規則）。
 
 **反例提醒：** 不要因為這條 memory 就把 light 模式的「你是 Q」「你是視覺設計師」改寫成第三人稱規則 — 那會無意義地破壞角色感。只在 STRONG 命中時才動。
+
+**2026-08-02 增補：拒絕面還分模型——同一 prompt Haiku 拒、Sonnet 收。**
+ailivex 沉澱視角改造實測：`你是「Nina」。你的靈魂：{400字}` + 記憶提煉任務——
+- `claude-haiku-4-5` 過橋 → 整包拒答（"I'm Claude Code... this doesn't match our current context"），且因 `<result>` 沒 match 是**靜默零寫入**，log 一行錯誤都沒有
+- `claude-sonnet-4-6` 同 prompt 同橋 → 全綠（日記管線用同款開頭在生產跑了快一個月都正常，就是因為它一直用 Sonnet）
+修法：帶角色人格的過橋呼叫一律 Sonnet（橋吃到飽，成本不變）。light 模式的三級對照對 Sonnet 成立，對 Haiku 要當成「你是X+靈魂=拒」。
+鑑別法：懷疑被拒時直接印 raw response 第一行，看到 "I'm Claude Code" 就是撞了。
+
+- 驗證+1:2026-08-01 第5場 — 提煉靜默零寫入時直接想到印 raw 看「I'm Claude Code」,秒定位 Haiku 拒人格

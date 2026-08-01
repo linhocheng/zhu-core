@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：開新版本時；看到 Cloud Run 帳單曲線只漲不跌時；`gcloud run services list` 列出超過 5 台服務時。
 
 相關：[[feedback_self_rescheduling_loop_needs_lifecycle_stop]]（版本繁殖複製舊雷的同族——lifecycle 缺角）、[[reference_cloudrun_background_task_sop]]（哪些常駐是天條不能降）。
+
+- 驗證+1:2026-08-01 第5場 — 「LiveKit agent 降0=聾不是慢」一眼解掉「掛斷沒收到」謎題

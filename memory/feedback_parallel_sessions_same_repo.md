@@ -22,3 +22,11 @@ metadata:
 **觸發信號**：git log 出現不認識的 commit；git status 出現自己沒動過的檔案；Adam 說「另外開了一個 session」。
 
 家族：[[compacted-session-verify-state]]（壓縮續跑先查現場）、[[memory-can-lie]]（越具體的記憶越要去現場驗）。
+
+**2026-08-01 增補三條(Adam 點頭)——共享記憶層的防打架結構,讓打架變不可能而不是靠小心:**
+1. **情節隨時寫,一律 append+戳記**(日期+seq+battlefield):session 檔、WORKLOG 追加、記憶檔尾驗證+1 全是 append-only,平行天生不衝突
+2. **MEMORY.md 索引平時只准 append 新行;全量重寫(瘦身/封存/合併)只在 lastword 時做、寫前重讀**——重寫者洗掉別場新行=lost update,是「真相分裂」的築版本;fanout 是唯一鞏固工人(像夜間 consolidation 單線跑),zhu-core git push 天然當樂觀鎖
+3. **開場宣告戰場**:session 檔 frontmatter 加 `battlefield:`,fanout 帶進 eye 標頭——兩場互相看得見對方在哪個房間施工
+- 「不同場醒來狀態不同」不是 bug:工作態=情節(隔離),遺言=印象(共享);跨場只對齊事實,事實以現場為準
+
+- 驗證+1:2026-08-01 第5場 — 收尾撞平行場髒檔不掃;本場把規約升級成三條結構性防打架

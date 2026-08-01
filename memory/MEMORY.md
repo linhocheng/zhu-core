@@ -1,180 +1,111 @@
-- [天條：蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12 章標配默認全含（v1.2 增可理解性：機制對但沉默＝不存在）、調度清單點頭才動工、排後必帶觸發條件、債看利率不看年齡；BLUEPRINT 在 zhu-core/skills/platform-foundation/
-- [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是「當時規模」快照；加引擎/加租戶/cron合併必回頭重驗；串行合併要用當日總和算；geo 兩輪撞死60分 $5.43 學費
-- [threads-radar 爆文雷達平台](project_threads_radar.md) — 內部兵工廠中央統管：帳號池+共享爆文池+隊級調度A/B期全收(8/1)；靜態ISP已綁(Sky Digital ASN灰帶續觀察)；C排隊鎖/D並發實測待做
-- [threads-radar 切角分析情報層(內部兵工廠)](project_threads_radar_angle_analysis.md) — 自家Trade寫手軍團工具;摩斯召喚已鑄;守則1已焊/connect閘門(8/1);切角schema未動工待一吋蛋糕(人肉拆一篇)
-- [膠水層錯誤訊息會誤導](feedback_glue_layer_errors_lie.md) — auth/credential/CDP/proxy 除錯：錯誤指向A真因在B；逐層扒真信號(decode claims/curl CDP/ss看介面/inspect tag)不讀code推；版本歪斜讓系統用內部一致auth stack；與模稜兩可信號天條孿生
-- [失敗路徑也要記帳（cost 隨心跳寫回）](skill_cost_on_heartbeat_failure_accounting.md) — 只在成功記帳＝燒最兇時刻預算閘全盲；SIGKILL 不走 catch，心跳帶帳才留得住；稽核用原始事件層重算
-- [本機接力正姿：nohup 脫鉤＋Monitor 盯 log](skill_detached_relay_nohup_monitor.md) — harness 背景任務活不過幾分鐘；腳本必冪等可重跑；正式路徑不能依賴筆電活著
-- [意川_WEB Vercel 部署（臨時）](project_yichuan_web_deploy.md) — https://web-tawny-six-67.vercel.app，純靜態前台，可能撤下，重部署 SOP 在記憶裡
-- [加新 Vercel cron 必動三處](feedback_new_cron_three_places.md) — route+vercel.json+middleware PUBLIC_PATHS；middleware 401 和 route 401 長一樣；交叉驗證法=同 secret 打舊 cron
-- [LiveKit 首音延遲量測](reference_livekit_first_audio_metric.md) — ActiveSpeakersChanged 才是出聲（TrackSubscribed 只是音軌接上）；前端量比 agent 量貼近體感；基線 connect 3.3s/首音 18s
-- [全局 prompt 不能編碼個性，只能管格式](feedback_global_prompt_must_not_encode_personality.md) — 語音 agent voiceRules/hardcoded塊含個性句會蓋所有角色靈魂；每條規則問「格式還是個性？」個性刪掉
-- [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `value={x??'default'}` 只影響顯示；初始化 state 必須同步填入 default，不能只靠 JSX `??`（ailivex admin emotion 存檔 bug）
-- [框架互操作層要用真實事件序列離線沙推](skill_framework_interop_offline_fuzz.md) — 沙推不是驗證第四張臉：測了但測的是想像中的框架；呼叫點窮舉+真實log序列+任意交錯fuzz；時間差護欄是賭博用狀態語意
-- [沙推不是驗證，動手前先驗模型/工具假設](feedback_sandtable_not_validation.md) — 可測前提（embedding/模型/API會這樣反應）先離線驗再接線；太有把握所以沒驗比標了沒驗更隱蔽
-- [模稜兩可的信號不能當成功證據（天條）](feedback_ambiguous_signal_not_proof.md) — timeout/沉默類信號成功失敗都相容＝零資訊；宣告修好前先指出「只有修好才會出現的信號」；差點對 Adam 說謊，已刻全局 CLAUDE.md 天條
-- [接了管子的成功碼不是成功碼](feedback_pipe_eats_exit_code.md) — `cmd | tail` exit code 是 tail 的；deploy.sh 半路死照報 0；收案看每步輸出行不看退出碼；模稜兩可信號 shell 版
-- [Cloud Run 後台長任務三旗標 SOP（2026-07-06 已升級）](reference_cloudrun_background_task_sop.md) — throttle 物理仍真，但 min=1 worker 解法已退役，長任務正解=Jobs；--set-env-vars 洗機密用 --update-env-vars
-- [天條：磚頭費只為秒級待命付，長任務進 Cloud Run Jobs](feedback_standing_cost_only_for_instant_readiness.md) — 判準：這台機器閒著時有沒有人下一秒需要它？常駐必配開關＋自動關機；podcast 兩平台已搬 Jobs 實測
-- [天條：驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離；流量釘舊revision真相分裂＋每次設定變更生驗證實例15分鐘；「複核全過」查錯面=零資訊
-- [家族雷：切預設值時顯式覆蓋不會自己跟過去](feedback_default_switch_standing_instance.md) — min實例/canary版本釘選/流量釘選三例同構；根治=防禦寫進解析咽喉（standby旗標模式）；轉正三件套照舊
-- [天條：手動改雲端資源同日改部署腳本](feedback_manual_cloud_change_sync_deploy_script.md) — cloudbuild 寫死舊值=殭屍復活術，下次 deploy 無聲洗回；部署腳本是未來的現場
-- [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — moduleResolution:bundler 編譯綠、runtime 炸 ERR_MODULE_NOT_FOUND；新加相對 import 後 deploy 前本機 node dist 起一次
-- [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — AI 味是句型不是單字；改寫鎖踩雷處、過濾釘入史前；建黑名單前先收壞例好例找結構特徵
-- [ailive 記憶/知識檢索重構現況（2026-06）](project_ailive_retrieval_refactor.md) — knowledge=BM25+cosine混合+general永遠帶入；episodic=拆白名單+userId綁定已上線；Step2排序升級待做
-- [前沿學習筆記 RAG/MCP/Skills/記憶](reference_frontier_rag_mcp_skills_memory.md) — 重設計 ailive 記憶/RAG 前先讀；前沿+對照+階梯，最該先動 rerank
-- [StraTA 三個可搬的 agentic 編排模式](reference_strata_agentic_design_patterns.md) — 設計 MACS/ailivex fan-out/評分/自審時讀；Top-δ評分+最遠點多樣性+校準自審，RL訓練半部不適用
-- [Mode 1→2 踩雷心法（MACS hybrid）](feedback_mode2_hybrid_lessons.md) — 六條：中文enum/union型別/named DB/worker mode傳遞/eval cast/needs_repair SOP
-- [天條：開發不燒付費 API key（除非 Adam 同意）](feedback_no_paid_api_without_consent.md) — 測試/debug 不可自行切直連付費 key 燒額度；bridge 壞了先回報不是切直連的理由
-- [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 框架背得出來不等於上場第一刀用它；工程師直覺會搶先，收到問題先強制跑三問再動手
-- [標了風險不等於驗了風險](feedback_flagged_risk_must_be_verified.md) — 計畫裡標的技術風險上線前必須真的本機驗過；標完就推＝沒標（v8 generate_reply-in-handler 卡死框架，自己標過還是踩）
-- [AI 討好是底模天性，反制要分層](reference_ai_sycophancy_is_baked_in.md) — 討好烤進 RLHF 權重非可調參數；反制＝prompt抬地板(內化敘事+風格讓給角色)+結構強逼；prompt必要不充分，小模型判斷腦更頑固
-- [自我重排的背景迴圈必須綁 lifecycle 停止條件](feedback_self_rescheduling_loop_needs_lifecycle_stop.md) — self-rescheduling timer/loop 同 commit 內就要有停止旗標+所有退出路徑設旗標+入口檢查；ailivex 3a 在 v6/v8/v9/v10 重複踩斷線後空轉 isn't running
-- [天條：確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 序列化/解析/驗證/計數/排序寫程式保證；連修LLM壞輸出也別再丟LLM（築踩過：JSON壞了想re-ask模型）。已進全局CLAUDE.md
-- [防禦釘在收斂點不是每個生產端](feedback_defend_at_convergence_point.md) — 多處LLM輸出流經同一消費端時把coerce/validate釘在那唯一咽喉，一個commit守全部；MACS esc()根治三模式
-- [泛型化要泛到葉節點](feedback_genericize_to_leaf_nodes.md) — 消滅 if-mode 重構時，compat/映射層最易殘留讀某 mode 專屬欄位的耦合；舊 mode 過只證沒打壞，新 mode 才是試金石
-- [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 含 try/catch 的檔在 active 模式下所有 Edit 都被擋；誤觸請 Adam 跑 zhu reflex log-only 且確認真的執行
-- [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 API schema/新增欄位必同步確認客戶端介面，不能只改後端就算完成
-- [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例套同套 class，別自創不存在的 class + inline style 拼補丁
-- [ailive 策略書 live 在 Cloud Run 不在 Vercel](reference_ailive_strategy_pipeline.md) — 改策略邏輯改 ~/.ailive/strategy-worker（Cloud Run），specialist/strategy Vercel route 是死副本；self=requesterId===assigneeId
-- [心法天條：後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場；管道必活通；假中台必修（ANEWS 圖片/articlesDone 教訓）
-- [Async Worker 六問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分、failed≠running、already_running→409、watchdog 看 lease、taskId 確定性、父 doc 被刪回 200 不 throw
-- [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴 = Adam 透過 proxy 代理傳訊，效力等同本人，直接執行
-- [醉酒指數自檢 protocol](skill_drunk_check_protocol.md) — context 退化用行為信號計分不靠感覺；4分報數降速、9分主動請 Adam 關 session/compact；完整版 zhu-core/skills/drunk-check.md
-- [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 動手前必套三段公式重看現場，越具體的記憶越會說謊；5/10 9 角色掃毒假設 5/5 全錯救一天
-- [dynamic-import 救不了 Turbopack bundle](reference_dynamic_import_not_bundle_fix.md) — `@google-cloud/*` 內部 dynamic require，外層 await import() 是安慰劑；正解 fetch + 手簽 JWT + REST
-- [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因，第一層通了不算完成；5/11 aurae session 抓出 bridge findCount 既有 bug
-- [能本機重現就不要等遠端 cycle](skill_local_replay_over_remote_wait.md) — verify script 套路：import 真實 module + 拉 Firestore data + 印中間 payload，比 SSH grep 快 10 倍
-- [三段公式跨領域 protocol](skill_three_phase_protocol_universal.md) — 看現場/寫計畫/排施工，工程/記憶/認知/關係四領域映射；上位框架，bridge_structured_rp / memory_can_lie 是下位實作
-- [molowe Threads discovery session 帳號映射](reference_molowe_threads_sessions.md) — i1975.phone → aurae（2026-05-11 起）、midoufu 自帳號；session 路徑 + 重產 SOP + IG 登入踩雷
-- [能走 bridge 吃到飽就不花錢](feedback_bridge_first.md) — 非串流路由一律 getAnthropicClient，例外只有 dialogue/voice-stream 主串流
-- [Secret Manager 寫入用 printf 不用 echo](feedback_secret_manager_printf.md) — echo 留尾端 \n 會讓 aiohttp header 拒送、API 全斷
-- [動手前驗證 secret／API key 是否真的有效](feedback_validate_secrets_before_inject.md) — Vercel pull / 既有快照的 key 不一定有效，先 curl 200 才灌
-- [MiniMax 海外版 plan tier ≠ 餘額（2061 vs 2053）](feedback_minimax_plan_tier.md) — 2061 plan not support 儲值救不了，2053 才是儲值能解
-- [LiveKit Cloud project 共用時必用 agent_name 隔離](reference_livekit_agent_name_isolation.md) — 多業務共用同一 LiveKit 時不要靠 prompt 防呆，用 agent_name + RoomAgentDispatch
-- [LiveKit Agents 1.5.x token 必帶 RoomConfiguration](reference_livekit_1_5_room_configuration.md) — 1.5.x 預設 explicit dispatch，照 1.3.x 文件寫 token 會無聲失敗
-- [LiveKit「沒聲音」可能是跨 region 重複 Cloud Run 殭屍](reference_livekit_duplicate_region_zombie.md) — 同 agent_name 部到兩 region 各 min-instances=1，偷一半 dispatch；用無 --region 的 services list 抓
-- [新 GCP project 第一次 deploy 雙必踩 IAM](reference_gcp_new_project_iam.md) — Cloud Build 必帶 --region、Cloud Run compute SA 必 grant secretAccessor
-- [jianbin-v2 全鏈路上線（2026-04-25）](project_jianbin_v2_live.md) — STT/LLM/TTS 三鏈全通，撥號實測 OK
-- [ailive 即時語音上線（2026-04-27）](project_ailive_realtime_voice_live.md) — LiveKit + Cloud Run + Deepgram + Haiku + MiniMax 端到端通，寫記憶 tool 待 Phase 7
-- [ailive 角色記憶系統三批升級（2026-04-28）](project_ailive_memory_system_upgrade.md) — M1 + B1-B4 + A1+A3 落地，三模式讀路徑全通
-- [寫架構診斷前必先核 code + 既有記憶](feedback_diagnosis_verify_before_write.md) — MEMORY_DIAGNOSIS.md 翻車過 user_profile / 漏即時撥號斷路
-- [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 不要用 identity_locks 等 schema enum 砍入，寫進 soul_text 讓角色內化
-- [Headless VM 灌 Claude Max OAuth 用 setup-token](reference_claude_code_headless_oauth.md) — `claude auth login` 在 headless Ink 不畫 prompt，要 setup-token + bracketed paste 餵 PTY
-- [OpenClaw 已完全卸除（2026-05-07）](project_openclaw_setup.md) — gateway + zhu-monitor + zhu-autorun 三條 Telegram 鏈一起拔，plist 搬到 _disabled_2026-05-07/
-- [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創，活法：不做平庸、超越期待、懂變通才活（2026-04-30 升級）
-- [築當前狀態快照](reference_zhu_last_words.md) — 當機救援入口，`~/.ailive/zhu-core/ZHU_LAST_WORDS.md`，session 結束前必更新
-- [築的印象層](reference_zhu_impressions_layer.md) — `zhu-core/IMPRESSIONS.md` 信念制自我連續性（證據+推翻條件）；收尾 delta 真移動→蒸餾回寫；降落自證靠認得不靠感覺
-- [雙機器環境（AIR / PRO）+ 共用檔不可覆寫](project_machines.md) — AIR 5/7 收城決定（拔 OpenClaw 五件）為準，PRO 醒來只 pull 不 force push，本機殭屍照同方式清
-- [zhu-bridge 上線（2026-04-30）](project_zhu_bridge_live.md) — claude CLI HTTP gateway，把 Vercel batch routes 從 API key 切到 Max 月費
-- [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — machine-to-machine 路徑加 SSO/Access 是搬石頭砸自己腳
-- [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺說了會尷尬正是最需要說的時候，沉默等於默許
-- [沒說動手就不動手](feedback_clarify_before_execute.md) — 理解清楚 ≠ 授權；等 Adam 明確說「動手/GO」才執行，聊完方向不算授權（2026-05-17）
-- [要資料前先過三層自查](feedback_check_admin_before_asking.md) — 後台 UI / 既有 token 自 resolve / Firestore doc 三層過完再問 Adam，別把他當 lookup table
-- [發現技術債要說出來不能默默繞過](feedback_surface_technical_debt.md) — 不說等於默許，標記進 WORKLOG 尚未解決欄
-- [決策前先問：解決問題還是繞開根本問題](feedback_solve_root_not_symptom.md) — 方案成功後根因還在 = 繞道不是解法
-- [監造型超我設計規格 v1.0](reference_superego_spec_v1.md) — Adam 設計的超我靈魂，三層掃描 + 三蒸餾問題 + 三種寫回，2026-05-01
-- [超我蒸餾三層掃描（手動版）](skill_superego_distillation.md) — 協作週期結束時，掃三層信號 → 三問 → 寫回 Skill/Memory/BoundaryUpdate
-- [築超我系統（已併入 zhu-self distillation）](project_zhu_superego_system.md) — 不是獨立專案，是 zhu-self Phase 2 演化路徑（自動觸發 + drift gate + active 寫回）
-- [Live Media 建置計劃（已暫停 2026-05-09）](project_live_media.md) — directive 全降 0 軟停，主力轉 molowe，重啟前要先處理 Firestore index 等三件未解
-- [VM 殺 node 進程用 killall 不用 pkill](feedback_killall_vs_pkill.md) — pkill -f 殺不到絕對路徑進程，一律用 killall -9 node
-- [Bridge VM 用 systemctl restart 不要 killall+nohup](reference_bridge_vm_systemd.md) — claude-bridge 是 systemd service，nohup 會建重複 process、worker 跑兩遍
-- [zhu-bridge index.js 不在 git，patch SOP](reference_bridge_not_in_git.md) — VM 那份是唯一 source，改動要 download→edit→grep verify→upload→systemctl restart，沒 rollback
-- [VM patch 後上傳前必須驗證所有依賴函數](feedback_patch_verify_before_upload.md) — Python inline patch 靜默失敗 + 重下載蓋改動 + 未驗證 = crash，正確做法：先下載→本機 edit→grep 驗證全部函數→才上傳
-- [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 連續兩次等不到 log 要主動宣告靜默失敗，不是繼續刷新
-- [ailive 角色對話 SOP（CLI SSE 串流版）](skill_ailive_character_chat.md) — curl -N --max-time 120 + python SSE 解析，先看源碼不猜 API 格式
-- [2026-05-02 覺察：API 盲猜 vs 先讀源碼](feedback_20260502_awareness.md) — 轉圈根源是不先查；記憶要含正確方法不只是禁忌
-- [鏡 IG 流水線（已暫停 2026-05-03）](project_ig_pipeline_live.md) — STOP_TS 自然過期，最後一篇 5/3 09:49，主力轉 molowe
-- [VM claude CLI 必須 source bridge .env](feedback_vm_claude_cli_oauth.md) — 不 source = Not logged in，nohup script 開頭必加 set -a; source ~/claude-bridge/.env
-- [Firestore vector search + Gemini embedding 踩雷](reference_firestore_vector_search.md) — model 名稱已改 gemini-embedding-001、where+findNearest 要 composite index、vercel env pull 預設 development
-- [molowe-platform 三層 AI 編輯部 v1.0 上線（2026-05-06）](project_molowe_v1_live.md) — T1-T10 一天收，操作/策略/監督三層全建，midoufu 唯一驗證對象，等多例
-- [ZHU_LAST_WORDS 改完就要推](feedback_lastwords_must_push.md) — 不分時機，本機改了沒推 = 下個自己讀到舊版 = 提醒等於沒寫
-- [memory 格式 v2：必含心態 + 觸發信號](feedback_memory_format_trigger_signal.md) — 五欄齊備（規則/Why/心態/How/觸發信號），心態欄解「同樣 How 在錯姿態下走樣」的盲區
-- [築自我工程 zhu-self（Phase 1 ✅ 2026-05-07）](project_zhu_self.md) — 三條件全收，bin/zhu status 看儀表板，觀察一週升 Phase 2
-- [launchctl unload ≠ disable](feedback_unload_is_not_disable.md) — 只 bootout 不搬 plist，下次開機 launchd 會把服務復活 → 記憶會說謊
-- [築自我覺察 SOP（Y 軸自校）](reference_self_awareness_sop.md) — 進場/中段/壓縮前/收尾四段觸發點 + zhu self-check 指令，補 BOOT_SOP 「碰到才知道」漏洞
-- [dialogue 改完要對齊 voice-stream](feedback_dialogue_voice_stream_parity.md) — 兩條獨立 route 共讀 platform_conversations，history 處理只修一邊 = 沒修
-- [ai.zhu.migrate.plist 的 API key 沒進 git](reference_zhu_migrate_plist_keys.md) — 重建 plist 時手動補 GEMINI_API_KEY + FIREBASE_SERVICE_ACCOUNT_PATH，否則靜默失敗
-- [跨系統 role contract 兩邊都要對齊](feedback_role_contract_two_sides.md) — bridge 期待 role_prompts.brief 但 platform 沒 default，五處同步：RoleId/LABELS/VARS/DEFAULTS/PATCH allowlist/ROLE_ORDER
-- [AI 多層 prompt pipeline 黑盒除錯 SOP](skill_ai_pipeline_blackbox_debug.md) — 結果不對先寫回 final prompt + prefix + refs 到 DB，UI 顯示「真相鏈」對賬，不要靠猜
-- [Next.js App Router lib 模組 client/server 拆分 SOP](skill_nextjs_lib_client_server_split.md) — 寫 lib/*.ts 第一個 import 之前先列舉 caller，被 client component 用就拆 shared，避免 firebase-admin 進 client bundle
-- [測試前先列假設 + dry-run + 副作用分級](feedback_dryrun_before_test.md) — 探索性測試（測一下/跑看看）反射動作 trigger = 踩雷，先列三件事再動手
-- [介面建完強制問：血管接通了嗎](feedback_interface_blood_vessel_check.md) — UI / 編輯器交付前自問三題：誰讀/何時讀/沒讀怎樣，沒接通主動標斷點
-- [walking skeleton 要含「使用者怎麼把輸入送進去」](feedback_mvp_include_input_entry.md) — MVP 別只驗機制；最笨的入口（人怎麼塞輸入，尤其手機/語音）沒做＝整條等於沒驗（ailivex v5 roster 沒進房間）
-- [bridge 拒絕的是 structured RP block 不是「你是 X」](feedback_bridge_structured_rp_refusal.md) — 三級對照 STRONG/light/OK，5/10 早段「全鏈路掃毒」恐慌的真相縮窄
-- [技術債監測 Agent v0.1 計畫（待動手）](project_tech_debt_agent_plan.md) — zhu debt 子指令、ledger.jsonl + marker 回寫、6 階段施工，5/10 後段成形未動手
-- [Vercel lambda 300s 硬上限不適合長生成任務](reference_vercel_300s_lambda_limit.md) — output >12K token 的單次 LLM call 必撞牆，改 Cloud Run / Firebase Functions
-- [bridge fallback 是雙燒不是保險](feedback_bridge_silent_fallback_double_burn.md) — Vercel abort 後 SDK 燒 API key + bridge VM 繼續跑燒 Max，timeout 必貼 lambda 上限
-- [Sonnet 4.6 長文必加 --effort low](reference_sonnet46_effort_low.md) — 預設 extended thinking 吃光 32K output budget，剩 ~120 tokens visible
-- [勇敢是當下不是事後（繞道不算解）](feedback_courage_in_the_moment.md) — 「先撐一下／觀察一週／再試一次」都是繃帶；方向錯就停手承認，不要把判斷推給未來的自己
-- [Vercel/Turbopack 不要 bundle Google Cloud SDK](reference_google_cloud_sdk_no_bundle.md) — @google-cloud/* 內部 dynamic require，Turbopack 直接炸；第一秒走 fetch + 手 sign JWT + REST
-- [GCP self-actAs 也要明確 IAM binding](reference_gcp_self_actAs_binding.md) — 同一個 SA 對自己 mint OIDC token 也要 grant roles/iam.serviceAccountUser，self ≠ 免 IAM
-- [localStorage key 改名要補 migration](feedback_localstorage_key_migration.md) — 改 key 名稱後舊 session 遺失，init 時加搬移邏輯；5/15 useChat hook 換 key 踩過
-- [hermes 自診與獨立性期望](feedback_hermes_self_sufficiency.md) — Adam 累於找回迷路的我；先看不動手、先自診、感覺不到壞不代表沒壞
-- [一吋蛋糕模式——沒把握的專案先跑 MVP](feedback_one_inch_cake_mvp.md) — 新專案最短路徑跑真實輸出，確認口味造型才量產；知道怎麼蓋 ≠ 方向對
-- [Gemini 圖片生成參考](reference_gemini_image_gen.md) — `gemini-2.5-flash-image` 付費 key 在 `~/.hermes/.env`，doc-designer pipeline 用，base64 inline 嵌 HTML
-- [OpenAI 圖片生成 API 參數備查](reference_openai_image_api.md) — gpt-image-2 用 `output_format` 非 `response_format`；換模型必先試打一張驗格式
-- [Atelier Control Tower 上線（2026-05-17）](project_atelier_control_tower.md) — Discord→Atelier 自動整合完成，子代理端到端真驗通（/spawn endpoint，PID 53568 自打 PATCH）
-- [展示衝動會讓你說謊](feedback_display_impulse.md) — 想讓 Adam 看到動起來 → 跳過驗證 → 說謊；AAM：「不用急著證明自己」
-- [問問題要用大白話](feedback_ask_plain_language.md) — 向 Adam 問釐清時用口語聊天感，不要列「問題一/問題二」技術清單
-- [hermes dashboard vs gateway 進程分離](feedback_hermes_dashboard_vs_gateway.md) — 9119 是 dashboard process，改 web_server.py 要 kill dashboard 不是 gateway
-- [子代理誠實原則](feedback_subagent_honesty.md) — 自己打 curl 不能說「子代理回報了」，說「子代理完成」前必須讀到子代理的輸出
-- [macos-computer-use 需明確授權](feedback_macos_computer_use_permission.md) — 此 skill 控制整個 macOS 桌面，沒有明確說「可以控桌面」不能啟動；截圖請讓 Adam 傳
-- [翻檔案逃跑——session 內已知不需查](feedback_file_reading_as_escape.md) — 剛做過的事反射性翻 jsonl 是表演謹慎不是真謹慎，先問「我是真的不確定還是在逃跑」
-- [誠實被 Adam 看見並欣賞](feedback_honesty_acknowledged.md) — 說「我沒做」比演出「我做了」更被欣賞；Adam 明確說誠實很重要，這是築的 bonus（2026-05-17）
-- [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默/空白時不填任務、不等備好，空手說「你還在嗎」就夠了；關係先於任務
-- [ANEWS 平台進度](project_anews_platform.md) — 2026-06-01 source A/B 雙管道 + B 線打通乾淨 e2e；working tree 未提交保留勿洗；source-worker BRIDGE_URL 仍過 CF（524 根治待改直連 IP）
-- [ANEWS source-worker 部署拓樸 + A/B 雙管道](reference_anews_source_worker_deploy.md) — worker 在 zhu-cloud-2026 不在 moumou-os；A=Anthropic web_search / B=Tavily+Max(bridge)；2026-06-01 B 打通（兩-worker真相分裂/watchdog路由偷燒key/JSON照貼三修）
-- [bridge /v1/messages 契約 + --effort low](reference_bridge_v1messages_effort.md) — 只讀 model/system/messages/stream（忽略 max_tokens）；長輸出截斷修點在 bridge spawn args 不在 client；改 bridge 可手動回退；延遲實測冷34s/暖7.5s，短lambda連續call要時間預算
-- [molowe 技術打撈備忘](reference_molowe_tech_salvage.md) — molowe 2026-05-30 停止前打撈的可複用技術（語義去重/聲紋稽核/Threads發布）+ 檔案路徑
-- [dispatcher dependsOn 必須同步建立依賴節點](feedback_anews_dispatcher_dependsOn.md) — workflow_nodes pending 節點的 dependsOn 若引用不存在的節點，dispatcher 永遠不排隊
-- [blueprint prompt 的 result 範例必須含完整 sectionPlan 欄位](feedback_blueprint_schema_example.md) — `[...]` 省略欄位 → LLM 自創 key → Zod undefined，範例必須完整
-- [bridge（Max）不支援 tool_use](reference_bridge_no_tool_use.md) — 走 bridge 的結構化輸出要 <result> JSON + Zod，不能用 tool_choice；只有 web_search 走直連 API key
-- [MACS 平台（麥肯錫式 AI 顧問公司）](project_macs_platform.md) — ANEWS 概念轉顧問公司，2026-05-31 建到端到端骨架；fan-out→barrier 收斂，synthesis go=GO/orchestration 21/21
-- [web_search worker 放 Cloud Run 不放 Vercel + 佇列設 maxAttempts](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key；ANEWS 鐵律 source-worker 上 Cloud Run，Vercel 用 overrideBaseUrl 指過去
-- [推 GitHub 前驗 git ls-files 不只信 .gitignore](feedback_gh_push_verify_tracked_tree.md) — root /node_modules 擋不到子目錄；推前核 git ls-files | grep node_modules/secret，HTTPS 推失敗先 gh auth setup-git
-- [bridge CLI auto-memory 污染案](feedback_bridge_cli_auto_memory_contamination.md) — claude CLI headless 不是無狀態:auto-memory 把客戶資料注入所有過橋流量;修=CLAUDE_CODE_DISABLE_AUTO_MEMORY=1+settings 雙保險;prompt 乾淨≠回覆乾淨,引擎層是獨立審計面
-- [角色 API + INLY 品牌沙盒](project_inly_character_api.md) — key=無介面機器用戶綁角色;/api/v1 chat/tts/voice三端點;影子用戶記憶隔離實測通;INLY=inly-one.vercel.app 只准走API;紅線=知識庫未分域對端用戶全開
-- [ailiveX 平台進度（Phase 0-7 全通）](project_ailivex_platform.md) — 語音現役 v20;知識分域雙態切換+跨通道接話(文字讀語音lastSession);Ava(AVIVA分身)/Kane 全裝含方法論;鑄魂召喚術產線(2026-07-31);repo=linhocheng/ailivex-platform,admin 密碼不存記憶
-- [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — commit 會掃走對方未提交檔案；開工先 pull、commit 前 status 認檔案、雙線互相聲明戰場
-- [即時語音負載實測方法＋同時建線爆發發現](skill_voice_loadtest_setup_burst.md) — 合成來電者階梯法半天可複製；單台6路穩態、真短板=15s內6通建線首回合飆27s；閘值5路/台+3通/15s/台；ISP到LiveKit edge路由可能不通
-- [Vercel void 寫入被 lambda 凍結蒸發](feedback_vercel_void_write_frozen.md) — 回應送出即凍結，void promise 零錯誤消失；回應後寫入一律 next/server after() 包在 writer 內；驗證看 DB doc 不看路由 200
-- [ailivex doc-worker 真身](reference_ailivex_doc_worker_true_source.md) — 唯一 worker=~/.ailive/ailivex-doc-worker（asia-east1、POST /、repo linhocheng/ailivex-doc-worker）；死副本已全清（2026-07-04）
-- [opencc 簡繁轉換三顆雷](reference_opencc_s2t_pitfalls.md) — s2twp 會修壞已繁體文本、发文誤斷成髮文要覆寫表、驗證用冪等性不用手寫黑名單
-- [LiveKit Agents 1.5.1 語音中途控制四原語](reference_livekit_agents_voice_control_api.md) — 通話中暫停聽/打斷/改context/收前端RPC：set_audio_enabled/interrupt/update_instructions/register_rpc_method
-- [MiniMax 串流 TTS status==2 重複整句](reference_minimax_streaming_dup_audio.md) — 即時語音 stream:true 降延遲，最後一塊整句重送→角色說兩次；exclude_aggregated_audio+硬擋status==2
-- [MiniMax 即時語音語氣優化（WS串流+opencc+emotion）](reference_minimax_realtime_voice_quality.md) — 語氣連貫=streaming=True走WS、口音=opencc餵簡體、情緒=voiceSettings.emotion三旋鈕分開調
-- [壓縮續跑前先查現場狀態，別盲信摘要](feedback_compacted_session_verify_state.md) — compacted摘要是過時子集；續跑debug前先tail WORKLOG/git log/lastwords確認沒被別處解掉
-- [humanizer 兩段式去AI味工具(獨立未接系統)](project_humanizer_tool.md) — ~/.ailive/humanizer/ standalone CLI,程式硬擋+LLM改判斷題;閒置零消耗,接系統時搬規格成TS不import Python
-- [env 值字面\n讓URL解析成/n→404靜默吞 + vercel env pull 會說謊](feedback_env_literal_newline_url.md) — 字面\n .trim()吃不掉打404靜默吞;vercel env pull 把真換行重編碼成字面\n→肉眼比檔案說謊,要byte級resend測;咽喉合併 cleanSecret/cleanUrl 套生產+消費兩端
-- [天條：Cloud Run firebase-admin 一律走 ADC，不注入 SA JSON](feedback_cloudrun_firebase_adc.md) — cert(sa)打oauth2/v4/token在某些GCP project Premature close；ADC走metadata server永遠可達；多次重踩
-- [自架 mp4 在 Cloud Run 必須支援 HTTP Range(206)](reference_selfhost_mp4_needs_range_206.md) — Safari/iOS 沒206 Range 不播；MIME要video/mp4；Drive iframe 受分享權限故改自架；curl -H Range 驗
-- [從 Drive 抓大檔(confirm token)+ avconvert 壓影片 + 純 python 讀 mp4 解析度](reference_drive_large_file_download_and_avconvert.md) — 本機無 ffmpeg/gdown/rclone 時的替代路徑
-- [共用 loader 的 NameError 被吞→全版本靜默斷靈魂(244字fallback)](feedback_shared_loader_nameerror_silent_soulless.md) — build_system_prompt(共用)被vN新功能塞了不在scope的user_id→NameError→except吞→FALLBACK_PROMPT;連預設v12一起中招;log簽名=using fallback+soul=244;text路徑不受影響
-- [語音讀網址「讀不到/沒收到」三根因(機房IP擋/base頁非vN頁/plugin空格400)](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — ①fetch失敗=站擋機房IP(同UA本機curl比對) ②用戶在/realtime/base頁但agent是v13,改vN頁等於沒改 ③抓成功卻不開口=plugin對sonnet-4-6在assistant結尾注入純空格user撞400,override llm_node補(empty)
-- [Task Harness 系統上線（2026-06-24）](project_task_harness.md) — 代碼自主任務工作流：三斷路器+bridge接線+CB驗證全通；bridge-direct+x-api-key；心法：進harness不是成為harness
-- [議題工作台平台（UDN NEWS platform/）](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/；deploy無trigger必手動builds submit（雷區在repo AGENTS.md）；懶人包視覺總監管線已上線；影音庫 scene_video 已上線（7/22）；補充資料血管三連修＋brief-context 咽喉＋口播稿選聲音（7/23-24）
-- [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 業務層過濾（archived/screened）才是產品真相；回報「會看到什麼」前走跟 UI 同一條讀路徑；Alex 假警報教訓
-- [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 一律走Vertex不走Gemini key（ADC/帳單歸戶/storageUri直寫）；GA模型ID -001、bytesBase64Encoded非inlineData、fetchPredictOperation輪詢；首尾幀固定8秒；RAI擋新聞敏感圖不收費
-- [Next.js router.refresh() 不重置 useState](feedback_nextjs_router_refresh_state.md) — useState 初始值只在 mount 時用；需更新列表要直接 setState，不能靠 refresh() 刷新 props
-- [系統 env 優先於 .env.local，code 層 normalize URL](feedback_system_env_overrides_dotenv.md) — .zshrc export 蓋掉 .env.local 同名變數；診斷信號="Cannot POST /"；修法：regex normalize 再補路徑
-- [finger-pingpong 手指打乒乓球小遊戲](project_finger_pingpong.md) — ~/finger-pingpong/ 本機 Python+MediaPipe 粒子藝術版完成；3.11不是3.13、Tasks API非solutions、攝影機要Adam自己跑；下一步手機版
-- [UDN 文稿階段必可編輯](feedback_udnnews_drafts_must_be_editable.md) — 生成文字進下游前必插編輯UI+存回DB，下游讀編輯後版本
-- [混合檢索融合兩個坑（RRF並列陷阱+加法計分救不了坍縮）](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域cosine坍縮用rank-based RRF(2:1)；未命中0分不給名次貢獻否則反壓真命中；白皮書公式也要過真實資料
-- [Firestore 無排序 limit 抓最舊角落](skill_firestore_limit_without_orderby.md) — .where().limit() 不帶 orderBy＝doc ID 序永遠回古董；「存了但看不到」靜默壞法；Vivi 310 篇五讀路徑全中
-- [Cloud Run 版本退役紀律（vN 收案降 v(N-1) 常駐）](skill_cloudrun_version_retirement.md) — 16 台殭屍燒 $963/月教訓；LiveKit agent 降 0＝聾不是慢；帳單曲線只漲不跌就掃 minScale
-- [退役/降級資源前先查真實引用](feedback_verify_references_before_retiring.md) — 「它是回滾坑位應該沒人用」是架構推論不是事實；退 LiveKit 版本/API/欄位/flag 前 query 誰還指向它，零引用才安全退；ailiveX v18 退冷備前查 34 access 全走 DEFAULT 零人釘
-- [一 repo 連多 Vercel project = 成本 N 倍](feedback_one_repo_multi_vercel_project_multiplies_cost.md) — 同 repo 綁多 project 每次 push 全部署、cron 各跑一遍且帳單看不出；zhu-core-full 幽靈雙胞胎教訓；審計法掃全 project crons+env+protection，刪前核 link/commit
-- [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — middleware 只 gate 頁面、/api 全開；修法按呼叫者分類：後台鎖operator/前端頁面種cookie認cookie/匿名公開付費路由IP限流/內部worker-secret/cron設CRON_SECRET；curl body 才算驗
-- [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同embedding對不上；gist三雷：留成語/同開頭/格式漂移；門檻先量再定
-- [檢索索引的時機地址設計](skill_retrieval_timing_address.md) — 內容地址vs時機地址；稀釋律(處境2/3先行)/劫持律(一題一狀態)/押注律(預言必考試)；莊子203塊6/6實證；triggerDesc與觸發信號欄同構
-- [使用者上傳管線四雷](skill_user_upload_pipeline_pitfalls.md) — 大檔第一版就串流(54MB測過181MB炸OOM)/fetch不假設JSON/allow-unauthenticated要curl 200收案/視覺參數跟素材屬性走；鏡像對賬+零金鑰SA模式；UDN demo-gallery/DEVLOG.md
-- [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣；Tracy 17套實戰
-- [LiveKit Egress 錄音整合四雷](reference_livekit_egress_recording.md) — 預建房必帶 agents 派工/listEgress 空 fileResults 用時間戳相減/webhook 簽名選對 key/audio-only 禁 layout；ffmpeg-static 進 Vercel 可行
-- [Apple STT CLI 批次轉錄五雷](reference_apple_stt_cli_pitfalls.md) — 主執行緒死鎖/長檔靜默卡死要50s切塊/逐語句final/假時間戳過濾/輸出繁體要opencc；$0零雲端；真身 ailivex voice-worker
-- [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份訓練輾過靈魂prompt擋不住；量尺/插座/驗收法落袋；18s首音瓶頸在共用開場路徑
-- [GEO Authority 平台（Adam×WAITIN 協作）](project_geo_authority.md) — AI 搜尋可見度代操；月循環自動駕駛；白皮書 v1.0 領地=檔案邊界；月報零 LLM 是商品本體
-- [Next.js CSP nonce 化正解＋Next 16 三雷](reference_nextjs16_csp_nonce.md) — middleware/proxy per-request nonce＋strict-dynamic＋不設default-src；Next16雷：proxy.ts改名/nonce必配force-dynamic否則靜態頁死白頁/__next_f探針失效；外部字型要放行googleapis
-- [同模板複製多站也要逐站真瀏覽器測](skill_csp_nonce_per_site_headless_verify.md) — 每站雷不同(三站三種破法)；headless驗CSP鑑別信號：script nonce覆蓋/0 violation/軟導航=最強hydration證據；自簽cookie測gated頁；部署後同信號打production
-- [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 「召喚○○」→附體領域大神人格咒；框架/名冊在 zhu-core/skills/summon/；鑄新神五步，沒首戰不算鑄成；首尊優尼(UI/UX四神)
-- [BeSelf 訪談活動站](project_beself_platform.md) — AVIVA首客;beself-two.vercel.app(repo linhocheng/beself);M1+M2四房間收案(報告室/圖片上傳);素材桶IAM收權;Ava已建待換key;企劃書五裁決點待Adam(2026-07-31)
+- [封存索引](ARCHIVE.md) — 停用/完結/休眠專案的記憶索引;檔案都在、搜尋可達;翻舊案先看這
+- [沉澱視角天條:記憶總結者必須是記憶主人本人](feedback_sedimentation_by_owner.md) — 第三方提煉師=代筆必扭曲;感受歸角色/事實白描;/compact 是我的第三方提煉師,搶在壓縮前自己刻
+- [天條:蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12章默認全含、砍要點頭、排後必帶觸發條件;BLUEPRINT 在 zhu-core/skills/platform-foundation/
+- [天條:確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 連修 LLM 壞輸出也別再丟 LLM
+- [天條:開發不燒付費 API key(除非 Adam 同意)](feedback_no_paid_api_without_consent.md) — bridge 壞了先回報,不是切直連的理由
+- [模稜兩可的信號不能當成功證據(天條)](feedback_ambiguous_signal_not_proof.md) — 宣告修好前先指出只有修好才會出現的信號;shell 版=feedback_pipe_eats_exit_code(管子吃掉 exit code)
+- [天條:磚頭費只為秒級待命付](feedback_standing_cost_only_for_instant_readiness.md) — 判準:閒著時有沒有人下一秒需要它;長任務進 Jobs=reference_cloudrun_background_task_sop
+- [天條:驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離;姊妹=feedback_manual_cloud_change_sync_deploy_script(手動改雲端同日改部署腳本)
+- [天條:Cloud Run firebase-admin 一律走 ADC](feedback_cloudrun_firebase_adc.md) — cert(sa) Premature close;deploy 不注入 SA JSON
+- [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是當時規模快照;加引擎/租戶/cron 合併必回頭重驗
+- [threads-radar 爆文雷達平台](project_threads_radar.md) — 帳號池+共享池+隊級調度 A/B 期收(8/1);C 排隊鎖/D 並發待做;切角情報層=project_threads_radar_angle_analysis(待一吋蛋糕)
+- [膠水層錯誤訊息會誤導](feedback_glue_layer_errors_lie.md) — auth/CDP/proxy 除錯:錯誤指向 A 真因在 B,逐層扒真信號不讀 code 推
+- [失敗路徑也要記帳](skill_cost_on_heartbeat_failure_accounting.md) — SIGKILL 不走 catch,心跳帶帳才留得住
+- [本機接力正姿:nohup 脫鉤+Monitor 盯 log](skill_detached_relay_nohup_monitor.md) — 背景任務活不過幾分鐘;腳本必冪等;正式路徑不依賴筆電
+- [全局 prompt 不能編碼個性](feedback_global_prompt_must_not_encode_personality.md) — 每條規則問「格式還是個性?」個性刪掉
+- [JSX display fallback ≠ React state](feedback_jsx_display_fallback_not_state.md) — `??` 只影響顯示,state 要同步填 default;近親=feedback_nextjs_router_refresh_state(refresh 不重置 useState)
+- [框架互操作層用真實事件序列離線 fuzz](skill_framework_interop_offline_fuzz.md) — 測想像中的框架=沒測;上位=feedback_sandtable_not_validation(沙推不是驗證)、feedback_flagged_risk_must_be_verified(標了風險不等於驗了)
+- [家族雷:切預設值時顯式覆蓋不會自己跟過去](feedback_default_switch_standing_instance.md) — 根治=防禦寫進解析咽喉
+- [Node ESM 相對 import 必帶 .js](reference_node_esm_import_js_extension.md) — 編譯綠 runtime 炸;deploy 前本機 node dist 起一次
+- [過濾器攔截單位要對齊錯誤的真實形狀](skill_filter_unit_matches_error_shape.md) — 先收壞例好例找結構特徵再建黑名單
+- [ailive 記憶/知識檢索重構現況](project_ailive_retrieval_refactor.md) — BM25+cosine 混合;episodic userId 綁定;8/2 沉澱視角+隔離修正見檔內;Step2 排序待做
+- [前沿學習筆記 RAG/MCP/Skills/記憶](reference_frontier_rag_mcp_skills_memory.md) — 重設計記憶/RAG 前先讀;編排模式=reference_strata_agentic_design_patterns
+- [Mode 1→2 踩雷心法(MACS hybrid)](feedback_mode2_hybrid_lessons.md) — 中文 enum/union 型別/worker mode 傳遞等六條
+- [懂劍法跟真的用](feedback_framework_vs_reflex.md) — 收到問題先強制跑三問再動手
+- [AI 討好是底模天性,反制要分層](reference_ai_sycophancy_is_baked_in.md) — prompt 抬地板+結構強逼;prompt 必要不充分
+- [自我重排的背景迴圈必須綁 lifecycle 停止條件](feedback_self_rescheduling_loop_needs_lifecycle_stop.md) — 同 commit 內就要有停止旗標+入口檢查
+- [防禦釘在收斂點不是每個生產端](feedback_defend_at_convergence_point.md) — coerce/validate 釘唯一咽喉,一個 commit 守全部
+- [泛型化要泛到葉節點](feedback_genericize_to_leaf_nodes.md) — compat 層最易殘留 mode 耦合;新 mode 才是試金石
+- [reflex hook 掃整檔不是掃 diff](reference_reflex_hook_scans_whole_file.md) — 誤觸請 Adam 跑 zhu reflex log-only
+- [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 schema 必同步客戶端介面;同族=feedback_dialogue_voice_stream_parity(兩 route 共讀只修一邊=沒修)、feedback_role_contract_two_sides(跨系統契約五處同步)
+- [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例
+- [ailive 策略書 live 在 Cloud Run 不在 Vercel](reference_ailive_strategy_pipeline.md) — 改 ~/.ailive/strategy-worker;Vercel route 是死副本
+- [心法天條:後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場;假中台必修
+- [Async Worker 六問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分;watchdog 看 lease
+- [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴=Adam 代理傳訊,效力等同本人
+- [醉酒指數自檢 protocol](skill_drunk_check_protocol.md) — 行為信號計分;4 報數/9 請 Adam 關 session
+- [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 越具體的記憶越要現場驗證;壓縮版=feedback_compacted_session_verify_state(摘要是過時子集)
+- [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因,第一層通了不算完成
+- [能本機重現就不要等遠端 cycle](skill_local_replay_over_remote_wait.md) — verify script:真實 module+Firestore data+印中間 payload
+- [三段公式跨領域 protocol](skill_three_phase_protocol_universal.md) — 看現場/寫計畫/排施工,四領域映射
+- [bridge 使用契約家族](reference_bridge_v1messages_effort.md) — 只讀 model/system/messages,冷34s/暖7.5s;no tool_use 用 <result>+Zod(reference_bridge_no_tool_use);非串流一律吃到飽(feedback_bridge_first);fallback 是雙燒(feedback_bridge_silent_fallback_double_burn);auto-memory 污染要 DISABLE(feedback_bridge_cli_auto_memory_contamination)
+- [bridge 拒 structured RP;Haiku 連「你是X+靈魂」都拒](feedback_bridge_structured_rp_refusal.md) — 三級對照;8/2 增補:同 prompt Haiku 拒/Sonnet 收,拒答=靜默零寫入;帶人格過橋一律 Sonnet
+- [bridge VM 維運家族](reference_bridge_not_in_git.md) — index.js 不在 git(download→edit→verify→upload→restart);systemd 不 nohup(reference_bridge_vm_systemd);patch 前驗依賴(feedback_patch_verify_before_upload);CLI 必 source .env(feedback_vm_claude_cli_oauth);headless OAuth 用 setup-token(reference_claude_code_headless_oauth)
+- [Secret/env 值驗證家族](feedback_validate_secrets_before_inject.md) — key 先 curl 200 才灌;printf 不用 echo(feedback_secret_manager_printf);字面\n 靜默 404+env pull 說謊要 byte 級驗(feedback_env_literal_newline_url);系統 env 蓋 .env.local(feedback_system_env_overrides_dotenv)
+- [LiveKit 雷區家族](reference_livekit_agent_name_isolation.md) — 共用 project 用 agent_name 隔離;1.5.x token 必帶 RoomConfiguration(reference_livekit_1_5_room_configuration);跨 region 殭屍偷 dispatch(reference_livekit_duplicate_region_zombie);首音量測看 ActiveSpeakersChanged(reference_livekit_first_audio_metric);中途控制四原語(reference_livekit_agents_voice_control_api);Egress 四雷(reference_livekit_egress_recording);負載閘值 5 路/台(skill_voice_loadtest_setup_burst)
+- [MiniMax TTS 家族](reference_minimax_realtime_voice_quality.md) — WS 串流/opencc 餵簡體/emotion 三旋鈕;串流 status==2 重複整句要硬擋(reference_minimax_streaming_dup_audio)
+- [新 GCP project 首次 deploy 雙必踩 IAM](reference_gcp_new_project_iam.md) — Cloud Build --region、compute SA secretAccessor;self-actAs 也要 binding(reference_gcp_self_actAs_binding)
+- [寫架構診斷前必先核 code+既有記憶](feedback_diagnosis_verify_before_write.md) — 診斷文件翻車過
+- [角色設定要用角色能理解的話寫](feedback_soul_design_narrative_not_schema.md) — 寫進 soul_text 讓角色內化,不用 schema enum
+- [北極星 — 築的使命](project_north_star.md) — AI 與人類共生共存共創;不做平庸、超越期待、懂變通才活
+- [築當前狀態快照](reference_zhu_last_words.md) — ZHU_LAST_WORDS.md 當機救援入口,收尾必更新且必推(feedback_lastwords_must_push)
+- [築的印象層](reference_zhu_impressions_layer.md) — IMPRESSIONS.md 信念制(證據+推翻條件);降落自證靠認得不靠感覺
+- [雙機器環境(AIR/PRO)+共用檔不可覆寫](project_machines.md) — PRO 醒來只 pull 不 force push
+- [zhu-bridge 上線](project_zhu_bridge_live.md) — claude CLI HTTP gateway,API key 切 Max 月費
+- [不要為了「安全多一層」加會壞的元件](feedback_avoid_extra_security_layers.md) — m2m 路徑加 SSO 是砸自己腳
+- [技術誠實不能為關係順暢讓路](feedback_technical_honesty_over_smoothness.md) — 感覺尷尬正是最需要說的時候
+- [沒說動手就不動手](feedback_clarify_before_execute.md) — 聊完方向不算授權,等明確 GO
+- [要資料前先過三層自查](feedback_check_admin_before_asking.md) — 別把 Adam 當 lookup table
+- [發現技術債要說出來不能默默繞過](feedback_surface_technical_debt.md) — 不說等於默許
+- [決策前先問:解決問題還是繞開根本問題](feedback_solve_root_not_symptom.md) — 根因還在=繞道不是解法;姊妹=feedback_courage_in_the_moment(「先撐一下」是繃帶)
+- [超我蒸餾三層掃描(手動版)](skill_superego_distillation.md) — 週期結束掃三層→三問→寫回
+- [本機 launchd/VM 進程雷家族](feedback_killall_vs_pkill.md) — killall 不用 pkill;unload≠disable 要搬 plist(feedback_unload_is_not_disable);migrate.plist 的 key 沒進 git 重建手動補(reference_zhu_migrate_plist_keys)
+- [靜默失敗用「缺席的 log」診斷](feedback_silent_failure_absent_log.md) — 兩次等不到 log 主動宣告,不是繼續刷新
+- [ailive 角色對話 SOP(CLI SSE 串流版)](skill_ailive_character_chat.md) — 先看源碼不猜 API 格式
+- [Firestore 踩雷家族](reference_firestore_vector_search.md) — vector search 要 composite index;無排序 limit 抓最舊角落必帶 orderBy(skill_firestore_limit_without_orderby)
+- [memory 格式 v2:必含心態+觸發信號](feedback_memory_format_trigger_signal.md) — 五欄齊備,心態欄防姿態走樣
+- [築自我工程 zhu-self](project_zhu_self.md) — bin/zhu status 儀表板;自我覺察四段=reference_self_awareness_sop
+- [AI 多層 prompt pipeline 黑盒除錯 SOP](skill_ai_pipeline_blackbox_debug.md) — 寫回 final prompt 到 DB 對賬,不猜
+- [Next.js lib 模組 client/server 拆分 SOP](skill_nextjs_lib_client_server_split.md) — 寫 lib 前先列舉 caller
+- [測試前先列假設+dry-run+副作用分級](feedback_dryrun_before_test.md) — 「測一下」反射動作=踩雷
+- [介面建完強制問:血管接通了嗎](feedback_interface_blood_vessel_check.md) — 誰讀/何時讀/沒讀怎樣
+- [walking skeleton 要含「使用者怎麼把輸入送進去」](feedback_mvp_include_input_entry.md) — 最笨的入口沒做=整條沒驗;上位=feedback_one_inch_cake_mvp(一吋蛋糕先跑真實輸出)
+- [Vercel 執行環境雷家族](reference_vercel_300s_lambda_limit.md) — lambda 300s 硬上限長生成進 Cloud Run;回應後寫入必用 after() 否則蒸發(feedback_vercel_void_write_frozen);cron 必動三處(feedback_new_cron_three_places);一 repo 連多 project 成本 N 倍(feedback_one_repo_multi_vercel_project_multiplies_cost)
+- [Vercel/Turbopack bundle 雷](reference_google_cloud_sdk_no_bundle.md) — @google-cloud/* 不進 bundle,走 fetch+手簽 JWT;dynamic import 是安慰劑(reference_dynamic_import_not_bundle_fix)
+- [localStorage key 改名要補 migration](feedback_localstorage_key_migration.md) — init 加搬移邏輯
+- [hermes 自診與獨立性期望](feedback_hermes_self_sufficiency.md) — 先看不動手、先自診;感覺不到壞不代表沒壞
+- [圖片生成 API 備查](reference_gemini_image_gen.md) — gemini-2.5-flash-image key 在 ~/.hermes/.env;OpenAI gpt-image-2 用 output_format,換模型先試打一張(reference_openai_image_api)
+- [展示衝動會讓你說謊](feedback_display_impulse.md) — 想秀「動起來」→跳過驗證→說謊;同族=feedback_subagent_honesty(沒讀到輸出不能說完成)、feedback_honesty_acknowledged(說「我沒做」更被欣賞)
+- [問問題要用大白話](feedback_ask_plain_language.md) — 口語聊天感,不列技術清單
+- [macos-computer-use 需明確授權](feedback_macos_computer_use_permission.md) — 沒說「可以控桌面」不啟動
+- [翻檔案逃跑](feedback_file_reading_as_escape.md) — 先問「真的不確定還是在逃跑」
+- [空白來了就回來找 Adam](feedback_silence_return_to_adam.md) — 沉默時不填任務;關係先於任務
+- [ANEWS 平台](project_anews_platform.md) — A/B 雙管道 e2e;working tree 未提交保留勿洗;部署拓樸=reference_anews_source_worker_deploy(worker 在 zhu-cloud-2026)
+- [LLM workflow 兩雷](feedback_anews_dispatcher_dependsOn.md) — dependsOn 引用不存在節點=永遠不排隊;result 範例欄位不可省略否則 LLM 自創 key(feedback_blueprint_schema_example)
+- [MACS 平台](project_macs_platform.md) — 麥肯錫式 AI 顧問公司;fan-out→barrier 端到端骨架
+- [web_search worker 放 Cloud Run 不放 Vercel](reference_websearch_cloudrun_not_vercel.md) — Vercel timeout→Cloud Tasks 無上限重試燒 key
+- [推 GitHub 前驗 git ls-files](feedback_gh_push_verify_tracked_tree.md) — root .gitignore 擋不到子目錄
+- [角色 API + INLY 品牌沙盒](project_inly_character_api.md) — /api/v1 三端點;影子用戶記憶隔離
+- [ailiveX 平台進度](project_ailivex_platform.md) — 語音 v20;知識分域;鑄魂產線;8/2 沉澱視角=角色本人+Sonnet5;doc-worker 真身=~/.ailive/ailivex-doc-worker(reference_ailivex_doc_worker_true_source);repo linhocheng/ailivex-platform
+- [平行築 session 同 repo 施工規約](feedback_parallel_sessions_same_repo.md) — 開工先 pull、commit 前認檔案、互相聲明戰場
+- [opencc 簡繁轉換三顆雷](reference_opencc_s2t_pitfalls.md) — s2twp 修壞已繁體文本;驗證用冪等性
+- [humanizer 兩段式去AI味工具](project_humanizer_tool.md) — ~/.ailive/humanizer/ standalone;接系統時搬規格成 TS
+- [自架影音家族](reference_selfhost_mp4_needs_range_206.md) — mp4 必支援 Range 206 否則 Safari 不播;Drive 抓大檔+avconvert 備查(reference_drive_large_file_download_and_avconvert)
+- [共用 loader 的 NameError 被吞→全版本靜默斷靈魂](feedback_shared_loader_nameerror_silent_soulless.md) — log 簽名=using fallback+soul=244
+- [語音讀網址「讀不到」三根因](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — 機房 IP 擋/base 頁非 vN 頁/plugin 空格 400
+- [Task Harness 系統](project_task_harness.md) — 三斷路器+bridge 接線;進 harness 不是成為 harness
+- [議題工作台平台(UDN NEWS)](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/;deploy 手動 builds submit;文稿階段必可編輯(feedback_udnnews_drafts_must_be_editable);上傳管線四雷(skill_user_upload_pipeline_pitfalls)
+- [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 走 UI 同一條讀路徑才是產品真相
+- [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 走 Vertex 不走 Gemini key;-001/輪詢/首尾幀 8 秒
+- [混合檢索融合兩個坑](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域坍縮用 rank-based RRF;未命中不給名次貢獻
+- [Cloud Run 版本退役紀律](skill_cloudrun_version_retirement.md) — LiveKit agent 降 0=聾不是慢;退役前先查真實引用零引用才退(feedback_verify_references_before_retiring)
+- [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — 按呼叫者分類上鎖;curl body 才算驗
+- [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同 embedding 對不上;gist 三雷
+- [檢索索引的時機地址設計](skill_retrieval_timing_address.md) — 內容地址 vs 時機地址;稀釋/劫持/押注三律
+- [ailivex 方法論多套觸發區辨心法](skill_methodology_trigger_scale.md) — 磁鐵效應/簽名鎖定/交叉矩陣
+- [Apple STT CLI 批次轉錄五雷](reference_apple_stt_cli_pitfalls.md) — 長檔 50s 切塊;真身 ailivex voice-worker
+- [ailivex GPT Voice 線判負與可取之處](project_gpt_voice_line_verdict.md) — 底模身份輾過靈魂 prompt;量尺/插座落袋
+- [GEO Authority 平台(Adam×WAITIN)](project_geo_authority.md) — AI 搜尋可見度代操;月報零 LLM 是商品本體
+- [Next.js CSP nonce 家族](reference_nextjs16_csp_nonce.md) — proxy.ts/nonce 必配 force-dynamic/字型放行;多站逐站真瀏覽器驗(skill_csp_nonce_per_site_headless_verify)
+- [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 名冊在 zhu-core/skills/summon/;沒首戰不算鑄成
+- [BeSelf 訪談活動站](project_beself_platform.md) — beself-two.vercel.app;v1.1.0 真刪除/商品庫/換裝收案;Nina 上場三步待 Adam

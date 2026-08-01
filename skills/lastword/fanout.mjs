@@ -161,11 +161,15 @@ function applyMemoryHits(s, dry) {
 }
 
 // ── MEMORY.md 孤島檢查（確定性）───────────────────────────────────────
+// 2026-08-01 索引瘦身後的新契約：索引=MEMORY.md+ARCHIVE.md 兩份；
+// 家族合併行用純 slug 點名（不帶括號/.md），所以比對用檔名去掉 .md 的 stem。
 function memoryOrphans() {
-  const index = readFileSync(join(MEMORY_DIR, 'MEMORY.md'), 'utf8');
+  const idx = ['MEMORY.md', 'ARCHIVE.md']
+    .map(f => { try { return readFileSync(join(MEMORY_DIR, f), 'utf8'); } catch { return ''; } })
+    .join('\n');
   return readdirSync(MEMORY_DIR)
-    .filter(f => f.endsWith('.md') && f !== 'MEMORY.md')
-    .filter(f => !index.includes(`(${f})`));
+    .filter(f => f.endsWith('.md') && f !== 'MEMORY.md' && f !== 'ARCHIVE.md')
+    .filter(f => !idx.includes(f.replace(/\.md$/, '')));
 }
 
 // ── 現場清點 ───────────────────────────────────────────────────────────

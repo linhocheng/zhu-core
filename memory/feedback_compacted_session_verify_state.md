@@ -13,3 +13,5 @@ originSessionId: fe444547-4b36-4a4c-9d43-1ee32c82f4c7
 **How to apply**：續跑被壓縮的 session（尤其是 debug 類）動手前先跑三條——① `tail -60 WORKLOG.md` 看這題是否已有結論 ② `git log --oneline -10` 看有沒有別的 session 已 commit 修復 ③ 讀最新 session-lastwords。任一顯示「已解決」就停止鑽摘要那條線，改去驗證/對齊現況。對應 `feedback_memory_can_lie`（記憶會說謊，先驗現場）的壓縮場景特化版。
 
 **觸發信號**：拿到 conversation summary 開頭、看到「continue debugging X」、發現自己要接著一條卡了很久的線往下做。
+
+- 驗證+1:2026-08-01 第5場 — 兩次壓縮接手全程重讀現場不信摘要

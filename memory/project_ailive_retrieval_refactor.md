@@ -18,3 +18,5 @@ ailive-platform 檢索層 2026-06 重構。根線索：原本檢索只信 cosine
 **尚未做（Step 2）**：episodic 檢索**排序升級**——recency 衰減 + importance + hitCount 加權（斯坦福公式 score=recency×importance×relevance），治 importance/recency「寫了沒用在排序」的假中台（Step 1 讓記憶進得來，Step 2 讓對的記憶排前面）。
 
 **How to apply**：碰 ailive 檢索/記憶先讀此條知現況。別重提 contextual chunking。要動 episodic 排序＝接 Step 2。記憶設計參考樣板＝ailivex firestore_loader（乾淨無白名單 + userId 綁定）。
+
+**2026-08-02 沉澱視角+隔離修正(與 ailivex 同刀)**:六個提煉點(dialogue每20輪/dialogue-end/voice-end/voice-cleanup/voice-stream每20輪+lastSession)全改角色本人帶靈魂,收斂進 lib/insight-extraction.ts;帶人格走 Sonnet 5。隔離三洞已補:匿名洞察原寫成角色通用、remember 工具與 voice_auto_extract 原完全不綁 userId——六處寫入一律綁 userId(含 anon)。e2e 實彈:Mckenna 提煉出「我的感受」titled insight+快照 unfinishedThreads 含她自己下次想做的事。Python agent 的提煉函數是死代碼(live 路徑=Cloud Tasks→voice-cleanup),未動,列債。
