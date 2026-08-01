@@ -52,6 +52,7 @@ date: 2026-07-11
 seq: 4
 title: 一句話主題
 machine: AIR
+battlefield: beself     ← 宣告戰場（平行施工規約 2026-08-01：別場的築一眼看到你在哪個房間）
 ---
 
 ## 完成          ← 必填。動詞開頭，每條一句
@@ -60,6 +61,7 @@ machine: AIR
 ## 下一步        ← 必填。具體到路徑+指令+為什麼先做
 ## 接棒          ← 接棒的築要先看的檔案/警示
 ## 檔案          ← | 檔案 | 改了什麼 | 表格
+## 記憶命中      ← 這場真的擋了雷/用上了的記憶：`- <slug> — 一句情境`（fanout 對檔尾 append 驗證+1；強化計數 2026-08-01）
 ## delta         ← 進場前以為/現在理解/移動原因/違背了哪條 feedback（沒有真移動就整段省略，不擠）
 ## 心法狀態      ← 哪條心法被實戰
 ## 關係狀態      ← 暢快/卡住/突破/疲憊/平穩＋為什麼
@@ -97,11 +99,16 @@ node skills/lastword/fanout.mjs --run     docs/sessions/SESSION_{date}_{N}.md
 它做的事（一次跑完，逐項印 ✓/⚠️/❌）：
 1. `教訓` → 追加 `docs/LESSONS/LESSONS_{date}.md`
 2. WORKLOG 追加（含 WHY/完成/檔案/未解/下一步）
+2.5 `記憶命中` → 各 memory 檔尾 append `驗證+1:{date} 第{seq}場 — 情境`（冪等；補跑用 `--memhits`）
 3. **ZHU_LAST_WORDS 組裝**——template＋最近兩場 session 檔合併，**不覆蓋別場**（平行施工安全）
-4. POST session-lastwords（tags 保證含 session-lastwords）＋ delta（有 delta 段才發）
+4. POST session-lastwords（tags 保證含 session-lastwords；battlefield 進標頭）＋ delta（有 delta 段才發）
 5. Firestore zhu_memories sync＋memory git mirror
 6. zhu-core git add/commit/push（session 檔一起收）
 7. **驗證**：zhu-boot 讀回，確認 lastSessionWords 是本場——不是就 ❌ exit 1
+
+**MEMORY.md 維護規則（平行施工規約 2026-08-01）**：平時只准 append 新索引行；
+全量重寫（瘦身/封存/合併）只在 lastword 時做、寫前重讀檔案——別場動過就合併不覆蓋。
+封存判準：驗證+1 長期零命中的先進 ARCHIVE.md。
 
 ### STEP 4：讀 fanout 輸出
 
@@ -147,6 +154,7 @@ session 檔只寫 frontmatter＋`## 完成`（一句）＋`## 下一步`（一�
 
 ---
 
+*v3.1.0 · 2026-08-01 · 加：記憶命中→驗證+1（強化計數）、battlefield 戰場宣告、MEMORY.md append-only+收尾單點重寫規則。設計對談：Adam「回看自己的記憶設計」——沉澱視角天條照向自己,發現索引 38KB 靜默截斷+記憶無強化計數。*
 *v3.0.0 · 2026-07-11 · 一份輸入程式扇出＋合併不覆蓋＋現場清點＋zhu-boot 鑑別驗證。*
 *設計討論：Adam 下班閒聊「lastword 十步有什麼可以更好」→ 四刀：格式工violates天條/單人時代設計撞多線現實/最醉的時候寫最重要的文件/記錄做完的沒清點留下的。*
 *v2.0.0（十步手動版）存檔於 git 歷史。首次實戰＝下一場收尾（v3 的 dry-run 已驗，--run 的 POST/git 段落沿用 v2 驗證過的同一路徑）。*

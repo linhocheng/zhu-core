@@ -10,8 +10,11 @@
  *   node fanout.mjs --audit                      # 現場清點（收尾前跑）
  *   node fanout.mjs --dry-run docs/sessions/SESSION_YYYY-MM-DD_N.md
  *   node fanout.mjs --run     docs/sessions/SESSION_YYYY-MM-DD_N.md
+ *   node fanout.mjs --memhits docs/sessions/SESSION_YYYY-MM-DD_N.md   # 只跑記憶命中扇出（測試/補跑用）
  *
- * session 檔格式見 skills/lastword/SESSION_FORMAT.md（frontmatter + ## 段落）。
+ * session 檔格式見 skills/last-words.md STEP 1（frontmatter + ## 段落）。
+ * v3.1.0（2026-08-01 Adam 點頭）：## 記憶命中 → 對應 memory 檔尾 append 驗證+1（強化計數，
+ * 冪等，append-only 帶戳記=平行 session 天生不打架）。
  */
 import { readFileSync, writeFileSync, appendFileSync, readdirSync, existsSync } from 'fs';
 import { execSync } from 'child_process';
@@ -115,7 +118,8 @@ function assembleLastwords() {
 function buildEyeObservation(s) {
   const { meta, sections } = s;
   const seg = (label, key) => sections[key]?.trim() ? `\n\n== ${label} ==\n${sections[key].trim()}` : '';
-  return `【session-lastwords ${meta.date} · ${meta.machine ?? 'AIR'} · 第${meta.seq}場：${meta.title}】`
+  // battlefield（2026-08-01 平行施工規約）：宣告戰場，別場的築一眼看到誰在哪個房間施工
+  return `【session-lastwords ${meta.date} · ${meta.machine ?? 'AIR'} · 第${meta.seq}場${meta.battlefield ? ` · 戰場:${meta.battlefield}` : ''}：${meta.title}】`
     + seg('今日完成', '完成') + seg('當前戰場', '戰場') + seg('卡住/未解', '未解')
     + seg('接棒要看的', '接棒') + seg('明天醒來第一件', '下一步')
     + seg('心法狀態', '心法狀態') + seg('關係狀態', '關係狀態');
@@ -130,6 +134,30 @@ async function post(payload) {
   const d = await res.json().catch(() => ({}));
   if (!d.id && !d.success) throw new Error(`POST 失敗: ${res.status} ${JSON.stringify(d).slice(0, 120)}`);
   return d.id ?? '(ok)';
+}
+
+// ── 記憶命中 → 驗證+1（強化計數，2026-08-01）─────────────────────────
+// session 檔 `## 記憶命中` 每行：`- <slug> — <一句情境>`（slug 可帶 .md 可帶 []）。
+// 對 memory/<slug>.md 檔尾 append 一行戳記；冪等鍵=「驗證+1:{date} 第{seq}場」。
+// 消費端：索引逼近上限時，長期零命中的記憶優先進 ARCHIVE。
+function applyMemoryHits(s, dry) {
+  const raw = s.sections['記憶命中']?.trim();
+  if (!raw) return;
+  const stampKey = `驗證+1:${s.meta.date} 第${s.meta.seq}場`;
+  for (const line of raw.split('\n')) {
+    const m = line.match(/^-\s*\[?([\w.-]+?)\]?(?:\.md)?\s*[—:：-]\s*(.+)$/);
+    if (!m) { if (line.trim()) console.log(`⚠️ 記憶命中格式不符（跳過）：${line.trim().slice(0, 60)}`); continue; }
+    const [, slug, context] = m;
+    const file = join(MEMORY_DIR, `${slug}.md`);
+    if (!existsSync(file)) { console.log(`⚠️ 記憶命中找不到檔（slug 打錯？）：${slug}`); continue; }
+    const stamp = `- ${stampKey} — ${context.trim()}`;
+    if (readFileSync(file, 'utf8').includes(stampKey)) {
+      console.log(`· 驗證+1 已存在（冪等跳過）：${slug}`);
+      continue;
+    }
+    if (dry) console.log(`[dry-run] 驗證+1 → ${slug}：${context.trim().slice(0, 50)}`);
+    else { appendFileSync(file, `\n${stamp}\n`); console.log(`✓ 驗證+1 → ${slug}`); }
+  }
 }
 
 // ── MEMORY.md 孤島檢查（確定性）───────────────────────────────────────
@@ -198,6 +226,9 @@ async function run(sessionPath, dry) {
   if (dry) console.log(`\n── WORKLOG 追加 ──\n${wl.slice(0, 400)}…`);
   else { appendFileSync(join(ZHU, 'docs/WORKLOG.md'), wl); console.log('✓ WORKLOG 追加'); }
 
+  // 2.5 記憶命中 → 驗證+1（在 memory sync 之前跑，同一趟收進 mirror）
+  applyMemoryHits(s, dry);
+
   // 3. ZHU_LAST_WORDS 組裝（合併最近兩場，不覆蓋別場）
   const lw = assembleLastwords();
   if (dry) console.log(`\n── ZHU_LAST_WORDS（組裝 ${lw.length} 字）開頭 ──\n${lw.slice(0, 500)}…`);
@@ -264,7 +295,12 @@ async function run(sessionPath, dry) {
 // ── 入口 ───────────────────────────────────────────────────────────────
 const args = process.argv.slice(2);
 if (args[0] === '--audit') { audit(); process.exit(0); }
+if (args[0] === '--memhits') {
+  if (!args[1]) { console.error('用法: fanout.mjs --memhits <session檔>'); process.exit(1); }
+  applyMemoryHits(parseSession(args[1]), false);
+  process.exit(0);
+}
 const dry = args[0] === '--dry-run';
 const file = args[dry || args[0] === '--run' ? 1 : 0];
-if (!file) { console.error('用法: fanout.mjs --audit | [--dry-run|--run] <session檔>'); process.exit(1); }
+if (!file) { console.error('用法: fanout.mjs --audit | [--dry-run|--run|--memhits] <session檔>'); process.exit(1); }
 run(file, dry).catch(e => { console.error(`fanout 失敗：${e.message}`); process.exit(1); });
