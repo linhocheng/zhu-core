@@ -1,13 +1,16 @@
 ---
 name: project-threads-radar
-description: Threads 爆文雷達——對外營運 SaaS，客戶連自己 Threads 帳號設關鍵字＋互動門檻爬爆文；爬蟲路線
+description: Threads 爆文雷達——內部兵工廠（餵自家 Trade 寫手軍團）；中央統管架構（帳號池＋團隊共享池＋隊級調度）2026-08-01 A/B 期上線
 metadata: 
   node_type: memory
   type: project
   originSessionId: 0df5b3f0-a1f0-45bc-a412-242728821924
 ---
 
-**threads-radar**＝對外收費 SaaS。客戶連自己的 Threads 帳號（託管瀏覽器登入，密碼不經我方）、設關鍵字＋讚/留言/轉發/分享門檻＋掃描週期，系統按互動數撈爆文進客戶專屬清單。repo `~/.ailive/threads-radar`（本機 git＋GitHub 私有 linhocheng/threads-radar，CI 綠）；GCP project `threads-radar-2026`（專屬隔離，計費綁 Firebase 付款帳戶——「我的帳單帳戶」project 配額已滿）。
+**threads-radar**＝**內部兵工廠（非對外 SaaS，2026-07-30 定位翻轉）**，餵自家 Trade 寫手軍團。**中央統管架構（2026-08-01 Adam 拍板、A/B 期一夜上線）**：①情報帳號眾籌進池——同事從自己電腦走 /connect 捐入（分身帳號非本命），捐後歸總公司、本人不再登、每帳號綁固定 IP；帳號數跟關鍵字量走不跟人頭走 ②成員只碰平台：通關碼登入、設自己關鍵字（設定跟人走）、看團隊共享爆文池 ③調度隊級：收全隊關鍵字併重（同字只掃一次）→帳號池輪值（最久沒上工優先）。repo `~/.ailive/threads-radar`（GitHub 私有 linhocheng/threads-radar，CI 綠）；GCP project `threads-radar-2026`（計費綁 Firebase 付款帳戶——「我的帳單帳戶」project 配額已滿）。
+- **A/B 期真身（2026-08-01，測試 55 案）**：去重鍵咽喉 `poolPostId=sha1(teamId|canonicalUrl)`（src/pool.ts）；併重/輪值純函數 src/dispatch.ts（**排序 code-point 不用 localeCompare——中文 collation 隨環境變**）；worker TEAM_ID（legacy CLIENT_ID 相容）；scan_status doc id＝teamId；ViralPost.matchedKeywords 陣列＋discoveredByAccountId；刪成員不刪池（爆文=團隊資產）；遷移腳本 web/scripts/migrate-team-{pool,dispatch}.mjs 冪等。
+- **⛔ 掃描暫停中（2026-08-01）**：IPRoyal CONNECT 402＝餘額/流量用盡（本機分層測證實，非故障）。Adam 決：儲值 vs 直接買靜態 ISP（D 期本要買，US$2.4-2.7/月/條）。錢進後台北 02:00 cron 自動復掃＋補 B 期終驗（收到貼文含 discoveredByAccountId）。
+- **C 期待做**：/connect 語意改「貢獻帳號進池」＋排隊鎖（一台雲端瀏覽器一次一人）＋admin 池管理；動工前給 Adam 過文案。**D 期待做**：多人並發實測、靜態 ISP 驗 ASN+flags、成本按關鍵字量重算——過閘才放同事。守則第1條已焊 /connect 警語＋勾選閘門（v0.16）。
 
 - **定位/路線**：Adam 拍板爬蟲路線＋客戶自備帳密（權責走服務條款）。互動數只有登入爬蟲拿得到（官方 API 不給別人貼文的讚數）。標準＝「只能比對手好」。
 - **架構（混合）**：客戶前台 Vercel｜**neko 登入瀏覽器＝VM**（帶畫面 WebRTC 互動、開機隨需）｜**爬蟲 worker＝Cloud Run Jobs**（批次、零常駐）｜Firestore 多租戶｜**選型地雷**：browserless 授權 SSPL 商用要付費→淘汰，改用 **neko(Apache-2.0 可商用)**＋原生 Playwright 爬蟲。
