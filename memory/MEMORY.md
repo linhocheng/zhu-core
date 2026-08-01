@@ -1,6 +1,6 @@
 - [天條：蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12 章標配默認全含（v1.2 增可理解性：機制對但沉默＝不存在）、調度清單點頭才動工、排後必帶觸發條件、債看利率不看年齡；BLUEPRINT 在 zhu-core/skills/platform-foundation/
 - [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是「當時規模」快照；加引擎/加租戶/cron合併必回頭重驗；串行合併要用當日總和算；geo 兩輪撞死60分 $5.43 學費
-- [threads-radar 爆文雷達平台](project_threads_radar.md) — 內部兵工廠中央統管：帳號眾籌進池+團隊共享爆文池+隊級調度A/B期上線(8/1)；掃描暫停=IPRoyal 402斷糧待Adam決儲值vs靜態ISP；C排隊鎖/D並發實測待做
+- [threads-radar 爆文雷達平台](project_threads_radar.md) — 內部兵工廠中央統管：帳號池+共享爆文池+隊級調度A/B期全收(8/1)；靜態ISP已綁(Sky Digital ASN灰帶續觀察)；C排隊鎖/D並發實測待做
 - [threads-radar 切角分析情報層(內部兵工廠)](project_threads_radar_angle_analysis.md) — 自家Trade寫手軍團工具;摩斯召喚已鑄;守則1已焊/connect閘門(8/1);切角schema未動工待一吋蛋糕(人肉拆一篇)
 - [膠水層錯誤訊息會誤導](feedback_glue_layer_errors_lie.md) — auth/credential/CDP/proxy 除錯：錯誤指向A真因在B；逐層扒真信號(decode claims/curl CDP/ss看介面/inspect tag)不讀code推；版本歪斜讓系統用內部一致auth stack；與模稜兩可信號天條孿生
 - [失敗路徑也要記帳（cost 隨心跳寫回）](skill_cost_on_heartbeat_failure_accounting.md) — 只在成功記帳＝燒最兇時刻預算閘全盲；SIGKILL 不走 catch，心跳帶帳才留得住；稽核用原始事件層重算
