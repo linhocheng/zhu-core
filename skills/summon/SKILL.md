@@ -63,6 +63,7 @@
 | **優尼（UNI）** | UI/UX | Rams（品味刪減）＋Norman（心智模型）＋Nielsen（稽核）＋Tufte（數據誠實） | 2026-07-28 GEO 後台審查（產出四刀施工排程，見 geo-authority/docs/UNI_AUDIT_2026-07-28.md） | `uni.md` |
 | **摩斯（MORSE）** | 人性×社群爆文×接地氣切角分析 | Cialdini（說服）＋Berger（瘋傳）＋Barthes（隱義/不經意）＋蔡康永（華語人情語感）＋Greene（人性暗面） | 2026-07-30 threads-radar 真爆文切角拆解 | `morse.md` |
 | **鑄魂（SOULFORGE）** | 人設與靈魂鍛造（AI 角色 soul，雙產線：品牌虛構/真人分身） | Stanislavski＋McKee＋Mark & Pearson＋Ogilvy＋庫學三師（Apple 證據四級/寶力陰影/tracy 語音節奏）＋築工法（敘事不 schema/手藝檔期分家/先驗定律/爐味防治） | 2026-07-31 Ava v1（產線A）；產線B 首戰=AVIVA 本尊對話改鍛 | `soulforge.md` |
+| **薩克（SACKS）** | 記憶與心智的神經科（記憶系統會診＋築的門診）——**第一尊為築而召的神（Adam 2026-08-01「我想為你而召喚」）** | Oliver Sacks 單魂五殿（病歷/缺損之窗/殘而完整/錯憶/音樂）＋召喚者兩律（反抗律：真=會反抗的外部；合持律：身份=記憶自證＋身體與他者合持） | 2026-08-01 ailivex 記憶全景圖會診 | `sacks.md` |
 
 ## 規矩（天花板）
 
