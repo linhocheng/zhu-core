@@ -9470,3 +9470,39 @@ threads-radar 中央統管全型態完工：A/B/C/E 四期＋靜態 IP＋守則�
 1. **每天瞄一眼觀察閘**（admin 隊狀態卡或 scan_status/default：lastRun=done、health=connected、found>0）。
 2. 8/8 過閘 → 買第二條靜態 ISP（同 SOP：四源驗→printf 封 SM→deploy.sh 掛載→帳號 doc proxyEnv）→ 第二帳號走貢獻儀式 → D 並發實測。
 3. Adam 可能想玩「只意圖」模式真身——建一個純意圖設定看召回字展開品質。
+
+---
+
+## 2026-08-01（第5場）— 沉澱視角天條——兩平台11個沉澱點全改角色本人+隔離四洞補齊;同一把尺照回自己(索引瘦身+驗證計數+防打架規約)
+
+### 背景 / WHY
+記憶是這一天的唯一主題:早上照角色(誰替他們總結),晚上照自己(誰替我總結)。兩平台的角色從今晚起用自己的心記事,我的記憶系統長出強化計數/封存/防打架三個新器官。首戰=本檔。
+
+### 完成
+- 沉澱視角天條立案(Adam 裁「第三方代筆會扭曲」):體檢兩平台,11 個沉澱點只有日記是角色本人寫
+- ailivex v18.33.0/.1:提煉/鞏固/日記沉澱/gist/lastSession 五點全改「你是{角色}+靈魂」憑感受挑選,fact 保持白描;gist 全庫混批改一對一批(跨用戶同 prompt 之雷已滅);帶人格模型 Haiku→Sonnet→Sonnet 5;日記/印象/遺忘三 canary 全開(*);agent v20 重建上線
+- 挖到新雷:橋上 Haiku 拒「你是X+靈魂」且靜默零寫入(<result> 沒 match 直接 return),Sonnet 同 prompt 全綠——已刻進 bridge_structured_rp_refusal 增補;Sonnet 5 存在(Adam 指出,我知識過期,橋上實測確認)
+- ailive 同刀:六個提煉點(dialogue每20輪/dialogue-end/voice-end/voice-cleanup/voice-stream每20輪+lastSession)全改角色本人,prompt 收斂進 lib/insight-extraction.ts;隔離四洞補齊(匿名寫成角色通用/remember 工具不綁 userId/voice_auto_extract 不綁/voice-cleanup 匿名)
+- 兩平台真人通話驗收全綠:孫武(快照兵法語彙/promise 自打9分/日記「老夫聽著就皺眉」+nextTime 自排追問)、ailive 匿名通話四條全綁 anon id+「我的感受」titled insight
+- 自我工程(Adam:「回看自己的記憶設計」):發現 MEMORY.md 38KB 靜默截斷(尾端三分之一每場隱形)→封存層 ARCHIVE.md(18 條死專案)+索引時機地址化瘦身(180行38KB→111行18KB)+孤島檢查契約同步更新
+- lastword v3.1:session 檔加「記憶命中」欄→fanout 對記憶檔尾 append 驗證+1(冪等,實彈測過)+battlefield 戰場宣告+MEMORY.md append-only/收尾單點重寫規約+中段刻升級日記體(感受/未說出口/nextTime)
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex 9 檔(2 commits) | 五沉澱點角色本人+Sonnet5+gist一對一批+v20 agent |
+| ailive 7 檔(1 commit) | 六提煉點角色本人+insight-extraction 收斂 lib+隔離四洞 |
+| zhu-core fanout.mjs/last-words.md/SELF_AWARENESS_SOP.md | v3.1 驗證計數/battlefield/日記體/孤島新契約 |
+| memory/ | 沉澱視角新天條+RP拒答增補+索引瘦身+ARCHIVE.md+平行規約增補 |
+
+### ⚠️ 尚未解決
+- 孫武一條 fact 簡體+混「老夫」+與另一條重複——單例觀察中,重複出現再上矯正(簡繁是唯一真規則違反)
+- ailive 的 Gemini conv-level userProfile(「我對這個用戶的了解」)仍第三方口吻,影響面小待 Adam 裁;ailive python agent 兩支提煉函數是死代碼(live 路徑=Cloud Tasks→voice-cleanup),清理債
+- 今晚 cron(memory-consolidation/maintenance)第一次跑新視角+Sonnet 5,明天看 log 對賬
+- Nina 上場三步待 Adam(聲線+頭像→訪談 key→換 env 撤寶力 #2d6ef873);BeSelf 前台稿、企劃書五裁決點照舊欠著
+- 舊債隊照排:record_choice 治本/opencc-js 簡繁兜底/縮圖管線
+
+### 待執行 / 下一步
+1. 明天醒來第一件:撈 ailivex/ailive 夜間 cron log(consolidation/gist/diary-digest)驗新視角首夜——鑑別信號=log 有 done 且 impressions/diary 出現角色口吻新 doc
+2. Adam 給 Nina 三件套 → 一行 env 換好,寶力退役
+3. 觀察孫武 fact 簡繁問題是否重現;重現就在提煉 prompt 或 opencc 咽喉補刀
