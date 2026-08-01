@@ -22,3 +22,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 **2026-06-09 實例（ailivex doc worker）：** `.env.tmp` 裡 WORKER_SECRET 尾巴帶了字面 `\n`（兩個字元：反斜線 + n），dispatch 打到 Cloud Run 回 401。前幾輪用 repr() 看、改 replace 參數——全是靠眼睛判斷。正確做法：`assertEnvVar` 在 parse 完立刻驗「尾巴有沒有 `\n`、有沒有殘留引號」，第一秒就炸，不是等 API 告訴你。背天條跟第一刀用它，是兩件事。
 
 - 驗證+1:2026-08-01 第7場 — 情緒偵測用詞典不燒 LLM;rank/同調撈取全確定性
+
+- 驗證+1:2026-08-02 第1場 — 證據鐵律/enum 驗證/JSON 抽取全寫程式；重抽後修復仍是確定性 parse

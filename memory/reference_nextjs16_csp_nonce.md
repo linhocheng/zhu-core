@@ -23,3 +23,5 @@ metadata:
 **外部資源要顯式放行**：用 `next/font/google` 自託管字型走 'self'（geo/UDN）；但若 globals.css `@import url('https://fonts.googleapis.com/...')`（ailiveX），要 `style-src` 加 `https://fonts.googleapis.com`，否則字型被擋掉 fallback。
 
 驗證用 headless 真瀏覽器，見 [[skill_csp_nonce_per_site_headless_verify]]。連帶：[[reference_bridge_v1messages_effort]] 無關，但同屬平台加固線 [[feedback_platform_foundation_ledger]]。
+
+- 驗證+1:2026-08-02 第1場 — 設計稿要外連 Google Fonts，當場想起 CSP 雷→next/font 自託管零開洞

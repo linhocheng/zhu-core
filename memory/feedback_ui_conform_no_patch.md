@@ -13,3 +13,5 @@ originSessionId: 416ce85e-c458-4bb5-811a-b38dc130d139
 **How to apply**：寫新畫面前先 `grep "className=\"screen\|topbar\|content\|page-head"` 同檔的 sibling component，照抄外框結構；要新的視覺元素（如本次的角度/主要 badge）就加進該專案的 CSS 檔（`client-v2.css`）成為設計系統的一部分，而非散在 JSX 的 inline style。
 
 **觸發信號**：「不能補丁」「要符合現有樣式」「跟其他頁不一致」；或自己正準備寫 `style={{...}}` 排版 / 自創一個沒在 CSS 檔出現過的 class 名。
+
+- 驗證+1:2026-08-02 第1場 — reskin 走「重寫 globals.css 保 class API」不逐頁補丁
