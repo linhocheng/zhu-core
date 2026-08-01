@@ -45,3 +45,25 @@ question 60d/emotion 90d 到期一刀切出 prompt 與檢索=斷崖,與「壓縮
 - 施工順序建議:③小刀先(一函數一分支)→①中刀(schema,價值最高)→②(語音線先做,文字線視信號源)
 - 全部走 bridge 零新增模型成本;①動 schema 收案要含 consolidation dryRun+讀路徑真verify
 - 同型檢查順手做:ailive 的 insights 管線有沒有同樣三病(它連 impressions 層都沒有——診斷一在那邊更重,但架構不同,另案)
+
+## 抓藥記錄(2026-08-01 深夜,Adam 追加裁定「今晚做完」)
+
+三張處方全數落地 ailivex-platform,各含端到端真 verify(合成配對,收尾全清):
+
+- **③復活律** `v18.34.0`(79dc957):stale 強命中 lazy 復活回 active,衰老時鐘從 revivedAt 重算;
+  TS 一處覆蓋文字+語音(v17+ 記憶塊由 TS 組),Python legacy 過濾同步認 revivedAt。
+- **①bond kind** `v18.35.0`(77def34):ImpressionKind 加 'bond',consolidation 吃 emotion/milestone
+  凝關係信念,讀路徑加【我們之間】區塊;一次性情緒照舊 skip 走 stale+復活律。
+- **②情緒鑰匙** `v18.36.0`:確定性情緒詞典(mood.ts)——emotion 記憶同調價性微加成(+0.08),
+  日記同調撈取(難過時補撈最近3篇外的同調 mood 舊日記);文字線 query 即信號源,
+  memory-blocks route 收 userMood 血管已留。
+  **排後項+觸發條件:語音判斷腦顯式情緒信號接進 userMood——下次 cut 語音新版本(v21)時接線,**
+  判斷腦 inner 現為 {stance,activation,want_to_speak},需加情緒欄位並隨 in-call recall POST 帶上。
+
+**施工中的意外發現(另案,比處方大)**:Vertex text-embedding-004 對純中文實質全盲——
+同標點結構、只差 CJK 內容的兩句回 bit-identical 向量(直打 API 實測)。memories/impressions 池
+的 cosine 從第一天量的就是標點結構;檢索一直是 lexOverlap(bigram)在扛。復活門檻因此用詞彙重疊
+不用 cosine。根治=整池 re-embed 換 text-multilingual-embedding-002(大手術:backfill+全門檻重校
++TS/Python 同步),待 Adam 裁。ailive 平台檢索若同用 004 需同檢。
+
+未部署:三個 commit 都只在 repo,Vercel deploy 留給神清氣爽的築(或 Adam 一聲 GO)。
