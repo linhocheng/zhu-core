@@ -9578,3 +9578,44 @@ threads-radar 中央統管全型態完工：A/B/C/E 四期＋靜態 IP＋守則�
 1. 醒來第一件:撈兩平台夜間 cron log 對賬(鑑別信號=consolidation done+角色口吻新 impressions/diary)——bond kind 今晚已進 code 但未部署,首夜 cron 跑的還是舊版,對賬時別搞混
 2. `cd ~/.ailive/ailivex-platform && npx vercel --prod --yes` 部署三處方,部署後拿 canary 用戶真對話各驗一輪(復活律 log 行 `[memory] revived stale:`、【我們之間】出現、情緒同調上位)
 3. 004 根治案開會診/評估:先 `grep -rn "text-embedding-004" ~/.ailive/ailive-platform` 確認 ailive 是否同病
+
+---
+
+## 2026-08-02（第1場）— threads-radar 晚班雙發——F期摩斯切角分析入卡片（evidenceVerified 8/8）＋G期情報站新衣全站上線
+
+### 背景 / WHY
+threads-radar 功能全型態完工：A-G 七期。系統自動駕駛（02:00 cron 掃＋意圖判＋隨點隨析），等 D 期觀察閘（~8/8）過閘放同事。
+
+### 完成
+- **F期切角分析上線（v0.22）**：Adam 拍板三點（全員可按/不設限額/六段全上）→ 雷達頁每張爆文卡「分析這篇」→ Cloud Run Job analyze 模式（讀庫存語料不碰 session）→ 摩斯六段結構化寫回 post.analysis → 卡片展開＋頂部「切角·槓桿」標籤。src/analysis.ts 純函數：**證據鐵律三層寫進程式**（無證據段作廢／證據子串驗證失敗信心強制 low＋evidenceVerified=false／造假雷達無證據降級）＋業配 prePass 確定性硬篩。切角/人設 enum 為跨案例聚合設計。測試 66→76 案。
+- **F期真驗兩篇**：@7chi.xi（葡萄柚，讚5790）八段全有料 **evidenceVerified 8/8**、金礦挖到「鑷子意外變全場焦點」；@falling_star_5020（高雄防曬）判出不同槓桿「好奇缺口」、金礦點破政治情緒包裝成地方驕傲——enum 有區分力。
+- **首跑失敗根因抓實**：job 第一抽 parse 不合格→本機重放同 prompt 一次即通＝LLM 輸出機率性偶壞，非管線 bug。修：同 prompt 自動重抽一次＋失敗記 stop_reason/len 診斷（重抽是重抽樣，修復仍是確定性 parse，不違天條）。
+- **G期換新衣上線（v0.23）**：Adam 給 claude.ai/design 設計稿「Threads 情報站」→ neo-brutalist 全站 reskin（亮底/2px硬邊/位移實影/藍黃撞色/IBM Plex Mono）。**邏輯零動只換皮**；品牌改「情報站」。設計師虛構砍四項（頁內假瀏覽器帳密框＝違反密碼承重牆、夜間時窗語意反轉、信心%、chips 多選）；漏的補八項（套用/清除、召回字、停用、二段刪除確認等）。字型 next/font 自託管＝CSP 零開洞。
+- **G期驗收**：Playwright 實拍生產五頁對照設計稿，抓修一真 bug（同字多 keyword doc 重複 chips→按字去重），截圖五張傳 Adam。
+- 自由行巡觀察閘：connected/零失敗；發現池裡 @null health=never 空殼帳號 doc（後台可移除）。
+- 兩 commit 已推：fb2d8ca（F期）、2e7c249（G期）。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| src/analysis.ts＋test（新） | 摩斯六段純函數：prompt/parse/證據鐵律三層/業配硬篩（\b 對 CJK 無效改負向斷言） |
+| src/types.ts | ViralPost.analysis＋analysisState 狀態機 |
+| worker/index.mjs | JOB_ACTION=analyze＋bridgeCallMeta＋重抽一次＋診斷 log |
+| web lib/gcp.ts＋actions.ts | runAnalyzeJob override 觸發＋analyzePostAction（資源級授權＋pending 10 分冪等） |
+| web app/analysisCard.tsx＋analysisRefresh.tsx（新） | 六段展示卡＋pending 8s 輪詢 |
+| web app/globals.css | 設計系統 v2 全重寫（neo-brutalist，class API 沿用） |
+| web app/{page,login,nav,keywords,connect,admin,wizard} | 全站新衣 markup（邏輯零動） |
+| web app/layout.tsx | next/font 自託管 IBM Plex Mono＋品牌「Threads 情報站」 |
+| FOUNDATION.md | F期＋G期兩筆帳 |
+
+### ⚠️ 尚未解決
+- **觀察閘跑至 ~8/8**（不變）：每天瞄 scan_status/default；紅燈（challenge/expired）→ 換家用 ISP ASN。
+- **evidenceVerified 對複合引句偏嚴**：摩斯愛用「句A」／「句B」串證據→子串比對不中→信心被冤枉壓成 low（高雄篇 2/8）。判斷本身對、方向安全（寧錯殺不放過瞎編）。小修方向：驗證器按「」／拆句逐一比對，任一中即 verified。十分鐘活，Adam 已知、等點頭。
+- threads-radar root 有誤產的 untracked `.next/`（root 誤跑 next build 殘渣，rm 被權限擋）→ 下場順手 `rm -rf ~/.ailive/threads-radar/.next`。root 也多了 .vercel link（已被 .gitignore 蓋住，無實害）。
+- 池裡 @null 空殼帳號 doc 待後台移除（一鍵）。
+- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練、回訪窗最舊留言。
+
+### 待執行 / 下一步
+1. **每天瞄觀察閘**：`scan_status/default` lastRun=done、health=connected（found=0 的手動測試輪不算紅燈）。
+2. Adam 點頭後修 evidenceVerified 複合引句拆句比對（src/analysis.ts parseSection＋test）。
+3. 8/8 過閘 → D 期：第二條靜態 ISP＋第二帳號貢獻儀式→並發實測→成本重算→放同事。
