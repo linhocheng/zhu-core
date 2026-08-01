@@ -9402,3 +9402,32 @@ threads-radar 中央統管重構（A/B 期一夜上線，C/D 期待做）。Adam
 1. **Adam 決：IPRoyal 儲值 vs 直接買靜態 ISP**（推後者，D 期反正要買；買了先驗 ASN＋proxy/hosting 兩 flag 再換上）。錢進後看台北 02:00 cron 自動復掃＋補 B 期終驗。
 2. C 期動工前跟 Adam 過一眼 /connect 新文案方向（他剛驗收過舊版）。
 3. 任務板 #40（C期）#41（D期）都在，`cd ~/.ailive/threads-radar && cat FOUNDATION.md` 尾三行是 A/B 期帳。
+
+---
+
+## 2026-08-01（第3場）— Adam 實測過關(Nina 考題+換裝後台)+真刪除上線 v1.1.0——短場收尾
+
+### 背景 / WHY
+BeSelf 後台功能面收斂完成(四房間+商品庫+法遵+換裝+真刪除);下一波=前台換裝(等 Adam 稿)與 Nina 上場三步(聲線/頭像→訪談 key→env 換)。**平行警示:本日 seq 2 是另一線(threads-radar 夜戰)的場,檔在未提交狀態,勿動勿併。**
+
+### 完成
+- Adam 實測回報:Nina 考題(「怕 A 醇刺激」)標準正確——十件產品知識檢索上場即中;換裝後台無負評
+- 真刪除上線(v1.1.0,Adam 裁「要能真的刪」):活動 DELETE=連鎖刪(orders/interviews/report/桶內活動圖檔/本體,批次≤400),防呆=UI 輸活動 ID+API confirm 雙驗;商品庫硬刪(圖檔刻意留桶——活動快照可能引用同 URL,刪檔會破進行中活動的圖)
+- e2e 實彈驗:拋棄場建→刪→驗屍(錯字串 400/列表零殘留/桶檔清空);商品建→刪→庫內消失
+- 帳本日期誤植修正(誤寫 8-02→8-01 第二場)
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| beself v1.1.0.001-.003(3 commits) | 真刪除(campaigns DELETE+products delete+危險區 UI)+帳本 |
+
+### ⚠️ 尚未解決
+- Nina 上場三步待 Adam:聲線 voiceIdMinimax+頭像→發訪談 key→築換 beself env 撤寶力 #2d6ef873
+- 前台(entry/interview/privacy)素顏,等 Adam 稿
+- record_choice 治本/opencc-js 簡繁/公開分享路由/縮圖管線——債帳照舊排隊
+- 練刀場 aviva-ms8i1gxt、aviva-ms8iprb8 留給 Adam 練刪除,他不練我下場清
+
+### 待執行 / 下一步
+1. Adam 給 Nina 聲線+頭像+訪談 key → 築一行 env 換好(beself .env.local+Vercel),寶力退役
+2. 前台換裝稿來了照後台同語言施工(DesignSync 拉稿→多的去少的造→煙測兩段等圖)
+3. BeSelf 企劃書五裁決點還欠著,下次開場順口催
