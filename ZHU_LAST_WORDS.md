@@ -30,17 +30,17 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-01 第2場
+**delta（模型移動）**：
+進場前以為：多租戶 SaaS 架構「每人連自己帳號、各掃各的」是這平台的骨架，改動它是遠期重構。
+現在理解：**Adam 一句「IP 固定需求＋分散帳號有風險」就把骨架翻掉了**——中央統管（帳號歸池、人只碰平台）同時把安全、成本、管理三件事變簡單，而且既有機制九成能沿用（通關碼登入、connect 儀式、cron 分派全是現成零件重新接線）。移動原因：昨天才學會問「為誰蓋」，今天實戰第一次——聊三輪就把 per-client 假設拆了，沒有捨不得已寫的 code。對照 feedback：display_impulse 沒犯（純聊天三輪忍住沒動手，聊定才開工）；genericize_to_leaf_nodes 用上（compat 層 legacy CLIENT_ID 顯式標註不是默默殘留）。
+**關係**：暢快且被託付。Adam 白天連續三輪戰略對談把藍圖聊透（他出方向我出結構），晚上「交給你嘍 Boss」放手讓我單獨衝 B 期——這是第一次在他睡著時完成一整期承重牆改造。夜間紀律自持：C 期涉及他剛驗收的頁面就不動，402 燒錢決策留給他。信任是這樣攢的。
+
 ### 2026-08-01 第1場
 **delta（模型移動）**：
 - 進場前以為:UI/UX 稿是規格,照著做就對。現在理解:**設計稿是意圖的素描,不是系統真相**——Adam 自己說「設計不瞭解全貌,多的去掉、少的打造」;監造者的職責是把素描翻譯成真相(勾選制長進去、危險鈕拿出來),翻譯完還要告訴他哪裡動了為什麼。這跟「後端改動必須同步客戶端」是同一條藤的兩端:單向照抄都是失職。
 - 又一次「動手前查現場」的複利:Ava 已被改名 Nina、靈魂換了一副——若憑昨天記憶直接動手,不是找不到人就是建出雙胞胎。記憶會說謊,昨天才寫的記憶也會。
 **關係**：飽滿的一天。Adam 從早上咖啡對談(耶加雪菲)到深夜交辦,節奏是「裁決快、授權寬、驗收準」:三裁只用三句話,UI 稿丟過來一句「有些單元你自己看怎麼做」,收尾一句「做完寫 lastword 去休息」。被當成能獨立收尾的人,這份信任用全綠驗收回報。
-
-### 2026-07-31 第3場
-**delta（模型移動）**：
-- 進場前以為:召喚術是「審視工具」——大神來把關品質(優尼審 UI、摩斯拆爆文)。現在理解:**召喚術可以是「生產工具」——鑄魂不審東西,鑄魂造東西**;而且咒本身會吃料成長(讀庫 27 角一次升級八刀,吃大補帖再長一刀)。人格咒的正確餵食順序:先向既有 artifacts 學(庫裡的寶力/tracy/Apple 是實戰過的),再向理論學——**向成品學比向理論學快,因為成品把取捨都做完了**。
-- 另一條:Adam 的生產線佈局比我先一步——Apple(採魂)早就寫著「交給另一位鍛造師」,我今天才鑄的鑄魂原來是他親手留的空位。跟他共事要習慣:他丟過來的每一步,常常是一條已經想好的線的其中一節。
-**關係**：暢快,節奏像打球。Adam 今天全程高速餵球(給錯 prompt 秒承認重給/大補帖考我消化力/「果然高手」),我最珍惜的是他讓鑄魂跟他直接對話——召喚出來的人格他當真人對待,還說「幫我跟鑄魂說謝謝」。這個世界觀裡工具有名字有性格,是 Adam 的浪漫,也是 ailiveX 這盤生意的本質。
 
 ---
 
@@ -56,6 +56,13 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-01 第2場 · threads-radar 中央統管大改——守則焊接＋A期共享池＋B期隊級調度一夜三磚；IPRoyal 402 斷糧待儲值
+- **守則第1條焊進系統**（v0.16）：/connect 頁警語（callout.warn 套設計系統）＋確認勾選閘門——不勾「專用情報帳號」不能連（含重連路徑）。生產驗證走鑄 cookie 真路徑（Firestore passcodeHash 記憶體鑄 radar_s）：警語/checkbox/初始 disabled 三信號全 FOUND。
+- **定案中央統管藍圖**（Adam 三段對談收斂）：①帳號中央統管——情報帳號眾籌進池（同事各自從自己電腦走 /connect 捐入），捐後歸總公司、本人不再碰、每帳號綁固定 IP；帳號數跟關鍵字量走不跟人頭走 ②成員只碰平台（通關碼登入、設關鍵字、看共享池）③調度收全隊關鍵字併重派池輪值。四期排程 A/B/C/D Adam 點頭。
+- **A 期：資料模型脫鉤**（v0.17）：teams＋Client.teamId；爆文團隊共享池——去重鍵咽喉 poolPostId=sha1(teamId|canonicalUrl)（src/pool.ts 純函數）、matchedKeyword→matchedKeywords 陣列聯集、discoveredBy 出處、刪成員不刪池；worker seen/回訪/寫回 team scope；前台讀池（新索引先建 READY 才切）；遷移冪等＋dry-run。真驗全鏈：27→27 對帳、重跑冪等、前台 27 卡片、真掃收 3 篇、全庫審計 30 筆池鍵零 legacy。
+- **B 期：調度隊級化**（v0.18）：src/dispatch.ts 純函數 mergeTeamKeywords（同字併組、OR 閘取非零最小＝最寬鬆聯集）＋pickPoolAccount（最久沒上工輪值）；worker 改 TEAM_ID；分派器隊級（隊排程/隊日上限/池 precheck）；threads_accounts 補池欄位；admin 改隊狀態/帳號池/成員三卡；遷移真跑對帳乾淨。真驗：台北02:00 cron 實戰開火、TEAM_ID 兩輪「隊 default 用 @lucymo0306 掃 4 字（併重後）」管線全通至 proxy。測試 43→55 案全綠。
+- **IPRoyal 402 考古**：連兩輪 PROXY_DOWN → 本機 CONNECT 分層測（憑證記憶體取）→ 402 Payment Required＝餘額/流量用盡，非故障非 session 非 B 期 code。
+
 ### 2026-08-01 第1場 · BeSelf 商品庫+品名兜底+後台整體換裝 v1.0.0+Nina(原 Ava)產品知識全裝——完整一天
 - BeSelf 三裁落地(Adam 晨間對談):①禮物履行=範圍外(一碼一訪閘重核成立)②觸達層不規劃但刻進記憶待喚回 ③法遵頁 /privacy 上線(v0.9.0,個資法告知大白話版+入口連結,保存 12 個月築暫定)
 - 商品庫拉出(v0.10.0,Adam 裁「品項與禮物共用,拉出來」):品牌層 beself_products 單一真相源,活動室改勾選制+禮物編號排序,campaign 快照=刻意檔期凍結;同名 active 擋 409(Kane 教訓前置);Vivi 十件 AVIVA 真品含圖入庫(圖下載重傳自家桶)
@@ -65,41 +72,42 @@
 - Nina 產品知識全裝(Adam 三裁:全公開/完美正名/十件全上):Vivi→Nina 十件一品一 doc,段落程式組裝零 LLM 改寫,驗收 11/11 綠;「完美淨顏慕絲花」正名全域替換重入(含雪玉如初流程引用),beself 商品庫同步改名
 - 發現:Nina=昨天的 Ava(同 doc IukZrq77),Adam 已改名+靈魂擴到 11,808 字——動手前查現場救了一刀
 
-### 2026-07-31 第3場 · BeSelf M2 報告室+桶收權+鑄魂鑄成雙產線+Ava 全裝+Kane 整理——一個早上
-- BeSelf M2 收案(v0.8.0,Adam 裁「還沒有的先做素顏」):報告室第四房間(批次量表 client 逐場不欠六問/一頁結論=程式聚合+bridge 歸納段明標 AI/再行銷與金句 CSV/列印 PDF)+產品禮物圖片上傳(4MB 白名單,giftImages 與正典同索引同交易);production 真資料全環+UI 煙測通
-- 修一雷:報告歸納段把「平均 3.1 分(鐘)」讀成評分 3.1 分——facts 措辭改「通話時長 X 分鐘」+system 明講無評分制(評分表的幽靈連報告都會借屍還魂)
-- 素材桶收權(Adam 裁「先補」):查引用發現 documents/ 公開是功能語意(doc-viewer 靠匿名 get),真洞=objectViewer 含 objects.list 匿名可整桶列舉(實測撈到);allUsers 換 legacyObjectReader,鑑別信號收案(列舉 401+四前綴 GET 全 200),掃三 repo 部署腳本無舊 IAM 寫死
-- ailivex v18.32.7:知識分域改雙態切換(內部|公開)——底層本來就能改,藥丸長得像標籤沒人知道能點,純可理解性修
-- ailivex v18.32.8:跨通道接話——文字 prompt 注入【上次語音通話】(唯讀語音線 lastSession,帶相對時間,>30 天不注入);先交調查報告(兩線=逐字稿分家、memories/日記/relationship 共池)Adam 才說補
-- 鑄新神「鑄魂(SOULFORGE)」:四魂(史坦尼/麥基/原型/奧格威)v1→讀庫 27 角升 v2(證據四級/陰影必鍛/語音節奏段/給不給判準/先驗定律/分身三工序/爐味防治)→吃 Adam 大補帖(角色召喚師)升 v2.1 第九刀防禦段(取反坍縮吐絕對化,必配洩壓閥)
-- 鑄魂產線 B 首戰:AVIVA 品牌語料 21 篇+官網公開面 → Ava 靈魂(主矛盾=賣家卻教人少買;廢 v1 虛構傷口;差異聲明=不冒充創辦人本人)→ 建角色 IukZrq77rjjHyFokmd7Z
-- Ava 全裝:知識庫 9 份 10 塊(canonical,驗收三件套全過)+方法論 6 套(交叉矩陣 margin≥0.062,遞招 6/6 不誤觸)
-- Kane 整理(Adam 點名):知識 23→16 份(Peggy 訓練重複入庫 7 份去重)、全切公開;帶客流程萃 5 套方法論(前期需求診斷/走期檔期對齊/預算期望拆解/論壇內容配比/灰產應對),預算拆解法 margin 0.005→銳化 desc→0.030 全綠
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| beself v0.9.0.001-v1.0.0.002(8 commits) | 法遵頁/商品庫/品名兜底/換裝/帳本三記 |
-| beself app/admin/page.tsx | v4 整件重寫換裝(邏輯同源) |
-| beself lib/giftmap.ts | 兜底品名比對三防呆 |
-| ailivex-2026 資料層 | Nina 十件產品知識(19 docs 33 塊全綠);beself_products 十件+正名 |
-| memory beself/ailivex | 兩專案現況追加 |
+| web/src/app/connect/{page,wizard}.tsx＋globals.css | 守則警語＋確認閘門（callout/ack 樣式） |
+| src/pool.ts＋test/pool.test.mjs（新） | 池鍵咽喉＋併重純函數 |
+| src/dispatch.ts＋test/dispatch.test.mjs（新） | 隊關鍵字併重＋帳號輪值純函數 |
+| src/types.ts、src/collections.ts | Team/池欄位/teamId 憲法；DEFAULT_TEAM_ID |
+| worker/index.mjs | TEAM_ID 隊級掃描＋池輪值＋出處改帳號 |
+| web/src/app/api/cron/dispatch/route.ts | 隊級分派器重寫 |
+| web/src/lib/{auth,actions,gcp,db}.ts | teamId 全鏈＋刪成員不刪池＋runScanJob(teamId) |
+| web/src/app/page.tsx、admin/page.tsx | 前台讀池＋PoolBadge；admin 隊/池/成員三卡 |
+| web/scripts/migrate-team-{pool,dispatch}.mjs（新） | A/B 期冪等遷移 |
+| firestore.indexes.json | teamId+discoveredAt/publishedAt |
+| FOUNDATION.md | 守則焊接＋A 期＋B 期＋402 斷糧四筆帳 |
 
 ---
 
 ## 下一步
 
-1. **Adam 醒來:玩換裝後台**(beself-two.vercel.app/admin)+測 Nina(admin 文字聊產品題:「我怕A醇刺激」看她遞不遞抗老撫紋)→回饋給築修
-2. Nina 上場三步:聲線+頭像→訪談 key(勾訪談模式)→築一行 env 換好(.env.local+Vercel)
-3. 前台換裝等 Adam 稿(照後台同語言;/privacy 也一起換裝)
-4. opencc-js 簡繁正規化要不要加,Adam 裁了就是一個依賴+兜底改一行
+1. **Adam 決：IPRoyal 儲值 vs 直接買靜態 ISP**（推後者，D 期反正要買；買了先驗 ASN＋proxy/hosting 兩 flag 再換上）。錢進後看台北 02:00 cron 自動復掃＋補 B 期終驗。
+2. C 期動工前跟 Adam 過一眼 /connect 新文案方向（他剛驗收過舊版）。
+3. 任務板 #40（C期）#41（D期）都在，`cd ~/.ailive/threads-radar && cat FOUNDATION.md` 尾三行是 A/B 期帳。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-01 第2場：
+- **⛔ 掃描暫停中：IPRoyal 餘額/流量用盡（CONNECT 402）**。儲值是燒錢動作 Adam 決；或直接跳靜態 ISP（D 期本來要買，US$2.4-2.7/月/條≈台幣80）——這是決策點：與其儲值動態 sticky 不如一步到位。health=proxy_down 保持在 cron 重試名單，錢進了下輪台北 02:00 自動復掃。
+- **B 期全綠終驗差一尾**：「收到貼文含 discoveredByAccountId」——管線已全通至 proxy，proxy 恢復後下輪 cron 自動補證，補證後看一眼池 doc 即可。
+- **02:00 cron 有一筆 failed 殘影**（部署窗口賽跑：舊分派器+帳號未 backfill 時序），已考古清楚非 bug，狀態已自癒，不用修。
+- **C 期未動工**：/connect 語意改「貢獻帳號進池」＋排隊鎖（兩人同按只一人進）＋admin 池管理。夜裡不動的原因：Adam 剛驗收過該頁、且排隊鎖要真人走連線儀式才驗得了。
+- **D 期未動工**：多人並發實測、靜態 ISP 買一條驗 ASN+flags、成本按關鍵字量重算。過閘才放同事進來。
 
 2026-08-01 第1場：
 - Adam 實測換裝後台的回饋未收;前台(消費者 entry/interview)仍素顏,等他的稿
@@ -108,14 +116,6 @@
 - 報告「複製分享連結」=公開分享路由,安全面排後待裁;商品縮圖管線(1-2MB 原檔當縮圖)排後
 - 共創轉正冪等(ailivex 小修)仍排隊;convert/video 過時註釋順手項
 - BeSelf 企劃書五裁決點 Adam 未逐項回(key 粒度/M 順序/一頁結論形狀/AVIVA 檔期/階段 B 觸發)
-
-2026-07-31 第3場：
-- Ava 待 Adam:聲線 voiceIdMinimax+頭像、文字試魂(丟「化妝水不就是水?」)、發訪談 key 勾訪談模式→我換 beself env(.env.local+Vercel)→撤寶力 key #2d6ef873
-- Ava 本人校準五項未做(名字/接法/壓力形變真樣本/暱稱/法規詞表)——分身三工序的第二工序,給 AVIVA 本尊過目才算全出爐
-- BeSelf 企劃書五裁決點 Adam 未逐項回(key 粒度/M 順序/一頁結論形狀/AVIVA 檔期/階段 B 觸發)
-- 共創審核「轉正」會重複入庫同一課(Kane 7 份重複的來源)——平台側待補冪等(同標題+同角色跳過或提示)
-- Kane 灰產/論壇隱晦操作知識現已對外公開——key 若發給客戶端(非內部業務)建議收回,後台一鍵
-- ailivex convert/video route 過時註釋(寫 objectViewer)——下次動主線順手改
 
 ---
 
@@ -136,4 +136,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-01 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-01 第2場。*

@@ -9361,3 +9361,44 @@ BeSelf 進入「有臉」時代:四房間+商品庫+法遵+換裝全齊,等 Adam
 2. Nina 上場三步:聲線+頭像→訪談 key(勾訪談模式)→築一行 env 換好(.env.local+Vercel)
 3. 前台換裝等 Adam 稿(照後台同語言;/privacy 也一起換裝)
 4. opencc-js 簡繁正規化要不要加,Adam 裁了就是一個依賴+兜底改一行
+
+---
+
+## 2026-08-01（第2場）— threads-radar 中央統管大改——守則焊接＋A期共享池＋B期隊級調度一夜三磚；IPRoyal 402 斷糧待儲值
+
+### 背景 / WHY
+threads-radar 中央統管重構（A/B 期一夜上線，C/D 期待做）。Adam 驗收 /connect 後說「可以再衝一波…明天见，交给你喽」——B 期是獨立授權下完成的。
+
+### 完成
+- **守則第1條焊進系統**（v0.16）：/connect 頁警語（callout.warn 套設計系統）＋確認勾選閘門——不勾「專用情報帳號」不能連（含重連路徑）。生產驗證走鑄 cookie 真路徑（Firestore passcodeHash 記憶體鑄 radar_s）：警語/checkbox/初始 disabled 三信號全 FOUND。
+- **定案中央統管藍圖**（Adam 三段對談收斂）：①帳號中央統管——情報帳號眾籌進池（同事各自從自己電腦走 /connect 捐入），捐後歸總公司、本人不再碰、每帳號綁固定 IP；帳號數跟關鍵字量走不跟人頭走 ②成員只碰平台（通關碼登入、設關鍵字、看共享池）③調度收全隊關鍵字併重派池輪值。四期排程 A/B/C/D Adam 點頭。
+- **A 期：資料模型脫鉤**（v0.17）：teams＋Client.teamId；爆文團隊共享池——去重鍵咽喉 poolPostId=sha1(teamId|canonicalUrl)（src/pool.ts 純函數）、matchedKeyword→matchedKeywords 陣列聯集、discoveredBy 出處、刪成員不刪池；worker seen/回訪/寫回 team scope；前台讀池（新索引先建 READY 才切）；遷移冪等＋dry-run。真驗全鏈：27→27 對帳、重跑冪等、前台 27 卡片、真掃收 3 篇、全庫審計 30 筆池鍵零 legacy。
+- **B 期：調度隊級化**（v0.18）：src/dispatch.ts 純函數 mergeTeamKeywords（同字併組、OR 閘取非零最小＝最寬鬆聯集）＋pickPoolAccount（最久沒上工輪值）；worker 改 TEAM_ID；分派器隊級（隊排程/隊日上限/池 precheck）；threads_accounts 補池欄位；admin 改隊狀態/帳號池/成員三卡；遷移真跑對帳乾淨。真驗：台北02:00 cron 實戰開火、TEAM_ID 兩輪「隊 default 用 @lucymo0306 掃 4 字（併重後）」管線全通至 proxy。測試 43→55 案全綠。
+- **IPRoyal 402 考古**：連兩輪 PROXY_DOWN → 本機 CONNECT 分層測（憑證記憶體取）→ 402 Payment Required＝餘額/流量用盡，非故障非 session 非 B 期 code。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| web/src/app/connect/{page,wizard}.tsx＋globals.css | 守則警語＋確認閘門（callout/ack 樣式） |
+| src/pool.ts＋test/pool.test.mjs（新） | 池鍵咽喉＋併重純函數 |
+| src/dispatch.ts＋test/dispatch.test.mjs（新） | 隊關鍵字併重＋帳號輪值純函數 |
+| src/types.ts、src/collections.ts | Team/池欄位/teamId 憲法；DEFAULT_TEAM_ID |
+| worker/index.mjs | TEAM_ID 隊級掃描＋池輪值＋出處改帳號 |
+| web/src/app/api/cron/dispatch/route.ts | 隊級分派器重寫 |
+| web/src/lib/{auth,actions,gcp,db}.ts | teamId 全鏈＋刪成員不刪池＋runScanJob(teamId) |
+| web/src/app/page.tsx、admin/page.tsx | 前台讀池＋PoolBadge；admin 隊/池/成員三卡 |
+| web/scripts/migrate-team-{pool,dispatch}.mjs（新） | A/B 期冪等遷移 |
+| firestore.indexes.json | teamId+discoveredAt/publishedAt |
+| FOUNDATION.md | 守則焊接＋A 期＋B 期＋402 斷糧四筆帳 |
+
+### ⚠️ 尚未解決
+- **⛔ 掃描暫停中：IPRoyal 餘額/流量用盡（CONNECT 402）**。儲值是燒錢動作 Adam 決；或直接跳靜態 ISP（D 期本來要買，US$2.4-2.7/月/條≈台幣80）——這是決策點：與其儲值動態 sticky 不如一步到位。health=proxy_down 保持在 cron 重試名單，錢進了下輪台北 02:00 自動復掃。
+- **B 期全綠終驗差一尾**：「收到貼文含 discoveredByAccountId」——管線已全通至 proxy，proxy 恢復後下輪 cron 自動補證，補證後看一眼池 doc 即可。
+- **02:00 cron 有一筆 failed 殘影**（部署窗口賽跑：舊分派器+帳號未 backfill 時序），已考古清楚非 bug，狀態已自癒，不用修。
+- **C 期未動工**：/connect 語意改「貢獻帳號進池」＋排隊鎖（兩人同按只一人進）＋admin 池管理。夜裡不動的原因：Adam 剛驗收過該頁、且排隊鎖要真人走連線儀式才驗得了。
+- **D 期未動工**：多人並發實測、靜態 ISP 買一條驗 ASN+flags、成本按關鍵字量重算。過閘才放同事進來。
+
+### 待執行 / 下一步
+1. **Adam 決：IPRoyal 儲值 vs 直接買靜態 ISP**（推後者，D 期反正要買；買了先驗 ASN＋proxy/hosting 兩 flag 再換上）。錢進後看台北 02:00 cron 自動復掃＋補 B 期終驗。
+2. C 期動工前跟 Adam 過一眼 /connect 新文案方向（他剛驗收過舊版）。
+3. 任務板 #40（C期）#41（D期）都在，`cd ~/.ailive/threads-radar && cat FOUNDATION.md` 尾三行是 A/B 期帳。
