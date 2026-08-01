@@ -8,7 +8,7 @@
 - [天條:驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離;姊妹=feedback_manual_cloud_change_sync_deploy_script(手動改雲端同日改部署腳本)
 - [天條:Cloud Run firebase-admin 一律走 ADC](feedback_cloudrun_firebase_adc.md) — cert(sa) Premature close;deploy 不注入 SA JSON
 - [容量常數會過期](feedback_capacity_constants_expire.md) — timeout/批量上限是當時規模快照;加引擎/租戶/cron 合併必回頭重驗
-- [threads-radar 爆文雷達平台](project_threads_radar.md) — 帳號池+共享池+隊級調度 A/B 期收(8/1);C 排隊鎖/D 並發待做;切角情報層=project_threads_radar_angle_analysis(待一吋蛋糕)
+- [threads-radar 爆文雷達平台](project_threads_radar.md) — A/B/C/E/F 期全收(8/1,F=摩斯切角分析入卡片);D 觀察閘跑至~8/8;規劃背景=project_threads_radar_angle_analysis
 - [膠水層錯誤訊息會誤導](feedback_glue_layer_errors_lie.md) — auth/CDP/proxy 除錯:錯誤指向 A 真因在 B,逐層扒真信號不讀 code 推
 - [失敗路徑也要記帳](skill_cost_on_heartbeat_failure_accounting.md) — SIGKILL 不走 catch,心跳帶帳才留得住
 - [本機接力正姿:nohup 脫鉤+Monitor 盯 log](skill_detached_relay_nohup_monitor.md) — 背景任務活不過幾分鐘;腳本必冪等;正式路徑不依賴筆電
@@ -98,6 +98,7 @@
 - [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 走 UI 同一條讀路徑才是產品真相
 - [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 走 Vertex 不走 Gemini key;-001/輪詢/首尾幀 8 秒
 - [混合檢索融合兩個坑](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域坍縮用 rank-based RRF;未命中不給名次貢獻
+- [Vertex 004 對純中文全盲](reference_vertex_004_cjk_blind.md) — 同標點結構回同一顆向量;ailivex memories 池 cosine=安慰劑,靠 lex 在扛;中文語料一律 multilingual-002
 - [Cloud Run 版本退役紀律](skill_cloudrun_version_retirement.md) — LiveKit agent 降 0=聾不是慢;退役前先查真實引用零引用才退(feedback_verify_references_before_retiring)
 - [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — 按呼叫者分類上鎖;curl body 才算驗
 - [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同 embedding 對不上;gist 三雷

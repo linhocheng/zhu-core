@@ -58,3 +58,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 - 這條是執行層套路：把 dry-run 落地成 verify script。
 
 - 驗證+1:2026-08-01 第5場 — 兩平台驗收全靠本機實彈 replay 腳本,零遠端等待
+
+- 驗證+1:2026-08-01 第7場 — 三份 verify 全是本機真模組+真 Firestore 重放,沒等部署 cycle
