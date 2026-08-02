@@ -9684,3 +9684,39 @@ threads-radar 生產事故響應完畢，系統回自動駕駛（02:00 cron）�
 1. **接手先問 Adam 那三個尾巴的方向**：①neko TLS 列不列 D 期（開放前必修）②capture handle 要不要補顯示 ③@null 空殼帳號要不要清。
 2. D 期開放前驗證閘（task #41）加兩必修：neko TLS＋capture 韌性（逾時/重生）。
 3. 每天瞄觀察閘 scan_status/default（lastRun=done、found>0）。
+
+---
+
+## 2026-08-02（第4場）— 首夜對賬雙平台+三處方上線+ailive 拒答汙染清創(117條/兩個月慢性病一早根治)
+
+### 背景 / WHY
+薩克處方上線日+ailive 信念層清創。對賬本來只是點名,結果點出兩個月的慢性病——對賬的價值再次自證。
+
+### 完成
+- 首夜 cron 對賬:ailivex 全綠(12 新印象角色口吻/19 情節消化/7 gist;日記 0=無對話,正常);ailive 管線有跑(04:01 靈魂契合度等角色口吻產出)
+- 對賬揪出 ailive 拒答汙染:昨夜 6 條 insights 有 4 條是模型拒答文落庫
+- 部署 ailivex 三處方(jhcy5rfxe,alias 已切)+prod 路徑真驗:種 stale 打生產 memory-blocks route,deployed code 真把它復活寫回 DB(status→active+revivedAt)
+- ailive 手術(12b136a,已 deploy Ready):根因=sleep-engine「夢境自我洞察」唯一裸寫 LLM 原文落庫點+Haiku 打人格 prompt(昨天才刻的雷,姊妹平台漏掃);修=新 llm-refusal.ts 確定性拒答偵測釘裸寫點(真壞例好例對照驗過)+四個帶人格生成 call 升 Sonnet 5(橋吃到飽)
+- 清創:全庫掃 2011 條命中 117 條拒答(最早 6/5,慢性兩個月)→隔離 platform_insights_quarantine+本地備份 ~/.ailive/_rollback/insights_pollution_backup_20260802.json→刪原 doc→全庫重掃殘留 0
+- 字串時間戳裁決:platform_insights.createdAt 全庫 ISO 字串,不遷移立規約,雷刻進 ailive repo CLAUDE.md(Date 物件比對靜默回空,今早差點誤報「昨夜沒跑」)
+- 記憶增補:拒答家族第三張臉(裸寫落庫=信念汙染)進 feedback_bridge_structured_rp_refusal
+- 答 Adam remote control 問題:/rc 打一次開再打一次關(claude-code-guide 代理查官方文件)
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailive src/lib/llm-refusal.ts(新) | 確定性拒答偵測(前綴錨定黑名單) |
+| ailive src/lib/sleep-engine.ts | 裸寫點加攔截+四個人格 call Haiku→Sonnet 5 |
+| ailive CLAUDE.md | 技術教訓:ISO 字串時間戳規約+isLLMRefusal 必過 |
+| memory feedback_bridge_structured_rp_refusal | 增補二:拒答第三張臉 |
+
+### ⚠️ 尚未解決
+- ailivex consolidation prompt 缺「一律繁體」行(簡體滲入第二例:「AI人权协会」印象)——一行 prompt 的小刀,未動
+- 004 中文盲根治案(memories 整池 re-embed 換 multilingual-002)待 Adam 裁;ailive 檢索是否同用 004 未驗
+- 處方②語音線 userMood 排後項:觸發條件=下次 cut 語音 v21
+- emotionTag 假中台欄位(有讀無寫)另案
+
+### 待執行 / 下一步
+1. 明晚對賬看兩個生產行為信號:①ailivex consolidation 首次凝出 kind='bond' 印象+【我們之間】進 prompt ②ailive sleep_time 新洞察零拒答且有正常內容(guard+Sonnet 5 的生產證明)
+2. 順手小刀:ailivex src/lib/consolidation.ts prompt 加「印象句一律繁體中文」一行,commit+deploy
+3. 004 案要開工先 `grep -rn "text-embedding-004" ~/.ailive/ailive-platform` 驗 ailive 是否同病,再估 backfill 方案給 Adam
