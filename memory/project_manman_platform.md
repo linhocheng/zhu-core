@@ -17,7 +17,7 @@ metadata:
 
 **測試租戶**：tenant 1＝Adam（她叫小狐狸、稱呼 Adam）。
 
-**未蓋**：打電話（LIFF+LiveKit 既有 project+fork ailivex agent v21——建材全齊）、[SCHEDULE]/[PROMISE]/[NOTE] 抽取器（她會吐標籤系統不接）、worker（履約/關懷/日記/夢）、記憶管線（傳記長不出來）、FOUNDATION.md 地基帳本（調度清單提過未點頭；payments/create 無鎖、env fail-quiet、CI 未接——**對外開放前必補**）、LINE Pay（Adam 指示押後）、啟元儀式吞原文根治、新戶贈點+admin 補點端點。
+**未蓋**：打電話（**2026-08-02 選型定案：抄本尊 LIFF+WebSocket 通話設計，ailivex fork 作廢**——設計真相源在 `baobaoagi-cpu/plm` repo：`minimax-duplex-voice-spec-v1.0.md`＋`docs/legacy-voice-call-audit.md` 等四份；等 Adam 向 waitin 拿 legacy 分支 `Mindomind-voice-call-package`@2ae148d；抄時必帶三修正：generation ID 防幽靈音訊、LIFF idToken 伺服器驗證、講話時麥克風不關；零 LiveKit 零常駐費；repo 內殘留作廢 agent/ 目錄待刪）、[SCHEDULE]/[PROMISE]/[NOTE] 抽取器（她會吐標籤系統不接）、worker（履約/關懷/日記/夢）、記憶管線（傳記長不出來）、FOUNDATION.md 地基帳本（調度清單提過未點頭；payments/create 無鎖、env fail-quiet、CI 未接——**對外開放前必補**）、LINE Pay（Adam 指示押後）、啟元儀式吞原文根治、新戶贈點+admin 補點端點。
 
 **Why**：Adam 的節奏是功能先行給他摸全套、地基帳上記債跟後補；樣品屋天條的「最晚灌注點」是對外開放前，不是他自己測之前。
 
