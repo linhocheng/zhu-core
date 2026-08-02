@@ -33,3 +33,5 @@ Veo 3.1 影片生成（2026-07-22 UDN 影音庫實戰全驗證）。
 **觸發信號**：要接影片生成 API、看到 `-preview` 模型名 404、`inlineData isn't supported`、Vertex operation 不知道怎麼 poll。
 
 相關：[[cloudrun-firebase-adc]]、[[deterministic-work-belongs-in-code]]、[[cost-on-heartbeat-failure-accounting]]
+
+- 驗證+1:2026-08-02 第8場 — 期0照抄實戰形狀（GA模型名/欄位/輪詢），零踩雷

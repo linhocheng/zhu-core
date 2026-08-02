@@ -22,3 +22,5 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 ```
 
 **證據：** 2026-04-27 ailive 即時撥號上雲時親踩，記在 `~/.ailive/zhu-core/docs/LESSONS/LESSONS_20260427.md` 第 1、2 條。
+
+- 驗證+1:2026-08-02 第8場 — 寫進DreamF藍圖步驟2預防

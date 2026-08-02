@@ -94,6 +94,7 @@
 - [共用 loader 的 NameError 被吞→全版本靜默斷靈魂](feedback_shared_loader_nameerror_silent_soulless.md) — log 簽名=using fallback+soul=244
 - [語音讀網址「讀不到」三根因](feedback_voice_url_read_datacenter_block_and_page_agent_split.md) — 機房 IP 擋/base 頁非 vN 頁/plugin 空格 400
 - [Task Harness 系統](project_task_harness.md) — 三斷路器+bridge 接線;進 harness 不是成為 harness
+- [製片工廠平台（暫名）](project_film_factory.md) — AI 製片公司獨立平台;圓桌二場定案、BUILD_SPEC v1 成卷;等 Adam 三拍板(命名/地基/期0 GO)
 - [議題工作台平台(UDN NEWS)](project_udnnews_platform.md) — ~/Documents/UDN NEWS/platform/;deploy 手動 builds submit;文稿階段必可編輯(feedback_udnnews_drafts_must_be_editable);上傳管線四雷(skill_user_upload_pipeline_pitfalls)
 - [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 走 UI 同一條讀路徑才是產品真相
 - [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 走 Vertex 不走 Gemini key;-001/輪詢/首尾幀 8 秒

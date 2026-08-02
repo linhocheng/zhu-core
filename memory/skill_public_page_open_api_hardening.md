@@ -24,3 +24,5 @@ metadata:
 **觸發信號**：middleware matcher 只寫頁面路徑；付費/寫入 route handler 開頭沒有任何 auth 檢查；「這頁要登入」被當成「這功能被保護」。
 
 相關：[[feedback_backend_client_must_sync]]（改 API 契約要同步客戶端——這裡是加 auth 要同步前端帶 cookie）、[[feedback_flagged_risk_must_be_verified]]（curl 實測 body 才算驗，不看頁面）。
+
+- 驗證+1:2026-08-02 第8場 — digest/hit cron與action全自驗

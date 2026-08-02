@@ -15,3 +15,5 @@ originSessionId: 416ce85e-c458-4bb5-811a-b38dc130d139
 **觸發信號**：「不能補丁」「要符合現有樣式」「跟其他頁不一致」；或自己正準備寫 `style={{...}}` 排版 / 自創一個沒在 CSS 檔出現過的 class 名。
 
 - 驗證+1:2026-08-02 第1場 — reskin 走「重寫 globals.css 保 class API」不逐頁補丁
+
+- 驗證+1:2026-08-02 第8場 — threads命中回報照details/comments既有慣例蓋

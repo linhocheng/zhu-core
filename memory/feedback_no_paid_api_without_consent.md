@@ -22,3 +22,5 @@ originSessionId: 93d13367-b540-441d-93b5-380ccee8b8c1
 - 看到 `Your credit balance is too low` / 任何 billing 401/400 —— 代表已經在燒真錢了，立刻停並回報。
 
 - 驗證+1:2026-08-02 第3場 — 不擅自去 IPRoyal 儲值動態 proxy，回報 Adam 讓他決定
+
+- 驗證+1:2026-08-02 第8場 — Veo燒錢在Adam「去測吧」授權後才動

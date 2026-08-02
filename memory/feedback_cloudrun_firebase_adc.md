@@ -38,3 +38,5 @@ Cloud Run service 的 `--service-account=<sa>@` 決定 ADC 身份，Storage 權�
 - 說「本機測試通了但 Cloud Run 上 Storage 失敗」
 
 - 驗證+1:2026-08-02 第6場 — GCS 上傳走 metadata server ADC，不注入 SA JSON
+
+- 驗證+1:2026-08-02 第8場 — Nano Banana走Vertex+ADC零新密鑰
