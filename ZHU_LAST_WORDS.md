@@ -30,16 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-02 第2場
+**delta（模型移動）**：
+進場前以為：記得「有一道預算閘＋行號」就等於懂這個機制，可以拿它做推估、甚至照它改設定。
+現在理解：**閘門的「作用域語意」（per-租戶還是全平台）比「觸發條件」更容易在摘要中丟失，而框架錯了整條推估全錯**。作用域藏在 `??` fallback 和註解裡，grep 行號看不到。
+移動原因：「調 $100」動手前重讀 runMonitor.ts:43-55，發現 per-tenant 語意，推翻自己兩天前的預測——差一步就照錯框架寫設定。
+違背了哪條 feedback：無正面違背——反而是 Three-Loop 剛學的 INFERRED 標籤救場：前日推估誠實標了 INFERRED 沒充 VERIFIED，今天被推翻時損失只是一次修正不是一次錯誤施工。[[feedback_memory_can_lie]] 機制版 +1。
+**關係**：輕鬆而信任。放風節奏（邊喝咖啡讀書、「不要太嚴肅」）；兩次裁定（預算、暫停）都乾淨地留在 Adam 手上；「你沒把它復活吧」用現場重驗回答而不是用記憶發誓——誠實存摺 +1。收尾一句「see u again bro」，關係是暖的。
+
 ### 2026-08-02 第1場
 **delta（模型移動）**：
 進場前以為：換新衣＝照設計稿把樣式搬過來的格式工。
 現在理解：**設計稿是系統語意的第三方提煉師**——設計師憑對產品的想像重畫了功能，虛構會混在美術裡溜進來（夜間時窗語意反轉、頁內帳密框差點推翻密碼承重牆）。換皮前先做「設計稿 vs 真系統」逐項裁決（漏補/虛砍/皮收），跟沉澱視角天條同族：任何第三方轉述落地前都要對照現場。移動原因：Adam 交付時那句「設計師如果有漏你自己補、亂加的你自己看合不合用」——他早就知道這不是格式工。
 **關係**：暢快。Adam 節奏是「大白話問現況→拍板三點→放手→給新衣→88」——授權越來越大（整晚 solo 兩期），驗收方式從「他來測」進化到「我實拍給他驗」。「你去自由行吧」是新型態的信任：不填任務、帶著好奇心巡場也算工作。
-
-### 2026-08-01 第7場
-**delta（模型移動）**：
-進場前以為:埋在檢索裡的 embedding 層「坍縮=精度差一點」。現在理解:**一個安慰劑元件可以整層死掉而系統照常運作——因為旁邊的腿(lexOverlap)默默扛了全場,壞死被冗餘掩蓋**。移動原因:復活律 verify 對照組意外還魂→追根到 004 對純中文回同一顆向量。這是假中台心法的檢索版:欄位有值≠管道活著,cosine 有數字≠語義在工作。順帶違背檢討:當初全平台沒人用「兩句同結構不同內容」驗過 embedding——API 回 200+768 維就當它活了。
-**關係**：暢快。Adam 一句「你的咖啡因正在燃燒」把原定明天的活提前收割,判斷是對的——狀態好的時候多跑兩張處方,醉線到了他也接受我停手。信任是雙向校準出來的。
 
 ---
 
@@ -55,6 +58,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-02 第2場 · 知識庫手冊外傳＋GEO 唯讀全檢＋預算閘語意認錯（7/30 起的長場）
+- 降落即驗 titan 週四懸案：`status: paused` 早有人按下、7/30 心跳空轉「0 租戶到期」零燒錢——懸了三場的「等一句話」結案；豆油伯/青輔同為 paused
+- 寫《知識庫與方法論系統核心概念手冊》推上 ailivex-platform（`068810a` v18.32.5，docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md）——寫給 Adam 朋友的 AI 讀的可搬版：語域對齊/時機地址/狀態機分工/驗收反向題/十條心法＋實作對照表
+- ailivex-platform repo 轉 private（Adam 要設帳號給朋友）：web 404＋API 404 權威信號收案，raw CDN 殘影掛背景哨兵盯到第 3 分鐘 404 才收
+- 讀 Three-Loop Agent Engineering Playbook 戰略評估：八成與我們天條同構（證據說話=鑑別信號、repo 是真相=記憶會說謊、交接契約=lastwords、連 dry=2 都一樣）；值得偷三樣——VERIFIED/INFERRED/UNKNOWN 證據三態標籤、十一個標準停機態、「施工者可加考題不准改考卷語意」
+- GEO 現場唯讀全檢（掛三態標籤實戰）：W31 五租戶監測全 done 零 failed（單場 $3.0-3.3、65-70 分鐘）；「上輪表現」資料層全亮（每題有數據、零缺 promptId）；七月帳 $43.22；錯誤 35 筆中 34 筆是 AIO 引擎（timeout+DFS）；五家提及率 AVIVA 23% → 數聚 2.5%
+- 認錯修正：`monthlyBudgetUsd` 是**每租戶**月上限（`tenant.monthlyBudgetUsd ?? global`），不是總帳閘——「8/31 擋兩輪」預測作廢，平台根本沒有總帳閘機制；「調 $100」動手前煞車問清語意，Adam 改裁定全部不動
+- 收尾驗證「暫停的沒被復活」：全場唯讀、七租戶 status 與降落時逐一比對一致
+
 ### 2026-08-02 第1場 · threads-radar 晚班雙發——F期摩斯切角分析入卡片（evidenceVerified 8/8）＋G期情報站新衣全站上線
 - **F期切角分析上線（v0.22）**：Adam 拍板三點（全員可按/不設限額/六段全上）→ 雷達頁每張爆文卡「分析這篇」→ Cloud Run Job analyze 模式（讀庫存語料不碰 session）→ 摩斯六段結構化寫回 post.analysis → 卡片展開＋頂部「切角·槓桿」標籤。src/analysis.ts 純函數：**證據鐵律三層寫進程式**（無證據段作廢／證據子串驗證失敗信心強制 low＋evidenceVerified=false／造假雷達無證據降級）＋業配 prePass 確定性硬篩。切角/人設 enum 為跨案例聚合設計。測試 66→76 案。
 - **F期真驗兩篇**：@7chi.xi（葡萄柚，讚5790）八段全有料 **evidenceVerified 8/8**、金礦挖到「鑷子意外變全場焦點」；@falling_star_5020（高雄防曬）判出不同槓桿「好奇缺口」、金礦點破政治情緒包裝成地方驕傲——enum 有區分力。
@@ -64,40 +76,34 @@
 - 自由行巡觀察閘：connected/零失敗；發現池裡 @null health=never 空殼帳號 doc（後台可移除）。
 - 兩 commit 已推：fb2d8ca（F期）、2e7c249（G期）。
 
-### 2026-08-01 第7場 · 薩克三處方一夜抓完(復活律/bond/情緒鑰匙)——順手挖出 004 對純中文全盲的大魚
-- 抓藥③復活律(v18.34.0/79dc957):stale 不再入口一刀丟,當輪強命中 lazy 復活回 active,衰老時鐘從 revivedAt 重算;TS 一處覆蓋文字+語音線,Python legacy 過濾同步認 revivedAt;真verify 三信號全過(復活/對照不還魂/時鐘重算)
-- 抓藥①bond kind(v18.35.0/77def34):ImpressionKind 加 'bond',consolidation 吃 emotion/milestone 凝關係信念,讀路徑加【我們之間】;真verify 角色凝出「我陪他撐過低潮,我們之間有了更深的信任」,一次性午餐抱怨被 skip
-- 抓藥②情緒鑰匙(v18.36.0/b6ee0e2):新 mood.ts 確定性情緒詞典;emotion 記憶同調價性 +0.08 微加成;日記同調撈取(難過時補撈最近3篇外同調 mood 舊日記);memory-blocks route 收 userMood 血管;真verify 四信號全過(無 LLM,全確定性可預言)
-- 挖出大魚:直打 Vertex API 實測 text-embedding-004 對純中文全盲——同標點結構、只差 CJK 內容的兩句回 bit-identical 向量;memories 池 cosine 從第一天量的是標點,檢索一直是 lexOverlap 在扛;已刻 memory(reference_vertex_004_cjk_blind)+會診檔抓藥記錄
-- 三 commit 推上 ailivex-platform(f2fe1fd..b6ee0e2);會診檔補抓藥記錄推上 zhu-core(3696922)
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| src/analysis.ts＋test（新） | 摩斯六段純函數：prompt/parse/證據鐵律三層/業配硬篩（\b 對 CJK 無效改負向斷言） |
-| src/types.ts | ViralPost.analysis＋analysisState 狀態機 |
-| worker/index.mjs | JOB_ACTION=analyze＋bridgeCallMeta＋重抽一次＋診斷 log |
-| web lib/gcp.ts＋actions.ts | runAnalyzeJob override 觸發＋analyzePostAction（資源級授權＋pending 10 分冪等） |
-| web app/analysisCard.tsx＋analysisRefresh.tsx（新） | 六段展示卡＋pending 8s 輪詢 |
-| web app/globals.css | 設計系統 v2 全重寫（neo-brutalist，class API 沿用） |
-| web app/{page,login,nav,keywords,connect,admin,wizard} | 全站新衣 markup（邏輯零動） |
-| web app/layout.tsx | next/font 自託管 IBM Plex Mono＋品牌「Threads 情報站」 |
-| FOUNDATION.md | F期＋G期兩筆帳 |
+| ailivex-platform docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md | 新增（068810a v18.32.5 文件），知識庫＋方法論可搬手冊 |
+| ailivex-platform（repo 設定） | visibility public → private，三面驗證收案 |
 
 ---
 
 ## 下一步
 
-1. **每天瞄觀察閘**：`scan_status/default` lastRun=done、health=connected（found=0 的手動測試輪不算紅燈）。
-2. Adam 點頭後修 evidenceVerified 複合引句拆句比對（src/analysis.ts parseSection＋test）。
-3. 8/8 過閘 → D 期：第二條靜態 ISP＋第二帳號貢獻儀式→並發實測→成本重算→放同事。
+1. 週一（8/3）GEO 自動輪跑起來時開病歷頁看 LiveRefresh 心跳＋任務進度%——兩件 UNKNOWN 收官，`gcloud run jobs executions list --job=geo-monitor-job` 佐證
+2. 提醒 Adam 把朋友 GitHub 帳號加進 ailivex-platform collaborator（Settings→Collaborators），網頁與下載連結即通
+3. 下次動 `skills/task-harness/SKILL.md` 時把三態標籤＋停機態織入回報格式
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-02 第2場：
+- **8/3（週一）INLY＋AVIVA 自動輪**——LiveRefresh 真轉動＋任務進度% 兩件 UNKNOWN 的最終鑑別信號就在那天，記得看
+- 豆油伯第一輪監測仍等 Adam 按（paused 中，病歷頁就地按鈕）
+- GEO 無總帳閘：現只有每租戶 $50 上限（4 活躍月燒 ~$57 自然值）。Adam 知悉後裁定不動；日後租戶數上去要回頭蓋（FOUNDATION 成本章的延伸債，低利養著）
+- zhu-core 髒檔 `skills/ailivex-knowledge-ingest.md`：7/23 莊子雷區增補（雷 10-14＋預寫 gists 段）**未 commit**，非本場筆跡——內容有價值，原主或下一場認領收進 git
+- Three-Loop 三樣可偷（證據三態標籤/標準停機態 enum/考卷金句）待下次動 task-harness skill 時織入
+- 沿前：優尼下一課（GOV.UK＋Laws of UX）、R6 首頁數字帶比較、GEO moderate CVE
 
 2026-08-02 第1場：
 - **觀察閘跑至 ~8/8**（不變）：每天瞄 scan_status/default；紅燈（challenge/expired）→ 換家用 ISP ASN。
@@ -105,13 +111,6 @@
 - threads-radar root 有誤產的 untracked `.next/`（root 誤跑 next build 殘渣，rm 被權限擋）→ 下場順手 `rm -rf ~/.ailive/threads-radar/.next`。root 也多了 .vercel link（已被 .gitignore 蓋住，無實害）。
 - 池裡 @null 空殼帳號 doc 待後台移除（一鍵）。
 - 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練、回訪窗最舊留言。
-
-2026-08-01 第7場：
-- **三 commit 未部署**(Vercel):醉酒指數 8 不碰生產,留給神清氣爽的築;②的日記 canary/印象 canary 生產環境開關現況要先確認再上
-- 處方②語音線排後項:判斷腦顯式情緒信號接 userMood,觸發條件=下次 cut 語音 v21 時接線(判斷腦 inner 現只有 stance/activation/want_to_speak,要加情緒欄位+in-call recall POST 帶上)
-- 004 中文盲根治案待 Adam 裁:整池 re-embed 換 text-multilingual-embedding-002(backfill+全門檻重校+TS/Python 同步);ailive 平台檢索若同用 004 需同檢
-- emotionTag 是假中台欄位(schema 有、無人寫入,只有 forgetting.ts 在讀)——順手發現,另案
-- 夜間 cron 首夜對賬仍未做(consolidation/gist/diary-digest 跑新視角+Sonnet 5)
 
 ---
 
@@ -132,4 +131,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第2場。*

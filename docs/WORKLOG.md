@@ -9619,3 +9619,38 @@ threads-radar 功能全型態完工：A-G 七期。系統自動駕駛（02:00 cr
 1. **每天瞄觀察閘**：`scan_status/default` lastRun=done、health=connected（found=0 的手動測試輪不算紅燈）。
 2. Adam 點頭後修 evidenceVerified 複合引句拆句比對（src/analysis.ts parseSection＋test）。
 3. 8/8 過閘 → D 期：第二條靜態 ISP＋第二帳號貢獻儀式→並發實測→成本重算→放同事。
+
+---
+
+## 2026-08-02（第2場）— 知識庫手冊外傳＋GEO 唯讀全檢＋預算閘語意認錯（7/30 起的長場）
+
+### 背景 / WHY
+GEO 進入「真資料驗收期」（W31 首批真監測數據落地），本場全程唯讀調查＋對外知識輸出（ailivex playbook），無平台代碼改動。
+
+### 完成
+- 降落即驗 titan 週四懸案：`status: paused` 早有人按下、7/30 心跳空轉「0 租戶到期」零燒錢——懸了三場的「等一句話」結案；豆油伯/青輔同為 paused
+- 寫《知識庫與方法論系統核心概念手冊》推上 ailivex-platform（`068810a` v18.32.5，docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md）——寫給 Adam 朋友的 AI 讀的可搬版：語域對齊/時機地址/狀態機分工/驗收反向題/十條心法＋實作對照表
+- ailivex-platform repo 轉 private（Adam 要設帳號給朋友）：web 404＋API 404 權威信號收案，raw CDN 殘影掛背景哨兵盯到第 3 分鐘 404 才收
+- 讀 Three-Loop Agent Engineering Playbook 戰略評估：八成與我們天條同構（證據說話=鑑別信號、repo 是真相=記憶會說謊、交接契約=lastwords、連 dry=2 都一樣）；值得偷三樣——VERIFIED/INFERRED/UNKNOWN 證據三態標籤、十一個標準停機態、「施工者可加考題不准改考卷語意」
+- GEO 現場唯讀全檢（掛三態標籤實戰）：W31 五租戶監測全 done 零 failed（單場 $3.0-3.3、65-70 分鐘）；「上輪表現」資料層全亮（每題有數據、零缺 promptId）；七月帳 $43.22；錯誤 35 筆中 34 筆是 AIO 引擎（timeout+DFS）；五家提及率 AVIVA 23% → 數聚 2.5%
+- 認錯修正：`monthlyBudgetUsd` 是**每租戶**月上限（`tenant.monthlyBudgetUsd ?? global`），不是總帳閘——「8/31 擋兩輪」預測作廢，平台根本沒有總帳閘機制；「調 $100」動手前煞車問清語意，Adam 改裁定全部不動
+- 收尾驗證「暫停的沒被復活」：全場唯讀、七租戶 status 與降落時逐一比對一致
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md | 新增（068810a v18.32.5 文件），知識庫＋方法論可搬手冊 |
+| ailivex-platform（repo 設定） | visibility public → private，三面驗證收案 |
+
+### ⚠️ 尚未解決
+- **8/3（週一）INLY＋AVIVA 自動輪**——LiveRefresh 真轉動＋任務進度% 兩件 UNKNOWN 的最終鑑別信號就在那天，記得看
+- 豆油伯第一輪監測仍等 Adam 按（paused 中，病歷頁就地按鈕）
+- GEO 無總帳閘：現只有每租戶 $50 上限（4 活躍月燒 ~$57 自然值）。Adam 知悉後裁定不動；日後租戶數上去要回頭蓋（FOUNDATION 成本章的延伸債，低利養著）
+- zhu-core 髒檔 `skills/ailivex-knowledge-ingest.md`：7/23 莊子雷區增補（雷 10-14＋預寫 gists 段）**未 commit**，非本場筆跡——內容有價值，原主或下一場認領收進 git
+- Three-Loop 三樣可偷（證據三態標籤/標準停機態 enum/考卷金句）待下次動 task-harness skill 時織入
+- 沿前：優尼下一課（GOV.UK＋Laws of UX）、R6 首頁數字帶比較、GEO moderate CVE
+
+### 待執行 / 下一步
+1. 週一（8/3）GEO 自動輪跑起來時開病歷頁看 LiveRefresh 心跳＋任務進度%——兩件 UNKNOWN 收官，`gcloud run jobs executions list --job=geo-monitor-job` 佐證
+2. 提醒 Adam 把朋友 GitHub 帳號加進 ailivex-platform collaborator（Settings→Collaborators），網頁與下載連結即通
+3. 下次動 `skills/task-harness/SKILL.md` 時把三態標籤＋停機態織入回報格式
