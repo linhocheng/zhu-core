@@ -28,3 +28,5 @@ metadata:
 關聯：[[feedback-ambiguous-signal-not-proof]]（孿生：零資訊 vs 誤導性信號）、[[feedback-deterministic-work-belongs-in-code]]、[[feedback-cloudrun-firebase-adc]]（Premature close 也是膠水層說謊的一例）、[[project-threads-radar]]
 
 - 驗證+1:2026-08-02 第3場 — ERR_TUNNEL_CONNECTION_FAILED 指向瀏覽器/網路，真因在 proxy 402 餘額用盡，逐層扒才到根
+
+- 驗證+1:2026-08-02 第6場 — log 寫「Anthropic API 401」實際是 x-api-key 敲到 bridge 門；讀錯誤體格式（{"error":"unauthorized"}=bridge 方言）才定位

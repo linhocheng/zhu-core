@@ -22,3 +22,5 @@ metadata:
 **觸發信號**：背景任務「exit 0」但輸出尾端有 ERROR 字樣；部署 log 步驟數比預期少；「completed」與畫面現況對不上；**手正要打 `build | grep && commit` 這個形狀**。
 
 **二犯紀錄**：2026-07-30 BeSelf 收尾,`npm run build 2>&1 | grep ✓ && git commit && git push` ——build 其實 Type error 失敗,grep 找到「✓ Compiled」exit 0,壞代碼推上 git（Vercel 端 build 擋下,線上無傷）。同雷二犯＝高利貸,故本 How 升級為禁令級模板。
+
+- 驗證+1:2026-08-02 第6場 — Cloud SQL create 背景跑 `| tail` 吃掉失敗，宣告「建好了」後被現場打臉，重跑改看完整輸出＋exit code

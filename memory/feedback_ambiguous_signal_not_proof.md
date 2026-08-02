@@ -32,3 +32,5 @@ metadata:
 - 驗證+1:2026-08-02 第4場 — prod 部署驗證用「deployed code 寫回 DB」的不可偽信號;清創收案=全庫重掃歸零+quarantine 帳目相符
 
 - 驗證+1:2026-08-02 第5場 — metadata 推完 grep 內容驗證；Adam「我登入了」先查 DB 分辨 neko 房間 vs Threads；每段驗證前先寫鑑別信號（curl 200+n.eko title/handle log 行/lastRun=done+found）
+
+- 驗證+1:2026-08-02 第6場 — 每次部署收案用鑑別信號（db ready log、cron route {"ok":true}、LINE webhook test 200、克隆聲 5.5s 音檔）

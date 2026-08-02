@@ -35,3 +35,5 @@ LiveKit + MiniMax 即時語音「聽起來自然」有三個獨立旋鈕，別�
 **7. TTS 模型 tier。** `speech-02-turbo`=快版；`speech-2.6-hd`/`speech-2.8-hd`=HD 更自然(慢+貴)。同 cloned voice 可直接換 model A/B。ailive + ailivex 預設都是 02-turbo。
 
 **架構：即時語音 2.0 = 獨立平行服務** `ailivex-realtime-agent-v2`（agent_name `ailivex-realtime-v2`，同 image 不同啟動 `main_v2.py`），放實驗性的 Sonnet/主動插話/HD；v1 維持 Haiku 快版。對話手感全進後台 `convSettings`（conv_tuning.py 映射 AgentSession turn_handling，預設 3=現行）。
+
+- 驗證+1:2026-08-02 第6場 — MiniMax 網域雷：.chat 死 .io 活（從 ailivex minimax_tts.py 現場查證，不猜）

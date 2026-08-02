@@ -30,3 +30,5 @@ metadata:
 **觸發信號**：Cloud Run 任務「短的成功、長的卡 running」；log 裡任務 start 後沒 done、中間插了新的 `listening on :8080`；想用「回應前先做完」來閃 throttle 的念頭（client 會斷就沒用）。
 
 實例：ailivex `cloud-run/podcast-worker/cloudbuild.yaml`。相關：[[天條：Cloud Run firebase-admin 一律走 ADC，不注入 SA JSON]]。
+
+- 驗證+1:2026-08-02 第6場 — setInterval 在 throttled Cloud Run 必死，上雲當天改 Cloud Scheduler

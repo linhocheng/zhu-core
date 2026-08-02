@@ -110,3 +110,4 @@
 - [Next.js CSP nonce 家族](reference_nextjs16_csp_nonce.md) — proxy.ts/nonce 必配 force-dynamic/字型放行;多站逐站真瀏覽器驗(skill_csp_nonce_per_site_headless_verify)
 - [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 名冊在 zhu-core/skills/summon/;沒首戰不算鑄成
 - [BeSelf 訪談活動站](project_beself_platform.md) — beself-two.vercel.app;v1.1.0 真刪除/商品庫/換裝收案;Nina 上場三步待 Adam
+- [漫漫商用平台(manman)](project_manman_platform.md) — 多租戶 LINE 陪伴 SaaS;測試環境通車多模態全開;llmBaseUrl 只屬 bridge;打電話/抽取器/worker/地基帳本待蓋

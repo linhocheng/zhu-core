@@ -26,3 +26,5 @@ curl 'https://api.elevenlabs.io/v1/voices' -H "xi-api-key: $KEY"
 ```
 
 備援：`~/.ailive/jianbin-v2-keys/jianbin_v2_keys_20260425.json` 是江彬 2026-04-25 上線快照，未來其他專案缺 key 時是第一手備援來源（含 anthropic/deepgram/elevenlabs/minimax/livekit 全套）。
+
+- 驗證+1:2026-08-02 第6場 — LINE token/API key/bridge secret/voice_id 每把先 curl 200 才灌，molowe 過期 secret 與 anews 外洩 key 都是驗了才發現

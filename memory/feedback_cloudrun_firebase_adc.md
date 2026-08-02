@@ -36,3 +36,5 @@ Cloud Run service 的 `--service-account=<sa>@` 決定 ADC 身份，Storage 權�
 - 任何 Cloud Run worker 要用 firebase-admin Storage（file.save / getStorageBucket）
 - 錯誤訊息：`Invalid response body while trying to fetch https://www.googleapis.com/oauth2/v4/token: Premature close`
 - 說「本機測試通了但 Cloud Run 上 Storage 失敗」
+
+- 驗證+1:2026-08-02 第6場 — GCS 上傳走 metadata server ADC，不注入 SA JSON

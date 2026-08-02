@@ -22,3 +22,5 @@ metadata:
 - 驗證+1:2026-08-02 第3場 — 手動改防火牆（SSH/RDP）＋VM SA grant，同日改 provision.sh 同步
 
 - 驗證+1:2026-08-02 第5場 — VM SA 三 secret 授權手動做完同日進 provision.sh 迴圈；timeout 改的是 deploy.sh 本體
+
+- 驗證+1:2026-08-02 第6場 — 線上設定一律改 deploy.sh 再部署，手動 update 零次
