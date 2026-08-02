@@ -15,3 +15,5 @@ metadata:
 **觸發信號**：Edit-before-Read 被擋第二次、anchor 連錯、修三次不收斂、心裡冒出「先上再說」。
 
 相關：[[feedback-compacted-session-verify-state]]、[[feedback-memory-can-lie]]、全局 CLAUDE.md 漏氣徵兆。
+
+- 驗證+1:2026-08-02 第2場 — 子集合查頂層、混型日期漏算 $0 兩滑倒當場記帳自報（5 分微醺）

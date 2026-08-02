@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：正要把 DB query 結果寫進給 Adam 的回報；Adam 拿我上一句回報來問「是不是 bug」。
 
 家族：[[memory-can-lie]]、[[diagnosis-verify-before-write]]——現場層級錯位版。
+
+- 驗證+1:2026-08-02 第2場 — 「上輪表現」驗證照抄 UI 同一條聚合路徑（最新 batch/跳錯誤行/按 promptId）
