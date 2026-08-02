@@ -30,3 +30,5 @@ metadata:
 - 驗證+1:2026-08-02 第3場 — Adam 說「連接到了」但 capturedAt 空，沒被帶著宣告成功，查 DB 發現 capture 斷鏈；掃描 done 前也先寫「found>0 才算通」鑑別信號
 
 - 驗證+1:2026-08-02 第4場 — prod 部署驗證用「deployed code 寫回 DB」的不可偽信號;清創收案=全庫重掃歸零+quarantine 帳目相符
+
+- 驗證+1:2026-08-02 第5場 — metadata 推完 grep 內容驗證；Adam「我登入了」先查 DB 分辨 neko 房間 vs Threads；每段驗證前先寫鑑別信號（curl 200+n.eko title/handle log 行/lastRun=done+found）

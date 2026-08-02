@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：新引擎/新租戶上線；cron 合併或 drain 模式改動；任務時長逼近 timeout 的 80%；「以前都跑得完」的念頭。
 
 關聯：[[feedback-solve-root-not-symptom]]、[[skill-cost-on-heartbeat-failure-accounting]]
+
+- 驗證+1:2026-08-02 第5場 — 成本重算撈真數據時抓到最重輪 13m13s=timeout 的 88%（正中「逼近 80%」觸發信號），加字前先擴 timeout；capture 15 分逾時同樣是容量快照，按人類真實操作重設 40 分

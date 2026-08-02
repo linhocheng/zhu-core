@@ -20,3 +20,5 @@ metadata:
 相關：[[standing-cost-only-for-instant-readiness]]、[[feedback_memory_can_lie]]
 
 - 驗證+1:2026-08-02 第3場 — 手動改防火牆（SSH/RDP）＋VM SA grant，同日改 provision.sh 同步
+
+- 驗證+1:2026-08-02 第5場 — VM SA 三 secret 授權手動做完同日進 provision.sh 迴圈；timeout 改的是 deploy.sh 本體
