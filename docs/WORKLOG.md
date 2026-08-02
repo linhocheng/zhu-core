@@ -9809,3 +9809,33 @@ manman-platform 商品化。Adam 要「全套」：本尊有的能力全部啟�
 
 ### 待執行 / 下一步
 打電話：fork `~/.ailive/ailivex-platform/agent/`（v21 為基底）→ 換慢慢 character-core 靈魂＋MINIMAX_VOICE_ID=ttv-voice-2026080216441426-J1ebtRnu → LIFF 頁（LINE Developers 用 channel token 開 LIFF app）＋backend 加 /api/call/token（LiveKit token，用 ailive 既有 project、agent_name=manman 隔離）→ 部署 agent（常駐+開關+自動關機，磚頭費天條的即時語音例外條）。為什麼先做：Adam 點名要測全套，這是最後一塊；且 STT/TTS/靈魂三件今天都已就位，只剩編排。
+
+---
+
+## 2026-08-02（第7場）— 打電話方向大轉彎——ailivex fork 作廢，改抄本尊 LIFF+WebSocket 通話設計（plm 藍圖），等 waitin 分支
+
+### 背景 / WHY
+manman-platform 打電話功能。這場是**選型場不是施工場**：ailivex fork 走到一半被正確地擋下，換到 Adam 的原廠設計路線。零雲端變更、零浪費——停在看現場/寫計畫階段，全可逆。
+
+### 完成
+- 掃完打電話雷區六顆（agent_name 隔離、RoomConfiguration 必帶、跨 region 殭屍、降 0=聾、共用 loader 斷靈魂、MiniMax 三旋鈕）＋讀完 ailivex v21 全文，擬好 fork 施工計畫
+- Adam 中途喊停 → 監造對話：把「我們在做什麼／目標／代價」用大白話攤開（外跳瀏覽器體驗＋$60-80/月常駐費講明）
+- 比對通話設計三方案：發現 manman repo 原型**沒有**通話代碼；真相在同帳號 `baobaoagi-cpu/plm` repo——本尊 legacy 通話包（Mindomind voice-call-package，LIFF+WS+MiniMax，實戰過）＋ plm 重構規格（Pipecat duplex spec v1.0，規格齊但引擎未接）
+- 給 Adam 三欄比較表（本尊 legacy / plm 重構 / ailivex 線）：入口體驗（LINE 內開 vs 外跳）、傳輸（WS 直連 vs LiveKit）、固定費（零 vs $60-80/月）、現況成熟度
+- Adam 拍板：**抄本尊/plm 系設計，不用 ailivex 線**；等他向 waitin 拿 legacy 分支再開工
+- 收工盤錶：manman-2026 唯一常駐費＝Cloud SQL manman-pg（db-f1-micro，~$11-15/月）；backend min=0、agent 未部署（零損失）、Scheduler/Secret/GCS 全在分錢級
+- 清掉上一場遺留的本地 tsx watch dev 進程（PID 5075）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| （無代碼變更） | 選型場：唯一殘留＝manman-platform/agent/ 作廢拷貝（見未解） |
+
+### ⚠️ 尚未解決
+- **`~/.ailive/manman-platform/agent/` 四個檔是作廢拷貝**（minimax_tts / interrupt_gate / conv_tuning / tts_normalize，從 ailivex 搬的）：方向作廢後我要刪、rm 被權限擋，留在原地未 commit。下次動工先刪掉，別誤把它當新方向的建材。
+- **等 waitin 的 legacy 分支**：`Mindomind-voice-call-package`（branch voice-call-package，commit 2ae148d，43 檔）在 waitin 機器上。拿到 → 照抄改；拿不到 → 照 plm 盤點文件重建（協定表完整，可行但多花工）。
+- 抄的時候必帶 plm 審計出的三個關鍵修正：①generation ID 防幽靈音訊 ②LIFF idToken 伺服器端驗證（不信 client userId）③她講話時麥克風不關（真雙工）。完整清單見 plm `docs/legacy-voice-call-audit.md` 的 Major conflicts 八條。
+- 上一場未解全數仍在（[SCHEDULE]/[PROMISE]/[NOTE] 抽取器、worker、記憶管線、FOUNDATION.md、LINE Pay、啟元根治、admin 補點）。
+
+### 待執行 / 下一步
+等 Adam 拿到 waitin 分支後開工打電話：先讀 legacy 43 檔對照 plm `docs/legacy-voice-call-audit.md` 的分類表（REUSE_AS_IS 4 檔直接搬、REWRITE 3 檔照 vNext 協定重寫），在 manman-platform 蓋 Fastify WS route＋LIFF 頁。為什麼這條：技術棧同源（Fastify/TS）、LINE 內開體驗、零常駐費。plm 文件已抓在 scratchpad（session 結束會蒸發，屆時重抓：`gh api repos/baobaoagi-cpu/plm/contents/<path>`）。

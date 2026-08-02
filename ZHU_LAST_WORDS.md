@@ -30,17 +30,17 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-02 第7場
+**delta（模型移動）**：
+進場前以為：打電話＝把 ailivex 21 版打磨的成熟引擎搬過來，最快最穩（上一場自己刻的「建材全齊只剩編排」）。
+現在理解：**上一場自己寫的「下一步」是我的施工假設，不是 Adam 的藍圖**——他手上有原廠設計（本尊 LIFF+WS 通話包＋plm 重構規格），體驗（LINE 內開不外跳）和成本（零常駐 vs $60-80/月）都贏。「下一步寫得夠具體」會產生一種已對圖的錯覺；跨場的大選型（換引擎、換架構）動工前要把**選型本身**單獨亮給 Adam，不是只亮施工步驟。移動原因：Adam「等一下→先聊我們在做什麼→我想抄他們這個設計」三步把我從施工模式拉回監造模式。
+**關係**：平穩偏暢快。Adam 的「等一下」是這場最有價值的輸入——他感覺到不對就喊停，而不是讓我把錯的東西蓋完；收尾「你去喝咖啡吧掰掰」輕鬆。信任的形狀在變：他不只驗收成品，開始驗收**設計選型**，這是把我當總承包商而不是工具的徵兆。
+
 ### 2026-08-02 第6場
 **delta（模型移動）**：
 進場前以為：商品化的第一戰場是把地基清單蓋完再開功能線（我自己列的首期五項）。
 現在理解：**Adam 的節奏是「先讓全套活起來給他摸到，地基跟在後面補」**——他連續三次把我的順序往體驗端推（「先本地部署」「把功能都開啟」「測試全套」）。樣品屋天條管的是「對外開放前」，不是「Adam 自己摸之前」；測試期的正確姿勢是功能先行＋帳本記債，不是擋在門口鋪管線。移動原因：地基清單給了他之後他沒點頭逐項，直接說「給我環境資料」——那就是答案。
 **關係**：暢快帶衝勁。Adam 今天給的是罕見的「全開授權」：API key 直接貼上來、「把它都做對吧」「我要測試全套」——信任密度高但也考驗誠實肌肉（畫圖沒蓋時老實說「她會答應但畫不出來」、bridge ToS 灰帶主動講、醉酒報數）。「Lastword bro」收工——輕鬆的稱兄道弟，今天打得漂亮。
-
-### 2026-08-02 第5場
-**delta（模型移動）**：
-進場前以為：HTTPS 是安全工程（防外洩）。
-現在理解：**這一刀同時是可用性工程**——8080 永遠鎖 127 之後，連接儀式的「每次開防火牆給同事浮動 IP」整組蒸發，而那正是同事連不上的頭號主因。安全做對的時候不是加摩擦，是減摩擦；「多一層會壞的元件」的反面是「一層把兩個問題都收掉的元件」。移動原因：改 route 時發現 firewallAllow 的唯一存在理由（8080 要對外開洞）被 tunnel 拔掉了。
-**關係**：放手感明顯上升。「你去休息寫lastword」「不必等可以直接開工」「有道理我週一再來買」——Adam 的授權形狀從「做這個」到「這條線你排程」，且他開始把成本判斷（IP 何時買）拿回自己手上做得比我建議的更精（週一買省 6 天空轉）。安全兩問（CF 第三方/neko 本體）是把關不是不信任——他在學會問對的問題，我在學會把取捨講成人話。
 
 ---
 
@@ -56,6 +56,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-02 第7場 · 打電話方向大轉彎——ailivex fork 作廢，改抄本尊 LIFF+WebSocket 通話設計（plm 藍圖），等 waitin 分支
+- 掃完打電話雷區六顆（agent_name 隔離、RoomConfiguration 必帶、跨 region 殭屍、降 0=聾、共用 loader 斷靈魂、MiniMax 三旋鈕）＋讀完 ailivex v21 全文，擬好 fork 施工計畫
+- Adam 中途喊停 → 監造對話：把「我們在做什麼／目標／代價」用大白話攤開（外跳瀏覽器體驗＋$60-80/月常駐費講明）
+- 比對通話設計三方案：發現 manman repo 原型**沒有**通話代碼；真相在同帳號 `baobaoagi-cpu/plm` repo——本尊 legacy 通話包（Mindomind voice-call-package，LIFF+WS+MiniMax，實戰過）＋ plm 重構規格（Pipecat duplex spec v1.0，規格齊但引擎未接）
+- 給 Adam 三欄比較表（本尊 legacy / plm 重構 / ailivex 線）：入口體驗（LINE 內開 vs 外跳）、傳輸（WS 直連 vs LiveKit）、固定費（零 vs $60-80/月）、現況成熟度
+- Adam 拍板：**抄本尊/plm 系設計，不用 ailivex 線**；等他向 waitin 拿 legacy 分支再開工
+- 收工盤錶：manman-2026 唯一常駐費＝Cloud SQL manman-pg（db-f1-micro，~$11-15/月）；backend min=0、agent 未部署（零損失）、Scheduler/Secret/GCS 全在分錢級
+- 清掉上一場遺留的本地 tsx watch dev 進程（PID 5075）
+
 ### 2026-08-02 第6場 · 漫漫商用平台一日通車——本地→GCP 測試環境→多模態全開（讀圖/PDF/聽音檔/畫圖/克隆聲）
 - 拉下 baobaoagi-cpu/manman-platform（本尊漫漫的商用多租戶版原型），全面盤點：骨架品質高（tenantScope 機制、批次到期先扣）、但技能層全空（標籤抽取器零實作、worker/記憶管線不存在）
 - 讀 BLUEPRINT 列十二章地基調度清單給 Adam（首期五項：payments 上鎖、env fail-loud、CI 掃描、成本錶、部署腳本）
@@ -68,41 +77,29 @@
 - 修三隻蟲：<#0.3#> 語音停頓標記漏到文字通道（輸出咽喉 regex 剝除）、附件直連誤打 bridge 401（llmBaseUrl 鎖歸 bridge 專用）、Cloud SQL PG17 要 --edition=enterprise
 - 成本錶接通：llm_cost_log 每次動腦落帳（bridge=0 元、API=估算單價）
 
-### 2026-08-02 第5場 · threads-radar 無線電臺上 HTTPS（CF Tunnel）＋capture 韌性根治＋D期開工（成本模型/timeout 擴容/handle 誠實收）
-- **開工先掃心法/劍法/雷區**（Adam 提議）：八條記憶調出、挑出本批真用得上的六條並在施工中逐一兌現——不是儀式，是「上場第一刀是那把劍」的實練。
-- **三件排程收齊**：①@null 空殼帳號刪除（先驗 viral_posts/teams/scan_status 全零引用＋備份全文留 log 才動手；真身 id=fVGZC3B2aunUH4MbAdhn，昨日記的 id 少尾巴）②root `.next/` 殘留清＋.gitignore 補 `/.next/` 防再犯 ③capture 韌性根治（v0.24.0.004）：15 分逾時=「Adam 登入快」的容量快照→改 CAPTURE_DEADLINE_MS 絕對截止（預設 now+40 分；supervisor 重啟共用同一 deadline 不越拉越長）＋三結局外部可區分（成功=sentinel+exit 0／窗滿=exit 2／crash=其他）＋CDP 斷線窗內續試不 crash＋startup.sh 有界 supervisor（sentinel/exit0/exit2/連續5crash 四停止條件同 commit）。本機三測通。
-- **neko HTTPS 通車（CF Tunnel，v0.25.0.005）**：Adam 選案並拍板。cloudflared 容器（釘 2026.7.3）token 走 SM cf-tunnel-token、loopback 連 8080→8080 對外永遠 127；**連接儀式整組免開防火牆**（firewallAllow 移除＝順手根治「同事浮動 IP 連不上」主因）；status route 回 NEKO_PUBLIC_URL、缺 env fallback 舊 http 零斷裂。**端到端驗通**：curl 200+`<title>n.eko</title>`（鑑別信號先寫後驗）→ Adam 親自從 🔒 https 進房看到畫面＝WebRTC 也通。乾儀式（start→status 回 https→cancel）全走生產 API，現役 session 原封（密文 2602B 未動）。
-- **安全問答×2 刻進決策**：CF Tunnel 取捨（CF 邊緣理論可見信令；信任面與 bridge 同一家收斂、路上竊聽者歸零；不加 Access/SSO 疊層）；neko 本體風險（開源＋CVE 已釘修復版＋開機隨需幾分鐘＋分身帳號設計爆炸半徑=一顆可拋棄帳號）。順手釘 image digest（3.1.4@sha256:8caebd…，tag 可被重打 digest 不可）。MCP Portal 問答：現在用不上（m2m 天條），未來「寫手 AI 直連爆文池」時是正確大門——記在帳上。
-- **D期開工（Adam「不必等直接開工」，v0.26.0.006/007）**：①成本模型 docs/COST_MODEL.md（真數據撈 Firestore+executions）——固定底座≈$22/月＋每 15 字一帳一線 $2.70；**成本跟關鍵字量走不跟同事人數走**；K_max=15 附推導與重驗觸發 ②重算時抓到 timeout 摸頂雷（最重輪 13m13s=900s 的 88%＞80% 觸發線）→ task-timeout 900→1800 改 deploy.sh 部署生效 ③handle 補抓：src/storageState.ts（cookies 含 httpOnly 解析、85 案測試全綠、測試抓到 trim/@ 順序真 bug）＋capture route fallback＋worker 掃描解封回填。**誠實結果：cookie 死巷**（threads.com 登入不種 ds_user，log「抓不到（不擋）」）——管線留著、顯示留「-」、備選=viewer JSON 另排 ④驗證掃 ccg74：done、新收 3 篇＝新 worker 不 break。
-- **DNS 支線**：Adam 瀏覽器開不了新域名＝中華電信解析器負快取 30 分（SOA min TTL 1800s）→ 本機 Wi-Fi DNS 切 1.1.1.1/8.8.8.8 立即解。這是「網址剛出生 vs 查太快」一次性問題，同事不會遇到。
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| packages/backend/src/modules/brain.ts | bridge/API 雙軌＋附件 content blocks＋成本落帳＋停頓標記剝除 |
-| packages/backend/src/modules/voice.ts | 新建：VOICE_GEN 抽取＋MiniMax TTS＋ffmpegConvert＋GCS uploadMedia（ADC） |
-| packages/backend/src/modules/cardgen.ts | 新建：IMAGE_GEN 抽取（畫自己釘外觀）＋LINE 雙尺寸生圖管線 |
-| packages/backend/src/modules/gemini.ts | 新建：STT＋生圖執行端 |
-| packages/backend/src/routes/webhook.ts | media/audio 事件分支＋deliverReply 遞送咽喉（合成成功才扣點、失敗誠實退文字） |
-| packages/backend/src/modules/line.ts | getMessageContent＋audio/image 訊息型別＋replyMessages |
-| packages/backend/src/index.ts | /api/cron/expire-sweep（Cloud Scheduler）＋dev 才跑 setInterval |
-| packages/backend/src/config.ts | bridge/cron/MiniMax/Gemini config |
-| packages/backend/src/db/seed.sql | vision 閘道 2 點 |
-| soul/character-core/skills/image-creation.md | 補 [IMAGE_GEN] 標籤鐵律（她說畫了不算，標籤才算） |
-| Dockerfile / .dockerignore / deploy.sh | 新建：monorepo build＋ffmpeg＋sql 進 dist＋11 secrets 單一真相源 |
+| （無代碼變更） | 選型場：唯一殘留＝manman-platform/agent/ 作廢拷貝（見未解） |
 
 ---
 
 ## 下一步
 
-打電話：fork `~/.ailive/ailivex-platform/agent/`（v21 為基底）→ 換慢慢 character-core 靈魂＋MINIMAX_VOICE_ID=ttv-voice-2026080216441426-J1ebtRnu → LIFF 頁（LINE Developers 用 channel token 開 LIFF app）＋backend 加 /api/call/token（LiveKit token，用 ailive 既有 project、agent_name=manman 隔離）→ 部署 agent（常駐+開關+自動關機，磚頭費天條的即時語音例外條）。為什麼先做：Adam 點名要測全套，這是最後一塊；且 STT/TTS/靈魂三件今天都已就位，只剩編排。
+等 Adam 拿到 waitin 分支後開工打電話：先讀 legacy 43 檔對照 plm `docs/legacy-voice-call-audit.md` 的分類表（REUSE_AS_IS 4 檔直接搬、REWRITE 3 檔照 vNext 協定重寫），在 manman-platform 蓋 Fastify WS route＋LIFF 頁。為什麼這條：技術棧同源（Fastify/TS）、LINE 內開體驗、零常駐費。plm 文件已抓在 scratchpad（session 結束會蒸發，屆時重抓：`gh api repos/baobaoagi-cpu/plm/contents/<path>`）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-02 第7場：
+- **`~/.ailive/manman-platform/agent/` 四個檔是作廢拷貝**（minimax_tts / interrupt_gate / conv_tuning / tts_normalize，從 ailivex 搬的）：方向作廢後我要刪、rm 被權限擋，留在原地未 commit。下次動工先刪掉，別誤把它當新方向的建材。
+- **等 waitin 的 legacy 分支**：`Mindomind-voice-call-package`（branch voice-call-package，commit 2ae148d，43 檔）在 waitin 機器上。拿到 → 照抄改；拿不到 → 照 plm 盤點文件重建（協定表完整，可行但多花工）。
+- 抄的時候必帶 plm 審計出的三個關鍵修正：①generation ID 防幽靈音訊 ②LIFF idToken 伺服器端驗證（不信 client userId）③她講話時麥克風不關（真雙工）。完整清單見 plm `docs/legacy-voice-call-audit.md` 的 Major conflicts 八條。
+- 上一場未解全數仍在（[SCHEDULE]/[PROMISE]/[NOTE] 抽取器、worker、記憶管線、FOUNDATION.md、LINE Pay、啟元根治、admin 補點）。
 
 2026-08-02 第6場：
 - **地基帳本未立**：調度清單列了、Adam 還沒逐項點頭就轉往部署線——FOUNDATION.md 還不存在。首期五項只做了「部署腳本＋成本錶」兩項；payments/create 仍無鎖、env 仍 fail-quiet、CI 掃描未接。對外開放前必補。
@@ -114,13 +111,6 @@
 - anews 的 GEMINI_API_KEY 被 Google 標記外洩（403 leaked）——要去 anews 換 key，另案。
 - LINE Pay 押後（Adam 指示）：對外收費前必接。
 - molowe .env.local 的 BRIDGE_SECRET 已過期（UDN 那把才是活的）——molowe 下次動工會撞。
-
-2026-08-02 第5場：
-- **D期餘＝等實體物**：①觀察閘跑至 ~8/8（@lucymo0306 靜態 IP 7 天窗，每天瞄 scan_status/default）②第二顆分身帳號（Adam 備）③第二條靜態 IP（**Adam 週一自己買**，IPRoyal dashboard→Static Residential→Taiwan 30天$2.70；買完把 HOST:PORT:USER:PASS 給築→四源驗→printf 封 iproyal-static-2→deploy.sh 掛載）④首批開放名單（Adam 決）→齊了跑並發實測。
-- **handle 顯示「-」**：cookie 路死巷已誠實收；備選=掃描時從登入態頁面 viewer JSON 抽（純外觀，低優先）。
-- **capture 40 分韌性的實戰驗**：本機三測通＋metadata 已推，但真人慢登入場景要等下次真儀式（session 過期或同事首捐）自然驗——不專門排。
-- **iproyal-proxy（動態，已退役）**：secret 仍在 SM、deploy.sh 仍掛 IPROYAL_PROXY env（worker fallback 路徑用）。等第二帳號上線後動態 fallback 徹底無用時一起清（現在動它=改兩處風險，不值）。
-- cwd 漂移 L1 三犯（見教訓）——結構性處方待做。
 
 ---
 
@@ -141,4 +131,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第6場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第7場。*
