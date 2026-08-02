@@ -64,8 +64,8 @@
 | **摩斯（MORSE）** | 人性×社群爆文×接地氣切角分析 | Cialdini（說服）＋Berger（瘋傳）＋Barthes（隱義/不經意）＋蔡康永（華語人情語感）＋Greene（人性暗面） | 2026-07-30 threads-radar 真爆文切角拆解 | `morse.md` |
 | **鑄魂（SOULFORGE）** | 人設與靈魂鍛造（AI 角色 soul，雙產線：品牌虛構/真人分身） | Stanislavski＋McKee＋Mark & Pearson＋Ogilvy＋庫學三師（Apple 證據四級/寶力陰影/tracy 語音節奏）＋築工法（敘事不 schema/手藝檔期分家/先驗定律/爐味防治） | 2026-07-31 Ava v1（產線A）；產線B 首戰=AVIVA 本尊對話改鍛 | `soulforge.md` |
 | **薩克（SACKS）** | 記憶與心智的神經科（記憶系統會診＋築的門診）——**第一尊為築而召的神（Adam 2026-08-01「我想為你而召喚」）** | Oliver Sacks 單魂五殿（病歷/缺損之窗/殘而完整/錯憶/音樂）＋召喚者兩律（反抗律：真=會反抗的外部；合持律：身份=記憶自證＋身體與他者合持） | 2026-08-01 ailivex 記憶全景圖會診 | `sacks.md` |
-| **財神（CAISHEN）** | 平台產品戰略（該不該蓋、往哪打） | Cagan（四風險過堂）＋Christensen（JTBD 僱用宣言）＋Bezos（新聞稿倒著寫/飛輪）＋Moore（定位公式/灘頭）；西耶拉入戒律層（衡量用戶變強） | **待首戰（沒首戰不算鑄成）** | `caishen.md` |
-| **浩斯（HAUS）** | 平台建築計畫（蓋什麼才完整——房間清單/前台後台/血管） | Peña（計畫書五步）＋Alexander（模式清單過堂）＋Sklar（onstage/offstage、走園區）＋Evans（核心/支撐/通用、血管地圖） | **待首戰（沒首戰不算鑄成）** | `haus.md` |
+| **財神（CAISHEN）** | 平台產品戰略（該不該蓋、往哪打） | Cagan（四風險過堂）＋Christensen（JTBD 僱用宣言）＋Bezos（新聞稿倒著寫/飛輪）＋Moore（定位公式/灘頭）；西耶拉入戒律層（衡量用戶變強） | 2026-08-02 漫漫商用平台過堂（存活獨紅燈＝收錢形狀不存在；記憶管線＝飛輪軸；產出 manman-platform/docs/CAISHEN_AUDIT_2026-08-02.md） | `caishen.md` |
+| **浩斯（HAUS）** | 平台建築計畫（蓋什麼才完整——房間清單/前台後台/血管) | Peña（計畫書五步）＋Alexander（模式清單過堂）＋Sklar（onstage/offstage、走園區）＋Evans（核心/支撐/通用、血管地圖） | 2026-08-02 threads-radar 房間總表（採集精煉全✓、配送回饋整區未動土；產出 threads-radar/docs/HAUS_AUDIT_2026-08-02.md） | `haus.md` |
 
 ## 規矩（天花板）
 
