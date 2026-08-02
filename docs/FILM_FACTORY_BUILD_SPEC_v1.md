@@ -181,7 +181,7 @@ JOB_ACTION=keyframes 批次影格生成（幕4 進場時）
 ## 9. 技術棧與部署
 
 - **前台**：Next.js App Router（standalone）→ **Cloud Run**（沿 UDN 慣例；不上 Vercel——生成流程長、避 300s 雷）
-- **DB/儲存**：Firestore＋GCS（新 GCP project `film-factory-2026`，billing 掛 01FB18；Firestore PITR＋每日 export）
+- **DB/儲存**：Firestore＋GCS（新 GCP project `dreamf-2026`（2026-08-03 實開，號碼 866261832447），billing 掛 01FB18；Firestore PITR＋每日 export）
 - **Worker**：Cloud Run Jobs（同 repo `worker/`）；firebase-admin 走 **ADC**（天條：不注 SA JSON）
 - **LLM**：bridge（`BRIDGE_SECRET` via Secret Manager）
 - **部署**：`deploy.sh` 唯一真相源（第一次部署同日進 repo）；prod 人閘（Adam GO）；新 GCP project 首次 deploy 先過 IAM 雙必踩（Cloud Build --region、compute SA secretAccessor）
