@@ -2,6 +2,40 @@
 
 ---
 
+## 2026-08-03（通宵）— DreamF 平台照施工藍圖全量完工（期1+期2 上雲、e2e 驗收全綠）
+
+### 背景 / WHY
+Adam 看片點頭＋裁示「今晚就把這個平台按施工藍圖全部完工，排下去做」。照 DREAMF_CONSTRUCTION_BLUEPRINT.md 五步驟＋期2 工單一夜蓋完。
+
+### 產出
+- repo `linhocheng/dreamf`（私有，~/.ailive/dreamf）：shared/ 確定性核心 11 檔（web+worker 共用一間房）＋app/ 幕1-7＋admin 三後台＋14 條 API＋worker/ Cloud Run Jobs（keyframes/shoot/retake）＋tests/ 28 案＋FOUNDATION.md（13 首期+13 排後帶觸發）＋THIRD_PARTY.md＋CI（gitleaks/Semgrep/audit）＋deploy.sh
+- GCP `dreamf-2026`（866261832447，billing 01FB18）：Firestore+PITR、assets/backup 雙 bucket、AR、dreamf-runtime SA、IAM 雙必踩+actAs、Secret Manager 五密、Cloud Scheduler watchdog 每 5 分
+- 上線：https://dreamf-platform-tpgsvdekdq-de.a.run.app（service dreamf-platform + job dreamf-worker，asia-east1）
+- e2e 真片：16 秒陶茶壺品牌片（case hXvF0XOfufMnX43XYWrc）幕1→幕7 全流程走完、已交片
+
+### 驗收（鑑別信號全中）
+- 期1：未登入 401／簽字前 veo ledger 零筆／退件路真觸發（清空尾幀→簽字 409 帶驗證器錯誤）／簽字落 contractUsd $1.60／admin 無票 307
+- 期2：成片 16.033s 可播／影格 K+1=3 張共用幀雙歸屬＋指紋／大圖分鏡表落 GCS／段級重拍 +$0.80／**斷點續跑實測**（殺 execution→生產 watchdog 自動標 stalled→續拍→帳型 segment-1×1、segment-2×2 證明跳段）／跳錶=Σledger=$2.517 帳房相符／lease 閘重複觸發 409／教室 corrections 自動進水
+- 導演一次過：2 段、共用幀、追蹤物專屬色（陶土灰壺身）、colors 語意鍵全 HEX
+
+### 已解決（施工雷，全數入 commit）
+- 本地 builds submit 無 $COMMIT_SHA → deploy.sh 顯式 substitution
+- worker Docker 內 ../shared 解析不到 node_modules → symlink /repo/node_modules
+- Turbopack 不吃 .js→.ts 副檔名替換 → shared/worker 全轉 CommonJS+無副檔名 import
+- --allow-unauthenticated 的 invoker binding 沒掛上（build SA 無權）→ 手動 add-iam-policy-binding
+- 風格卡中文母版描述觸發 Vertex SAFETY 誤擋 → 面談協議加英文 promptEn（中文給人看、英文餵引擎）v0.1.0.003
+
+### ⚠️ 尚未解決
+- 本機 gcloud CLI token 需人工 reauth（`gcloud auth login`）——生產不受影響（平台走 Cloud Run SA）；Firestore 每日 export 排程（FOUNDATION D1）因此沒建，下一棒補
+- 未實測路徑：pause 旗、預算閘硬停、RAI 押回（兩案零 RAI 擋件，路都在 code＋測試裡）
+- 殺掉的那次 retake 生成，Veo 伺服器端可能照計費（帳看 GCP billing 才準——本平台 ledger 只記已下載的）
+- 期3 排後項全in FOUNDATION.md 帳（TTS D9／角色線 D10／教室出水 D11）
+
+### 待執行
+- [ ] Adam：看 e2e 成片＋上 /login 用 .env.local 裡的密碼走一遍 UI
+- [ ] 下一棒：gcloud reauth 後建 Firestore export 排程（D1）
+- [ ] 第一支真客戶片（UDN 題材）進線
+
 ## 2026-07-02（續）— Harness v2.2：driver 控制權反轉 + ledger + goal 審查 + 預授權
 
 ### 背景 / WHY
