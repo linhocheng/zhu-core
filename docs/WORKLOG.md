@@ -9761,3 +9761,51 @@ threads-radar D 期（開放前驗證閘）進行中。今天把「不等實體�
 1. **每天瞄觀察閘**：`node -e` 讀 scan_status/default（lastRun=done、found>0、health=connected）＋帳號 doc 無 challenge 跡象。紅燈（challenge/expired）＝觀察閘重跑＋換 ASN。
 2. **Adam 週一買 IP 後**：四源驗證（geo 四家/proxy/abuser/ASN）→ 過了 printf 封 `iproyal-static-2` → worker/deploy.sh 加掛載 → 等第二帳號貢獻儀式綁定。SOP 全在 FOUNDATION 2026-08-01 靜態 ISP 條。
 3. 8/8 觀察閘滿窗零 challenge → 回 docs/COST_MODEL.md 把 K_max=15 從假設轉一級驗證，並提醒 Adam 走第二帳號捐入→並發實測。
+
+---
+
+## 2026-08-02（第6場）— 漫漫商用平台一日通車——本地→GCP 測試環境→多模態全開（讀圖/PDF/聽音檔/畫圖/克隆聲）
+
+### 背景 / WHY
+manman-platform 商品化。Adam 要「全套」：本尊有的能力全部啟用。今天把輸入端（字/圖/PDF/語音）和輸出端（字/語音/圖）全通了，剩打電話（LIFF+LiveKit+agent fork，建材全齊）和中樞（抽取器框架其餘標籤/worker/記憶管線）。
+
+### 完成
+- 拉下 baobaoagi-cpu/manman-platform（本尊漫漫的商用多租戶版原型），全面盤點：骨架品質高（tenantScope 機制、批次到期先扣）、但技能層全空（標籤抽取器零實作、worker/記憶管線不存在）
+- 讀 BLUEPRINT 列十二章地基調度清單給 Adam（首期五項：payments 上鎖、env fail-loud、CI 掃描、成本錶、部署腳本）
+- 本地端通車：Docker PG18、LINE channel 驗活接 webhook（cloudflared quick tunnel）、Adam 真機走完啟元儀式
+- 大腦接 bridge（LLM_BASE_URL 可配、BRIDGE_SECRET 雙軌）：開發期 $0、量產切 API key 不改碼
+- 修啟元儀式吞原文 bug 的資料手術（稱呼=Adam、她的名字=小狐狸）＋grantPoints 入 1000 測試點
+- GCP 測試環境全通：新 project manman-2026（billing 掛 01FB18）、Cloud Run＋Cloud SQL PG17（enterprise db-f1-micro）、七把 secrets、expireSweep 改 Cloud Scheduler cron route（throttled 天條）、本地租戶資料整戶搬雲、LINE webhook 切雲端
+- 多模態全開（Adam 給 API key「能省則省不能省走這個」）：讀圖/讀 PDF（vision 閘道 2 點、附件強制直連 API）、聽音檔（LINE 語音→ffmpeg→Gemini STT→當一般對話）、畫圖（[IMAGE_GEN] 確定性抽取→gemini-2.5-flash-image→LINE 雙尺寸圖片訊息、image 閘道 20 點、畫自己自動釘外觀）
+- 克隆聲上線：Adam 給本尊 voice_id → MiniMax（ailivex 帳號、api.minimax.io）驗活 → [VOICE_GEN] 確定性抽取器＋（情緒）→emotion 參數＋mp3→m4a→GCS→LINE 語音訊息（voice 閘道 5 點）
+- 修三隻蟲：<#0.3#> 語音停頓標記漏到文字通道（輸出咽喉 regex 剝除）、附件直連誤打 bridge 401（llmBaseUrl 鎖歸 bridge 專用）、Cloud SQL PG17 要 --edition=enterprise
+- 成本錶接通：llm_cost_log 每次動腦落帳（bridge=0 元、API=估算單價）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| packages/backend/src/modules/brain.ts | bridge/API 雙軌＋附件 content blocks＋成本落帳＋停頓標記剝除 |
+| packages/backend/src/modules/voice.ts | 新建：VOICE_GEN 抽取＋MiniMax TTS＋ffmpegConvert＋GCS uploadMedia（ADC） |
+| packages/backend/src/modules/cardgen.ts | 新建：IMAGE_GEN 抽取（畫自己釘外觀）＋LINE 雙尺寸生圖管線 |
+| packages/backend/src/modules/gemini.ts | 新建：STT＋生圖執行端 |
+| packages/backend/src/routes/webhook.ts | media/audio 事件分支＋deliverReply 遞送咽喉（合成成功才扣點、失敗誠實退文字） |
+| packages/backend/src/modules/line.ts | getMessageContent＋audio/image 訊息型別＋replyMessages |
+| packages/backend/src/index.ts | /api/cron/expire-sweep（Cloud Scheduler）＋dev 才跑 setInterval |
+| packages/backend/src/config.ts | bridge/cron/MiniMax/Gemini config |
+| packages/backend/src/db/seed.sql | vision 閘道 2 點 |
+| soul/character-core/skills/image-creation.md | 補 [IMAGE_GEN] 標籤鐵律（她說畫了不算，標籤才算） |
+| Dockerfile / .dockerignore / deploy.sh | 新建：monorepo build＋ffmpeg＋sql 進 dist＋11 secrets 單一真相源 |
+
+### ⚠️ 尚未解決
+- **地基帳本未立**：調度清單列了、Adam 還沒逐項點頭就轉往部署線——FOUNDATION.md 還不存在。首期五項只做了「部署腳本＋成本錶」兩項；payments/create 仍無鎖、env 仍 fail-quiet、CI 掃描未接。對外開放前必補。
+- **打電話**：建材全齊（LiveKit 既有 project、克隆聲驗通、ailivex agent 可 fork、STT 已上）——下一場主戲：LIFF 通話頁＋token 端點＋agent 換慢慢靈魂。
+- **[SCHEDULE]/[PROMISE]/[NOTE] 抽取器仍缺**：她會吐標籤但系統不接（原始標籤會漏到 LINE）。靈魂教了、手沒接——排程/約定/共讀技能全是「嘴巴會」。
+- **worker package 不存在**：履約/主動關懷/夜間日記/夢全未動。
+- **啟元儀式吞原文 bug 根治未做**（只做了資料手術）：要 Haiku 抽取器＋確定性 fallback。
+- 新戶零贈點＋admin 無補點端點（Adam 那次失敗讀圖被扣 2 點記帳上，端點好了要補）。
+- anews 的 GEMINI_API_KEY 被 Google 標記外洩（403 leaked）——要去 anews 換 key，另案。
+- LINE Pay 押後（Adam 指示）：對外收費前必接。
+- molowe .env.local 的 BRIDGE_SECRET 已過期（UDN 那把才是活的）——molowe 下次動工會撞。
+
+### 待執行 / 下一步
+打電話：fork `~/.ailive/ailivex-platform/agent/`（v21 為基底）→ 換慢慢 character-core 靈魂＋MINIMAX_VOICE_ID=ttv-voice-2026080216441426-J1ebtRnu → LIFF 頁（LINE Developers 用 channel token 開 LIFF app）＋backend 加 /api/call/token（LiveKit token，用 ailive 既有 project、agent_name=manman 隔離）→ 部署 agent（常駐+開關+自動關機，磚頭費天條的即時語音例外條）。為什麼先做：Adam 點名要測全套，這是最後一塊；且 STT/TTS/靈魂三件今天都已就位，只剩編排。
