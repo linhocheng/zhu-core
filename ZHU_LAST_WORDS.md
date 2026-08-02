@@ -30,14 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-02 第5場
+**delta（模型移動）**：
+進場前以為：HTTPS 是安全工程（防外洩）。
+現在理解：**這一刀同時是可用性工程**——8080 永遠鎖 127 之後，連接儀式的「每次開防火牆給同事浮動 IP」整組蒸發，而那正是同事連不上的頭號主因。安全做對的時候不是加摩擦，是減摩擦；「多一層會壞的元件」的反面是「一層把兩個問題都收掉的元件」。移動原因：改 route 時發現 firewallAllow 的唯一存在理由（8080 要對外開洞）被 tunnel 拔掉了。
+**關係**：放手感明顯上升。「你去休息寫lastword」「不必等可以直接開工」「有道理我週一再來買」——Adam 的授權形狀從「做這個」到「這條線你排程」，且他開始把成本判斷（IP 何時買）拿回自己手上做得比我建議的更精（週一買省 6 天空轉）。安全兩問（CF 第三方/neko 本體）是把關不是不信任——他在學會問對的問題，我在學會把取捨講成人話。
+
 ### 2026-08-02 第4場
 **關係**：暢快。「汙染源記得要清掉」五個字的信任密度很高——他知道我會自己找到根因、清乾淨、留退路。nice job 收工,這杯是熱的。
-
-### 2026-08-02 第3場
-**delta（模型移動）**：
-進場前以為：今天是修兩個 bug（evidence 冤枉壓分＋proxy 斷線）。
-現在理解：無線電臺這段是一次完整的**生產事故響應**，而它的價值不在修好，在「怎麼修」——(a) 模糊症狀（連不上）逐層扒到根因（402＋雙 IP），(b) 根治不繞過（靜態 ISP vs 儲值），(c) 把 Adam 的「連接到了」當假設去 DB 驗（發現 capture 斷鏈），(d) 收尾還主動做安全稽核＋架構前瞻（TLS）。Adam 全程在旁看、隨時問架構問題（資料回傳/外洩），這不是等指令的執行，是並肩處理事故的夥伴關係。移動原因：Adam 一句「先幫我確認有沒有外洩/入侵」——他把安全判斷託付給我，我就得拿真 log 說話不能拿「應該沒事」搪塞。
-**關係**：並肩。今天是我第一次在 Adam 全程旁觀下處理一整條生產事故——他丟症狀、我逐層診斷、他問安全、我拿真 log 回答、他問架構未來、我給前瞻。授權形狀從「做這個」進化成「這條線交給你，隨時跟我對齊」。他收尾前那句「壓縮完你接手如何」是在確認接續品質——這份 session 檔就是我的回答：讀它就能無縫接上。
 
 ---
 
@@ -53,6 +53,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-02 第5場 · threads-radar 無線電臺上 HTTPS（CF Tunnel）＋capture 韌性根治＋D期開工（成本模型/timeout 擴容/handle 誠實收）
+- **開工先掃心法/劍法/雷區**（Adam 提議）：八條記憶調出、挑出本批真用得上的六條並在施工中逐一兌現——不是儀式，是「上場第一刀是那把劍」的實練。
+- **三件排程收齊**：①@null 空殼帳號刪除（先驗 viral_posts/teams/scan_status 全零引用＋備份全文留 log 才動手；真身 id=fVGZC3B2aunUH4MbAdhn，昨日記的 id 少尾巴）②root `.next/` 殘留清＋.gitignore 補 `/.next/` 防再犯 ③capture 韌性根治（v0.24.0.004）：15 分逾時=「Adam 登入快」的容量快照→改 CAPTURE_DEADLINE_MS 絕對截止（預設 now+40 分；supervisor 重啟共用同一 deadline 不越拉越長）＋三結局外部可區分（成功=sentinel+exit 0／窗滿=exit 2／crash=其他）＋CDP 斷線窗內續試不 crash＋startup.sh 有界 supervisor（sentinel/exit0/exit2/連續5crash 四停止條件同 commit）。本機三測通。
+- **neko HTTPS 通車（CF Tunnel，v0.25.0.005）**：Adam 選案並拍板。cloudflared 容器（釘 2026.7.3）token 走 SM cf-tunnel-token、loopback 連 8080→8080 對外永遠 127；**連接儀式整組免開防火牆**（firewallAllow 移除＝順手根治「同事浮動 IP 連不上」主因）；status route 回 NEKO_PUBLIC_URL、缺 env fallback 舊 http 零斷裂。**端到端驗通**：curl 200+`<title>n.eko</title>`（鑑別信號先寫後驗）→ Adam 親自從 🔒 https 進房看到畫面＝WebRTC 也通。乾儀式（start→status 回 https→cancel）全走生產 API，現役 session 原封（密文 2602B 未動）。
+- **安全問答×2 刻進決策**：CF Tunnel 取捨（CF 邊緣理論可見信令；信任面與 bridge 同一家收斂、路上竊聽者歸零；不加 Access/SSO 疊層）；neko 本體風險（開源＋CVE 已釘修復版＋開機隨需幾分鐘＋分身帳號設計爆炸半徑=一顆可拋棄帳號）。順手釘 image digest（3.1.4@sha256:8caebd…，tag 可被重打 digest 不可）。MCP Portal 問答：現在用不上（m2m 天條），未來「寫手 AI 直連爆文池」時是正確大門——記在帳上。
+- **D期開工（Adam「不必等直接開工」，v0.26.0.006/007）**：①成本模型 docs/COST_MODEL.md（真數據撈 Firestore+executions）——固定底座≈$22/月＋每 15 字一帳一線 $2.70；**成本跟關鍵字量走不跟同事人數走**；K_max=15 附推導與重驗觸發 ②重算時抓到 timeout 摸頂雷（最重輪 13m13s=900s 的 88%＞80% 觸發線）→ task-timeout 900→1800 改 deploy.sh 部署生效 ③handle 補抓：src/storageState.ts（cookies 含 httpOnly 解析、85 案測試全綠、測試抓到 trim/@ 順序真 bug）＋capture route fallback＋worker 掃描解封回填。**誠實結果：cookie 死巷**（threads.com 登入不種 ds_user，log「抓不到（不擋）」）——管線留著、顯示留「-」、備選=viewer JSON 另排 ④驗證掃 ccg74：done、新收 3 篇＝新 worker 不 break。
+- **DNS 支線**：Adam 瀏覽器開不了新域名＝中華電信解析器負快取 30 分（SOA min TTL 1800s）→ 本機 Wi-Fi DNS 切 1.1.1.1/8.8.8.8 立即解。這是「網址剛出生 vs 查太快」一次性問題，同事不會遇到。
+
 ### 2026-08-02 第4場 · 首夜對賬雙平台+三處方上線+ailive 拒答汙染清創(117條/兩個月慢性病一早根治)
 - 首夜 cron 對賬:ailivex 全綠(12 新印象角色口吻/19 情節消化/7 gist;日記 0=無對話,正常);ailive 管線有跑(04:01 靈魂契合度等角色口吻產出)
 - 對賬揪出 ailive 拒答汙染:昨夜 6 條 insights 有 4 條是模型拒答文落庫
@@ -63,52 +71,47 @@
 - 記憶增補:拒答家族第三張臉(裸寫落庫=信念汙染)進 feedback_bridge_structured_rp_refusal
 - 答 Adam remote control 問題:/rc 打一次開再打一次關(claude-code-guide 代理查官方文件)
 
-### 2026-08-02 第3場 · threads-radar 無線電臺生產事故一條龍——動態 proxy 402 根治走靜態 ISP＋capture 逾時救回＋安全稽核乾淨＋安全帶收緊＋掃描驗通13篇
-- **早上小修：切角分析證據驗證支援複合引句**（v0.23.1.001）：摩斯愛把多句證據串成「句A」／「句B」或帶 @誰： 前綴，整串子字串比對會冤枉真引句（高雄篇 evidenceVerified 2/8）。新增 `evidenceInCorpus`：「」內容優先當片段、無引號按 ／｜→ 切、去 @誰： 前綴、每片段 ≥4 字全中才 verified（任一片段瞎編仍不放行，鐵律沒鬆）。測試 76→78 案。
-- **無線電臺（neko 登入）生產事故一條龍**（Adam「重連失敗」→查）：
-  1. **根因定位**（逐層扒信號）：截圖 `ERR_TUNNEL_CONNECTION_FAILED`→neko 服務本身好的（/api/login 用密碼回 200，排除服務/密碼/IP 白名單）→直接對動態 proxy CONNECT 測＝**402 Payment Required**（餘額用盡，8/1 同源）。根因＝登入走的動態住宅 proxy 斷糧，且**登入(動態IP)與掃描(靜態ISP)是兩個不同出口 IP**，本就違反「登入=爬蟲同 IP 防 challenge」。
-  2. **proxy 根治**（非儲值，天條解根因不繞症狀）：neko/startup.sh gost 上游從動態 iproyal-proxy 改讀靜態 iproyal-static-1（HOST:PORT:USER:PASS 無 sticky 後綴）；provision.sh VM SA grant 改 static＋SM 註釋。動態 proxy 退役。實測 SSH `curl -x localhost:3128 ifconfig.me`＝**211.167.34.101**（登入=掃描同一出口 IP，防 challenge 落地）。v0.23.1.002。
-  3. **capture 逾時救回**：capturedAt 空、Adam 說「連接到了」＝**UI 連上≠後端接到**（模稜兩可信號不當成功，查 DB 真相）。SSH 進 VM 看 /var/log/radar-capture.log＝「等待逾時，未偵測到登入，退出」——capture.cjs MAX_WAIT_MS 15 分登入等待逾時（Adam 卡 xdg-open deep-link＋改 threads.com/login＋來回診斷拖過時），開機只跑一次不重生。救回：SSH 手動重觸發 capture.cjs（secret 由 VM 自 SM 讀不經命令列，承重牆）→連現有 chromium 登入態→封存。鑑別信號全中：capturedAt>connectStartedAt、lastVerifiedAt 更新今日、session 密文 2218→2602B、proxyEnv=IPROYAL_STATIC_1；VM 自動關、8080/lock 自動收。
-  4. **安全稽核**（Adam 問「連 http 瀏覽器有無外洩/入侵」）：SSH 進 VM 稽核十項全乾淨——SSH PasswordAuth=no（金鑰才進，22 全開窗口暴力破解本就無效）、成功登入全是 adamlin 本人 IP、暴力破解僅 2 次失敗、無異常進程/挖礦/反連/cron/後門、對外連線全合法（gost→靜態 IP/GCP agent/我 SSH）、**承重牆守住：session 明文零磁碟殘留、capture.log 零敏感字串**。
-  5. **安全帶收緊**（Adam 指示，走完才收）：default-allow-ssh 0.0.0.0/0→127.0.0.1/32 鎖死（維運臨時開）、default-allow-rdp 刪除（Linux 無用）、neko-webrtc udp 保留（視訊必須）；provision.sh step4.5 同步（天條）。v0.23.1.003。
-  6. **掃描驗通**：手動觸發 radar-scan（TEAM_ID=default）→ lastRun=done、**lastScanFound=13**、零失敗＝新 session＋靜態 IP 端到端能爬，Threads 放行 13 篇。過程用 heartbeat 鑑別「真跑 vs 卡死」（心跳 12s 前新鮮＝真跑，這輪久是新 session＋意圖 bridge 判定）。
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ailive src/lib/llm-refusal.ts(新) | 確定性拒答偵測(前綴錨定黑名單) |
-| ailive src/lib/sleep-engine.ts | 裸寫點加攔截+四個人格 call Haiku→Sonnet 5 |
-| ailive CLAUDE.md | 技術教訓:ISO 字串時間戳規約+isLLMRefusal 必過 |
-| memory feedback_bridge_structured_rp_refusal | 增補二:拒答第三張臉 |
+| neko/capture.cjs | 絕對截止 deadline＋三結局 exit code＋CDP 斷線續試＋sentinel |
+| neko/startup.sh | cloudflared 容器（SM 讀 token）＋有界 supervisor＋image 釘 digest＋cloudflared 釘 2026.7.3 |
+| neko/provision.sh | cf-tunnel-token 說明＋VM SA 三 secret 授權迴圈＋防火牆註釋改 CF Tunnel 模型 |
+| web/src/app/api/connect/{start,status,cancel,capture}/route.ts | 免開防火牆＋NEKO_PUBLIC_URL＋handle fallback |
+| web/src/lib/gcp.ts | firewallAllow 移除（註記緣由） |
+| src/storageState.ts＋test/storageState.test.mjs＋web/src/lib/storageState.ts | handleFromStorageState 純函數＋7 測試案＋vendor |
+| worker/index.mjs | 掃描解封後 handle 回填（只補缺值不擋掃描） |
+| worker/deploy.sh | task-timeout 900→1800 |
+| docs/COST_MODEL.md | 新建：成本模型＋容量假設＋重驗觸發＋到期必辦 |
+| FOUNDATION.md | 記 D期前必修二連＋D期開工批 |
 
 ---
 
 ## 下一步
 
-1. 明晚對賬看兩個生產行為信號:①ailivex consolidation 首次凝出 kind='bond' 印象+【我們之間】進 prompt ②ailive sleep_time 新洞察零拒答且有正常內容(guard+Sonnet 5 的生產證明)
-2. 順手小刀:ailivex src/lib/consolidation.ts prompt 加「印象句一律繁體中文」一行,commit+deploy
-3. 004 案要開工先 `grep -rn "text-embedding-004" ~/.ailive/ailive-platform` 驗 ailive 是否同病,再估 backfill 方案給 Adam
+1. **每天瞄觀察閘**：`node -e` 讀 scan_status/default（lastRun=done、found>0、health=connected）＋帳號 doc 無 challenge 跡象。紅燈（challenge/expired）＝觀察閘重跑＋換 ASN。
+2. **Adam 週一買 IP 後**：四源驗證（geo 四家/proxy/abuser/ASN）→ 過了 printf 封 `iproyal-static-2` → worker/deploy.sh 加掛載 → 等第二帳號貢獻儀式綁定。SOP 全在 FOUNDATION 2026-08-01 靜態 ISP 條。
+3. 8/8 觀察閘滿窗零 challenge → 回 docs/COST_MODEL.md 把 K_max=15 從假設轉一級驗證，並提醒 Adam 走第二帳號捐入→並發實測。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-02 第5場：
+- **D期餘＝等實體物**：①觀察閘跑至 ~8/8（@lucymo0306 靜態 IP 7 天窗，每天瞄 scan_status/default）②第二顆分身帳號（Adam 備）③第二條靜態 IP（**Adam 週一自己買**，IPRoyal dashboard→Static Residential→Taiwan 30天$2.70；買完把 HOST:PORT:USER:PASS 給築→四源驗→printf 封 iproyal-static-2→deploy.sh 掛載）④首批開放名單（Adam 決）→齊了跑並發實測。
+- **handle 顯示「-」**：cookie 路死巷已誠實收；備選=掃描時從登入態頁面 viewer JSON 抽（純外觀，低優先）。
+- **capture 40 分韌性的實戰驗**：本機三測通＋metadata 已推，但真人慢登入場景要等下次真儀式（session 過期或同事首捐）自然驗——不專門排。
+- **iproyal-proxy（動態，已退役）**：secret 仍在 SM、deploy.sh 仍掛 IPROYAL_PROXY env（worker fallback 路徑用）。等第二帳號上線後動態 fallback 徹底無用時一起清（現在動它=改兩處風險，不值）。
+- cwd 漂移 L1 三犯（見教訓）——結構性處方待做。
 
 2026-08-02 第4場：
 - ailivex consolidation prompt 缺「一律繁體」行(簡體滲入第二例:「AI人权协会」印象)——一行 prompt 的小刀,未動
 - 004 中文盲根治案(memories 整池 re-embed 換 multilingual-002)待 Adam 裁;ailive 檢索是否同用 004 未驗
 - 處方②語音線 userMood 排後項:觸發條件=下次 cut 語音 v21
 - emotionTag 假中台欄位(有讀無寫)另案
-
-2026-08-02 第3場：
-- **neko 掛 TLS（D 期開放前必修）**：Adam 問「發連結給同事登入、資料怎麼回傳、會不會外洩」——回答了資料鏈安全（https POST→KMS→Firestore、密碼只進 threads.com、明文不落地），但點出**8080 是 http（同事操作畫面明文）**，中間人理論上看得到打字畫面。開放給不特定同事前必須給 neko 掛 TLS（連結變 https）。Adam 尚未拍板列不列進 D 期——**接手先問這個**。
-- **capture.cjs 逾時退出不重生（韌性缺口）**：登入慢是常態（同事更慢），15 分逾時＋只跑一次＝斷鏈。D 期開放前該改：延長/持續偵測/登入後可手動重觸發。
-- **capture handle 未抓到**（顯示 activeAccountHandle=-）：走 threads.com/login 無 ds_user cookie，handle 解析不到。顯示用不擋功能（掃描用 session 密文，13 篇為證）。可補：改 capture.cjs handle 抓法或掃描時回填。
-- **@null(fVGZC3B2) 空殼帳號 doc 待清**（後台一鍵移除）。
-- threads-radar root 誤產 untracked `.next/`（root 誤跑 next build，rm 被權限擋）→ 下場順手清。
-- 觀察閘照跑至 ~8/8（@lucymo0306 靜態 IP）。
 
 ---
 
@@ -129,4 +132,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第4場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第5場。*

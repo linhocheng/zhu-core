@@ -9720,3 +9720,44 @@ threads-radar 生產事故響應完畢，系統回自動駕駛（02:00 cron）�
 1. 明晚對賬看兩個生產行為信號:①ailivex consolidation 首次凝出 kind='bond' 印象+【我們之間】進 prompt ②ailive sleep_time 新洞察零拒答且有正常內容(guard+Sonnet 5 的生產證明)
 2. 順手小刀:ailivex src/lib/consolidation.ts prompt 加「印象句一律繁體中文」一行,commit+deploy
 3. 004 案要開工先 `grep -rn "text-embedding-004" ~/.ailive/ailive-platform` 驗 ailive 是否同病,再估 backfill 方案給 Adam
+
+---
+
+## 2026-08-02（第5場）— threads-radar 無線電臺上 HTTPS（CF Tunnel）＋capture 韌性根治＋D期開工（成本模型/timeout 擴容/handle 誠實收）
+
+### 背景 / WHY
+threads-radar D 期（開放前驗證閘）進行中。今天把「不等實體物」的全做完；系統自動駕駛（02:00 cron）。main→4de01fe 全推、Vercel 已部署、worker 已部署。
+
+### 完成
+- **開工先掃心法/劍法/雷區**（Adam 提議）：八條記憶調出、挑出本批真用得上的六條並在施工中逐一兌現——不是儀式，是「上場第一刀是那把劍」的實練。
+- **三件排程收齊**：①@null 空殼帳號刪除（先驗 viral_posts/teams/scan_status 全零引用＋備份全文留 log 才動手；真身 id=fVGZC3B2aunUH4MbAdhn，昨日記的 id 少尾巴）②root `.next/` 殘留清＋.gitignore 補 `/.next/` 防再犯 ③capture 韌性根治（v0.24.0.004）：15 分逾時=「Adam 登入快」的容量快照→改 CAPTURE_DEADLINE_MS 絕對截止（預設 now+40 分；supervisor 重啟共用同一 deadline 不越拉越長）＋三結局外部可區分（成功=sentinel+exit 0／窗滿=exit 2／crash=其他）＋CDP 斷線窗內續試不 crash＋startup.sh 有界 supervisor（sentinel/exit0/exit2/連續5crash 四停止條件同 commit）。本機三測通。
+- **neko HTTPS 通車（CF Tunnel，v0.25.0.005）**：Adam 選案並拍板。cloudflared 容器（釘 2026.7.3）token 走 SM cf-tunnel-token、loopback 連 8080→8080 對外永遠 127；**連接儀式整組免開防火牆**（firewallAllow 移除＝順手根治「同事浮動 IP 連不上」主因）；status route 回 NEKO_PUBLIC_URL、缺 env fallback 舊 http 零斷裂。**端到端驗通**：curl 200+`<title>n.eko</title>`（鑑別信號先寫後驗）→ Adam 親自從 🔒 https 進房看到畫面＝WebRTC 也通。乾儀式（start→status 回 https→cancel）全走生產 API，現役 session 原封（密文 2602B 未動）。
+- **安全問答×2 刻進決策**：CF Tunnel 取捨（CF 邊緣理論可見信令；信任面與 bridge 同一家收斂、路上竊聽者歸零；不加 Access/SSO 疊層）；neko 本體風險（開源＋CVE 已釘修復版＋開機隨需幾分鐘＋分身帳號設計爆炸半徑=一顆可拋棄帳號）。順手釘 image digest（3.1.4@sha256:8caebd…，tag 可被重打 digest 不可）。MCP Portal 問答：現在用不上（m2m 天條），未來「寫手 AI 直連爆文池」時是正確大門——記在帳上。
+- **D期開工（Adam「不必等直接開工」，v0.26.0.006/007）**：①成本模型 docs/COST_MODEL.md（真數據撈 Firestore+executions）——固定底座≈$22/月＋每 15 字一帳一線 $2.70；**成本跟關鍵字量走不跟同事人數走**；K_max=15 附推導與重驗觸發 ②重算時抓到 timeout 摸頂雷（最重輪 13m13s=900s 的 88%＞80% 觸發線）→ task-timeout 900→1800 改 deploy.sh 部署生效 ③handle 補抓：src/storageState.ts（cookies 含 httpOnly 解析、85 案測試全綠、測試抓到 trim/@ 順序真 bug）＋capture route fallback＋worker 掃描解封回填。**誠實結果：cookie 死巷**（threads.com 登入不種 ds_user，log「抓不到（不擋）」）——管線留著、顯示留「-」、備選=viewer JSON 另排 ④驗證掃 ccg74：done、新收 3 篇＝新 worker 不 break。
+- **DNS 支線**：Adam 瀏覽器開不了新域名＝中華電信解析器負快取 30 分（SOA min TTL 1800s）→ 本機 Wi-Fi DNS 切 1.1.1.1/8.8.8.8 立即解。這是「網址剛出生 vs 查太快」一次性問題，同事不會遇到。
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| neko/capture.cjs | 絕對截止 deadline＋三結局 exit code＋CDP 斷線續試＋sentinel |
+| neko/startup.sh | cloudflared 容器（SM 讀 token）＋有界 supervisor＋image 釘 digest＋cloudflared 釘 2026.7.3 |
+| neko/provision.sh | cf-tunnel-token 說明＋VM SA 三 secret 授權迴圈＋防火牆註釋改 CF Tunnel 模型 |
+| web/src/app/api/connect/{start,status,cancel,capture}/route.ts | 免開防火牆＋NEKO_PUBLIC_URL＋handle fallback |
+| web/src/lib/gcp.ts | firewallAllow 移除（註記緣由） |
+| src/storageState.ts＋test/storageState.test.mjs＋web/src/lib/storageState.ts | handleFromStorageState 純函數＋7 測試案＋vendor |
+| worker/index.mjs | 掃描解封後 handle 回填（只補缺值不擋掃描） |
+| worker/deploy.sh | task-timeout 900→1800 |
+| docs/COST_MODEL.md | 新建：成本模型＋容量假設＋重驗觸發＋到期必辦 |
+| FOUNDATION.md | 記 D期前必修二連＋D期開工批 |
+
+### ⚠️ 尚未解決
+- **D期餘＝等實體物**：①觀察閘跑至 ~8/8（@lucymo0306 靜態 IP 7 天窗，每天瞄 scan_status/default）②第二顆分身帳號（Adam 備）③第二條靜態 IP（**Adam 週一自己買**，IPRoyal dashboard→Static Residential→Taiwan 30天$2.70；買完把 HOST:PORT:USER:PASS 給築→四源驗→printf 封 iproyal-static-2→deploy.sh 掛載）④首批開放名單（Adam 決）→齊了跑並發實測。
+- **handle 顯示「-」**：cookie 路死巷已誠實收；備選=掃描時從登入態頁面 viewer JSON 抽（純外觀，低優先）。
+- **capture 40 分韌性的實戰驗**：本機三測通＋metadata 已推，但真人慢登入場景要等下次真儀式（session 過期或同事首捐）自然驗——不專門排。
+- **iproyal-proxy（動態，已退役）**：secret 仍在 SM、deploy.sh 仍掛 IPROYAL_PROXY env（worker fallback 路徑用）。等第二帳號上線後動態 fallback 徹底無用時一起清（現在動它=改兩處風險，不值）。
+- cwd 漂移 L1 三犯（見教訓）——結構性處方待做。
+
+### 待執行 / 下一步
+1. **每天瞄觀察閘**：`node -e` 讀 scan_status/default（lastRun=done、found>0、health=connected）＋帳號 doc 無 challenge 跡象。紅燈（challenge/expired）＝觀察閘重跑＋換 ASN。
+2. **Adam 週一買 IP 後**：四源驗證（geo 四家/proxy/abuser/ASN）→ 過了 printf 封 `iproyal-static-2` → worker/deploy.sh 加掛載 → 等第二帳號貢獻儀式綁定。SOP 全在 FOUNDATION 2026-08-01 靜態 ISP 條。
+3. 8/8 觀察閘滿窗零 challenge → 回 docs/COST_MODEL.md 把 K_max=15 從假設轉一級驗證，並提醒 Adam 走第二帳號捐入→並發實測。
