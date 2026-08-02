@@ -9839,3 +9839,43 @@ manman-platform 打電話功能。這場是**選型場不是施工場**：ailive
 
 ### 待執行 / 下一步
 等 Adam 拿到 waitin 分支後開工打電話：先讀 legacy 43 檔對照 plm `docs/legacy-voice-call-audit.md` 的分類表（REUSE_AS_IS 4 檔直接搬、REWRITE 3 檔照 vNext 協定重寫），在 manman-platform 蓋 Fastify WS route＋LIFF 頁。為什麼這條：技術棧同源（Fastify/TS）、LINE 內開體驗、零常駐費。plm 文件已抓在 scratchpad（session 結束會蒸發，屆時重抓：`gh api repos/baobaoagi-cpu/plm/contents/<path>`）。
+
+---
+
+## 2026-08-02（第8場）— 鑄三神開圓桌模式、threads H期三房落地、DreamF 從命名到第一支片出廠
+
+### 背景 / WHY
+DreamF（AI製片公司獨立平台）從零到期0全通；支線＝threads H期、漫漫財神審計、召喚術名冊擴編（4→7尊+圓桌模式）
+
+### 完成
+- 盤三庫（心法82/劍法23/雷區47）＋索引對賬零分裂＋觸發技能檔12/12全活
+- 鑄雙神：財神（CAISHEN，產品戰略四魂）＋浩斯（HAUS，建築計畫四魂），當日雙首戰收案（財神過堂漫漫＝存活獨紅燈/記憶管線=飛輪軸；浩斯開 threads 房間總表＝配送回饋區未動土）
+- threads-radar H期三房一場落地（v0.27.0.009）：出貨碼頭（每日Email簡報cron＋dry-run對真池22篇驗真）＋命中回報室（Playwright鑄cookie生產真驗PASS）＋帳號水位警報（貼線黃燈真亮）；測試85→108案
+- 鑄第七尊黑澤（KUROSAWA，導演×製片四魂）＋圓桌模式skill入庫；圓桌R1（四席盲答+交叉挑戰，真交火三場）＋Adam裁示後R2重開（三席填同一脊椎+接縫裁定）
+- DreamF 全案設計定稿：平台設計書v1.1（一致性三鎖+大圖分鏡表）→網頁建置規劃書v1.1（資料模型/分鏡表schema/狀態機/API+Jobs/引擎選型/分期驗收）→完整施工藍圖（接棒工單）
+- **期0驗證線當日全通**（~/.ailive/dreamf/poc，git init）：黑澤ground truth腳本→確定性驗證器→Nano Banana影格6張（Vertex+ADC零新密鑰，條紋杯六幀同一只）→大圖分鏡表（sharp）→Veo 3.1四段零RAI→ffmpeg成片32.03s；**接縫像素級驗證**；總帳$3.43
+- Adam兩問（每卡獨立prompt？轉場有無指示？）→確認皆程式拼裝非LLM即興＋補prompt全文落檔可稽核
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| zhu-core skills/summon/{caishen,haus,kurosawa}.md＋SKILL.md | 三神鑄咒+名冊4→7尊 |
+| zhu-core skills/roundtable/SKILL.md | 圓桌模式v1（盲答/挑戰配額/逐字留檔） |
+| zhu-core docs/ROUNDTABLE_film-factory_2026-08-02{,_R2}.md | 圓桌兩場逐字全卷 |
+| zhu-core docs/FILM_FACTORY_{PLATFORM_DESIGN_v1,BUILD_SPEC_v1}.md | 設計書v1.1+規劃書v1.1（DreamF） |
+| zhu-core docs/DREAMF_CONSTRUCTION_BLUEPRINT.md | 接棒施工藍圖 |
+| threads-radar src/{digest,hits,waterline}.ts＋web接線＋FOUNDATION.md | H期三房+帳本記帳（v0.27.0.009） |
+| manman-platform docs/CAISHEN_AUDIT_2026-08-02.md | 財神首戰審計 |
+| threads-radar docs/HAUS_AUDIT_2026-08-02.md | 浩斯首戰審計 |
+| ~/.ailive/dreamf/poc/* | 期0全線：validator/director/keyframes/contact-sheet/segments+成片 |
+| memory project_film_factory.md | 新專案記憶+索引 |
+
+### ⚠️ 尚未解決
+- **DreamF 期1開工＝等Adam看片點頭**（人審閘：14項驗收眼剩運鏡動態/影片內連戲需人眼）
+- threads：RESEND_API_KEY待Adam（digest cron每日500 fail-loud屬預期）；寄全隊要驗自有網域（建議soul-polaroid.work）；adamtest@radar.app假信箱會退信；D期實體物照舊（週一第二條IP+分身帳號）
+- 漫漫：財神開的第一吋（定價+人肉收款+灘頭5-10人）待Adam作業；manman repo的agent/作廢拷貝仍在（rm被權限擋，非本場產）
+- 期0未測遺留：斷點續跑實戰（期2主動殺job驗）、旁白TTS渲染、驗證器休止符正則誤報（否定句/景深豁免）
+- dreamf poc git僅本地無remote（期1 repo出生時一併上GitHub）
+
+### 待執行 / 下一步
+Adam看片點頭後開挖DreamF期1，照 `docs/DREAMF_CONSTRUCTION_BLUEPRINT.md` 五步驟走：repo出生（FOUNDATION.md+CI第一天）→GCP dreamf-2026（IAM雙必踩+PITR同日）→建材搬運表（poc五檔→lib/worker）→幕1-3前台（簽字閘transaction=承重牆#1）→機房帳房唯讀。為什麼這條：期0已證引擎全通，唯一路徑就是蓋殼。

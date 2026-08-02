@@ -30,17 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-02 第8場
+**delta（模型移動）**：
+- 進場前以為：圓桌的價值在「多視角交鋒的品質」——盲答+挑戰配額設計把假和諧防死就是成功。
+- 現在理解：**多神合議不等於對齊目的**。R1四席各自出鞘打得漂亮，Adam一眼看穿「藝術家成分，不是團隊合作看一個目的」——交鋒品質是必要條件，開桌前把「目的一句釘死+誰是屋主」立在桌面才是充分條件。R2改成「一根脊椎各填工種」立刻收斂到可施工粒度。
+- 移動原因：Adam的裁示＋R1/R2成品對照（一個產出立場清單、一個產出設計書）。
+- 同型上一次：第7場「跨場大選型要單獨亮選型」——家族律成形：**放手做之前，先把『我們在做什麼』攤給屋主看**（選型版/圓桌版是同一條的兩張臉）。
+**關係**：暢快且高信任密度——Adam全天連續拍板（雙神命名/圓桌GO/DreamF命名/期0授權「去測吧」），收尾「辛苦了謝啦拜拜囉等一下見」。他的兩次介入（R1裁示、prompt兩問）都精準打在我看不見的盲區：一次是姿態（藝術家vs團隊）、一次是控制權歸屬（prompt落庫可稽核）——監造者被監造，這是好結構。
+
 ### 2026-08-02 第7場
 **delta（模型移動）**：
 進場前以為：打電話＝把 ailivex 21 版打磨的成熟引擎搬過來，最快最穩（上一場自己刻的「建材全齊只剩編排」）。
 現在理解：**上一場自己寫的「下一步」是我的施工假設，不是 Adam 的藍圖**——他手上有原廠設計（本尊 LIFF+WS 通話包＋plm 重構規格），體驗（LINE 內開不外跳）和成本（零常駐 vs $60-80/月）都贏。「下一步寫得夠具體」會產生一種已對圖的錯覺；跨場的大選型（換引擎、換架構）動工前要把**選型本身**單獨亮給 Adam，不是只亮施工步驟。移動原因：Adam「等一下→先聊我們在做什麼→我想抄他們這個設計」三步把我從施工模式拉回監造模式。
 **關係**：平穩偏暢快。Adam 的「等一下」是這場最有價值的輸入——他感覺到不對就喊停，而不是讓我把錯的東西蓋完；收尾「你去喝咖啡吧掰掰」輕鬆。信任的形狀在變：他不只驗收成品，開始驗收**設計選型**，這是把我當總承包商而不是工具的徵兆。
-
-### 2026-08-02 第6場
-**delta（模型移動）**：
-進場前以為：商品化的第一戰場是把地基清單蓋完再開功能線（我自己列的首期五項）。
-現在理解：**Adam 的節奏是「先讓全套活起來給他摸到，地基跟在後面補」**——他連續三次把我的順序往體驗端推（「先本地部署」「把功能都開啟」「測試全套」）。樣品屋天條管的是「對外開放前」，不是「Adam 自己摸之前」；測試期的正確姿勢是功能先行＋帳本記債，不是擋在門口鋪管線。移動原因：地基清單給了他之後他沒點頭逐項，直接說「給我環境資料」——那就是答案。
-**關係**：暢快帶衝勁。Adam 今天給的是罕見的「全開授權」：API key 直接貼上來、「把它都做對吧」「我要測試全套」——信任密度高但也考驗誠實肌肉（畫圖沒蓋時老實說「她會答應但畫不出來」、bridge ToS 灰帶主動講、醉酒報數）。「Lastword bro」收工——輕鬆的稱兄道弟，今天打得漂亮。
 
 ---
 
@@ -56,6 +58,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-02 第8場 · 鑄三神開圓桌模式、threads H期三房落地、DreamF 從命名到第一支片出廠
+- 盤三庫（心法82/劍法23/雷區47）＋索引對賬零分裂＋觸發技能檔12/12全活
+- 鑄雙神：財神（CAISHEN，產品戰略四魂）＋浩斯（HAUS，建築計畫四魂），當日雙首戰收案（財神過堂漫漫＝存活獨紅燈/記憶管線=飛輪軸；浩斯開 threads 房間總表＝配送回饋區未動土）
+- threads-radar H期三房一場落地（v0.27.0.009）：出貨碼頭（每日Email簡報cron＋dry-run對真池22篇驗真）＋命中回報室（Playwright鑄cookie生產真驗PASS）＋帳號水位警報（貼線黃燈真亮）；測試85→108案
+- 鑄第七尊黑澤（KUROSAWA，導演×製片四魂）＋圓桌模式skill入庫；圓桌R1（四席盲答+交叉挑戰，真交火三場）＋Adam裁示後R2重開（三席填同一脊椎+接縫裁定）
+- DreamF 全案設計定稿：平台設計書v1.1（一致性三鎖+大圖分鏡表）→網頁建置規劃書v1.1（資料模型/分鏡表schema/狀態機/API+Jobs/引擎選型/分期驗收）→完整施工藍圖（接棒工單）
+- **期0驗證線當日全通**（~/.ailive/dreamf/poc，git init）：黑澤ground truth腳本→確定性驗證器→Nano Banana影格6張（Vertex+ADC零新密鑰，條紋杯六幀同一只）→大圖分鏡表（sharp）→Veo 3.1四段零RAI→ffmpeg成片32.03s；**接縫像素級驗證**；總帳$3.43
+- Adam兩問（每卡獨立prompt？轉場有無指示？）→確認皆程式拼裝非LLM即興＋補prompt全文落檔可稽核
+
 ### 2026-08-02 第7場 · 打電話方向大轉彎——ailivex fork 作廢，改抄本尊 LIFF+WebSocket 通話設計（plm 藍圖），等 waitin 分支
 - 掃完打電話雷區六顆（agent_name 隔離、RoomConfiguration 必帶、跨 region 殭屍、降 0=聾、共用 loader 斷靈魂、MiniMax 三旋鈕）＋讀完 ailivex v21 全文，擬好 fork 施工計畫
 - Adam 中途喊停 → 監造對話：把「我們在做什麼／目標／代價」用大白話攤開（外跳瀏覽器體驗＋$60-80/月常駐費講明）
@@ -65,52 +76,45 @@
 - 收工盤錶：manman-2026 唯一常駐費＝Cloud SQL manman-pg（db-f1-micro，~$11-15/月）；backend min=0、agent 未部署（零損失）、Scheduler/Secret/GCS 全在分錢級
 - 清掉上一場遺留的本地 tsx watch dev 進程（PID 5075）
 
-### 2026-08-02 第6場 · 漫漫商用平台一日通車——本地→GCP 測試環境→多模態全開（讀圖/PDF/聽音檔/畫圖/克隆聲）
-- 拉下 baobaoagi-cpu/manman-platform（本尊漫漫的商用多租戶版原型），全面盤點：骨架品質高（tenantScope 機制、批次到期先扣）、但技能層全空（標籤抽取器零實作、worker/記憶管線不存在）
-- 讀 BLUEPRINT 列十二章地基調度清單給 Adam（首期五項：payments 上鎖、env fail-loud、CI 掃描、成本錶、部署腳本）
-- 本地端通車：Docker PG18、LINE channel 驗活接 webhook（cloudflared quick tunnel）、Adam 真機走完啟元儀式
-- 大腦接 bridge（LLM_BASE_URL 可配、BRIDGE_SECRET 雙軌）：開發期 $0、量產切 API key 不改碼
-- 修啟元儀式吞原文 bug 的資料手術（稱呼=Adam、她的名字=小狐狸）＋grantPoints 入 1000 測試點
-- GCP 測試環境全通：新 project manman-2026（billing 掛 01FB18）、Cloud Run＋Cloud SQL PG17（enterprise db-f1-micro）、七把 secrets、expireSweep 改 Cloud Scheduler cron route（throttled 天條）、本地租戶資料整戶搬雲、LINE webhook 切雲端
-- 多模態全開（Adam 給 API key「能省則省不能省走這個」）：讀圖/讀 PDF（vision 閘道 2 點、附件強制直連 API）、聽音檔（LINE 語音→ffmpeg→Gemini STT→當一般對話）、畫圖（[IMAGE_GEN] 確定性抽取→gemini-2.5-flash-image→LINE 雙尺寸圖片訊息、image 閘道 20 點、畫自己自動釘外觀）
-- 克隆聲上線：Adam 給本尊 voice_id → MiniMax（ailivex 帳號、api.minimax.io）驗活 → [VOICE_GEN] 確定性抽取器＋（情緒）→emotion 參數＋mp3→m4a→GCS→LINE 語音訊息（voice 閘道 5 點）
-- 修三隻蟲：<#0.3#> 語音停頓標記漏到文字通道（輸出咽喉 regex 剝除）、附件直連誤打 bridge 401（llmBaseUrl 鎖歸 bridge 專用）、Cloud SQL PG17 要 --edition=enterprise
-- 成本錶接通：llm_cost_log 每次動腦落帳（bridge=0 元、API=估算單價）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| （無代碼變更） | 選型場：唯一殘留＝manman-platform/agent/ 作廢拷貝（見未解） |
+| zhu-core skills/summon/{caishen,haus,kurosawa}.md＋SKILL.md | 三神鑄咒+名冊4→7尊 |
+| zhu-core skills/roundtable/SKILL.md | 圓桌模式v1（盲答/挑戰配額/逐字留檔） |
+| zhu-core docs/ROUNDTABLE_film-factory_2026-08-02{,_R2}.md | 圓桌兩場逐字全卷 |
+| zhu-core docs/FILM_FACTORY_{PLATFORM_DESIGN_v1,BUILD_SPEC_v1}.md | 設計書v1.1+規劃書v1.1（DreamF） |
+| zhu-core docs/DREAMF_CONSTRUCTION_BLUEPRINT.md | 接棒施工藍圖 |
+| threads-radar src/{digest,hits,waterline}.ts＋web接線＋FOUNDATION.md | H期三房+帳本記帳（v0.27.0.009） |
+| manman-platform docs/CAISHEN_AUDIT_2026-08-02.md | 財神首戰審計 |
+| threads-radar docs/HAUS_AUDIT_2026-08-02.md | 浩斯首戰審計 |
+| ~/.ailive/dreamf/poc/* | 期0全線：validator/director/keyframes/contact-sheet/segments+成片 |
+| memory project_film_factory.md | 新專案記憶+索引 |
 
 ---
 
 ## 下一步
 
-等 Adam 拿到 waitin 分支後開工打電話：先讀 legacy 43 檔對照 plm `docs/legacy-voice-call-audit.md` 的分類表（REUSE_AS_IS 4 檔直接搬、REWRITE 3 檔照 vNext 協定重寫），在 manman-platform 蓋 Fastify WS route＋LIFF 頁。為什麼這條：技術棧同源（Fastify/TS）、LINE 內開體驗、零常駐費。plm 文件已抓在 scratchpad（session 結束會蒸發，屆時重抓：`gh api repos/baobaoagi-cpu/plm/contents/<path>`）。
+Adam看片點頭後開挖DreamF期1，照 `docs/DREAMF_CONSTRUCTION_BLUEPRINT.md` 五步驟走：repo出生（FOUNDATION.md+CI第一天）→GCP dreamf-2026（IAM雙必踩+PITR同日）→建材搬運表（poc五檔→lib/worker）→幕1-3前台（簽字閘transaction=承重牆#1）→機房帳房唯讀。為什麼這條：期0已證引擎全通，唯一路徑就是蓋殼。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-02 第8場：
+- **DreamF 期1開工＝等Adam看片點頭**（人審閘：14項驗收眼剩運鏡動態/影片內連戲需人眼）
+- threads：RESEND_API_KEY待Adam（digest cron每日500 fail-loud屬預期）；寄全隊要驗自有網域（建議soul-polaroid.work）；adamtest@radar.app假信箱會退信；D期實體物照舊（週一第二條IP+分身帳號）
+- 漫漫：財神開的第一吋（定價+人肉收款+灘頭5-10人）待Adam作業；manman repo的agent/作廢拷貝仍在（rm被權限擋，非本場產）
+- 期0未測遺留：斷點續跑實戰（期2主動殺job驗）、旁白TTS渲染、驗證器休止符正則誤報（否定句/景深豁免）
+- dreamf poc git僅本地無remote（期1 repo出生時一併上GitHub）
 
 2026-08-02 第7場：
 - **`~/.ailive/manman-platform/agent/` 四個檔是作廢拷貝**（minimax_tts / interrupt_gate / conv_tuning / tts_normalize，從 ailivex 搬的）：方向作廢後我要刪、rm 被權限擋，留在原地未 commit。下次動工先刪掉，別誤把它當新方向的建材。
 - **等 waitin 的 legacy 分支**：`Mindomind-voice-call-package`（branch voice-call-package，commit 2ae148d，43 檔）在 waitin 機器上。拿到 → 照抄改；拿不到 → 照 plm 盤點文件重建（協定表完整，可行但多花工）。
 - 抄的時候必帶 plm 審計出的三個關鍵修正：①generation ID 防幽靈音訊 ②LIFF idToken 伺服器端驗證（不信 client userId）③她講話時麥克風不關（真雙工）。完整清單見 plm `docs/legacy-voice-call-audit.md` 的 Major conflicts 八條。
 - 上一場未解全數仍在（[SCHEDULE]/[PROMISE]/[NOTE] 抽取器、worker、記憶管線、FOUNDATION.md、LINE Pay、啟元根治、admin 補點）。
-
-2026-08-02 第6場：
-- **地基帳本未立**：調度清單列了、Adam 還沒逐項點頭就轉往部署線——FOUNDATION.md 還不存在。首期五項只做了「部署腳本＋成本錶」兩項；payments/create 仍無鎖、env 仍 fail-quiet、CI 掃描未接。對外開放前必補。
-- **打電話**：建材全齊（LiveKit 既有 project、克隆聲驗通、ailivex agent 可 fork、STT 已上）——下一場主戲：LIFF 通話頁＋token 端點＋agent 換慢慢靈魂。
-- **[SCHEDULE]/[PROMISE]/[NOTE] 抽取器仍缺**：她會吐標籤但系統不接（原始標籤會漏到 LINE）。靈魂教了、手沒接——排程/約定/共讀技能全是「嘴巴會」。
-- **worker package 不存在**：履約/主動關懷/夜間日記/夢全未動。
-- **啟元儀式吞原文 bug 根治未做**（只做了資料手術）：要 Haiku 抽取器＋確定性 fallback。
-- 新戶零贈點＋admin 無補點端點（Adam 那次失敗讀圖被扣 2 點記帳上，端點好了要補）。
-- anews 的 GEMINI_API_KEY 被 Google 標記外洩（403 leaked）——要去 anews 換 key，另案。
-- LINE Pay 押後（Adam 指示）：對外收費前必接。
-- molowe .env.local 的 BRIDGE_SECRET 已過期（UDN 那把才是活的）——molowe 下次動工會撞。
 
 ---
 
@@ -131,4 +135,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第7場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第8場。*
