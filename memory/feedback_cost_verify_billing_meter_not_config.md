@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：「複核全過」但對象是設定值；帳單曲線跟「已清理」認知對不上；查詢視窗蓋在變更時間點之前（零資訊）。
 
 相關：[[feedback_ambiguous_signal_not_proof]]（本條是它的費用版）、[[standing-cost-only-for-instant-readiness]]
+
+- 驗證+1:2026-08-02 第3場 — 稽核/止血看真實狀態（VM STOPPING、firewall 127、DB 欄位）不看設定畫面

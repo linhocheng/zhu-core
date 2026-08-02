@@ -18,3 +18,5 @@ metadata:
 **觸發信號**：剛跑完 `gcloud run services update`；cloudbuild 裡的旗標值跟 `gcloud run services describe` 對不上。
 
 相關：[[standing-cost-only-for-instant-readiness]]、[[feedback_memory_can_lie]]
+
+- 驗證+1:2026-08-02 第3場 — 手動改防火牆（SSH/RDP）＋VM SA grant，同日改 provision.sh 同步

@@ -20,3 +20,5 @@ originSessionId: 93d13367-b540-441d-93b5-380ccee8b8c1
 - 準備設 `BRIDGE_ENABLED=false` / 換成直連 client / 灌付費 key 進測試環境之前。
 - 心裡冒出「bridge 524 了，那我直連跑一下就好」「額度應該還夠」「就驗證這一輪」—— 這些都是漏氣句，停。
 - 看到 `Your credit balance is too low` / 任何 billing 401/400 —— 代表已經在燒真錢了，立刻停並回報。
+
+- 驗證+1:2026-08-02 第3場 — 不擅自去 IPRoyal 儲值動態 proxy，回報 Adam 讓他決定

@@ -26,3 +26,5 @@ metadata:
 **觸發信號**：錯誤訊息是 `X is not a function`／`Invalid X member`／`Premature close`／env 設了沒生效——且發生在兩個系統的交界（SDK↔雲、瀏覽器↔自動化、proxy↔應用）。心裡冒出「照字面把 A 修掉」時。
 
 關聯：[[feedback-ambiguous-signal-not-proof]]（孿生：零資訊 vs 誤導性信號）、[[feedback-deterministic-work-belongs-in-code]]、[[feedback-cloudrun-firebase-adc]]（Premature close 也是膠水層說謊的一例）、[[project-threads-radar]]
+
+- 驗證+1:2026-08-02 第3場 — ERR_TUNNEL_CONNECTION_FAILED 指向瀏覽器/網路，真因在 proxy 402 餘額用盡，逐層扒才到根

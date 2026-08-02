@@ -22,3 +22,5 @@ originSessionId: 93d13367-b540-441d-93b5-380ccee8b8c1
 **How to apply：** 建任何接 Cloud Tasks / SQS / async queue 的 worker 時，開工前對著五問過一遍。修 lock 相關邏輯時，先問「我現在改的是 status、lease 還是 attemptId」。
 
 完整 skill 檔（含 code pattern）：`~/.ailive/zhu-core/skills/async-worker-checklist.md`
+
+- 驗證+1:2026-08-02 第3場 — 掃描 running 久，看 heartbeat 新鮮度判真跑 vs 卡死，不瞎等不瞎殺
