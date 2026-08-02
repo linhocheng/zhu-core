@@ -23,3 +23,5 @@ metadata:
 **費用版同族案例（2026-07-17 geo-authority 成本閘誤殺）**：成本閘設「每批 500 次 search 停」，防的是錢、數的卻是動作——Gemini 免費額度內一題狂搜 8-19 次全被計入，$0 流量觸發閘門，324 筆監測被殺在 263。修法＝只數計費搜尋（`COST_PER_SEARCH_USD[e] > 0` 才入帳）。一句話：**上限型防護的計量單位要對齊它要防的東西——防錢就數錢，不是數次數**。
 
 實作：ailivex `cloud-run/podcast-worker/src/text-filter.ts`（7 條內建 pattern + Firestore `config/podcastTextFilter` 可擴充）。相關：[[天條：確定性的工作用程式不要丟 LLM]]（程式掃描、LLM 只改寫）、[[防禦釘在收斂點不是每個生產端]]。
+
+- 驗證+1:2026-08-02 第4場 — 拒答黑名單先收 4 壞例 5 好例找結構特徵(前綴錨定)再上線

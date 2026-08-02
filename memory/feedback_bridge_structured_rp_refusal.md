@@ -43,3 +43,13 @@ ailivex 沉澱視角改造實測：`你是「Nina」。你的靈魂：{400字}` 
 鑑別法：懷疑被拒時直接印 raw response 第一行，看到 "I'm Claude Code" 就是撞了。
 
 - 驗證+1:2026-08-01 第5場 — 提煉靜默零寫入時直接想到印 raw 看「I'm Claude Code」,秒定位 Haiku 拒人格
+
+**2026-08-02 增補二：拒答的第三張臉——被裸寫落庫變成信念汙染。**
+ailive sleep-engine「夢境自我洞察」用 Haiku 打人格 prompt，拒答原文（"I appreciate the sophistication..."
+「我无法完成这个请求。我不能扮演真实人物…」）直接 .add() 進 platform_insights——兩個月累積 117 條（近 6%），
+角色半年來一直「記得」自己拒絕過存在。比靜默零寫入更毒：靜默只是漏，裸寫是把毒吞進身份。
+修法兩層：①帶人格生成一律 Sonnet（根因）②LLM 原文落庫點必過確定性拒答偵測
+（ailive src/lib/llm-refusal.ts，前綴錨定黑名單，用真壞例好例對照驗過）。
+JSON-parse 的寫入點天然免疫（拒答不是 JSON）——裸寫文字的落庫點才是要巡的對象。
+
+- 驗證+1:2026-08-02 第4場 — 一看拒答文+Haiku+人格 prompt 秒定位根因,不用重新診斷

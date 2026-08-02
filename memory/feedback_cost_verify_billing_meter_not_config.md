@@ -23,3 +23,5 @@ metadata:
 相關：[[feedback_ambiguous_signal_not_proof]]（本條是它的費用版）、[[standing-cost-only-for-instant-readiness]]
 
 - 驗證+1:2026-08-02 第3場 — 稽核/止血看真實狀態（VM STOPPING、firewall 127、DB 欄位）不看設定畫面
+
+- 驗證+1:2026-08-02 第4場 — 對賬看 DB 產出不看 cron 設定;ailive 差點被 Date 型別誤報「沒跑」,orderBy 交叉救回
