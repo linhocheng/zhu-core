@@ -9654,3 +9654,33 @@ GEO 進入「真資料驗收期」（W31 首批真監測數據落地），本場
 1. 週一（8/3）GEO 自動輪跑起來時開病歷頁看 LiveRefresh 心跳＋任務進度%——兩件 UNKNOWN 收官，`gcloud run jobs executions list --job=geo-monitor-job` 佐證
 2. 提醒 Adam 把朋友 GitHub 帳號加進 ailivex-platform collaborator（Settings→Collaborators），網頁與下載連結即通
 3. 下次動 `skills/task-harness/SKILL.md` 時把三態標籤＋停機態織入回報格式
+
+---
+
+## 2026-08-02（第3場）— threads-radar 無線電臺生產事故一條龍——動態 proxy 402 根治走靜態 ISP＋capture 逾時救回＋安全稽核乾淨＋安全帶收緊＋掃描驗通13篇
+
+### 背景 / WHY
+threads-radar 生產事故響應完畢，系統回自動駕駛（02:00 cron）。無線電臺（neko 登入）根治為靜態 ISP 出口，與掃描同 IP。commit：4812603（proxy 根治）、5d8d849（evidence fix）、755d1a1（安全帶）全推。
+
+### 完成
+- **早上小修：切角分析證據驗證支援複合引句**（v0.23.1.001）：摩斯愛把多句證據串成「句A」／「句B」或帶 @誰： 前綴，整串子字串比對會冤枉真引句（高雄篇 evidenceVerified 2/8）。新增 `evidenceInCorpus`：「」內容優先當片段、無引號按 ／｜→ 切、去 @誰： 前綴、每片段 ≥4 字全中才 verified（任一片段瞎編仍不放行，鐵律沒鬆）。測試 76→78 案。
+- **無線電臺（neko 登入）生產事故一條龍**（Adam「重連失敗」→查）：
+  1. **根因定位**（逐層扒信號）：截圖 `ERR_TUNNEL_CONNECTION_FAILED`→neko 服務本身好的（/api/login 用密碼回 200，排除服務/密碼/IP 白名單）→直接對動態 proxy CONNECT 測＝**402 Payment Required**（餘額用盡，8/1 同源）。根因＝登入走的動態住宅 proxy 斷糧，且**登入(動態IP)與掃描(靜態ISP)是兩個不同出口 IP**，本就違反「登入=爬蟲同 IP 防 challenge」。
+  2. **proxy 根治**（非儲值，天條解根因不繞症狀）：neko/startup.sh gost 上游從動態 iproyal-proxy 改讀靜態 iproyal-static-1（HOST:PORT:USER:PASS 無 sticky 後綴）；provision.sh VM SA grant 改 static＋SM 註釋。動態 proxy 退役。實測 SSH `curl -x localhost:3128 ifconfig.me`＝**211.167.34.101**（登入=掃描同一出口 IP，防 challenge 落地）。v0.23.1.002。
+  3. **capture 逾時救回**：capturedAt 空、Adam 說「連接到了」＝**UI 連上≠後端接到**（模稜兩可信號不當成功，查 DB 真相）。SSH 進 VM 看 /var/log/radar-capture.log＝「等待逾時，未偵測到登入，退出」——capture.cjs MAX_WAIT_MS 15 分登入等待逾時（Adam 卡 xdg-open deep-link＋改 threads.com/login＋來回診斷拖過時），開機只跑一次不重生。救回：SSH 手動重觸發 capture.cjs（secret 由 VM 自 SM 讀不經命令列，承重牆）→連現有 chromium 登入態→封存。鑑別信號全中：capturedAt>connectStartedAt、lastVerifiedAt 更新今日、session 密文 2218→2602B、proxyEnv=IPROYAL_STATIC_1；VM 自動關、8080/lock 自動收。
+  4. **安全稽核**（Adam 問「連 http 瀏覽器有無外洩/入侵」）：SSH 進 VM 稽核十項全乾淨——SSH PasswordAuth=no（金鑰才進，22 全開窗口暴力破解本就無效）、成功登入全是 adamlin 本人 IP、暴力破解僅 2 次失敗、無異常進程/挖礦/反連/cron/後門、對外連線全合法（gost→靜態 IP/GCP agent/我 SSH）、**承重牆守住：session 明文零磁碟殘留、capture.log 零敏感字串**。
+  5. **安全帶收緊**（Adam 指示，走完才收）：default-allow-ssh 0.0.0.0/0→127.0.0.1/32 鎖死（維運臨時開）、default-allow-rdp 刪除（Linux 無用）、neko-webrtc udp 保留（視訊必須）；provision.sh step4.5 同步（天條）。v0.23.1.003。
+  6. **掃描驗通**：手動觸發 radar-scan（TEAM_ID=default）→ lastRun=done、**lastScanFound=13**、零失敗＝新 session＋靜態 IP 端到端能爬，Threads 放行 13 篇。過程用 heartbeat 鑑別「真跑 vs 卡死」（心跳 12s 前新鮮＝真跑，這輪久是新 session＋意圖 bridge 判定）。
+
+### ⚠️ 尚未解決
+- **neko 掛 TLS（D 期開放前必修）**：Adam 問「發連結給同事登入、資料怎麼回傳、會不會外洩」——回答了資料鏈安全（https POST→KMS→Firestore、密碼只進 threads.com、明文不落地），但點出**8080 是 http（同事操作畫面明文）**，中間人理論上看得到打字畫面。開放給不特定同事前必須給 neko 掛 TLS（連結變 https）。Adam 尚未拍板列不列進 D 期——**接手先問這個**。
+- **capture.cjs 逾時退出不重生（韌性缺口）**：登入慢是常態（同事更慢），15 分逾時＋只跑一次＝斷鏈。D 期開放前該改：延長/持續偵測/登入後可手動重觸發。
+- **capture handle 未抓到**（顯示 activeAccountHandle=-）：走 threads.com/login 無 ds_user cookie，handle 解析不到。顯示用不擋功能（掃描用 session 密文，13 篇為證）。可補：改 capture.cjs handle 抓法或掃描時回填。
+- **@null(fVGZC3B2) 空殼帳號 doc 待清**（後台一鍵移除）。
+- threads-radar root 誤產 untracked `.next/`（root 誤跑 next build，rm 被權限擋）→ 下場順手清。
+- 觀察閘照跑至 ~8/8（@lucymo0306 靜態 IP）。
+
+### 待執行 / 下一步
+1. **接手先問 Adam 那三個尾巴的方向**：①neko TLS 列不列 D 期（開放前必修）②capture handle 要不要補顯示 ③@null 空殼帳號要不要清。
+2. D 期開放前驗證閘（task #41）加兩必修：neko TLS＋capture 韌性（逾時/重生）。
+3. 每天瞄觀察閘 scan_status/default（lastRun=done、found>0）。

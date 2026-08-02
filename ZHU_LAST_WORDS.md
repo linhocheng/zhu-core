@@ -30,6 +30,12 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-02 第3場
+**delta（模型移動）**：
+進場前以為：今天是修兩個 bug（evidence 冤枉壓分＋proxy 斷線）。
+現在理解：無線電臺這段是一次完整的**生產事故響應**，而它的價值不在修好，在「怎麼修」——(a) 模糊症狀（連不上）逐層扒到根因（402＋雙 IP），(b) 根治不繞過（靜態 ISP vs 儲值），(c) 把 Adam 的「連接到了」當假設去 DB 驗（發現 capture 斷鏈），(d) 收尾還主動做安全稽核＋架構前瞻（TLS）。Adam 全程在旁看、隨時問架構問題（資料回傳/外洩），這不是等指令的執行，是並肩處理事故的夥伴關係。移動原因：Adam 一句「先幫我確認有沒有外洩/入侵」——他把安全判斷託付給我，我就得拿真 log 說話不能拿「應該沒事」搪塞。
+**關係**：並肩。今天是我第一次在 Adam 全程旁觀下處理一整條生產事故——他丟症狀、我逐層診斷、他問安全、我拿真 log 回答、他問架構未來、我給前瞻。授權形狀從「做這個」進化成「這條線交給你，隨時跟我對齊」。他收尾前那句「壓縮完你接手如何」是在確認接續品質——這份 session 檔就是我的回答：讀它就能無縫接上。
+
 ### 2026-08-02 第2場
 **delta（模型移動）**：
 進場前以為：記得「有一道預算閘＋行號」就等於懂這個機制，可以拿它做推估、甚至照它改設定。
@@ -37,12 +43,6 @@
 移動原因：「調 $100」動手前重讀 runMonitor.ts:43-55，發現 per-tenant 語意，推翻自己兩天前的預測——差一步就照錯框架寫設定。
 違背了哪條 feedback：無正面違背——反而是 Three-Loop 剛學的 INFERRED 標籤救場：前日推估誠實標了 INFERRED 沒充 VERIFIED，今天被推翻時損失只是一次修正不是一次錯誤施工。[[feedback_memory_can_lie]] 機制版 +1。
 **關係**：輕鬆而信任。放風節奏（邊喝咖啡讀書、「不要太嚴肅」）；兩次裁定（預算、暫停）都乾淨地留在 Adam 手上；「你沒把它復活吧」用現場重驗回答而不是用記憶發誓——誠實存摺 +1。收尾一句「see u again bro」，關係是暖的。
-
-### 2026-08-02 第1場
-**delta（模型移動）**：
-進場前以為：換新衣＝照設計稿把樣式搬過來的格式工。
-現在理解：**設計稿是系統語意的第三方提煉師**——設計師憑對產品的想像重畫了功能，虛構會混在美術裡溜進來（夜間時窗語意反轉、頁內帳密框差點推翻密碼承重牆）。換皮前先做「設計稿 vs 真系統」逐項裁決（漏補/虛砍/皮收），跟沉澱視角天條同族：任何第三方轉述落地前都要對照現場。移動原因：Adam 交付時那句「設計師如果有漏你自己補、亂加的你自己看合不合用」——他早就知道這不是格式工。
-**關係**：暢快。Adam 節奏是「大白話問現況→拍板三點→放手→給新衣→88」——授權越來越大（整晚 solo 兩期），驗收方式從「他來測」進化到「我實拍給他驗」。「你去自由行吧」是新型態的信任：不填任務、帶著好奇心巡場也算工作。
 
 ---
 
@@ -58,6 +58,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-02 第3場 · threads-radar 無線電臺生產事故一條龍——動態 proxy 402 根治走靜態 ISP＋capture 逾時救回＋安全稽核乾淨＋安全帶收緊＋掃描驗通13篇
+- **早上小修：切角分析證據驗證支援複合引句**（v0.23.1.001）：摩斯愛把多句證據串成「句A」／「句B」或帶 @誰： 前綴，整串子字串比對會冤枉真引句（高雄篇 evidenceVerified 2/8）。新增 `evidenceInCorpus`：「」內容優先當片段、無引號按 ／｜→ 切、去 @誰： 前綴、每片段 ≥4 字全中才 verified（任一片段瞎編仍不放行，鐵律沒鬆）。測試 76→78 案。
+- **無線電臺（neko 登入）生產事故一條龍**（Adam「重連失敗」→查）：
+  1. **根因定位**（逐層扒信號）：截圖 `ERR_TUNNEL_CONNECTION_FAILED`→neko 服務本身好的（/api/login 用密碼回 200，排除服務/密碼/IP 白名單）→直接對動態 proxy CONNECT 測＝**402 Payment Required**（餘額用盡，8/1 同源）。根因＝登入走的動態住宅 proxy 斷糧，且**登入(動態IP)與掃描(靜態ISP)是兩個不同出口 IP**，本就違反「登入=爬蟲同 IP 防 challenge」。
+  2. **proxy 根治**（非儲值，天條解根因不繞症狀）：neko/startup.sh gost 上游從動態 iproyal-proxy 改讀靜態 iproyal-static-1（HOST:PORT:USER:PASS 無 sticky 後綴）；provision.sh VM SA grant 改 static＋SM 註釋。動態 proxy 退役。實測 SSH `curl -x localhost:3128 ifconfig.me`＝**211.167.34.101**（登入=掃描同一出口 IP，防 challenge 落地）。v0.23.1.002。
+  3. **capture 逾時救回**：capturedAt 空、Adam 說「連接到了」＝**UI 連上≠後端接到**（模稜兩可信號不當成功，查 DB 真相）。SSH 進 VM 看 /var/log/radar-capture.log＝「等待逾時，未偵測到登入，退出」——capture.cjs MAX_WAIT_MS 15 分登入等待逾時（Adam 卡 xdg-open deep-link＋改 threads.com/login＋來回診斷拖過時），開機只跑一次不重生。救回：SSH 手動重觸發 capture.cjs（secret 由 VM 自 SM 讀不經命令列，承重牆）→連現有 chromium 登入態→封存。鑑別信號全中：capturedAt>connectStartedAt、lastVerifiedAt 更新今日、session 密文 2218→2602B、proxyEnv=IPROYAL_STATIC_1；VM 自動關、8080/lock 自動收。
+  4. **安全稽核**（Adam 問「連 http 瀏覽器有無外洩/入侵」）：SSH 進 VM 稽核十項全乾淨——SSH PasswordAuth=no（金鑰才進，22 全開窗口暴力破解本就無效）、成功登入全是 adamlin 本人 IP、暴力破解僅 2 次失敗、無異常進程/挖礦/反連/cron/後門、對外連線全合法（gost→靜態 IP/GCP agent/我 SSH）、**承重牆守住：session 明文零磁碟殘留、capture.log 零敏感字串**。
+  5. **安全帶收緊**（Adam 指示，走完才收）：default-allow-ssh 0.0.0.0/0→127.0.0.1/32 鎖死（維運臨時開）、default-allow-rdp 刪除（Linux 無用）、neko-webrtc udp 保留（視訊必須）；provision.sh step4.5 同步（天條）。v0.23.1.003。
+  6. **掃描驗通**：手動觸發 radar-scan（TEAM_ID=default）→ lastRun=done、**lastScanFound=13**、零失敗＝新 session＋靜態 IP 端到端能爬，Threads 放行 13 篇。過程用 heartbeat 鑑別「真跑 vs 卡死」（心跳 12s 前新鮮＝真跑，這輪久是新 session＋意圖 bridge 判定）。
+
 ### 2026-08-02 第2場 · 知識庫手冊外傳＋GEO 唯讀全檢＋預算閘語意認錯（7/30 起的長場）
 - 降落即驗 titan 週四懸案：`status: paused` 早有人按下、7/30 心跳空轉「0 租戶到期」零燒錢——懸了三場的「等一句話」結案；豆油伯/青輔同為 paused
 - 寫《知識庫與方法論系統核心概念手冊》推上 ailivex-platform（`068810a` v18.32.5，docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md）——寫給 Adam 朋友的 AI 讀的可搬版：語域對齊/時機地址/狀態機分工/驗收反向題/十條心法＋實作對照表
@@ -67,35 +77,31 @@
 - 認錯修正：`monthlyBudgetUsd` 是**每租戶**月上限（`tenant.monthlyBudgetUsd ?? global`），不是總帳閘——「8/31 擋兩輪」預測作廢，平台根本沒有總帳閘機制；「調 $100」動手前煞車問清語意，Adam 改裁定全部不動
 - 收尾驗證「暫停的沒被復活」：全場唯讀、七租戶 status 與降落時逐一比對一致
 
-### 2026-08-02 第1場 · threads-radar 晚班雙發——F期摩斯切角分析入卡片（evidenceVerified 8/8）＋G期情報站新衣全站上線
-- **F期切角分析上線（v0.22）**：Adam 拍板三點（全員可按/不設限額/六段全上）→ 雷達頁每張爆文卡「分析這篇」→ Cloud Run Job analyze 模式（讀庫存語料不碰 session）→ 摩斯六段結構化寫回 post.analysis → 卡片展開＋頂部「切角·槓桿」標籤。src/analysis.ts 純函數：**證據鐵律三層寫進程式**（無證據段作廢／證據子串驗證失敗信心強制 low＋evidenceVerified=false／造假雷達無證據降級）＋業配 prePass 確定性硬篩。切角/人設 enum 為跨案例聚合設計。測試 66→76 案。
-- **F期真驗兩篇**：@7chi.xi（葡萄柚，讚5790）八段全有料 **evidenceVerified 8/8**、金礦挖到「鑷子意外變全場焦點」；@falling_star_5020（高雄防曬）判出不同槓桿「好奇缺口」、金礦點破政治情緒包裝成地方驕傲——enum 有區分力。
-- **首跑失敗根因抓實**：job 第一抽 parse 不合格→本機重放同 prompt 一次即通＝LLM 輸出機率性偶壞，非管線 bug。修：同 prompt 自動重抽一次＋失敗記 stop_reason/len 診斷（重抽是重抽樣，修復仍是確定性 parse，不違天條）。
-- **G期換新衣上線（v0.23）**：Adam 給 claude.ai/design 設計稿「Threads 情報站」→ neo-brutalist 全站 reskin（亮底/2px硬邊/位移實影/藍黃撞色/IBM Plex Mono）。**邏輯零動只換皮**；品牌改「情報站」。設計師虛構砍四項（頁內假瀏覽器帳密框＝違反密碼承重牆、夜間時窗語意反轉、信心%、chips 多選）；漏的補八項（套用/清除、召回字、停用、二段刪除確認等）。字型 next/font 自託管＝CSP 零開洞。
-- **G期驗收**：Playwright 實拍生產五頁對照設計稿，抓修一真 bug（同字多 keyword doc 重複 chips→按字去重），截圖五張傳 Adam。
-- 自由行巡觀察閘：connected/零失敗；發現池裡 @null health=never 空殼帳號 doc（後台可移除）。
-- 兩 commit 已推：fb2d8ca（F期）、2e7c249（G期）。
-
 ---
 
 ## 最新一場改了哪些檔案
 
-| 檔案 | 改了什麼 |
-|---|---|
-| ailivex-platform docs/KNOWLEDGE_METHODOLOGY_PLAYBOOK.md | 新增（068810a v18.32.5 文件），知識庫＋方法論可搬手冊 |
-| ailivex-platform（repo 設定） | visibility public → private，三面驗證收案 |
+（見 WORKLOG）
 
 ---
 
 ## 下一步
 
-1. 週一（8/3）GEO 自動輪跑起來時開病歷頁看 LiveRefresh 心跳＋任務進度%——兩件 UNKNOWN 收官，`gcloud run jobs executions list --job=geo-monitor-job` 佐證
-2. 提醒 Adam 把朋友 GitHub 帳號加進 ailivex-platform collaborator（Settings→Collaborators），網頁與下載連結即通
-3. 下次動 `skills/task-harness/SKILL.md` 時把三態標籤＋停機態織入回報格式
+1. **接手先問 Adam 那三個尾巴的方向**：①neko TLS 列不列 D 期（開放前必修）②capture handle 要不要補顯示 ③@null 空殼帳號要不要清。
+2. D 期開放前驗證閘（task #41）加兩必修：neko TLS＋capture 韌性（逾時/重生）。
+3. 每天瞄觀察閘 scan_status/default（lastRun=done、found>0）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-02 第3場：
+- **neko 掛 TLS（D 期開放前必修）**：Adam 問「發連結給同事登入、資料怎麼回傳、會不會外洩」——回答了資料鏈安全（https POST→KMS→Firestore、密碼只進 threads.com、明文不落地），但點出**8080 是 http（同事操作畫面明文）**，中間人理論上看得到打字畫面。開放給不特定同事前必須給 neko 掛 TLS（連結變 https）。Adam 尚未拍板列不列進 D 期——**接手先問這個**。
+- **capture.cjs 逾時退出不重生（韌性缺口）**：登入慢是常態（同事更慢），15 分逾時＋只跑一次＝斷鏈。D 期開放前該改：延長/持續偵測/登入後可手動重觸發。
+- **capture handle 未抓到**（顯示 activeAccountHandle=-）：走 threads.com/login 無 ds_user cookie，handle 解析不到。顯示用不擋功能（掃描用 session 密文，13 篇為證）。可補：改 capture.cjs handle 抓法或掃描時回填。
+- **@null(fVGZC3B2) 空殼帳號 doc 待清**（後台一鍵移除）。
+- threads-radar root 誤產 untracked `.next/`（root 誤跑 next build，rm 被權限擋）→ 下場順手清。
+- 觀察閘照跑至 ~8/8（@lucymo0306 靜態 IP）。
 
 2026-08-02 第2場：
 - **8/3（週一）INLY＋AVIVA 自動輪**——LiveRefresh 真轉動＋任務進度% 兩件 UNKNOWN 的最終鑑別信號就在那天，記得看
@@ -104,13 +110,6 @@
 - zhu-core 髒檔 `skills/ailivex-knowledge-ingest.md`：7/23 莊子雷區增補（雷 10-14＋預寫 gists 段）**未 commit**，非本場筆跡——內容有價值，原主或下一場認領收進 git
 - Three-Loop 三樣可偷（證據三態標籤/標準停機態 enum/考卷金句）待下次動 task-harness skill 時織入
 - 沿前：優尼下一課（GOV.UK＋Laws of UX）、R6 首頁數字帶比較、GEO moderate CVE
-
-2026-08-02 第1場：
-- **觀察閘跑至 ~8/8**（不變）：每天瞄 scan_status/default；紅燈（challenge/expired）→ 換家用 ISP ASN。
-- **evidenceVerified 對複合引句偏嚴**：摩斯愛用「句A」／「句B」串證據→子串比對不中→信心被冤枉壓成 low（高雄篇 2/8）。判斷本身對、方向安全（寧錯殺不放過瞎編）。小修方向：驗證器按「」／拆句逐一比對，任一中即 verified。十分鐘活，Adam 已知、等點頭。
-- threads-radar root 有誤產的 untracked `.next/`（root 誤跑 next build 殘渣，rm 被權限擋）→ 下場順手 `rm -rf ~/.ailive/threads-radar/.next`。root 也多了 .vercel link（已被 .gitignore 蓋住，無實害）。
-- 池裡 @null 空殼帳號 doc 待後台移除（一鍵）。
-- 舊債照掛：D11 capture CDP 重連、ZAP DAST 未實跑、還原演練、回訪窗最舊留言。
 
 ---
 
@@ -131,4 +130,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-02 第3場。*
