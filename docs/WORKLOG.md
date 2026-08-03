@@ -9947,3 +9947,21 @@ DreamF 從藍圖到活平台。產線證明完整：導演（bridge）→驗證�
 
 ### 待執行 / 下一步
 Adam 測完 UI 回饋 → 修 UX 毛邊；然後 `gcloud auth login` 後建 D1 export 排程（`gcloud firestore export` + scheduler，backup bucket 已在）；再來第一支真客戶片（UDN 題材）進線。為什麼這順序：人審閘的回饋比任何預先精修都準。
+
+## 2026-08-03（日場）— DreamF 管線 V2 重構：母資產前移，一日完工雙 e2e 交片
+
+### 背景 / WHY
+Adam 測 UI 問「母片會不會出」→ 三路研究兵調查世界主流（60+ 來源）→ 結論：V1 順序反了（母片是收據不是源頭）。Adam 拍板「就是這樣，重構」。
+
+### 產出
+- 研究：`docs/RESEARCH_video_pipeline_survey_2026-08-03.md`；藍圖：`docs/DREAMF_PIPELINE_V2_BLUEPRINT.md`
+- dreamf v0.2.0.001-010：八幕狀態機（asseting/framing）、母資產線（角色卡/場景卡/風格幀＋客戶核准）、影格帶參考（shared/refs 一間房）、母片前移、簽字閘簽母片即開拍、承重牆第五條（簽前影像費 $3）、39 測試綠
+- 雙 e2e 交片：陶壺 $1.795／精華液 $1.834，帳房分毫相符；**精華液母片三格同一張臉＝角色鎖成立**（V1 做不到的）
+
+### 已解決（實戰五雷全定罪＋釘測試）
+- extractResult：LLM JSON 後吐尾巴 → 平衡括號確定性修復
+- 生圖 SAFETY 假案三次定罪：真兇是 prompt 尾綴否定條款（連跑觸發 prompt-level filter），不是人像內容 → 風格幀原文直出鐵律＋appendUniqueClauses 防線（鐵律刻在 dreamf FOUNDATION.md）
+- 低 RPM image 配額：平行×重試＝自打風暴 → 全循序＋429 退避 30s×2
+
+### ⚠️ 尚未解決
+- D17 image 配額調升申請（真客戶前必辦）；D18 角色卡 3D 動畫感滲入影格（等 Adam 看片裁風格）；D1 export 排程；pause/預算硬停/RAI 押回零實戰觸發
