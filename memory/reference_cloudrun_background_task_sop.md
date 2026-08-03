@@ -34,3 +34,5 @@ metadata:
 - 驗證+1:2026-08-02 第6場 — setInterval 在 throttled Cloud Run 必死，上雲當天改 Cloud Scheduler
 
 - 驗證+1:2026-08-03 第1場 — Jobs 模式（CASE_ID+JOB_ACTION env override、業務失敗 exit 0、--max-retries=0）照抄全通
+
+- 驗證+1:2026-08-04 第1場 — 收卷同步生圖＝client 斷線 CPU 掐死＝fire-and-forget 天條的同型新臉；解法同天條：圖歸 job

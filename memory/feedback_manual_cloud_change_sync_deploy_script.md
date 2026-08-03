@@ -26,3 +26,5 @@ metadata:
 - 驗證+1:2026-08-02 第6場 — 線上設定一律改 deploy.sh 再部署，手動 update 零次
 
 - 驗證+1:2026-08-03 第1場 — 手動 invoker binding／jobs create 當日同步進 deploy.sh 註記與 cloudbuild
+
+- 驗證+1:2026-08-04 第1場 — secrets 用 --update-secrets 掛，cloudbuild 無 env 旗標不會洗掉（驗過形狀才動手）

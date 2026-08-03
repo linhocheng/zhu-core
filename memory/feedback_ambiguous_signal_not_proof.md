@@ -36,3 +36,5 @@ metadata:
 - 驗證+1:2026-08-02 第6場 — 每次部署收案用鑑別信號（db ready log、cron route {"ok":true}、LINE webhook test 200、克隆聲 5.5s 音檔）
 
 - 驗證+1:2026-08-03 第1場 — 斷點續跑不拿「job done」當證據，改用帳型 seg1×1/seg2×2（失敗時不可能出現的信號）；gcloud log 斷線時的替代鑑別
+
+- 驗證+1:2026-08-04 第1場 — deploy.sh permission-denied 被管子吃掉 exit code 還報了「exit 0」，自抓自糾；D1 用「export 檔案落桶」收案不用「排程建立成功」

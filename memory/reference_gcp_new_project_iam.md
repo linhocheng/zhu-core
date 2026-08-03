@@ -26,3 +26,5 @@ gcloud projects add-iam-policy-binding PROJECT_ID \
 - 驗證+1:2026-08-02 第8場 — 寫進DreamF藍圖步驟2預防
 
 - 驗證+1:2026-08-03 第1場 — 雙必踩＋actAs 開場就灌，整夜零 IAM 卡關
+
+- 驗證+1:2026-08-04 第1場 — IAM 傳播 10-30s：D1 首發 403 不是「不能」，重試即過
