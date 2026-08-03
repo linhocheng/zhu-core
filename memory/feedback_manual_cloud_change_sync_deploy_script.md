@@ -24,3 +24,5 @@ metadata:
 - 驗證+1:2026-08-02 第5場 — VM SA 三 secret 授權手動做完同日進 provision.sh 迴圈；timeout 改的是 deploy.sh 本體
 
 - 驗證+1:2026-08-02 第6場 — 線上設定一律改 deploy.sh 再部署，手動 update 零次
+
+- 驗證+1:2026-08-03 第1場 — 手動 invoker binding／jobs create 當日同步進 deploy.sh 註記與 cloudbuild

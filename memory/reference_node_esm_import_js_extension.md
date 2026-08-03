@@ -19,3 +19,5 @@ metadata:
 **觸發信號**：Cloud Run deploy 報「container failed to start and listen on the port」而上一輪 deploy 還是好的、這輪剛好新加了 import；tsc 全綠但 runtime 掛。
 
 相關：[[dynamic-import 救不了 Turbopack bundle]]（同屬「編譯期綠 ≠ 執行期通」家族）。
+
+- 驗證+1:2026-08-03 第1場 — 反向命中：Turbopack 端 .js 副檔名反而炸，收斂成「shared 走 CJS 無副檔名」新解

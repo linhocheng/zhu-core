@@ -1,6 +1,6 @@
 ---
 name: project-film-factory
-description: 製片工廠（暫名）——AI 製片公司獨立平台；圓桌二場設計定案、建置規劃書 v1 成卷、等 Adam 三拍板（命名/地基點頭/期0 GO）
+description: DreamF 製片工廠——AI 製片公司獨立平台；期1+期2 已上雲（repo linhocheng/dreamf、GCP dreamf-2026）、e2e 驗收全綠、第一支測試片已交片
 metadata: 
   node_type: memory
   type: project
@@ -17,7 +17,7 @@ metadata:
 
 **引擎**：導演=bridge tool-use；影格=Nano Banana 主/gpt-image-2 備；影片=Veo 3.1 Vertex us-central1（首尾幀 8s 固定、ingredients≤3張備用線、兩模式不可同用）；sharp/ffmpeg 確定性層。Veo 雷區見 [[reference-vertex-veo-video-generation]]。
 
-**狀態（2026-08-02 晚）**：三拍板已落——①命名 **DreamF** ②地基清單 OK ③期 0 改自建測試線（Adam：不用 UDN 歷史單）。**期 0 當日全通**（`~/.ailive/dreamf/poc/`，git 已 init）：黑澤 ground truth 腳本（手沖咖啡考卷版：條紋杯跨三段＋一處硬切）→確定性驗證器→Nano Banana 影格 6 張（Vertex+ADC 走 udnnews，零新密鑰；風格錨鎖住條紋杯）→大圖分鏡表（sharp）→Veo 4 段零 RAI→ffmpeg 成片 32.03s。**接縫像素級驗證**（休止符+共用幀有效）。總帳 $3.43。關鍵發現：①導演 prompt 必含 JSON 骨架逐字（散文描述→LLM 自創 key，blueprint-schema-example 雷重現）②styleBible.colors 改語意色名自由鍵（schema v1.1）③追蹤物件給專屬色＝人眼一致性檢查軸。**下一步：Adam 看片點頭→期 1 開挖**（新 repo+GCP project dreamf、大廳+案子的家+幕1-3）。
+**狀態（2026-08-03 通宵完工）**：期 0 全通（$3.43，poc/ 保留為建材倉庫）→ Adam 看片點頭「今晚全部完工」→ **期1+期2 一夜上雲**：repo `linhocheng/dreamf`（私有；shared/ 確定性核心＝web+worker 共用一間房、幕1-7＋admin 三後台＋14 API＋Cloud Run Jobs worker、28 案承重牆測試、FOUNDATION.md 帳本、CI）；GCP `dreamf-2026`（866261832447，asia-east1，Firestore+PITR、Secret Manager、watchdog scheduler 5 分）；上線 https://dreamf-platform-tpgsvdekdq-de.a.run.app（密碼在 repo .env.local）。**e2e 驗收全綠**：16 秒陶茶壺測試片幕1→7 走完已交片（16.033s）；退件路 409 真觸發；簽前 veo ledger 零筆；斷點續跑實測（殺 execution→watchdog 標 stalled→續拍→帳型 seg1×1/seg2×2 證明跳段）；跳錶=Σledger=$2.517。施工五雷已修入 commit（COMMIT_SHA substitution／worker symlink／Turbopack .js 副檔名→CJS／invoker binding 手掛／風格卡 SAFETY→英文 promptEn）。**未測遺留**：pause 旗、預算硬停、RAI 押回（code+測試在，實戰零觸發）；Firestore export 排程（D1）待 gcloud reauth 後建。期 3 全在 FOUNDATION 排後帳（TTS D9/角色線 D10/教室出水 D11）。**下一步：Adam 走一遍 UI → 第一支真客戶片進線。**
 
 **Why**：Adam 從 UDN video 功能抽出的願景；圓桌 R1 走偏（藝術家各秀+UDN 視角），Adam 裁示後 R2 重開才收斂——教訓：跨場大選型先對齊目的再放神。
 

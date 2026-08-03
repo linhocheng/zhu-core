@@ -35,3 +35,5 @@ Veo 3.1 影片生成（2026-07-22 UDN 影音庫實戰全驗證）。
 相關：[[cloudrun-firebase-adc]]、[[deterministic-work-belongs-in-code]]、[[cost-on-heartbeat-failure-accounting]]
 
 - 驗證+1:2026-08-02 第8場 — 期0照抄實戰形狀（GA模型名/欄位/輪詢），零踩雷
+
+- 驗證+1:2026-08-03 第1場 — GA 模型名/欄位形狀/輪詢照期0 實戰形狀，雲端零踩雷

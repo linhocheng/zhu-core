@@ -40,3 +40,5 @@ Cloud Run service 的 `--service-account=<sa>@` 決定 ADC 身份，Storage 權�
 - 驗證+1:2026-08-02 第6場 — GCS 上傳走 metadata server ADC，不注入 SA JSON
 
 - 驗證+1:2026-08-02 第8場 — Nano Banana走Vertex+ADC零新密鑰
+
+- 驗證+1:2026-08-03 第1場 — 全平台 ADC 零 SA JSON，一次都沒踩 Premature close

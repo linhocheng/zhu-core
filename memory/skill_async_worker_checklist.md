@@ -24,3 +24,5 @@ originSessionId: 93d13367-b540-441d-93b5-380ccee8b8c1
 完整 skill 檔（含 code pattern）：`~/.ailive/zhu-core/skills/async-worker-checklist.md`
 
 - 驗證+1:2026-08-02 第3場 — 掃描 running 久，看 heartbeat 新鮮度判真跑 vs 卡死，不瞎等不瞎殺
+
+- 驗證+1:2026-08-03 第1場 — 六問 status/lease/attemptId 三分設計，殺 job 實測 watchdog 看 lease 真的接住

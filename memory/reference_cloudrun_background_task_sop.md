@@ -32,3 +32,5 @@ metadata:
 實例：ailivex `cloud-run/podcast-worker/cloudbuild.yaml`。相關：[[天條：Cloud Run firebase-admin 一律走 ADC，不注入 SA JSON]]。
 
 - 驗證+1:2026-08-02 第6場 — setInterval 在 throttled Cloud Run 必死，上雲當天改 Cloud Scheduler
+
+- 驗證+1:2026-08-03 第1場 — Jobs 模式（CASE_ID+JOB_ACTION env override、業務失敗 exit 0、--max-retries=0）照抄全通

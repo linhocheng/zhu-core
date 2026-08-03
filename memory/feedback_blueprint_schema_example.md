@@ -15,3 +15,5 @@ blueprint worker 的 user prompt 最後有 `<result>{"sectionPlan":[...]}</resul
 **觸發信號：** 看到 `path: ["sectionPlan", 0, "order"]` 之類 undefined 錯誤 → 先看 prompt 範例有沒有給完整欄位，不要先懷疑 LLM。
 
 - 驗證+1:2026-08-02 第8場 — 導演站散文描述欄位→LLM自創key，補JSON骨架一次過（期0第一真發現）
+
+- 驗證+1:2026-08-03 第1場 — 導演咒 JSON 骨架逐字保留，雲端首跑一次過
