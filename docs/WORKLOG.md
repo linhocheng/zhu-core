@@ -9913,3 +9913,37 @@ DreamF（AI製片公司獨立平台）從零到期0全通；支線＝threads H�
 
 ### 待執行 / 下一步
 Adam看片點頭後開挖DreamF期1，照 `docs/DREAMF_CONSTRUCTION_BLUEPRINT.md` 五步驟走：repo出生（FOUNDATION.md+CI第一天）→GCP dreamf-2026（IAM雙必踩+PITR同日）→建材搬運表（poc五檔→lib/worker）→幕1-3前台（簽字閘transaction=承重牆#1）→機房帳房唯讀。為什麼這條：期0已證引擎全通，唯一路徑就是蓋殼。
+
+---
+
+## 2026-08-03（第1場）— DreamF 通宵完工——期1+期2 一夜上雲、e2e 驗收全綠、第一支產線片交片
+
+### 背景 / WHY
+DreamF 從藍圖到活平台。產線證明完整：導演（bridge）→驗證器→影格（共用幀+風格錨）→大圖分鏡表→Veo 首尾幀→拼接→交片，全程簽字閘管錢。
+
+### 完成
+- 蓋完 DreamF 全量平台（Adam「今晚全部完工排下去做」）：repo `linhocheng/dreamf` 出生（shared/ 確定性核心 11 檔＝web+worker 共用一間房、幕1-7 前台、admin 三後台唯讀、14 條 API、Cloud Run Jobs worker keyframes/shoot/retake、承重牆四條 pinning tests 28 案全綠、FOUNDATION.md 13 首期+13 排後帶觸發、THIRD_PARTY.md、CI gitleaks/Semgrep/audit、deploy.sh）
+- GCP `dreamf-2026` 出生（866261832447、billing 01FB18、asia-east1）：Firestore+PITR、assets/backup 雙 bucket、AR、dreamf-runtime SA＋IAM 雙必踩＋actAs、Secret Manager 五密、Cloud Scheduler watchdog 每 5 分
+- 部署上線 https://dreamf-platform-tpgsvdekdq-de.a.run.app（service＋job；密碼在 repo .env.local）
+- e2e 驗收全綠（鑑別信號）：16 秒陶茶壺片幕1→7 交片（16.033s）；未登入 401／簽前 veo ledger 零筆／壞表簽字 409 帶驗證器錯誤／contractUsd $1.60 落 doc／lease 重複觸發 409／**斷點續跑實測**（殺 execution→生產 watchdog 標 stalled→續拍→帳型 seg1×1、seg2×2 證明跳段——期0 未測遺留清掉）／跳錶=Σledger=$2.517 帳房相符／教室 corrections 自動進水／admin 無票 307
+- 施工五雷修入 commit：COMMIT_SHA 手動 substitution／worker Docker shared 解析 symlink／Turbopack 不吃 .js→.ts（shared 全轉 CJS 無副檔名）／invoker binding 手掛／風格卡中文描述觸發 Vertex SAFETY→面談協議加英文 promptEn（中文給人看、英文餵引擎）
+- 驗證器期1修正落地：休止符正則否定句/景深豁免（期0 兩誤報案例釘進測試）
+- WORKLOG 刻＋push（zhu-core dad839d）；project_film_factory 記憶＋索引更新；BUILD_SPEC §9 project 名對齊實開
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ~/.ailive/dreamf/*（新 repo 三 commit v0.1.0.001-003） | 平台全量：shared/app/worker/tests/地基文件/部署鏈 |
+| zhu-core docs/WORKLOG.md | 通宵完工全記錄（dad839d） |
+| zhu-core docs/FILM_FACTORY_BUILD_SPEC_v1.md | §9 project 名對齊 dreamf-2026（a9754b9） |
+| memory project_film_factory.md＋MEMORY.md | 狀態推進到「已上雲、e2e 全綠」 |
+
+### ⚠️ 尚未解決
+- **等 Adam 親手走 UI**（他說「我來測」）——面談手感/分鏡抽屜/試片鈕是人才驗得出的
+- 本機 gcloud CLI token 要人工 `gcloud auth login`（生產不受影響）；因此 FOUNDATION D1（Firestore 每日 export 排程）未建——reauth 後第一件事
+- 未實測路徑：pause 旗、預算閘硬停、RAI 押回（code＋測試在，兩片零 RAI 觸發）
+- 被殺那次 retake 生成 Veo 伺服器端可能照計費（平台 ledger 只記已下載的；準數看 GCP billing）
+- 髒樹全別場舊識（macs 54 檔/manman agent//molowe/zhu-mid/ailive），照平行規約未動
+
+### 待執行 / 下一步
+Adam 測完 UI 回饋 → 修 UX 毛邊；然後 `gcloud auth login` 後建 D1 export 排程（`gcloud firestore export` + scheduler，backup bucket 已在）；再來第一支真客戶片（UDN 題材）進線。為什麼這順序：人審閘的回饋比任何預先精修都準。
