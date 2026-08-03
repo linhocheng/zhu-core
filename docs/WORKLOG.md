@@ -9965,3 +9965,39 @@ Adam 測 UI 問「母片會不會出」→ 三路研究兵調查世界主流（6
 
 ### ⚠️ 尚未解決
 - D17 image 配額調升申請（真客戶前必辦）；D18 角色卡 3D 動畫感滲入影格（等 Adam 看片裁風格）；D1 export 排程；pause/預算硬停/RAI 押回零實戰觸發
+
+---
+
+## 2026-08-04（第1場）— DreamF 管線 V2→V3 一日兩翻——母資產前移＋圖像全走 GPT 底片感，三 e2e 交片
+
+### 背景 / WHY
+DreamF 從「能出片」升級到「照世界標準的做法出片」：母資產是源頭不是收據、簽字簽的是看得見的母片、影像迭代留在便宜層、美學是真人底片感。
+
+### 完成
+- 修 Adam 首測毛邊：面談收卷 90 秒無回饋＋風格卡生圖失敗（v0.1.0.004：輸入鎖/等待文案/safetySettings）
+- 三路研究兵調查世界主流（60+ 來源對抗驗證）→ 結論「identity before frames, frames before motion」；存 `RESEARCH_video_pipeline_survey_2026-08-03.md`
+- **管線 V2 重構**（Adam 拍板藍圖 `DREAMF_PIPELINE_V2_BLUEPRINT.md`）：八幕狀態機（asseting/framing）、母資產線（面談抽角色/場景→美術間鑄卡客戶核准）、分鏡 assets 引用（驗證器查存在）、影格帶母卡參考、**母片前移影格間、簽字閘簽母片即開拍**、承重牆第五條（簽前影像費上限）
+- **V3 圖像線全面改走 gpt-image-2**（Adam 裁決「不要 3D 感，太 low」）：`shared/gpt-image.ts` 引擎層、母卡攝影底片感模板（FILM_LOOK 默認美學）、影格母圖裁格（≤3格/張同圖強制一致＋sharp 裁格放大）、單幀 edits 重生、面談收卷零生圖；OPENAI_API_KEY 進 Secret Manager 掛雙側
+- **三支 e2e 全鑑別綠交片**：陶壺 V2（$1.795）、精華液 V2（母片三格同臉＝角色鎖成立，$1.834）、精華液 V3 GPT 終驗（雜誌級真人底片感，$3.10）——全部 spentUsd=Σledger 相符、簽前 veo 零筆
+- 實戰七雷全定罪修入 commit＋釘測試（見教訓）
+- D1 銷帳：Firestore 每日 export 排程上線（force-run 檔案落桶驗證）；D10/D18 一併銷；FOUNDATION 重算（13/13A 首期、D14-D17 新排後）
+- dreamf 共 15 commit（v0.1.0.004→v0.3.0.004）全推；雙側 serving 驗證同 HEAD
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ~/.ailive/dreamf（15 commit v0.1.0.004→v0.3.0.004） | V2 管線重構＋V3 GPT 引擎全量：shared 憲法/guards/refs/gpt-image、八幕 UI、worker assets/keyframes 母圖裁格、FOUNDATION 重算 |
+| zhu-core docs/RESEARCH_video_pipeline_survey_2026-08-03.md | 三路調查濃縮存底 |
+| zhu-core docs/DREAMF_PIPELINE_V2_BLUEPRINT.md | V2 施工真相源（Adam 拍板） |
+| zhu-core docs/WORKLOG.md | 日場全記錄 |
+| memory project_film_factory.md＋MEMORY.md | 推進到 V3 收案 |
+
+### ⚠️ 尚未解決
+- **等 Adam 看 V3 成片**（v3-final.mp4 已傳）——GPT 線美學是否到位由他裁
+- gpt-image-2 $0.25/張是概算——**要與 OpenAI dashboard 對帳校準**（FOUNDATION 13A 記著）
+- 未實測：>4 幀長片的母圖分塊（跨塊一致性靠母卡扛，未實戰）；pause/預算硬停/RAI 押回三路仍零觸發
+- Vertex 備用線（Nano Banana）code 留著但未接開關；D17 配額調升降急未辦
+- 髒樹全別場舊識（macs/manman/molowe/zhu-mid），照平行規約未動
+
+### 待執行 / 下一步
+Adam 看 V3 片與母片 → 給美學裁決 → 第一支真客戶片（UDN 題材）進線。為什麼：三支 e2e 已把管線信心打滿，剩下的判斷（風格夠不夠「高級」）只有人眼能給。
