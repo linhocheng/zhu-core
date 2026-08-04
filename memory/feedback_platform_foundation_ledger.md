@@ -23,3 +23,5 @@ metadata:
 相關：[[deterministic-work-belongs-in-code]]、[[solve_root_not_symptom]]、[[one_inch_cake_mvp]]、[[surface_technical_debt]]
 
 - 驗證+1:2026-08-04 第2場 — D12 回帳本記錄，不是修完就算了
+
+- 驗證+1:2026-08-04 第3場 — lastword 盤帳本，確認到期項
