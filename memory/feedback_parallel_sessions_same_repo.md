@@ -34,3 +34,5 @@ metadata:
 - 驗證+1:2026-08-02 第2場 — ailivex commit 只收自己的 playbook，api-keys 髒檔不碰
 
 - 驗證+1:2026-08-02 第8場 — 收尾audit髒樹全別場，只add自己的檔
+
+- 驗證+1:2026-08-05 第1場 — zhu-core 稽核到別的 session 的 SESSION_2026-08-04_3/4.md 未提交，沒有碰，只認自己的檔案

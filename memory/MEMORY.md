@@ -4,6 +4,7 @@
 - [天條:蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12章默認全含、砍要點頭、排後必帶觸發條件;BLUEPRINT 在 zhu-core/skills/platform-foundation/
 - [天條:確定性的工作用程式不要丟 LLM](feedback_deterministic_work_belongs_in_code.md) — 連修 LLM 壞輸出也別再丟 LLM
 - [天條:開發不燒付費 API key(除非 Adam 同意)](feedback_no_paid_api_without_consent.md) — bridge 壞了先回報,不是切直連的理由
+- [探針的成本假設要先驗](feedback_probe_cost_assumption_unverified.md) — 唯讀是行為判斷不是端點判斷;LRO 收單即開工;戴罪立功+查證連敗=衝動高危狀態
 - [模稜兩可的信號不能當成功證據(天條)](feedback_ambiguous_signal_not_proof.md) — 宣告修好前先指出只有修好才會出現的信號;shell 版=feedback_pipe_eats_exit_code(管子吃掉 exit code)
 - [天條:磚頭費只為秒級待命付](feedback_standing_cost_only_for_instant_readiness.md) — 判準:閒著時有沒有人下一秒需要它;長任務進 Jobs=reference_cloudrun_background_task_sop
 - [天條:驗「不燒錢了」看計費錶不看設定](feedback_cost_verify_billing_meter_not_config.md) — 設定/實例/計費三面分離;姊妹=feedback_manual_cloud_change_sync_deploy_script(手動改雲端同日改部署腳本)

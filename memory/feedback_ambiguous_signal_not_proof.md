@@ -40,3 +40,5 @@ metadata:
 - 驗證+1:2026-08-04 第1場 — deploy.sh permission-denied 被管子吃掉 exit code 還報了「exit 0」，自抓自糾；D1 用「export 檔案落桶」收案不用「排程建立成功」
 
 - 驗證+1:2026-08-04 第4場 — 沒把「API 回 ok」當修好，追到 md5 不同才收案
+
+- 驗證+1:2026-08-05 第1場 — gcloud執行「killed」不當失敗也不當成功，查執行紀錄+Firestore真實資料才宣告
