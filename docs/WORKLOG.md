@@ -10031,3 +10031,44 @@ GEO Authority（`~/.ailive/geo-authority`）——先是資安 CI 破窗的當�
 
 ### 待執行 / 下一步
 Adam 下次回來若說 GO，建議順序 C（零風險，`src/monthlyReport.ts` batchStats 擴充＋ReportView.tsx 新趨勢線）→ A（難度 S，`clientPublishAsset` 加 publishedUrl 欄位＋analyze.ts 加 sameUrl/normalizeUrl）→ B（風險最高，pulse 批次要雙層過濾防止污染官方指數，`monthlyReport.ts` 的 batchStats() 混合輸入 pinning test 要最先寫、先跑綠）。計畫檔案細節都在 `~/.claude/plans/melodic-questing-fern.md`，開工前直接讀那份，不用重新查證。
+
+---
+
+## 2026-08-04（第3場）— BeSelf 名單匯入 Excel 支援 + 雙驗證 + Nina key 換裝
+
+### 背景 / WHY
+beself——AVIVA M1 第一波消費者訪談準備。目標：名單匯入從 CyberBiz Excel 直接吃，雙驗證擋亂猜，品項帶入讓訪談更自然。
+
+### 完成
+- 分析 BeSelf 上傳區現況（格式限制/欄位/Excel 不支援）
+- 加 xlsx 支援：client-side dynamic import xlsx，讀完轉 CSV 文字走既有 parseOrderCsv
+- 訂單號剝前綴：normalizeOrderNo 讓「訂單 #1423」→「1423」通過 ORDER_RE
+- 欄位擴展：parseOrderCsv 同時抽 姓名 + 購買品項（normalizeHeader 剝 [N] 裝飾前綴）
+- OrderDoc 加 name? + product? 欄位
+- 入口表單：品項下拉拆除 → 姓名輸入欄（消費者自填）
+- 雙驗證：entry POST 驗 orderNo + name 正規化比對（去空白/去全半形）；白名單無 name 自動跳過
+- 品項從 order.product 帶入 InterviewDoc.item → AI 角色直接知道她買了什麼
+- 換 Nina key（AILIVEX_API_KEY Vercel env 更新），拆除 characterLabel 欄位
+- interview page 改從 voice session 回應的 characterName 取角色名
+- v1.2.0 / v1.3.0 / v1.4.0 三版部署，TypeScript 零錯誤，自測全過
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| lib/csv.ts | normalizeOrderNo / normalizeNameForMatch / normalizeHeader；CsvParseResult → orders: ParsedOrder[] |
+| lib/collections.ts | OrderDoc 加 name? product? |
+| app/admin/page.tsx | xlsx 支援、移除 characterLabel state/input/payload |
+| app/api/admin/orders/route.ts | 批次存 name+product；sample 顯示「姓名 (訂單號)」 |
+| app/page.tsx | 移 items/item 下拉，加 name 輸入欄 |
+| app/api/entry/route.ts | 雙驗證 + 品項從 order.product 帶入 |
+| app/api/admin/campaigns/route.ts | 移 characterLabel 必填驗證 |
+| app/interview/page.tsx | 角色名從 voice session characterName 取 |
+
+### ⚠️ 尚未解決
+- FOUNDATION #10（災難還原）、#12（生人驗收）：觸發條件「正式開跑前」，M1 還沒第一筆真消費者，未到期
+- FOUNDATION #5（可觀測性）、#4（15 分鐘伺服器硬閘）同上，排後不變
+- 入口表單 placeholder 目前寫「例:1423」，如果消費者的訂單信是「AV-2026-XXXX」格式需要再看
+
+### 待執行 / 下一步
+確認 AVIVA 訂單通知信的實際格式（是純數字 1423 還是 AV-2026-1423），
+確保入口 placeholder 跟消費者看到的一致 → 如果格式對就可以直接讓客戶匯入名單、開跑

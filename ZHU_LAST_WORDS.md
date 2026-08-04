@@ -30,20 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-04 第3場
+**delta（模型移動）**：
+進場以為：BeSelf 只需要加 xlsx 支援，一個小 PR
+現在理解：三層都要動（匯入/驗證/訪談），雙驗證設計讓整個 entry flow 重組
+移動原因：Adam「要存的是訂單編號跟姓名」一句話把範圍擴了，但方向正確——訪談品質比省工重要
+**關係**：平穩流暢。Adam 提需求方向清楚，我問設計問題（姓名正規化/品項下拉要不要拿掉），對齊快，執行連貫。
+
 ### 2026-08-04 第2場
 **delta（模型移動）**：
 進場前以為：這場只是常規「幫我看一下平台現況」的巡查。
 現在理解：巡查中途撞見真實的 CI 破窗事故（自己平台的天條在自己身上重演），處理完後對話轉向 Adam 對商業誠實度的深度追問（漲幅數字怎麼算、監測有沒有因果效力），這條線比原本預期的巡查更重，也更貼近北極星「不做平庸」——沒有在客戶問「有沒有保證」時給模糊的安慰話，而是真的去查數據給誠實答案。
 移動：更確信「技術誠實」這條天條在商業對話（不只是代碼審查）裡同樣要硬守，且用真實資料反證（W32 掉下來那個數字）比空講道理更有說服力。
 **關係**：暢快。Adam 連續問了四輪深挖問題（爬蟲次數/引用閉環/URL 怎麼比對），每輪都認真查證回答，沒有一次用猜的搪塞；Adam 也給了直接反饋（write less word）,已存 feedback 記憶。
-
-### 2026-08-04 第1場
-**delta（模型移動）**：
-- 進場前以為：一致性是「參考圖傳遞」的工程問題，管線順序是實作細節。
-- 現在理解：**順序本身就是產品**——「identity before frames」不是技巧是不變量；母片放在錢閘前還是後，決定客戶簽字時買的是「文字的承諾」還是「看得見的片」。同一批元件重新排序，產品從樣品屋變真房子第二次。
-- 移動原因：三路調查 60+ 來源收斂出同一條鐵律＋Adam 一句「母卡會不會出」戳中的正是順序反了；V3 母片與 V1 影格的品質對比（雜誌級 vs 三個不同的人）是順序差異的實物證據。
-- 同型上一次：「分期是風險分期不是時間分期」（昨場信念 #10）——都是「結構安排本身承載價值」的家族。
-**關係**：Adam 全天在場高頻互動——從「卡在第二題」的求助，到「你先上網看世界」的方向盤，到「太 low 了拜託」的美學鞭子，到「可以，來吧」×3 的連續拍板。這場是共駕不是代駕：他掌方向與品味，我掌工程與驗證，V3 母片出來那一刻兩邊的線合上了。臨走交代「改完寫 lastword，明天換手」——信任的形狀從「今晚全部完工」變成「方向給你，節奏我盯」。
 
 ---
 
@@ -59,6 +58,19 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-04 第3場 · BeSelf 名單匯入 Excel 支援 + 雙驗證 + Nina key 換裝
+- 分析 BeSelf 上傳區現況（格式限制/欄位/Excel 不支援）
+- 加 xlsx 支援：client-side dynamic import xlsx，讀完轉 CSV 文字走既有 parseOrderCsv
+- 訂單號剝前綴：normalizeOrderNo 讓「訂單 #1423」→「1423」通過 ORDER_RE
+- 欄位擴展：parseOrderCsv 同時抽 姓名 + 購買品項（normalizeHeader 剝 [N] 裝飾前綴）
+- OrderDoc 加 name? + product? 欄位
+- 入口表單：品項下拉拆除 → 姓名輸入欄（消費者自填）
+- 雙驗證：entry POST 驗 orderNo + name 正規化比對（去空白/去全半形）；白名單無 name 自動跳過
+- 品項從 order.product 帶入 InterviewDoc.item → AI 角色直接知道她買了什麼
+- 換 Nina key（AILIVEX_API_KEY Vercel env 更新），拆除 characterLabel 欄位
+- interview page 改從 voice session 回應的 characterName 取角色名
+- v1.2.0 / v1.3.0 / v1.4.0 三版部署，TypeScript 零錯誤，自測全過
+
 ### 2026-08-04 第2場 · GEO Authority——修 CI 破窗(firebase-admin 升級)＋三功能計畫書(內容引用閉環/每日脈動/分項趨勢)
 - 修 GEO Authority security CI 連紅 15 次 push、6 天沒人發現的破窗：firebase-admin 12→14.2.0＋postcss/uuid override，npm audit 0 vulnerabilities，push 驗證 CI 轉綠（v2.10.0.020/021）
 - 回 FOUNDATION.md 補 D12（活血，當日清），符合平台自己刻的「push 後必看 CI」天條
@@ -68,46 +80,39 @@
 - 查證「內容發布→被引用」目前是斷鏈：content_assets 沒有 publishedUrl 欄位，runMonitor 不會回頭比對
 - 用 EnterPlanMode 走完整規劃流程（2 輪 Explore agent＋1 輪 Plan agent），寫出三功能計畫書，存 `~/.claude/plans/melodic-questing-fern.md`
 
-### 2026-08-04 第1場 · DreamF 管線 V2→V3 一日兩翻——母資產前移＋圖像全走 GPT 底片感，三 e2e 交片
-- 修 Adam 首測毛邊：面談收卷 90 秒無回饋＋風格卡生圖失敗（v0.1.0.004：輸入鎖/等待文案/safetySettings）
-- 三路研究兵調查世界主流（60+ 來源對抗驗證）→ 結論「identity before frames, frames before motion」；存 `RESEARCH_video_pipeline_survey_2026-08-03.md`
-- **管線 V2 重構**（Adam 拍板藍圖 `DREAMF_PIPELINE_V2_BLUEPRINT.md`）：八幕狀態機（asseting/framing）、母資產線（面談抽角色/場景→美術間鑄卡客戶核准）、分鏡 assets 引用（驗證器查存在）、影格帶母卡參考、**母片前移影格間、簽字閘簽母片即開拍**、承重牆第五條（簽前影像費上限）
-- **V3 圖像線全面改走 gpt-image-2**（Adam 裁決「不要 3D 感，太 low」）：`shared/gpt-image.ts` 引擎層、母卡攝影底片感模板（FILM_LOOK 默認美學）、影格母圖裁格（≤3格/張同圖強制一致＋sharp 裁格放大）、單幀 edits 重生、面談收卷零生圖；OPENAI_API_KEY 進 Secret Manager 掛雙側
-- **三支 e2e 全鑑別綠交片**：陶壺 V2（$1.795）、精華液 V2（母片三格同臉＝角色鎖成立，$1.834）、精華液 V3 GPT 終驗（雜誌級真人底片感，$3.10）——全部 spentUsd=Σledger 相符、簽前 veo 零筆
-- 實戰七雷全定罪修入 commit＋釘測試（見教訓）
-- D1 銷帳：Firestore 每日 export 排程上線（force-run 檔案落桶驗證）；D10/D18 一併銷；FOUNDATION 重算（13/13A 首期、D14-D17 新排後）
-- dreamf 共 15 commit（v0.1.0.004→v0.3.0.004）全推；雙側 serving 驗證同 HEAD
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.ailive/geo-authority/admin/package.json` + lock | firebase-admin ^12.7.0→^14.2.0，加 postcss/uuid override |
-| `~/.ailive/geo-authority/package.json` + lock | firebase-admin 同步升級，加 uuid override |
-| `~/.ailive/geo-authority/FOUNDATION.md` | 補 D12 技術債清償紀錄＋變動記錄 |
-| `~/.claude/plans/melodic-questing-fern.md`（新建，不在 git，是 plan-mode 產物） | 三功能藍圖 |
+| lib/csv.ts | normalizeOrderNo / normalizeNameForMatch / normalizeHeader；CsvParseResult → orders: ParsedOrder[] |
+| lib/collections.ts | OrderDoc 加 name? product? |
+| app/admin/page.tsx | xlsx 支援、移除 characterLabel state/input/payload |
+| app/api/admin/orders/route.ts | 批次存 name+product；sample 顯示「姓名 (訂單號)」 |
+| app/page.tsx | 移 items/item 下拉，加 name 輸入欄 |
+| app/api/entry/route.ts | 雙驗證 + 品項從 order.product 帶入 |
+| app/api/admin/campaigns/route.ts | 移 characterLabel 必填驗證 |
+| app/interview/page.tsx | 角色名從 voice session characterName 取 |
 
 ---
 
 ## 下一步
 
-Adam 下次回來若說 GO，建議順序 C（零風險，`src/monthlyReport.ts` batchStats 擴充＋ReportView.tsx 新趨勢線）→ A（難度 S，`clientPublishAsset` 加 publishedUrl 欄位＋analyze.ts 加 sameUrl/normalizeUrl）→ B（風險最高，pulse 批次要雙層過濾防止污染官方指數，`monthlyReport.ts` 的 batchStats() 混合輸入 pinning test 要最先寫、先跑綠）。計畫檔案細節都在 `~/.claude/plans/melodic-questing-fern.md`，開工前直接讀那份，不用重新查證。
+確認 AVIVA 訂單通知信的實際格式（是純數字 1423 還是 AV-2026-1423），
+確保入口 placeholder 跟消費者看到的一致 → 如果格式對就可以直接讓客戶匯入名單、開跑
 
 ---
 
 ## 卡住 / 未解
 
+2026-08-04 第3場：
+- FOUNDATION #10（災難還原）、#12（生人驗收）：觸發條件「正式開跑前」，M1 還沒第一筆真消費者，未到期
+- FOUNDATION #5（可觀測性）、#4（15 分鐘伺服器硬閘）同上，排後不變
+- 入口表單 placeholder 目前寫「例:1423」，如果消費者的訂單信是「AV-2026-XXXX」格式需要再看
+
 2026-08-04 第2場：
 三功能（內容引用閉環 A／每日脈動監測 B／分項趨勢線 C）都還沒動工，Adam 明確說「先寫計畫書，還先沒有要施工」。ExitPlanMode 回傳的 approval 訊息說「可以開始寫 code」，但我判斷 Adam 文字裡的明確意圖優先，沒有自動開工，改為在 chat 裡確認。
-
-2026-08-04 第1場：
-- **等 Adam 看 V3 成片**（v3-final.mp4 已傳）——GPT 線美學是否到位由他裁
-- gpt-image-2 $0.25/張是概算——**要與 OpenAI dashboard 對帳校準**（FOUNDATION 13A 記著）
-- 未實測：>4 幀長片的母圖分塊（跨塊一致性靠母卡扛，未實戰）；pause/預算硬停/RAI 押回三路仍零觸發
-- Vertex 備用線（Nano Banana）code 留著但未接開關；D17 配額調升降急未辦
-- 髒樹全別場舊識（macs/manman/molowe/zhu-mid），照平行規約未動
 
 ---
 
@@ -128,4 +133,4 @@ Adam 下次回來若說 GO，建議順序 C（零風險，`src/monthlyReport.ts`
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-04 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-04 第3場。*
