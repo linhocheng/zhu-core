@@ -21,4 +21,6 @@ GEO Authority＝AI 搜尋可見度（GEO）代操平台。repo `~/.ailive/geo-au
 - **symlink 共用檔雙雷**：加新 `src/*.ts` 共用檔＝三件套（src 檔＋admin/src/lib symlink＋Dockerfile.admin 逐檔 COPY）；共用檔內相對 import 的目標也要進 symlink 鏈（types.ts 之例）。
 - 部署唯一路徑 `./deploy.sh`（build→admin/job；main=prod）；地基帳本 `FOUNDATION.md`（lastword 盤到期；**D4 異地備份觸發條件「任一真付費客戶」——10 租戶第一家建檔前補**）；版本號現行 **v2.7.x**。舊分支 `feat/engine-aio`（stale）已棄用。
 
-關聯：[[feedback-parallel-sessions-same-repo]]、[[feedback-memory-can-lie]]、[[feedback-deterministic-work-belongs-in-code]]
+- **2026-08-04**：security CI 破窗 6 天現形並清(D12,v2.10.0.020/021)——firebase-admin 12→14＋postcss/uuid override,npm audit 0 vulnerabilities,CI 轉綠。同日跟 Adam 對過月報「上升 30%」的認知落差(百分點差 vs 相對成長率混淆,Aviva 目前只有一份 Day-0 報告無任何 delta)、確認監測動作本身不保證提及率上升(問 AI 是無狀態查詢,不影響未來索引)。寫了三功能計畫書(僅設計未實作)存在 `~/.claude/plans/melodic-questing-fern.md`：**A 內容引用閉環**(客戶上架填真實網址→比對 citedUrls,難度S)、**B 每日脈動監測**(opt-in輕量探針,真實非插值,重點是雙層過濾防止污染官方週/月指數,難度M風險最高)、**C 分項趨勢線**(每引擎/競品差距/平均引用數各自畫趨勢,零風險)。建議順序 C→A→B。尚未開始施工,等 Adam 下次確認 GO。
+
+關聯：[[feedback-parallel-sessions-same-repo]]、[[feedback-memory-can-lie]]、[[feedback-deterministic-work-belongs-in-code]]、[[feedback_terse_responses]]

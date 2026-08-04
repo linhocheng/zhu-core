@@ -1,3 +1,4 @@
+- [回應要精簡](feedback_terse_responses.md) — write less word,結論優先,細節留文件
 - [封存索引](ARCHIVE.md) — 停用/完結/休眠專案的記憶索引;檔案都在、搜尋可達;翻舊案先看這
 - [沉澱視角天條:記憶總結者必須是記憶主人本人](feedback_sedimentation_by_owner.md) — 第三方提煉師=代筆必扭曲;感受歸角色/事實白描;/compact 是我的第三方提煉師,搶在壓縮前自己刻
 - [天條:蓋平台先鋪地基帳本](feedback_platform_foundation_ledger.md) — 12章默認全含、砍要點頭、排後必帶觸發條件;BLUEPRINT 在 zhu-core/skills/platform-foundation/

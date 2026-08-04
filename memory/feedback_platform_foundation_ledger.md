@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：Adam 說「蓋/開發一個平台」；心裡冒出「制度等踩到再補」「先蓋功能」；backfill 收案沒問「寫手還在寫嗎」；「這個先放後面」說完沒寫觸發條件。
 
 相關：[[deterministic-work-belongs-in-code]]、[[solve_root_not_symptom]]、[[one_inch_cake_mvp]]、[[surface_technical_debt]]
+
+- 驗證+1:2026-08-04 第2場 — D12 回帳本記錄，不是修完就算了
