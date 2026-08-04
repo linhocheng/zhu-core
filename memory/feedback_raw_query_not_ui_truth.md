@@ -23,3 +23,5 @@ metadata:
 家族：[[memory-can-lie]]、[[diagnosis-verify-before-write]]——現場層級錯位版。
 
 - 驗證+1:2026-08-02 第2場 — 「上輪表現」驗證照抄 UI 同一條聚合路徑（最新 batch/跳錯誤行/按 promptId）
+
+- 驗證+1:2026-08-04 第4場 — 反向命中：我 curl 成功 ≠ Adam 在 UI 看得到；真相在瀏覽器那端

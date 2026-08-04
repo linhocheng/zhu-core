@@ -66,3 +66,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 - 驗證+1:2026-08-02 第5場 — capture.cjs 三個行為測試本機跑（過期秒退/斷線續試/sentinel 不誤寫），不等 VM cycle
 
 - 驗證+1:2026-08-04 第1場 — SAFETY 定罪全靠本機 curl A/B 重現，不等遠端 cycle
+
+- 驗證+1:2026-08-04 第4場 — curl -sI 看標頭＋md5 對比，本機三十秒定罪

@@ -23,3 +23,5 @@ metadata:
 關聯：[[feedback-solve-root-not-symptom]]、[[skill-cost-on-heartbeat-failure-accounting]]
 
 - 驗證+1:2026-08-02 第5場 — 成本重算撈真數據時抓到最重輪 13m13s=timeout 的 88%（正中「逼近 80%」觸發信號），加字前先擴 timeout；capture 15 分逾時同樣是容量快照，按人類真實操作重設 40 分
+
+- 驗證+1:2026-08-04 第4場 — 一年快取是「圖不會變」年代的常數，資產可重生後就過期了

@@ -38,3 +38,5 @@ metadata:
 - 驗證+1:2026-08-03 第1場 — 斷點續跑不拿「job done」當證據，改用帳型 seg1×1/seg2×2（失敗時不可能出現的信號）；gcloud log 斷線時的替代鑑別
 
 - 驗證+1:2026-08-04 第1場 — deploy.sh permission-denied 被管子吃掉 exit code 還報了「exit 0」，自抓自糾；D1 用「export 檔案落桶」收案不用「排程建立成功」
+
+- 驗證+1:2026-08-04 第4場 — 沒把「API 回 ok」當修好，追到 md5 不同才收案
