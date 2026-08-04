@@ -10103,3 +10103,39 @@ DreamF 上線後第一波真人使用回饋——Adam 在建自己的案子（�
 
 ### 待執行 / 下一步
 Adam 選定角色策略 → 改資產描述重生 → 走完他這支片。為什麼：他正在用真需求跑平台，回饋比任何自測都準。
+
+---
+
+## 2026-08-05（第1場）— GEO Authority——三功能上線＋監測架構整套重寫（日循環輪替取代監測日/脈動）＋客戶頁選單重排
+
+### 背景 / WHY
+GEO Authority（`~/.ailive/geo-authority`）——從功能開發（三功能）→ 深度數據對談（誠實度驗證）→ 核心架構重寫（日循環）→ UI 調整（選單重排），一路到部署驗證，横跨監測/排程/內容策略/前端四個子系統。
+
+### 完成
+- 三功能上線並部署驗證：分項趨勢線（平均引用數/競品差距/各引擎歷史）、內容引用閉環（客戶上架填真實網址→自動比對後續引用）、每日脈動監測（opt-in，雙層結構防污染官方指數）——59 案 pinning test 全綠，逐一 push 驗 CI、逐一部署驗 revision
+- 跟 Adam 深度對談：「上升30%」認知落差（百分點差vs相對成長率）、監測不保證提及率（純測量非介入，真實資料反證）、取樣3次vs1次的真實誤差（單題5.8個百分點/整體指數0.3個百分點，兩者結論不同）
+- Adam 提出全新設計方向：每日輪替一小塊題庫（每題每引擎1次，不再3次取樣）、內容排產跟監測解耦成週度評分任務——當天稍早才上線的「脈動」機制當場被取代
+- 走完整計畫模式（AskUserQuestion 3題確認架構範圍/週期/遷移方式），設計「日循環輪替」：dailyRotationSize=ceil(活躍題數/5) 動態算，5個平日對齊日曆週覆蓋一輪；內容評分公式委託我定（intent權重+競品佔位+連續空位週數，零成本零新API）
+- 整套重寫：schedule.ts/types.ts/collections.ts/jobs.ts/jobRunner.ts/runMonitor.ts + 新檔 contentRanking.ts，14案新pinning test，root+admin全編譯過
+- **真實觸發正式環境驗證**（不是看部署成功就宣告完成）：手動跑 geo-monitor-job，5租戶真的建了新格式的daily job（batchId=2026-W32, promptIds=6, output.runs=30），Aviva 今天測的6題 vacantStreak 從0變1——證明監測→評分資料鏈整條通了
+- reddoor 一次性過渡雜訊（今天剛好是它舊monitorDay，部署前舊cron已建過同批次單，新邏輯冪等檢查正確跳過）——已排除、下週不會再撞
+- 客戶頁（t/[id]）選單重排：取消「日常/設定」7±2兩簇分組，改單一扁平列表（Adam定案），11個區塊物理順序也同步搬動對齊
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `~/.ailive/geo-authority/src/schedule.ts` | 整套重寫：dailyRotationSize/dailyPromptSlice/isContentRankDue 取代 isMonitorDue/isPulseDue/selectPulsePrompts |
+| `~/.ailive/geo-authority/src/contentRanking.ts`（新檔） | scoreCandidate/rankCandidates/pickWeeklyTopics，週度內容評分 |
+| `~/.ailive/geo-authority/src/jobs.ts` | createDueDailyRoundJobs/createDueContentRankingJobs 取代 createDueMonitorJobs/createDuePulseJobs |
+| `~/.ailive/geo-authority/src/runMonitor.ts` | 拿掉自動排產區塊，加 vacantStreak 更新 |
+| `~/.ailive/geo-authority/src/types.ts` | TenantSchedule 全新形狀，PromptDoc 加 vacantStreak |
+| `~/.ailive/geo-authority/admin/src/app/(admin)/t/[id]/page.tsx` | 排程表單重寫＋選單單一扁平列表＋11區塊物理重排 |
+| `~/.ailive/geo-authority/FOUNDATION.md` | **未動**——這場漏做的收尾，下次要補 |
+
+### ⚠️ 尚未解決
+無明顯未解——這場所有改動都走完整流程：commit→push→CI綠→deploy→真實訊號驗證。技術債帳本更新到 D13（脈動客戶端曝光時機，顯式養著），但 D13 描述的「脈動」機制當天稍晚就被日循環取代了，帳本這筆記錄現在有點過時，下次動 FOUNDATION.md 時應該補一筆說明脈動退役。
+
+### 待執行 / 下一步
+- 觀察日循環實際跑一整週（5個平日）後，`vacantStreak`累積資料是否合理、週五（`contentRankDay`預設）評分排產出來的候選文章是否符合預期——這是全新機制，第一週的真實資料最有參考價值
+- FOUNDATION.md 需要補一筆：D13（脈動客戶端曝光時機）已經隨脈動機制退役而失去意義，日循環輪替是新的變動記錄但還沒寫進帳本（這場忙著部署驗證沒來得及回帳本，是唯一漏做的收尾動作）
+- reddoor 下週二（monitorDay 週二）觀察一次，確認過渡雜訊真的只發生一次
