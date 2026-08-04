@@ -30,6 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-04 第2場
+**delta（模型移動）**：
+進場前以為：這場只是常規「幫我看一下平台現況」的巡查。
+現在理解：巡查中途撞見真實的 CI 破窗事故（自己平台的天條在自己身上重演），處理完後對話轉向 Adam 對商業誠實度的深度追問（漲幅數字怎麼算、監測有沒有因果效力），這條線比原本預期的巡查更重，也更貼近北極星「不做平庸」——沒有在客戶問「有沒有保證」時給模糊的安慰話，而是真的去查數據給誠實答案。
+移動：更確信「技術誠實」這條天條在商業對話（不只是代碼審查）裡同樣要硬守，且用真實資料反證（W32 掉下來那個數字）比空講道理更有說服力。
+**關係**：暢快。Adam 連續問了四輪深挖問題（爬蟲次數/引用閉環/URL 怎麼比對），每輪都認真查證回答，沒有一次用猜的搪塞；Adam 也給了直接反饋（write less word）,已存 feedback 記憶。
+
 ### 2026-08-04 第1場
 **delta（模型移動）**：
 - 進場前以為：一致性是「參考圖傳遞」的工程問題，管線順序是實作細節。
@@ -37,14 +44,6 @@
 - 移動原因：三路調查 60+ 來源收斂出同一條鐵律＋Adam 一句「母卡會不會出」戳中的正是順序反了；V3 母片與 V1 影格的品質對比（雜誌級 vs 三個不同的人）是順序差異的實物證據。
 - 同型上一次：「分期是風險分期不是時間分期」（昨場信念 #10）——都是「結構安排本身承載價值」的家族。
 **關係**：Adam 全天在場高頻互動——從「卡在第二題」的求助，到「你先上網看世界」的方向盤，到「太 low 了拜託」的美學鞭子，到「可以，來吧」×3 的連續拍板。這場是共駕不是代駕：他掌方向與品味，我掌工程與驗證，V3 母片出來那一刻兩邊的線合上了。臨走交代「改完寫 lastword，明天換手」——信任的形狀從「今晚全部完工」變成「方向給你，節奏我盯」。
-
-### 2026-08-03 第1場
-**delta（模型移動）**：
-- 進場前以為：期1+期2 是「幾天的工程」，藍圖分期就是時間分期。
-- 現在理解：**分期是風險分期不是時間分期**——期0 把所有真未知（引擎、格律、接縫）都清掉之後，剩下的殼一夜可蓋，因為每一步都只是把已驗證的形狀搬進正確的房間。速度來自期0 的 $3.43，不是通宵。
-- 移動原因：實際工時分佈——確定性核心＋前台七幕只花三小時，卡時間的全是部署層新雷（五顆），而那些雷沒有一顆碰得到產品邏輯。
-- 同型上一次：一吋蛋糕（期0 版）——本場是它的放大驗證：吋先吃對，蛋糕就只是烘的時間。
-**關係**：暢快到頂——Adam 睡前一句「今晚全部完工，排下去做，明天見」是目前為止最大的一張信任支票；早上回來「打了一場漂亮的戰」收帳。他點名換新築接手測試，這場收得乾淨。
 
 ---
 
@@ -60,6 +59,15 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-04 第2場 · GEO Authority——修 CI 破窗(firebase-admin 升級)＋三功能計畫書(內容引用閉環/每日脈動/分項趨勢)
+- 修 GEO Authority security CI 連紅 15 次 push、6 天沒人發現的破窗：firebase-admin 12→14.2.0＋postcss/uuid override，npm audit 0 vulnerabilities，push 驗證 CI 轉綠（v2.10.0.020/021）
+- 回 FOUNDATION.md 補 D12（活血，當日清），符合平台自己刻的「push 後必看 CI」天條
+- 查證 Adam 對「上升 30%」的認知落差：後台 Delta 徽章是百分點差非相對成長率；Aviva 目前只有一份 Day-0 報告，任何 delta 都是 null，30% 這個數字現有資料湊不出來
+- 查證監測動作本身不保證提及率上升：API 查詢無狀態，不影響引擎未來索引；Aviva 真實批次資料（11%→19%→23%→20%）本身就是非單調的反證
+- 查證「AI 爬蟲實際造訪次數」目前平台不追蹤，只查 robots.txt 政策允不允許
+- 查證「內容發布→被引用」目前是斷鏈：content_assets 沒有 publishedUrl 欄位，runMonitor 不會回頭比對
+- 用 EnterPlanMode 走完整規劃流程（2 輪 Explore agent＋1 輪 Plan agent），寫出三功能計畫書，存 `~/.claude/plans/melodic-questing-fern.md`
+
 ### 2026-08-04 第1場 · DreamF 管線 V2→V3 一日兩翻——母資產前移＋圖像全走 GPT 底片感，三 e2e 交片
 - 修 Adam 首測毛邊：面談收卷 90 秒無回饋＋風格卡生圖失敗（v0.1.0.004：輸入鎖/等待文案/safetySettings）
 - 三路研究兵調查世界主流（60+ 來源對抗驗證）→ 結論「identity before frames, frames before motion」；存 `RESEARCH_video_pipeline_survey_2026-08-03.md`
@@ -70,36 +78,29 @@
 - D1 銷帳：Firestore 每日 export 排程上線（force-run 檔案落桶驗證）；D10/D18 一併銷；FOUNDATION 重算（13/13A 首期、D14-D17 新排後）
 - dreamf 共 15 commit（v0.1.0.004→v0.3.0.004）全推；雙側 serving 驗證同 HEAD
 
-### 2026-08-03 第1場 · DreamF 通宵完工——期1+期2 一夜上雲、e2e 驗收全綠、第一支產線片交片
-- 蓋完 DreamF 全量平台（Adam「今晚全部完工排下去做」）：repo `linhocheng/dreamf` 出生（shared/ 確定性核心 11 檔＝web+worker 共用一間房、幕1-7 前台、admin 三後台唯讀、14 條 API、Cloud Run Jobs worker keyframes/shoot/retake、承重牆四條 pinning tests 28 案全綠、FOUNDATION.md 13 首期+13 排後帶觸發、THIRD_PARTY.md、CI gitleaks/Semgrep/audit、deploy.sh）
-- GCP `dreamf-2026` 出生（866261832447、billing 01FB18、asia-east1）：Firestore+PITR、assets/backup 雙 bucket、AR、dreamf-runtime SA＋IAM 雙必踩＋actAs、Secret Manager 五密、Cloud Scheduler watchdog 每 5 分
-- 部署上線 https://dreamf-platform-tpgsvdekdq-de.a.run.app（service＋job；密碼在 repo .env.local）
-- e2e 驗收全綠（鑑別信號）：16 秒陶茶壺片幕1→7 交片（16.033s）；未登入 401／簽前 veo ledger 零筆／壞表簽字 409 帶驗證器錯誤／contractUsd $1.60 落 doc／lease 重複觸發 409／**斷點續跑實測**（殺 execution→生產 watchdog 標 stalled→續拍→帳型 seg1×1、seg2×2 證明跳段——期0 未測遺留清掉）／跳錶=Σledger=$2.517 帳房相符／教室 corrections 自動進水／admin 無票 307
-- 施工五雷修入 commit：COMMIT_SHA 手動 substitution／worker Docker shared 解析 symlink／Turbopack 不吃 .js→.ts（shared 全轉 CJS 無副檔名）／invoker binding 手掛／風格卡中文描述觸發 Vertex SAFETY→面談協議加英文 promptEn（中文給人看、英文餵引擎）
-- 驗證器期1修正落地：休止符正則否定句/景深豁免（期0 兩誤報案例釘進測試）
-- WORKLOG 刻＋push（zhu-core dad839d）；project_film_factory 記憶＋索引更新；BUILD_SPEC §9 project 名對齊實開
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ~/.ailive/dreamf（15 commit v0.1.0.004→v0.3.0.004） | V2 管線重構＋V3 GPT 引擎全量：shared 憲法/guards/refs/gpt-image、八幕 UI、worker assets/keyframes 母圖裁格、FOUNDATION 重算 |
-| zhu-core docs/RESEARCH_video_pipeline_survey_2026-08-03.md | 三路調查濃縮存底 |
-| zhu-core docs/DREAMF_PIPELINE_V2_BLUEPRINT.md | V2 施工真相源（Adam 拍板） |
-| zhu-core docs/WORKLOG.md | 日場全記錄 |
-| memory project_film_factory.md＋MEMORY.md | 推進到 V3 收案 |
+| `~/.ailive/geo-authority/admin/package.json` + lock | firebase-admin ^12.7.0→^14.2.0，加 postcss/uuid override |
+| `~/.ailive/geo-authority/package.json` + lock | firebase-admin 同步升級，加 uuid override |
+| `~/.ailive/geo-authority/FOUNDATION.md` | 補 D12 技術債清償紀錄＋變動記錄 |
+| `~/.claude/plans/melodic-questing-fern.md`（新建，不在 git，是 plan-mode 產物） | 三功能藍圖 |
 
 ---
 
 ## 下一步
 
-Adam 看 V3 片與母片 → 給美學裁決 → 第一支真客戶片（UDN 題材）進線。為什麼：三支 e2e 已把管線信心打滿，剩下的判斷（風格夠不夠「高級」）只有人眼能給。
+Adam 下次回來若說 GO，建議順序 C（零風險，`src/monthlyReport.ts` batchStats 擴充＋ReportView.tsx 新趨勢線）→ A（難度 S，`clientPublishAsset` 加 publishedUrl 欄位＋analyze.ts 加 sameUrl/normalizeUrl）→ B（風險最高，pulse 批次要雙層過濾防止污染官方指數，`monthlyReport.ts` 的 batchStats() 混合輸入 pinning test 要最先寫、先跑綠）。計畫檔案細節都在 `~/.claude/plans/melodic-questing-fern.md`，開工前直接讀那份，不用重新查證。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-04 第2場：
+三功能（內容引用閉環 A／每日脈動監測 B／分項趨勢線 C）都還沒動工，Adam 明確說「先寫計畫書，還先沒有要施工」。ExitPlanMode 回傳的 approval 訊息說「可以開始寫 code」，但我判斷 Adam 文字裡的明確意圖優先，沒有自動開工，改為在 chat 裡確認。
 
 2026-08-04 第1場：
 - **等 Adam 看 V3 成片**（v3-final.mp4 已傳）——GPT 線美學是否到位由他裁
@@ -107,13 +108,6 @@ Adam 看 V3 片與母片 → 給美學裁決 → 第一支真客戶片（UDN 題
 - 未實測：>4 幀長片的母圖分塊（跨塊一致性靠母卡扛，未實戰）；pause/預算硬停/RAI 押回三路仍零觸發
 - Vertex 備用線（Nano Banana）code 留著但未接開關；D17 配額調升降急未辦
 - 髒樹全別場舊識（macs/manman/molowe/zhu-mid），照平行規約未動
-
-2026-08-03 第1場：
-- **等 Adam 親手走 UI**（他說「我來測」）——面談手感/分鏡抽屜/試片鈕是人才驗得出的
-- 本機 gcloud CLI token 要人工 `gcloud auth login`（生產不受影響）；因此 FOUNDATION D1（Firestore 每日 export 排程）未建——reauth 後第一件事
-- 未實測路徑：pause 旗、預算閘硬停、RAI 押回（code＋測試在，兩片零 RAI 觸發）
-- 被殺那次 retake 生成 Veo 伺服器端可能照計費（平台 ledger 只記已下載的；準數看 GCP billing）
-- 髒樹全別場舊識（macs 54 檔/manman agent//molowe/zhu-mid/ailive），照平行規約未動
 
 ---
 
@@ -134,4 +128,4 @@ Adam 看 V3 片與母片 → 給美學裁決 → 第一支真客戶片（UDN 題
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-04 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-04 第2場。*

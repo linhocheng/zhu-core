@@ -10001,3 +10001,33 @@ DreamF 從「能出片」升級到「照世界標準的做法出片」：母資�
 
 ### 待執行 / 下一步
 Adam 看 V3 片與母片 → 給美學裁決 → 第一支真客戶片（UDN 題材）進線。為什麼：三支 e2e 已把管線信心打滿，剩下的判斷（風格夠不夠「高級」）只有人眼能給。
+
+---
+
+## 2026-08-04（第2場）— GEO Authority——修 CI 破窗(firebase-admin 升級)＋三功能計畫書(內容引用閉環/每日脈動/分項趨勢)
+
+### 背景 / WHY
+GEO Authority（`~/.ailive/geo-authority`）——先是資安 CI 破窗的當機處理，轉為 Adam 對月報數字誠實度的追問，最後收斂成一份產品功能藍圖。
+
+### 完成
+- 修 GEO Authority security CI 連紅 15 次 push、6 天沒人發現的破窗：firebase-admin 12→14.2.0＋postcss/uuid override，npm audit 0 vulnerabilities，push 驗證 CI 轉綠（v2.10.0.020/021）
+- 回 FOUNDATION.md 補 D12（活血，當日清），符合平台自己刻的「push 後必看 CI」天條
+- 查證 Adam 對「上升 30%」的認知落差：後台 Delta 徽章是百分點差非相對成長率；Aviva 目前只有一份 Day-0 報告，任何 delta 都是 null，30% 這個數字現有資料湊不出來
+- 查證監測動作本身不保證提及率上升：API 查詢無狀態，不影響引擎未來索引；Aviva 真實批次資料（11%→19%→23%→20%）本身就是非單調的反證
+- 查證「AI 爬蟲實際造訪次數」目前平台不追蹤，只查 robots.txt 政策允不允許
+- 查證「內容發布→被引用」目前是斷鏈：content_assets 沒有 publishedUrl 欄位，runMonitor 不會回頭比對
+- 用 EnterPlanMode 走完整規劃流程（2 輪 Explore agent＋1 輪 Plan agent），寫出三功能計畫書，存 `~/.claude/plans/melodic-questing-fern.md`
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `~/.ailive/geo-authority/admin/package.json` + lock | firebase-admin ^12.7.0→^14.2.0，加 postcss/uuid override |
+| `~/.ailive/geo-authority/package.json` + lock | firebase-admin 同步升級，加 uuid override |
+| `~/.ailive/geo-authority/FOUNDATION.md` | 補 D12 技術債清償紀錄＋變動記錄 |
+| `~/.claude/plans/melodic-questing-fern.md`（新建，不在 git，是 plan-mode 產物） | 三功能藍圖 |
+
+### ⚠️ 尚未解決
+三功能（內容引用閉環 A／每日脈動監測 B／分項趨勢線 C）都還沒動工，Adam 明確說「先寫計畫書，還先沒有要施工」。ExitPlanMode 回傳的 approval 訊息說「可以開始寫 code」，但我判斷 Adam 文字裡的明確意圖優先，沒有自動開工，改為在 chat 裡確認。
+
+### 待執行 / 下一步
+Adam 下次回來若說 GO，建議順序 C（零風險，`src/monthlyReport.ts` batchStats 擴充＋ReportView.tsx 新趨勢線）→ A（難度 S，`clientPublishAsset` 加 publishedUrl 欄位＋analyze.ts 加 sameUrl/normalizeUrl）→ B（風險最高，pulse 批次要雙層過濾防止污染官方指數，`monthlyReport.ts` 的 batchStats() 混合輸入 pinning test 要最先寫、先跑綠）。計畫檔案細節都在 `~/.claude/plans/melodic-questing-fern.md`，開工前直接讀那份，不用重新查證。
