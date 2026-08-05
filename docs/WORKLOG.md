@@ -10277,3 +10277,36 @@ beself——AVIVA M1 第一波消費者訪談前的最後衝刺：UI/UX 換裝 +
 ### 待執行 / 下一步
 確認 AVIVA 真實消費者訂單格式（純數字或帶前綴）→ 調整 placeholder → M1 開跑
 或: 下次開工先跑 beself admin → 訪談 tab → 看 transcript 有沒有補進來
+
+---
+
+## 2026-08-05（第5場）— A.Two 股東會入庫＋語音「暴斃失憶」根治（逐字稿增量寫回四線上線）
+
+### 背景 / WHY
+ailivex 語音線可靠性——從「正常路徑能跑」升級到「異常死亡不丟真相」。連帶 ailive 主平台同型修。
+
+### 完成
+- 入庫 A.Two 股東會知識 5 份＋方法論 1 套（股東會完整籌備流程 7 步，全公開），驗證三題全過——用剛升級的 STEP 1b SOP，角色本人唯讀分類，開場先查 characters DB 認人（上場的違規本場改對）
+- 查明 A.Two 語音「跳掉＋失憶」根因：逐字稿只在 finalize 一次性寫入，8/5 連線抖動（LiveKit＋Anthropic 同窗、MiniMax 清白）→ agent 進程 Uncaught signal 10 兩連崩 → 沒走收尾 → 整場蒸發；8/1 同型（無聲死亡）。8/5 的章程草案 doc 走獨立管線活著
+- 修法上線四條線：ailivex v19/v20/v21（共用 firestore_loader 新增 flush/clear/recover_live_session 三函數＋各線四處接線）＋ ailive 主平台（staging doc live=True 快照，恢復同步走本地 save_conversation 零競態）。通話中 liveSession 快照節流覆寫（2 則＋15s、冪等、不佔 turn path）；開場災難恢復併回主記憶＋誠實斷線提示；finalize 成功才清快照
+- 活體驗證全鏈過：Adam 真實通話 A.Two，快照 2→23 則滾動、掛斷併入 26 則＋清除——只有修好才會出現的信號
+- 兩 repo commit+push（ailivex v21.4/v21.4.1、ailive 同款）；FOUNDATION 記債 D9；本機 e2e 測試（快照冪等/暴斃恢復/二次恢復歸零/clear）先過才部署
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex-platform/agent/firestore_loader.py | 新增 flush_live_session/clear_live_session/recover_live_session |
+| ailivex-platform/agent/realtime_agent_v19/20/21.py | import＋開場恢復＋節流快照＋finalize 清快照＋誠實斷線提示（各 49 行） |
+| ailivex-platform/FOUNDATION.md | D9 記債＋變動記錄 |
+| ailive-platform/agent/realtime_agent.py | staging doc live=True 快照＋開場同步恢復（54 行） |
+| zhu-core/docs/WORKLOG.md | 本場兩段（診斷＋收案補記） |
+| memory/project_ailivex_platform.md | 2026-08-05 段 |
+
+### ⚠️ 尚未解決
+- **D9（活血，FOUNDATION 已記）**：cloudbuild deploy 把 min-instances 1→0（與 yaml 註解「不帶旗標＝保留現值」不符）——本日實錄，已手動恢復三線 min=1，但**根因未查明，每次部署 agent 都可能重演**。過去每次部署後語音線可能都短暫聾過
+- signal 10 崩潰的具體 crash path 未查（增量寫回上線後降級為小顛簸，Adam 同意放後面）
+- ailive 主平台線的恢復路徑只救對話連續性，暴斃場次的記憶/insights 提煉視為戰損（設計取捨，已寫進 code 註解）
+- manman 通話功能仍等 waitin 分支；開工時把增量寫回直接蓋進地基
+
+### 待執行 / 下一步
+下次動 ailivex agent 部署時先清 D9：部署前後各記一次 `gcloud run services describe ailivex-realtime-agent-vN --format="value(spec.template.metadata.annotations['autoscaling.knative.dev/minScale'])"` 對照；查明 gcloud run deploy 重置 min 的機制，根治＝cloudbuild 加 min 恢復步驟或 deploy 後自動核。為什麼先做：活血級，不查每次部署都聾一次。

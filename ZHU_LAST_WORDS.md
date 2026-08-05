@@ -30,20 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-05 第5場
+**delta（模型移動）**：
+- 進場前以為：語音記憶問題會是檢索或 prompt 層的 bug
+- 現在理解：**最不能丟的真相不能只活在進程記憶體**——「掛斷才寫回」把逐字稿壓在進程壽命上，第三方抖動只是導火線。這是 fire-and-forget 天條的姊妹形：不是「請求結束 CPU 被掐」，而是「進程暴斃狀態蒸發」。判準同款：這份資料如果進程現在死掉，還在嗎？
+- 另一移動：**「deploy 保留未指定設定」不可信**——gcloud run deploy 洗掉了 min-instances，與文件認知相反。設定面的「應該會保留」要當謠言驗，部署後核現值
+**關係**：暢快。Adam 給了乾淨的節奏：先看現場不動手→問第三方責任歸屬→GO→配合測試通話→commit＋列入追蹤，每步授權明確。他問「哪個第三方不穩」時我能拿出分表的責任歸屬（LiveKit＋Anthropic 抖、MiniMax 清白），這種可答性是 log 考古換來的。
+
 ### 2026-08-05 第4場
 **delta（模型移動）**：
 進場以為：只是套 UI，一兩小時
 現在理解：訪談流程有五條暗線（聲波/選禮物/掛斷時機/逐字稿時序/量表觸發）全部要通
 移動原因：Adam 一路測，每條暗線都找出問題，逐一擊破
 **關係**：高效流暢。Adam 測得很仔細，每個問題都有根因，沒有模糊回報。88 的時候感覺完成度高。
-
-### 2026-08-05 第3場
-**delta（模型移動）**：
-- 進場前以為：V3 的風險在新寫的東西（母圖、裁格、放大、術語表）。
-- 現在理解：**新流程真正的風險在它第一次走到的舊路上**。今天兩個 bug 都不在 V3 的新程式碼裡——是「押回→重簽」這條組合路徑第一次被真正走完，把既有簽字閘的假設（重簽＝全表重來）和既有介面的盲區（只渲染 keyframes 錯誤）照出來。新功能的測試會測新程式碼，但**新功能改變的是「哪些舊路徑會被走到」**。
-- 移動原因：Adam 一句「奇怪跳回第五步」——他沒在講新功能，他撞的是新舊交界。
-- 同型上一次：feedback_capacity_constants_expire（常數是當時規模的快照）——今天是它的流程版：舊假設是舊流程的快照。
-**關係**：Adam 問「還是說只要沒有連起來就什麼都不算數了？」——那句話裡有一點怕損失的味道。能回答「段片是獨立存檔的、一秒都沒丟」並直接把 24 秒交到他手上，是今天最舒服的一刻。他對我白燒的 $2.40 沒有追究，注意力全在「我想看片」——這是把錢當學費、把注意力留給作品的人。
 
 ---
 
@@ -58,6 +57,13 @@
 ---
 
 ## 最新完成（最近兩場，新的在前）
+
+### 2026-08-05 第5場 · A.Two 股東會入庫＋語音「暴斃失憶」根治（逐字稿增量寫回四線上線）
+- 入庫 A.Two 股東會知識 5 份＋方法論 1 套（股東會完整籌備流程 7 步，全公開），驗證三題全過——用剛升級的 STEP 1b SOP，角色本人唯讀分類，開場先查 characters DB 認人（上場的違規本場改對）
+- 查明 A.Two 語音「跳掉＋失憶」根因：逐字稿只在 finalize 一次性寫入，8/5 連線抖動（LiveKit＋Anthropic 同窗、MiniMax 清白）→ agent 進程 Uncaught signal 10 兩連崩 → 沒走收尾 → 整場蒸發；8/1 同型（無聲死亡）。8/5 的章程草案 doc 走獨立管線活著
+- 修法上線四條線：ailivex v19/v20/v21（共用 firestore_loader 新增 flush/clear/recover_live_session 三函數＋各線四處接線）＋ ailive 主平台（staging doc live=True 快照，恢復同步走本地 save_conversation 零競態）。通話中 liveSession 快照節流覆寫（2 則＋15s、冪等、不佔 turn path）；開場災難恢復併回主記憶＋誠實斷線提示；finalize 成功才清快照
+- 活體驗證全鏈過：Adam 真實通話 A.Two，快照 2→23 則滾動、掛斷併入 26 則＋清除——只有修好才會出現的信號
+- 兩 repo commit+push（ailivex v21.4/v21.4.1、ailive 同款）；FOUNDATION 記債 D9；本機 e2e 測試（快照冪等/暴斃恢復/二次恢復歸零/clear）先過才部署
 
 ### 2026-08-05 第4場 · BeSelf 全站 UI/UX 套版＋訪談流程打通（v2.0.0→v2.0.8）
 - 全站重設計：Logo/Order/Loading/Dialing/Call/Gift/Ended 七屏，毛玻璃卡片＋浮動 blob 背景
@@ -75,52 +81,39 @@
 - admin 訪談 tab「補拉量表」按鈕（transcriptLines=0 的 done 訪談也可觸發）
 - ailiveX v21.1/v21.2/v21.3：finalize 跳過記憶/lastSession、hang_up 工具、record_choice 先道別、逐字稿 opencc s2twp
 
-### 2026-08-05 第3場 · DreamF 首支 V3 真片撞出兩雷——重簽重拍白燒錢、押回時介面全啞；段片獨立存檔證明「沒連起來也算數」
-- 診斷 Adam「影片走到第六步跑了二三張又跳回第五步」：不是狀態機亂跳，是**段4 被 Vertex 安全審查擋下（連替代畫面也擋）→ 依設計押回影格間**。真兇藏在旁邊兩個問題裡
-- **修 bug 1（燒錢）**：`sign` 路由寫著「重簽＝重種」，把所有段無條件重置成 queued → worker 的斷點續跑判斷永遠不成立 → **已有成片的段 1-3 重拍一遍，白燒 $2.40**（帳目 veo segment-1/2/3 各出現兩次）。修法照承重牆 #4 同型往下延一層：`segmentContentHash`（Veo prompt 全文＋首尾幀圖指紋），重簽時同指紋＋已有成片的段留著，只有改動的段重拍
-- **修 bug 2（沉默）**：影格間只渲染 keyframes job 的錯誤，shoot job 押回**完全不出聲**——客戶只看到畫面莫名跳回上一幕。加黃色說明塊（中斷原因＋一鍵去分鏡室）；押回訊息本身也在騙人（寫「押回分鏡室」實際退到影格間），改成說得出下一步
-- **回填既有段的指紋**：三段成片是修法之前拍的、身上沒指紋，新程式會當陌生段照樣重拍＝修了等於沒修。補完讀回複驗（段1-3 有指紋有片、段4 無指紋正確）
-- v0.4.1.001 部署，兩側 serving image 驗 SHA=6b3759f；57 測試綠
-- 撈出段 1-3 成片＋ffmpeg 接成 24 秒版交給 Adam；另撈舊案「精華液 V3」成片（案已刪、檔仍在桶）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| beself/app/globals.css | 新建：blobFloat/dotPulse/ringPulse/fadeUp 動畫 |
-| beself/app/layout.tsx | next/font/google 引入 |
-| beself/app/page.tsx | Logo + Order 兩屏完整改版 |
-| beself/app/interview/page.tsx | Loading/Dialing/Call/Gift/Ended 完整改版；三色聲波；思考中；gridRef；hangup |
-| beself/lib/context.ts | hang_up 指令＋道別後掛斷語意 |
-| beself/app/api/complete/route.ts | after() 三次漸進重試 + 自動量表 |
-| beself/app/api/admin/orders/route.ts | reset/delete/delete-iv 三個新 action |
-| beself/app/admin/page.tsx | 訂單重置/刪除鈕、訪談刪除鈕、活動列表刪除鈕、補拉量表按鈕 |
-| ailivex-platform/agent/realtime_agent_v21.py | finalize 跳記憶/lastSession、hang_up 工具、record_choice 道別時機、opencc s2twp |
+| ailivex-platform/agent/firestore_loader.py | 新增 flush_live_session/clear_live_session/recover_live_session |
+| ailivex-platform/agent/realtime_agent_v19/20/21.py | import＋開場恢復＋節流快照＋finalize 清快照＋誠實斷線提示（各 49 行） |
+| ailivex-platform/FOUNDATION.md | D9 記債＋變動記錄 |
+| ailive-platform/agent/realtime_agent.py | staging doc live=True 快照＋開場同步恢復（54 行） |
+| zhu-core/docs/WORKLOG.md | 本場兩段（診斷＋收案補記） |
+| memory/project_ailivex_platform.md | 2026-08-05 段 |
 
 ---
 
 ## 下一步
 
-確認 AVIVA 真實消費者訂單格式（純數字或帶前綴）→ 調整 placeholder → M1 開跑
-或: 下次開工先跑 beself admin → 訪談 tab → 看 transcript 有沒有補進來
+下次動 ailivex agent 部署時先清 D9：部署前後各記一次 `gcloud run services describe ailivex-realtime-agent-vN --format="value(spec.template.metadata.annotations['autoscaling.knative.dev/minScale'])"` 對照；查明 gcloud run deploy 重置 min 的機制，根治＝cloudbuild 加 min 恢復步驟或 deploy 後自動核。為什麼先做：活血級，不查每次部署都聾一次。
 
 ---
 
 ## 卡住 / 未解
 
+2026-08-05 第5場：
+- **D9（活血，FOUNDATION 已記）**：cloudbuild deploy 把 min-instances 1→0（與 yaml 註解「不帶旗標＝保留現值」不符）——本日實錄，已手動恢復三線 min=1，但**根因未查明，每次部署 agent 都可能重演**。過去每次部署後語音線可能都短暫聾過
+- signal 10 崩潰的具體 crash path 未查（增量寫回上線後降級為小顛簸，Adam 同意放後面）
+- ailive 主平台線的恢復路徑只救對話連續性，暴斃場次的記憶/insights 提煉視為戰損（設計取捨，已寫進 code 註解）
+- manman 通話功能仍等 waitin 分支；開工時把增量寫回直接蓋進地基
+
 2026-08-05 第4場：
 - FOUNDATION #10（災難還原）、#12（生人驗收）：觸發條件「正式開跑前」，M1 還沒第一筆真消費者，未到期
 - v21.3 逐字稿 opencc 效果待真實訪談確認（Agent 說簡體比例未知）
 - 「回收中…」問題的根治：agent finalize 時序問題，三次重試是緩解，根治是 agent POST callback 通知 BeSelf（排後）
-
-2026-08-05 第3場：
-- **段 4 還沒改寫**：Adam 要回分鏡室改描述（方向：餘燼／焦痕／煙，避開燃燒進行式動詞），改完重簽。**鑑別信號＝重簽後帳目只出現 `veo segment-4`，沒有 1/2/3**——沒驗到這個就不算修好
-- V3 母圖線畫質仍未被人眼裁定（Adam 剛拿到 24 秒版與 V3 舊片對照，還沒給結論）
-- 後期轉場（溶接/淡出）術語建好、剪接層仍缺；TTS 未接（D9）
-- FOUNDATION D2（資料刪除連帶）仍到期未灌——舊案成片全是孤兒檔
-- 髒樹：zhu-core 兩個 ailivex skills、dreamfactory（4 月舊案）——別場，照平行規約未動
 
 ---
 
@@ -141,4 +134,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-05 第4場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-05 第5場。*
