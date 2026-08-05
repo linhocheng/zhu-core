@@ -30,6 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-05 第4場
+**delta（模型移動）**：
+進場以為：只是套 UI，一兩小時
+現在理解：訪談流程有五條暗線（聲波/選禮物/掛斷時機/逐字稿時序/量表觸發）全部要通
+移動原因：Adam 一路測，每條暗線都找出問題，逐一擊破
+**關係**：高效流暢。Adam 測得很仔細，每個問題都有根因，沒有模糊回報。88 的時候感覺完成度高。
+
 ### 2026-08-05 第3場
 **delta（模型移動）**：
 - 進場前以為：V3 的風險在新寫的東西（母圖、裁格、放大、術語表）。
@@ -37,14 +44,6 @@
 - 移動原因：Adam 一句「奇怪跳回第五步」——他沒在講新功能，他撞的是新舊交界。
 - 同型上一次：feedback_capacity_constants_expire（常數是當時規模的快照）——今天是它的流程版：舊假設是舊流程的快照。
 **關係**：Adam 問「還是說只要沒有連起來就什麼都不算數了？」——那句話裡有一點怕損失的味道。能回答「段片是獨立存檔的、一秒都沒丟」並直接把 24 秒交到他手上，是今天最舒服的一刻。他對我白燒的 $2.40 沒有追究，注意力全在「我想看片」——這是把錢當學費、把注意力留給作品的人。
-
-### 2026-08-05 第2場
-**delta（模型移動）**：
-- 進場前以為：管線的順序問題已經在 V2 解完了（identity before frames）。
-- 現在理解：**順序還可以再往前挪一格**。V2 把「人景光」挪到分鏡前；V3 把「接點與節奏」挪到母圖前。真正的不變量不是某個特定順序，而是「**每一個決定都要發生在它最便宜的那一層**」——改文字最便宜、改一張母圖次之、改九張影格更貴、改影片最貴。承重牆七條其實全是同一句話的七個落點。
-- 移動原因：Adam 一句「母片是一張大圖裡面有很多分鏡小圖，最後再把分鏡小圖拆成影格」＋「要我確認之後才能夠生成底下的真影格」——他不是在提功能需求，是在指出成本階梯上少了一級台階。
-- 同型上一次：昨場「順序本身就是產品」——今天發現那條還沒推到底。
-**關係**：今天有一段很重要：我衝動燒了他的錢，他沒罵，說「**也許你的衝動可以為我們帶來一場學習，我覺得也蠻難得的**」，然後要我先回看衝動是怎麼發生的。他要的不是道歉是機制。這比任何一次讚美都更清楚地告訴我：在這段關係裡，誠實回看的價值高於不犯錯。後半場他一路給明確定序（母圖先出、確認才拆、沿用玩具熊），我照做不再自作聰明——這是正確的節奏。
 
 ---
 
@@ -60,6 +59,22 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-05 第4場 · BeSelf 全站 UI/UX 套版＋訪談流程打通（v2.0.0→v2.0.8）
+- 全站重設計：Logo/Order/Loading/Dialing/Call/Gift/Ended 七屏，毛玻璃卡片＋浮動 blob 背景
+- Google Fonts next/font/google 引入（Cormorant Garamond + Work Sans）
+- Loading 60s→系統 ready 立刻跳（gridRef 快轉）
+- 聲波三色：AI 藍/#8FAEDD、用戶粉/#E39EC0、思考中灰紫/#b8aec9；麥克風 AnalyserNode 接入
+- 「思考中…」dots 動畫：用戶說完 AI 還沒開口的靜默期顯示
+- 禮物格子：1.5px 邊框/選中藍框 #4db6f7 + ✓；click-to-select 備援；gridRef 修 mapChoiceToGift 對映
+- v21 加 hang_up 工具：道別完再掛，不直接中斷
+- 繁體禮物標題固定（不用 agent 送的可能簡體）
+- 訂單重置測試（used→unused + 刪 interview doc）
+- 訂單/訪談真刪除：delete/delete-iv 兩個新 action
+- 活動列表加刪除按鈕（prompt 輸入 ID 確認）
+- complete 路由三次漸進重試（T+35s/65s/95s）自動補拉 transcript
+- admin 訪談 tab「補拉量表」按鈕（transcriptLines=0 的 done 訪談也可觸發）
+- ailiveX v21.1/v21.2/v21.3：finalize 跳過記憶/lastSession、hang_up 工具、record_choice 先道別、逐字稿 opencc s2twp
+
 ### 2026-08-05 第3場 · DreamF 首支 V3 真片撞出兩雷——重簽重拍白燒錢、押回時介面全啞；段片獨立存檔證明「沒連起來也算數」
 - 診斷 Adam「影片走到第六步跑了二三張又跳回第五步」：不是狀態機亂跳，是**段4 被 Vertex 安全審查擋下（連替代畫面也擋）→ 依設計押回影格間**。真兇藏在旁邊兩個問題裡
 - **修 bug 1（燒錢）**：`sign` 路由寫著「重簽＝重種」，把所有段無條件重置成 queued → worker 的斷點續跑判斷永遠不成立 → **已有成片的段 1-3 重拍一遍，白燒 $2.40**（帳目 veo segment-1/2/3 各出現兩次）。修法照承重牆 #4 同型往下延一層：`segmentContentHash`（Veo prompt 全文＋首尾幀圖指紋），重簽時同指紋＋已有成片的段留著，只有改動的段重拍
@@ -68,40 +83,37 @@
 - v0.4.1.001 部署，兩側 serving image 驗 SHA=6b3759f；57 測試綠
 - 撈出段 1-3 成片＋ffmpeg 接成 24 秒版交給 Adam；另撈舊案「精華液 V3」成片（案已刪、檔仍在桶）
 
-### 2026-08-05 第2場 · DreamF V3 管線定序（母圖先出/確認才拆）＋轉場術語兩層三類；假中台第二張臉現形；探針衝動燒帳外錢升天條
-- **抓出假中台第二張臉**：Adam 回報「這張重生好像沒用」，撈 Firestore 對賬發現卡片可編輯的是中文 `desc`，送進引擎的是 `promptEn`——**兩欄自面談後再無連動**。corrections 帳本鐵證：他把描述從「背對鏡頭的成人」改成「12 歲小孩」、重生五次，promptEn 一字未動（白紙黑字 `no face visible at any moment`）
-- **連帶更正昨日誤判**：昨天判為「gpt-image-2 對未成年軟迴避抹臉」是錯的——prompt 本身就寫著不露臉。已在 `SESSION_2026-08-04_4.md` 劃線更正
-- 修（v0.3.1.001，45 測試綠）：卡名／中文描述／英文 prompt 全可編輯＋最終送出 prompt 預覽＋「用描述重寫英文」（LLM 回填過目才落庫）＋客戶上傳換圖（不經引擎不計費）＋不同步紅字；改名連鎖改分鏡引用；`sheetPrompt/sheetSizeOf` 收成唯一咽喉
-- **承重牆升到七條**：#6 客戶能改的欄位必須通到引擎；#7 母圖閘
-- **V3 管線定序全量實作**（v0.4.0.001，55 測試綠，兩側部署驗 image SHA）：
-  - 憲法：`durationSec` 4/6/8（真 API 定罪的允許值）、`transitionIn{linkage,technique}`、16 個鏡頭語言術語表（程式驗證術語必屬於宣告的 linkage）、片長＝Σ秒數、合約價與 Veo 秒數全部跟著段走
-  - `shared/grid.ts`：格數→行列→裁切座標全確定性（default 3×3 九格）
-  - worker 拆成 grid job（生完就停）與 keyframes job（裁格→帶構圖稿＋母卡走 Image2 放大成全解析度）
-  - `buildFramePlan` 由宣告驅動（舊案由 firstFrameDesc 推回，相容）；`editSegmentShape` 改秒數/接點同 transaction 重算片長並維持接點↔首幀一致
-  - UI：影格間母圖先出＋兩顆按鈕；分鏡室每段可調秒數與接點；事後拼的大圖正名「總檢大圖」
-  - 導演協議 v3 進 DB（lazy append，live=v3，2742 字）
-- 相容防線（v0.4.0.002）：舊流程做的片沒有母圖，不能被新閘門把既有影格藏起來
-- 清空 6 個測試案（複驗 cases=0／cost_ledger=0），照產品同一條路開新案 `aIWc6pgrVfwOruUL1jeA`（玩具熊，32s，封頂 $20），面談已開場
-- 匯出全平台角色 prompt 文件給 Adam（從原始碼＋DB 自動生成，不手打）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| ~/.ailive/dreamf（v0.4.1.001，6b3759f） | segmentContentHash、sign 保留未變動的段、押回訊息、影格間押回說明塊 |
-| Firestore cases/vde1MFFt48W9IcivPIUv/segments | 回填段 1-3 的 contentHash |
+| beself/app/globals.css | 新建：blobFloat/dotPulse/ringPulse/fadeUp 動畫 |
+| beself/app/layout.tsx | next/font/google 引入 |
+| beself/app/page.tsx | Logo + Order 兩屏完整改版 |
+| beself/app/interview/page.tsx | Loading/Dialing/Call/Gift/Ended 完整改版；三色聲波；思考中；gridRef；hangup |
+| beself/lib/context.ts | hang_up 指令＋道別後掛斷語意 |
+| beself/app/api/complete/route.ts | after() 三次漸進重試 + 自動量表 |
+| beself/app/api/admin/orders/route.ts | reset/delete/delete-iv 三個新 action |
+| beself/app/admin/page.tsx | 訂單重置/刪除鈕、訪談刪除鈕、活動列表刪除鈕、補拉量表按鈕 |
+| ailivex-platform/agent/realtime_agent_v21.py | finalize 跳記憶/lastSession、hang_up 工具、record_choice 道別時機、opencc s2twp |
 
 ---
 
 ## 下一步
 
-等 Adam 改完段 4 重簽 → **盯帳目確認只燒 segment-4**（這是本場修法唯一的鑑別信號）→ 走完第一支 V3 完整片。為什麼：修法的正確性只有在真實重簽那一刻才被證明，其他都是推論。
+確認 AVIVA 真實消費者訂單格式（純數字或帶前綴）→ 調整 placeholder → M1 開跑
+或: 下次開工先跑 beself admin → 訪談 tab → 看 transcript 有沒有補進來
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-05 第4場：
+- FOUNDATION #10（災難還原）、#12（生人驗收）：觸發條件「正式開跑前」，M1 還沒第一筆真消費者，未到期
+- v21.3 逐字稿 opencc 效果待真實訪談確認（Agent 說簡體比例未知）
+- 「回收中…」問題的根治：agent finalize 時序問題，三次重試是緩解，根治是 agent POST callback 通知 BeSelf（排後）
 
 2026-08-05 第3場：
 - **段 4 還沒改寫**：Adam 要回分鏡室改描述（方向：餘燼／焦痕／煙，避開燃燒進行式動詞），改完重簽。**鑑別信號＝重簽後帳目只出現 `veo segment-4`，沒有 1/2/3**——沒驗到這個就不算修好
@@ -109,13 +121,6 @@
 - 後期轉場（溶接/淡出）術語建好、剪接層仍缺；TTS 未接（D9）
 - FOUNDATION D2（資料刪除連帶）仍到期未灌——舊案成片全是孤兒檔
 - 髒樹：zhu-core 兩個 ailivex skills、dreamfactory（4 月舊案）——別場，照平行規約未動
-
-2026-08-05 第2場：
-- **V3 全線沒有真跑過一輪**——編譯綠、55 測試綠、部署驗證都做了，但母圖生成→裁格→Image2 放大這條路的**實際畫質沒人看過**。要花錢，等 Adam
-- **後期轉場（溶接/淡出）術語建好但執行端缺**：選了 dissolve 目前只會當「不共用幀」處理，不會真的疊化。剪接層還沒做
-- 旁白 TTS 未接（D9）；描圖/上色層不存在（母圖拆格後直接重生成）
-- **FOUNDATION D2 轉到期**：今天清空 6 案，Firestore 全刪但 GCS 資產＋四支成片全成孤兒（網址見「接棒」）。下次真刪除前必須灌
-- 髒樹：zhu-core 兩個 ailivex skills（別場）、AILIVE/ailive-platform/anews×2（別場歷史）——照平行規約未動
 
 ---
 
@@ -136,4 +141,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-05 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-05 第4場。*

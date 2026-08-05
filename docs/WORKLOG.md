@@ -10210,3 +10210,70 @@ DreamF V3 上線後第一支真片撞出的兩個問題——都不在新寫的 
 
 ### 待執行 / 下一步
 等 Adam 改完段 4 重簽 → **盯帳目確認只燒 segment-4**（這是本場修法唯一的鑑別信號）→ 走完第一支 V3 完整片。為什麼：修法的正確性只有在真實重簽那一刻才被證明，其他都是推論。
+
+## 2026-08-05 — 即時語音「暴斃失憶」根治：逐字稿增量寫回（code築）
+
+### 背景 / WHY
+Adam 跟 A.Two 語音討論股東會兩度「跳掉＋失憶」（8/1、8/5）。查明根因：逐字稿只在掛斷 finalize 一次性寫入，agent 進程異常死亡（8/5 = LiveKit/Anthropic 連線抖動 → Uncaught signal 10 兩連崩）＝整場對話+記憶提煉+lastSession 全蒸發。第三方抖是導火線，「抖一下就整場失憶」是我們的病。
+
+### 產出
+- `ailivex-platform/agent/firestore_loader.py` — 新增 flush_live_session（快照覆寫，冪等）/ clear_live_session / recover_live_session（開場災難恢復）
+- `ailivex-platform/agent/realtime_agent_v19/20/21.py` — 四處接線：import＋開場恢復（load_conversation 前）＋節流快照（2則+15s，背景不佔 turn path）＋finalize 成功後清快照；恢復時 system prompt 加誠實斷線提示
+- `ailive-platform/agent/realtime_agent.py` — 同病同修，staging doc 加 live=True 快照；開場恢復同步走本地 save_conversation（不經 Cloud Tasks，零競態），暴斃場次記憶提煉視為戰損
+- e2e 測試（scratchpad/test_live_session.py）：快照冪等/暴斃恢復/二次恢復歸零/clear 全過
+
+### ⚠️ 尚未解決
+- signal 10 崩潰的具體 crash path 未查（增量寫回上線後它降級為小顛簸，Adam 同意放後面）
+- 兩 repo 改動未 commit（等 Adam 點頭）——不 commit 下次部署會把修法洗掉（殭屍復活術天條）
+
+### 待執行
+- [ ] 四服務部署驗證：通話中 conversations doc 出現 liveSession 且持續更新（只有修好才會出現的信號）
+- [ ] manman 通話功能開工時直接把增量寫回蓋進地基
+
+### 2026-08-05 補記 — 增量寫回活體驗證收案
+Adam 實測通話（A.Two，走 v19）：通話中 liveSession 快照 2→23 則持續滾動、掛斷後 finalize 存 26 則＋快照清除，全鏈鐵證過。四服務均上線。附帶發現並修復：cloudbuild deploy 會把 min-instances 1 洗成 0（與 yaml 註解「不帶旗標＝保留現值」不符），已手動恢復三線 min=1——這行為要列追蹤，每次部署都可能重演。
+
+---
+
+## 2026-08-05（第4場）— BeSelf 全站 UI/UX 套版＋訪談流程打通（v2.0.0→v2.0.8）
+
+### 背景 / WHY
+beself——AVIVA M1 第一波消費者訪談前的最後衝刺：UI/UX 換裝 + 訪談流程打通 + admin 工具補全。
+
+### 完成
+- 全站重設計：Logo/Order/Loading/Dialing/Call/Gift/Ended 七屏，毛玻璃卡片＋浮動 blob 背景
+- Google Fonts next/font/google 引入（Cormorant Garamond + Work Sans）
+- Loading 60s→系統 ready 立刻跳（gridRef 快轉）
+- 聲波三色：AI 藍/#8FAEDD、用戶粉/#E39EC0、思考中灰紫/#b8aec9；麥克風 AnalyserNode 接入
+- 「思考中…」dots 動畫：用戶說完 AI 還沒開口的靜默期顯示
+- 禮物格子：1.5px 邊框/選中藍框 #4db6f7 + ✓；click-to-select 備援；gridRef 修 mapChoiceToGift 對映
+- v21 加 hang_up 工具：道別完再掛，不直接中斷
+- 繁體禮物標題固定（不用 agent 送的可能簡體）
+- 訂單重置測試（used→unused + 刪 interview doc）
+- 訂單/訪談真刪除：delete/delete-iv 兩個新 action
+- 活動列表加刪除按鈕（prompt 輸入 ID 確認）
+- complete 路由三次漸進重試（T+35s/65s/95s）自動補拉 transcript
+- admin 訪談 tab「補拉量表」按鈕（transcriptLines=0 的 done 訪談也可觸發）
+- ailiveX v21.1/v21.2/v21.3：finalize 跳過記憶/lastSession、hang_up 工具、record_choice 先道別、逐字稿 opencc s2twp
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| beself/app/globals.css | 新建：blobFloat/dotPulse/ringPulse/fadeUp 動畫 |
+| beself/app/layout.tsx | next/font/google 引入 |
+| beself/app/page.tsx | Logo + Order 兩屏完整改版 |
+| beself/app/interview/page.tsx | Loading/Dialing/Call/Gift/Ended 完整改版；三色聲波；思考中；gridRef；hangup |
+| beself/lib/context.ts | hang_up 指令＋道別後掛斷語意 |
+| beself/app/api/complete/route.ts | after() 三次漸進重試 + 自動量表 |
+| beself/app/api/admin/orders/route.ts | reset/delete/delete-iv 三個新 action |
+| beself/app/admin/page.tsx | 訂單重置/刪除鈕、訪談刪除鈕、活動列表刪除鈕、補拉量表按鈕 |
+| ailivex-platform/agent/realtime_agent_v21.py | finalize 跳記憶/lastSession、hang_up 工具、record_choice 道別時機、opencc s2twp |
+
+### ⚠️ 尚未解決
+- FOUNDATION #10（災難還原）、#12（生人驗收）：觸發條件「正式開跑前」，M1 還沒第一筆真消費者，未到期
+- v21.3 逐字稿 opencc 效果待真實訪談確認（Agent 說簡體比例未知）
+- 「回收中…」問題的根治：agent finalize 時序問題，三次重試是緩解，根治是 agent POST callback 通知 BeSelf（排後）
+
+### 待執行 / 下一步
+確認 AVIVA 真實消費者訂單格式（純數字或帶前綴）→ 調整 placeholder → M1 開跑
+或: 下次開工先跑 beself admin → 訪談 tab → 看 transcript 有沒有補進來
