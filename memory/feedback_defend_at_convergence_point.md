@@ -21,3 +21,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 - 驗證+1:2026-08-05 第2場 — sheetPrompt/sheetSizeOf 收成唯一咽喉，web/worker/UI 預覽共讀
 
 - 驗證+1:2026-08-05 第3場 — 指紋比對釘在 sign 這唯一的種段口
+
+- 驗證+1:2026-08-05 第6場 — 時刻抖動釘在 isScanDue 單一咽喉＋dispatch 傳 seed，不散在各處

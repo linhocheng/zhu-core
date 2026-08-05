@@ -38,3 +38,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 - 驗證+1:2026-08-05 第2場 — grid 版面/裁切座標/術語驗證全程式；LLM 只做面談、下分鏡、翻譯三件事
 
 - 驗證+1:2026-08-05 第4場 — mapChoiceToGift 用程式硬對映不丟 LLM
+
+- 驗證+1:2026-08-05 第6場 — 觸發時刻抖動用確定性 hash(seed|date) 不用 Math.random（dispatch 每 tick 重算需自我一致）

@@ -27,3 +27,5 @@ metadata:
 - 驗證+1:2026-08-02 第4場 — 對賬看 DB 產出不看 cron 設定;ailive 差點被 Date 型別誤報「沒跑」,orderBy 交叉救回
 
 - 驗證+1:2026-08-02 第7場 — 收工盤錶掃實例面（minScale/SQL activationPolicy/全 region service list），不只讀部署腳本
+
+- 驗證+1:2026-08-05 第6場 — 分鐘抖動成本用真數據（Vercel 已含額度/Firestore 免費額度）算增量非估
