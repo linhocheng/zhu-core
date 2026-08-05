@@ -24,6 +24,8 @@ activation:
 
 **管線自動做的事（不用自己做）**：切塊（段落合併~500字/硬上限900）、Sonnet 4.6 寫白話大意（gist，檢索索引用；2026-07-14 從 Haiku 換上）、embedding（`text-multilingual-embedding-002`＋task_type）、authority 與出處標籤、`knowledgeChunkCount` 計數維護。
 
+**預寫 gists（時機地址，v18.21.0 起）**：`ingestKnowledgeDoc` 收可選 `input.gists`（長度必須===`chunkText(content)`塊數，錯位 throw）。用途：把索引從「內容摘要」升級為「使用時機」——**前 2/3 處境語言（第一人稱、2-4 種不同措辭）＋後 1/3 一句話錨故事**。寓言/狀態導向語料（莊子 203 塊首例）必用此配比：內容敘述放前面會稀釋狀態尾巴（鯤鵬曾因此排 #100，翻轉配比後升 #1）。驗收加考「狀態題」：N 句擬真處境 query（不照抄 gist 措辭），期望塊須進 top3。
+
 ## STEP 0：開場三問（用戶沒給就問，別猜）
 
 1. **哪個角色？** 拿到名字後查 id（見 STEP 1 腳本）。
@@ -136,6 +138,26 @@ console.log((await loadKnowledgeBlock(db, '<角色id>', '你覺得加密貨幣�
 7. **memories 用的是另一顆模型（text-embedding-004）**，兩池不互通，別想共用向量。
 8. **開發不燒付費 key**：LLM 一律 `getAnthropicClient`（bridge 吃到飽）；bridge 壞了回報 Adam，不切直連。
 9. **gist 批次模型會「反問」而非回 JSON**（批內是含多子項的總覽段時，模型問「要濃縮成一條還是分項各寫？」）——寬容解析接不住反問，照樣 fallback。修法：入庫後跑「無 gist 塊」掃描，單塊重跑並在 prompt 加「不要反問、不要解釋，直接給大意」（Tracy 工具包案，2026-07-10）。
+10. **狀態尾巴會被內容頭稀釋**（莊子案 2026-07-22）：gist 寫成「故事摘要＋結尾一句針對狀態」時，embedding 重心落在敘事語域，狀態句幾乎逐字對上 query 也排 #100。修法＝翻轉配比（處境 2/3 先行＋故事錨 1/3）。
+11. **混合狀態考題會被最強語域劫持**：「我學這些沒有用」的「學」壓過「有用」，撈到學-主題塊（且是正當命中，庫內多入口）。考題一題只考一個狀態；混合句測出來的不是庫壞，是題目貼錯標籤。
+12. **維基文庫三雷**：異體字錨句（用「爲」不用「為」，錨句先 grep 原文驗證）；API 限速要 2s 間隔＋指數退避＋斷點續傳；罕用字 `<span title="...">X</span>` 剝殼取內文 X。
+13. **gist 200 字上限會砍尾**：狀態句通常在尾巴，被砍＝時機地址蒸發。生成 prompt 硬限 140-160 字，入庫前掃 `length ≥ 195` 的塊重生。
+14. **長批次 bridge 生成必斷點續傳**：逐批落盤 JSON、重跑跳過已完成批——bg 任務 600s timeout 砍了也不丟工。
+15. **`ingestKnowledgeDoc()` 沒有查重保護**（不像方法論入庫有 dup 檢查）：多份文件連續入庫若撞 Bash 5 分鐘逾時，**絕對不能猜「應該還沒跑完」就整段重跑**——會產生重複 chunk。逾時後第一動作是查 Firestore 現況（`knowledge_docs.where('characterId','==',id).get()` 印已有標題），只補缺的那幾份再繼續。批次規模建議先切 6-8 份一組，別一次排 20+ 份賭時間（2026-08-04 Mars 案：13 份×2 角色在 22/26 份時逾時死亡，查現況後補剩 4 份完成）。
+16. **.docx 素材 Read 工具讀不了**（二進位檔會直接報錯），改用 python 手動解 `word/document.xml`：
+    ```bash
+    python3 -c "
+    import zipfile
+    from xml.etree import ElementTree as ET
+    z = zipfile.ZipFile('<docx 路徑>')
+    xml = z.read('word/document.xml')
+    ns = '{http://schemas.openxmlformats.org/wordprocessingml/2006/main}'
+    root = ET.fromstring(xml)
+    for p in root.iter(ns + 'p'):
+        print(''.join(t.text or '' for t in p.findall('.//' + ns + 't')))
+    " > extracted.txt
+    ```
+17. **名字聽起來不確定是不是同一人／同一角色 → 先跑 STEP 1 查角色 id 腳本，不要用記憶/grep 猜**。2026-08-04 曾把兩個真實存在、定位不同的角色（Dr.Mars／Mars）誤判成「可能是同一件事講兩次」，繞了一輪才被導回查資料庫——腳本半小時前才跑過卻沒反射性重用。詳見 `ailivex-methodology-cocreate.md` STEP 0 的展開說明。
 
 ## 收尾
 
