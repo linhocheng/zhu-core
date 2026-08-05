@@ -229,4 +229,6 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 
 - **2026-08-01 Ava→Nina + 產品知識全裝**:Adam 把 Ava(IukZrq77)改名 Nina、靈魂擴到 11,808 字(aliases 只剩 Nina)。Vivi(moumou-os platform_products/platform_knowledge)十件 AVIVA 產品知識搬入 Nina:一品一 doc、段落程式組裝零 LLM 改寫、全公開、authority=canonical,驗收 11/11 綠(關鍵句/gist 0 漏/白話+域外+原句三測)。Adam 正名裁決:「**完美**淨顏慕絲花」(玩美是誤植),庫內引用處全域替換重入,beself 商品庫同步改名。雷:源庫 re-ingest 過的產品主檔 knowledgeIds 是死鏈(段落被刪),搬運前先驗連結,fallback=標題前綴查活段落→主檔欄位。
 
+**2026-08-05 語音逐字稿增量寫回上線(v21.4,四線已 commit+部署+活體驗證)**:根治「進程暴斃整場失憶」(8/1+8/5 A.Two 股東會兩度斷線事故;死因=逐字稿只在 finalize 一次性寫入,connection 抖動→Uncaught signal 10→整場蒸發)。修法=通話中 liveSession 快照節流覆寫(2則+15s,冪等)+開場災難恢復併回主記憶+誠實斷線提示+finalize 清快照;ailivex 三線(v19/20/21,共用 firestore_loader 新三函數)+ailive 主平台(staging doc live=True,恢復同步走本地 save_conversation 零競態)。活體驗證:通話中快照 2→23 滾動、掛斷併入+清除全鏈過。**D9 記債(FOUNDATION,活血)**:cloudbuild deploy 會把 min-instances 1 洗成 0(與 yaml 註解不符,LiveKit agent 聾)——本日實錄已手動恢復,每次部署 agent 後必查 minScale。A.Two 同日入庫股東會知識 5 份+方法論 1 套(股東會完整籌備流程 7 步,全公開)。
+
 **2026-08-02 沉澱視角天條(Adam 裁)**:五個記憶沉澱點(提煉/夜間鞏固/日記沉澱/gist化/語音lastSession)全改角色本人帶靈魂總結,第三方「提煉師/整理員」退役;fact 內容保持白描、感受表現在挑選與 importance。gist 化原全庫混批(跨用戶同 prompt)改一對一批。帶人格過橋一律 Sonnet(Haiku 拒,見 bridge_structured_rp_refusal 增補)。日記/印象/遺忘三 canary 全開(*)。v18.33.0 已上 Vercel;agent v20 重建卡 gcloud 憑證過期待 Adam。
