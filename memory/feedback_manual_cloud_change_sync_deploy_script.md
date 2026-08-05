@@ -28,3 +28,5 @@ metadata:
 - 驗證+1:2026-08-03 第1場 — 手動 invoker binding／jobs create 當日同步進 deploy.sh 註記與 cloudbuild
 
 - 驗證+1:2026-08-04 第1場 — secrets 用 --update-secrets 掛，cloudbuild 無 env 旗標不會洗掉（驗過形狀才動手）
+
+- 驗證+1:2026-08-05 第5場 — 手動恢復 min=1 後立刻對照 cloudbuild（yaml 本來就設計不帶 min，行為不符→記債不改碼）

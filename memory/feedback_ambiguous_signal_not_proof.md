@@ -46,3 +46,5 @@ metadata:
 - 驗證+1:2026-08-05 第2場 — 部署不看 `/login 200`（舊版也會給），看 serving image SHA；刪除不看回傳 ok，複驗 cases=0
 
 - 驗證+1:2026-08-05 第3場 — 部署驗 serving image SHA 不看 /login 200；回填後讀回複驗不看寫入回傳
+
+- 驗證+1:2026-08-05 第5場 — Gina/R2 兩場「正常收尾」信號被我擋下不當證據，堅持等 liveSession 快照鐵證才收案

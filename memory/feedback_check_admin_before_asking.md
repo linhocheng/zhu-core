@@ -26,3 +26,5 @@ originSessionId: 91f0333f-eb14-44ac-9c73-2121ed2df590
 
 - 驗證+1:2026-08-02 第5場 — @null id 記憶不準（少尾巴），列全表自查找到真身，沒回頭問 Adam
 - **違規:2026-08-04** — Adam 提「Dr. Mars」「角色 Mars」兩個名字，我沒把握是不是同一人/同一系統，去 grep 記憶檔＋專案目錄找，找不到就開口問 Adam 釐清——而查 ailiveX 角色資料庫的腳本我半小時前才親手跑過、當場就能列出全部角色一秒解謎。變形觸發信號：**不只是「要資料」會反射性問，「這個名字/實體是誰」的身份辨識疑惑也一樣要先查資料庫**（這裡是 Firestore `characters` collection），而不是 grep 記憶或猜測後直接開口。修正：`ailivex-methodology-cocreate.md` STEP 0 已加醒目提示。
+
+- 驗證+1:2026-08-05 第5場 — 「A.two」名字進來直接跑 characters 查詢腳本認人，沒 grep 沒問 Adam（上場違規、本場照升級後 SOP 走對）

@@ -23,3 +23,5 @@ metadata:
 相關：[[feedback_self_rescheduling_loop_needs_lifecycle_stop]]（版本繁殖複製舊雷的同族——lifecycle 缺角）、[[reference_cloudrun_background_task_sop]]（哪些常駐是天條不能降）。
 
 - 驗證+1:2026-08-01 第5場 — 「LiveKit agent 降0=聾不是慢」一眼解掉「掛斷沒收到」謎題
+
+- 驗證+1:2026-08-05 第5場 — 「LiveKit agent 降 0=聾」讓我部署後多看了一眼 minScale，抓到 deploy 洗 1→0
