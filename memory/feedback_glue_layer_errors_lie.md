@@ -30,3 +30,5 @@ metadata:
 - 驗證+1:2026-08-02 第3場 — ERR_TUNNEL_CONNECTION_FAILED 指向瀏覽器/網路，真因在 proxy 402 餘額用盡，逐層扒才到根
 
 - 驗證+1:2026-08-02 第6場 — log 寫「Anthropic API 401」實際是 x-api-key 敲到 bridge 門；讀錯誤體格式（{"error":"unauthorized"}=bridge 方言）才定位
+
+- 驗證+1:2026-08-05 第3場 — 押回訊息說「押回分鏡室」實際到影格間，錯誤訊息本身在誤導

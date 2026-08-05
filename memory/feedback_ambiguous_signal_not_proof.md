@@ -44,3 +44,5 @@ metadata:
 - 驗證+1:2026-08-05 第1場 — gcloud執行「killed」不當失敗也不當成功，查執行紀錄+Firestore真實資料才宣告
 
 - 驗證+1:2026-08-05 第2場 — 部署不看 `/login 200`（舊版也會給），看 serving image SHA；刪除不看回傳 ok，複驗 cases=0
+
+- 驗證+1:2026-08-05 第3場 — 部署驗 serving image SHA 不看 /login 200；回填後讀回複驗不看寫入回傳

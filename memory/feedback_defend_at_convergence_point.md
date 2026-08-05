@@ -19,3 +19,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 - 驗證+1:2026-08-04 第4場 — 修在 uploadBuffer 唯一咽喉，一次守住所有覆寫路徑
 
 - 驗證+1:2026-08-05 第2場 — sheetPrompt/sheetSizeOf 收成唯一咽喉，web/worker/UI 預覽共讀
+
+- 驗證+1:2026-08-05 第3場 — 指紋比對釘在 sign 這唯一的種段口
