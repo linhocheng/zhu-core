@@ -10310,3 +10310,38 @@ ailivex 語音線可靠性——從「正常路徑能跑」升級到「異常死
 
 ### 待執行 / 下一步
 下次動 ailivex agent 部署時先清 D9：部署前後各記一次 `gcloud run services describe ailivex-realtime-agent-vN --format="value(spec.template.metadata.annotations['autoscaling.knative.dev/minScale'])"` 對照；查明 gcloud run deploy 重置 min 的機制，根治＝cloudbuild 加 min 恢復步驟或 deploy 後自動核。為什麼先做：活血級，不查每次部署都聾一次。
+
+---
+
+## 2026-08-05（第6場）— threads 全檢＋反偵測掃描時刻抖動（拒刷量、守住立場後接住真需求）
+
+### 背景 / WHY
+threads-radar（內部爆文兵工廠）——本場從全檢起，主軸落在反偵測防護（掃描時刻週期指紋）。觀察閘跑至 ~8/8。
+
+### 完成
+- threads-radar 全檢：現場驗證發現記憶落後現場（記憶到 F/D 期，實際已 v0.27 H 期落地）；CI 綠、ZAP failure 實為 issue-create 權限不足非真漏洞（FAIL-NEW:0）
+- 清假信箱帳號 adamtest@radar.app：查證發現它是唯一持 6 個啟用關鍵字＋綁觀察閘中 lucymo0306 的 client，停權會砍斷在跑的掃描→改法只改 email 欄位（改成 adam@dotmore.com.tw），status/關鍵字全不動
+- 拒絕「刷 Threads 瀏覽數 100→2萬」需求（連續六輪重新框架全拒）；守住後接住底下的真需求＝把研究轉向「平台如何偵測假流量」＋「合法爬蟲怎麼不被誤判成機器人」
+- 反偵測掃描時刻抖動三連 commit：①v0.28.0.001 小時級漂移（jitteredScanHour seed=teamId）②v0.28.0.002 修 COST_MODEL 真相分裂（timeout 現場複核已是 1800 非殘留 900）③v0.28.0.003 分鐘級抖動（jitteredScanMinuteSlot＋cron */15）
+- 全鏈驗證：canonical 16→18 測試綠、web build 綠、canonical+web vendored 70 行逐字同步、部署生產 alias 已切、給出可證偽鑑別信號（未來 7 天 (時:分) 觸發表）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| threads-radar/src/schedule.ts | windowHours/hashSeed/jitteredScanHour/jitteredScanMinuteSlot/SCAN_MINUTE_SLOTS＋isScanDue 加 jitterSeed（時+分格漂移） |
+| threads-radar/web/src/lib/schedule.ts | vendored 同步（70 行逐字一致） |
+| threads-radar/web/vercel.json | dispatch cron 0 *→*/15 |
+| threads-radar/web/src/app/api/cron/dispatch/route.ts | isScanDue 傳 {jitterSeed: teamId} |
+| threads-radar/test/schedule.test.mjs | +7 案（漂移/一日一命中/*/15 恰一次焊耦合/分鐘格對齊/向後相容），16→18 |
+| threads-radar/docs/COST_MODEL.md | 修真相分裂：timeout 900→1800、80% 門檻 720→1440、到期必辦 #1 標已辦 |
+| threads-radar/FOUNDATION.md | 承重牆＋2列 invariant＋變動記錄兩批 |
+| Firestore clients/qqc2xTNX | email adamtest@radar.app→adam@dotmore.com.tw（status/關鍵字不動） |
+
+### ⚠️ 尚未解決
+- **分鐘級抖動的耦合風險**：SCAN_MINUTE_SLOTS[0,15,30,45] 必對齊 vercel.json cron */15，改一邊漏改另一邊＝掃描靜默漏天。已用承重牆列＋pinning test「*/15 一整天恰好觸發一次」雙焊，但這是活著的耦合，未來動 cron 頻率必回頭同步
+- **RESEND_API_KEY 仍未接**（digest cron 每日 500 fail-loud 屬預期）；寄全隊要驗自有網域 soul-polaroid.work（Resend 免費方案含 1 網域，$0）；改完 email 後兩筆都指向 adam@dotmore.com.tw＝會收兩封重複 digest（不影響掃描，可日後合併）
+- **D 期實體物照舊等 Adam**：第二條 IP／第二分身帳號／首批名單→並發實測（session 檔提「週一買第二條 IP」可能已逾期，未追）
+- ZAP workflow issue-create 權限（要不要在 GitHub 收自動報告，看 Adam）
+
+### 待執行 / 下一步
+無強制待辦。若續反偵測：帳號池長到 ≥10 顆時回來做「每帳號不同分鐘」的跨帳號去同步（那時 top-of-hour 跨帳號叢集才是真 CIB 訊號）。為什麼等：現在單帳號，收益邊際；池大了收益才配得上複雜度。優先級低於 RESEND 接線（同事進場前配送管線要通）。
