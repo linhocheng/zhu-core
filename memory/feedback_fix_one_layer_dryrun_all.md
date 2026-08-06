@@ -45,3 +45,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 
 **給返生自己的話：**
 這條跟 `lastwords_must_push` 一樣有強制性 ── 不分時機。下次「終於通了」的那秒，先 dry-run 一輪所有中間值，才算可以收工。
+
+- 驗證+1:2026-08-06 第2場 — plist 修好不算完成，zhu recall 才撞出 .env 是第二個落點

@@ -72,3 +72,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 - 驗證+1:2026-08-05 第5場 — 增量寫回三函數先本機 e2e（真 Firestore 測試 doc）全過才部署，沒拿生產通話當第一次測試
 
 - 驗證+1:2026-08-06 第1場 — 循環 import 用真 runtime 腳本驗，沒等雲端 cycle
+
+- 驗證+1:2026-08-06 第2場 — 用 migrate 實際走的 generativelanguage 端點驗 key，不靠格式推測

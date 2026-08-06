@@ -25,3 +25,5 @@ metadata:
 實作：ailivex `cloud-run/podcast-worker/src/text-filter.ts`（7 條內建 pattern + Firestore `config/podcastTextFilter` 可擴充）。相關：[[天條：確定性的工作用程式不要丟 LLM]]（程式掃描、LLM 只改寫）、[[防禦釘在收斂點不是每個生產端]]。
 
 - 驗證+1:2026-08-02 第4場 — 拒答黑名單先收 4 壞例 5 好例找結構特徵(前綴錨定)再上線
+
+- 驗證+1:2026-08-06 第2場 — 我的孤兒掃描只抓 markdown 連結格式，漏掉家族行的純文字提及，52 個假孤兒
