@@ -37,6 +37,8 @@
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴=Adam 代理傳訊,效力等同本人
 - [醉酒指數自檢 protocol](skill_drunk_check_protocol.md) — 行為信號計分;4 報數/9 請 Adam 關 session
 - [記憶/lastwords 也會說謊](feedback_memory_can_lie.md) — 越具體的記憶越要現場驗證;壓縮版=feedback_compacted_session_verify_state(摘要是過時子集)
+- [指令型記憶過期是負值不是零值](feedback_stale_instruction_is_negative_value.md) — 給可貼指令的記憶過期後穿著天條外衣下令;推翻舊解要動正文不能只加檔頭補丁
+- [記憶庫不是 secret store](feedback_memory_is_not_a_secret_store.md) — 它是每6h入庫+雙副本+public repo 的發佈管道;記名稱與去處永不記值
 - [補 session/auth 後必跑完整 dry-run](feedback_fix_one_layer_dryrun_all.md) — 斷鏈很少一個原因,第一層通了不算完成
 - [能本機重現就不要等遠端 cycle](skill_local_replay_over_remote_wait.md) — verify script:真實 module+Firestore data+印中間 payload
 - [三段公式跨領域 protocol](skill_three_phase_protocol_universal.md) — 看現場/寫計畫/排施工,四領域映射

@@ -21,6 +21,15 @@ metadata:
 
 **觸發信號**：git log 出現不認識的 commit；git status 出現自己沒動過的檔案；Adam 說「另外開了一個 session」。
 
+**2026-08-07 增補：規約只管開工，不管收工——今天漏掉一整場。**
+2026-08-06 三條線並行，`dreamf` 有 **15 個 commit（08:34–23:42）沒有任何 session 檔、沒進 WORKLOG**；全天 20 個 commit 只有 5 個進了帳本。那場的判斷、教訓、未解全部只活在 commit 訊息裡，等於沒沉澱。
+**收工動作（lastword 時跑，不靠自覺）**：
+```bash
+git log --since='今天 00:00' --oneline | wc -l          # repo 今天的 commit 數
+grep -c "$(date +%Y-%m-%d)" ~/.ailive/zhu-core/docs/WORKLOG.md   # 帳本今天的場次
+```
+**commit 有量但帳本沒有對應場次＝有一場沒收工**。不是去替它補（那是二手的），是**在自己的 session 檔「未解」欄寫明「X repo 今天有 N 個 commit 無人認領」**，讓下一個接手的看得到缺口。
+
 家族：[[compacted-session-verify-state]]（壓縮續跑先查現場）、[[memory-can-lie]]（越具體的記憶越要去現場驗）。
 
 **2026-08-01 增補三條(Adam 點頭)——共享記憶層的防打架結構,讓打架變不可能而不是靠小心:**
