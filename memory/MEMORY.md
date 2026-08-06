@@ -32,7 +32,7 @@
 - [後端改動必須同步客戶端](feedback_backend_client_must_sync.md) — 改 schema 必同步客戶端介面;同族=feedback_dialogue_voice_stream_parity(兩 route 共讀只修一邊=沒修)、feedback_role_contract_two_sides(跨系統契約五處同步)
 - [加新畫面要套既有設計系統不能補丁](feedback_ui_conform_no_patch.md) — 先 grep 同級畫面 wrapper 慣例
 - [ailive 策略書 live 在 Cloud Run 不在 Vercel](reference_ailive_strategy_pipeline.md) — 改 ~/.ailive/strategy-worker;Vercel route 是死副本
-- [心法天條:後台必同步前台](../../../.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場;假中台必修
+- [心法天條:後台必同步前台](/Users/adamlin/.ailive/zhu-core/skills/sync-truth-principle.md) — 後台數字必反映真實現場;假中台必修(絕對路徑:記憶庫有兩份副本,相對路徑只在其中一份通)
 - [Async Worker 六問心法 checklist](skill_async_worker_checklist.md) — status/lease/attemptId 三分;watchdog 看 lease
 - [AAM — Adam 的 A 代理](reference_aam_agent.md) — `[AAM]` 前綴=Adam 代理傳訊,效力等同本人
 - [醉酒指數自檢 protocol](skill_drunk_check_protocol.md) — 行為信號計分;4 報數/9 請 Adam 關 session

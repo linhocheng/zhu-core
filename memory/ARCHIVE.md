@@ -15,7 +15,8 @@
 - [Live Media 建置計劃（已暫停 2026-05-09）](project_live_media.md) — directive 全降 0 軟停，重啟前先處理 Firestore index 等三件未解
 - [2026-05-02 覺察：API 盲猜 vs 先讀源碼](feedback_20260502_awareness.md) — 早期覺察，已蒸餾進「懂劍法跟真的用」家族
 - [鏡 IG 流水線（已暫停 2026-05-03）](project_ig_pipeline_live.md) — STOP_TS 自然過期，最後一篇 5/3
-- [molowe-platform 三層 AI 編輯部 v1.0（已停止 2026-05-30）](project_molowe_v1_live.md) — 可複用技術見 reference_molowe_tech_salvage（仍在主索引）
+- [molowe-platform 三層 AI 編輯部 v1.0（已停止 2026-05-30）](project_molowe_v1_live.md) — 可複用技術見下一行
+- [molowe 可複用技術打撈](reference_molowe_tech_salvage.md) — 本體在 zhu-core/docs/;2026-08-06 修正:原註記寫它「仍在主索引」是假的,該檔早已不在主索引、也不在本索引,是全庫唯一孤兒,現歸位
 - [技術債監測 Agent v0.1 計畫（未動手）](project_tech_debt_agent_plan.md) — zhu debt 子指令 6 階段施工案，5/10 成形後未啟動
 - [Sonnet 4.6 長文必加 --effort low](reference_sonnet46_effort_low.md) — 已併入 bridge /v1/messages 契約記憶（reference_bridge_v1messages_effort）
 - [Atelier Control Tower 上線（2026-05-17）](project_atelier_control_tower.md) — Discord→Atelier 整合完成後休眠
