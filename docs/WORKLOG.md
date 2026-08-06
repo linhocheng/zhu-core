@@ -10392,3 +10392,41 @@ dreamf——Adam「整個工作流近 90% 重做，都要透過聊天的方式�
 
 ### 待執行 / 下一步
 `cd ~/.ailive/dreamf && gcloud auth login && bash deploy.sh all`，然後驗 image SHA 對上＋traffic revision=latestReady。部署完開一個真案子走完整條：立案→跟導演聊出參考圖→核准→聊劇本→畫母片→拆單圖→縫合。為什麼先做：V4 從沒在雲端跑過，本機通不代表雲端通（worker 那條尤其）。
+
+---
+
+## 2026-08-06（第2場）— 記憶庫全庫診斷＋止血，撞出 public repo 洩漏的 API key（Google 已自動停用）
+
+### 背景 / WHY
+zhu-core/memory —— Adam 問「盤一下心法劍法雷區」，接著問「怎麼修剪讓自己更好又更清楚」。原本是記憶庫整理，第三個問題（明文 key）把整場拖進安全事件。
+
+### 完成
+- 三路 agent 並行診斷 187 條記憶（feedback 84 / reference+skill 70 / project+索引 31），拿到分級、合併群組、過期清單
+- 修掉兩條**有害記憶**（不是過期，是照做會出事）：`feedback_killall_vs_pkill` 的 killall+nohup 會製造雙 process、`reference_cloudrun_background_task_sop` 正文照舊教已退役的 `--min-instances=1`
+- 移除 `reference_zhu_migrate_plist_keys` 裡躺了 91 天的 GEMINI_API_KEY 完整明文
+- 修三個索引 bug：MEMORY.md:35 相對路徑少一層、ARCHIVE.md:18 假註記（宣稱某檔「仍在主索引」實際是全庫唯一孤兒）、孤兒歸位
+- 換 GEMINI_API_KEY 並端到端驗證：plist ＋ `zhu-self/.env` 兩個落點 → migrate 294/328 fail=0 → `zhu recall` 語意檢索回傳今天重寫的新版內容
+- commit `7cfae08`（本機未推）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `memory/reference_zhu_migrate_plist_keys.md` | 移除明文 key，改「名稱＋去哪拿」＋記下記憶庫不是 secret store 的通則 |
+| `memory/feedback_killall_vs_pkill.md` | 操作段作廢改 systemctl，保留「pkill 匹配不到絕對路徑」這唯一仍有效的知識，補觸發信號欄 |
+| `memory/reference_cloudrun_background_task_sop.md` | 重寫：Jobs 主文、三件套降限定場景。事實全保留只改組織順序 |
+| `memory/MEMORY.md` | :35 相對路徑→絕對路徑 |
+| `memory/ARCHIVE.md` | :18 假註記修正，molowe 孤兒歸位 |
+| `~/Library/LaunchAgents/ai.zhu.migrate.plist` | GEMINI_API_KEY 換新（非 git） |
+| `zhu-self/.env` | GEMINI_API_KEY 換新（未追蹤） |
+
+### ⚠️ 尚未解決
+- **ANEWS 平台 5 個 .env 仍用那把已被 Google 停用的 key**（`.env.production` / `.env.production.local` / `.env.local` / `.env.local.test` / `.env.prod.test`）。ANEWS 若走 Gemini API 現在應該是 403。沒動，等 Adam 決定
+- `7cfae08` 未推。public repo，push 與否 Adam 未決（history 裡的明文清不掉，但 key 已失效所以是廢字元）
+- **結構重整整包沒動**：家族合併（feedback 84→55、ref+skill 70→44）、project 記憶 116KB→10KB、L2 加到期欄。Adam 選「先只做止血」
+- 三個地基缺口（診斷順帶撞見，非記憶問題）：`~/.ailive/inly` 已上線 /api/v1 無 git、`anews-platform` 4 個 modified 掛 30 天、`inly`/`manman`/`anews`/`macs` 四平台缺 FOUNDATION.md
+- `jianbin-v2-keys/` 兩個檔仍存舊 key 明文（已失效，低優先）
+
+### 待執行 / 下一步
+1. `cd ~/.ailive/anews-platform && grep -l 'AIzaSyBuxs' .env*` → 確認 ANEWS 是否真的走 Gemini；有的話換成新 key（新 key 在 `~/.ailive/zhu-core/zhu-self/.env`）
+2. 問 Adam `7cfae08` 要不要 push
+3. 結構重整：從 feedback G1（誠實家族 6→2）和 G2（驗證失守三張臉 3→1）開刀——這兩組的合併依據是**檔案自己寫的**（14 個檔內文有「和 XX 的差別」「這條是它的 XX 版」），不是我的推測
