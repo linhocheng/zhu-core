@@ -13,6 +13,8 @@ metadata:
 
 **真相源**：repo `FOUNDATION.md`（承重牆五條＋排後 D1-D18 帶觸發）；zhu-core `FILM_FACTORY_BUILD_SPEC_v1.md`（V1 架構，V2 差異看藍圖）。
 
+**管線 V4（2026-08-06 通宵重建，Adam「近 90% 重做，都要透過聊天創建所有細節」）**：兩階段對話＋三道閘——立案→【設定對話：導演×客戶聊出 3-5 張參考圖（角色/道具/場景/色調）】→【劇本對話：聊出 6-8 個鏡頭，秒數與接點當場定死】→母片(閘1)→單圖(閘2)→縫合(閘3＝錢閘)→交片。**三角色**：導演／攝影師各有可改人設（`roles` collection，`/admin/roles` 角色房），**製片刻意不是角色**（算錢/閘門＝guards.ts＋cost_ledger，天條）。**分工鐵律：DB 存人設、code 拼協議**（標記語法/JSON schema 在 `shared/roles.ts`，人改人設改不壞它）。導演前台單一窗口，攝影師在後面翻中→英，產出署名可見。標記剝除 `parseMarks` 確定性 regex（UDN `[[DISPATCH]]` 同款），壞標記直接丟不 re-ask。承重牆 #1/#5 moving baseline：錢閘位置從「簽字」搬到「縫合確認」，原則不變。V1/V2/V3 全退役（案子全刪＝無相容包袱）。藍圖＝zhu-core `DREAMF_PIPELINE_V4_BLUEPRINT.md`。**線上仍是 V3**——部署卡在 gcloud CLI token 過期，Adam 跑 `gcloud auth login` 後 `bash deploy.sh all` 即可。
+
 **狀態（2026-08-04 V3 收案）**：圖像線全面改走 gpt-image-2（Adam 裁決）——母卡攝影底片感模板（FILM_LOOK 默認美學＝真人 35mm 底片感）、影格母圖裁格（≤3格/張同圖強制一致＋sharp 裁格放大 768×1536）、單幀 edits 重生、面談收卷零生圖（同步 request 生圖＝client 斷線 CPU 掐死實雷）；OPENAI_API_KEY 在 Secret Manager；$0.25/張概算待對帳；Vertex 降備用線。V3 終驗精華液案交片 $3.10 相符、母片雜誌級真人感。V2 帳（前一輪）：v0.2.0.001-010 十連 commit；雙 e2e 交片全鑑別綠——陶壺迴歸案（無角色，$1.795 帳房相符）＋精華液主考案（**母片三格同一張臉**，角色鎖成立，$1.834 相符）。V2 實戰撞出並修掉五雷：extractResult 平衡括號修復／prompt 尾綴否定條款觸發 SAFETY（三次定罪→風格幀原文直出鐵律）／低 RPM 配額下禁平行生圖／429 退避 30s×2／面談輸入鎖。**待辦**：D17 image 配額調升（真客戶前）、D18 角色卡寫實風（現 3D 動畫感滲入影格，等 Adam 裁）、D1 Firestore export 排程、pause/預算硬停/RAI 押回三路仍零實戰觸發。
 
 **Why**：V1 影格從純文字生＝8 張影格 8 個人；簽字時客戶沒看過任何圖；母片是收據不是源頭。Adam 測 UI 卡在面談時問「母片會不會出」，追根拔起整條管線。

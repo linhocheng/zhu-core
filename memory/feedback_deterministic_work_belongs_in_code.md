@@ -40,3 +40,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 - 驗證+1:2026-08-05 第4場 — mapChoiceToGift 用程式硬對映不丟 LLM
 
 - 驗證+1:2026-08-05 第6場 — 觸發時刻抖動用確定性 hash(seed|date) 不用 Math.random（dispatch 每 tick 重算需自我一致）
+
+- 驗證+1:2026-08-06 第1場 — 製片不做成角色；標記剝除用 regex 不丟 LLM；壞標記直接丟不 re-ask

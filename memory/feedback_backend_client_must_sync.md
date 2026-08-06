@@ -13,3 +13,5 @@ originSessionId: 416ce85e-c458-4bb5-811a-b38dc130d139
 - 驗證+1:2026-08-01 第7場 — 復活律動 TS 前先查 Python 鏡像,legacy 路徑補了 revivedAt 一行
 
 - 驗證+1:2026-08-05 第2場 — schema 改 durationSec/transitionIn 後，驗證器/幀計畫/UI/導演協議四處同步
+
+- 驗證+1:2026-08-06 第1場 — 改 CaseStatus 後型別檢查抓出所有讀寫端，逐一跟上
