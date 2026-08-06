@@ -10345,3 +10345,50 @@ threads-radar（內部爆文兵工廠）——本場從全檢起，主軸落在�
 
 ### 待執行 / 下一步
 無強制待辦。若續反偵測：帳號池長到 ≥10 顆時回來做「每帳號不同分鐘」的跨帳號去同步（那時 top-of-hour 跨帳號叢集才是真 CIB 訊號）。為什麼等：現在單帳號，收益邊際；池大了收益才配得上複雜度。優先級低於 RESEND 接線（同事進場前配送管線要通）。
+
+---
+
+## 2026-08-06（第1場）— DreamF V4 對話驅動全流程重建（通宵）——三角色、兩階段、三道閘
+
+### 背景 / WHY
+dreamf——Adam「整個工作流近 90% 重做，都要透過聊天的方式創建所有細節，參考 UDN 議題臺」。
+
+### 完成
+- **地基 D2 資料刪除連帶灌注**：`deleteCase` 連帶清 Firestore（doc＋三子集合）＋跨集合帳（cost_ledger/corrections，recursiveDelete 掃不到）＋GCS `cases/{id}/` prefix；`findOrphanCaseIds` 孤兒巡檢；`/api/admin/orphans` 巡檢＋清掃端點
+- **執行全刪**（Adam 授權）：3 個案＋5 個歷史孤兒全清，201.44 MiB → **0 B**。gsutil 獨立複核一致。D2 的價值當場證明——那 5 個孤兒是 8/4 只刪 Firestore 留下的，本來永遠不會有人清
+- **V4 資料憲法**：`roles` collection（導演／攝影師，lazy seed）、新狀態機（setup→script→master→upscale→stitch→shooting→delivered）、三道閘守衛、`parseMarks` 標記剝除、AssetKind 加 prop
+- **兩階段對話主幹**：`lib/chat-run` 導演回一輪→程式剝標記→攝影師逐張翻英文→落庫；`/api/cases/[id]/chat` 統一入口；對話先存再種卡（種卡失敗降級不吞對話）
+- **三道閘 route**：master（驗分鏡→派 grid job）／grid approve＝閘1／upscale run+approve＝閘2／stitch＝閘3 錢閘
+- **角色房** `/admin/roles`：人設可讀可改，改完立即生效；立案頁選導演
+- **V1/V2/V3 全退役**：4 個 route＋lib/director-run＋三份導演咒＋面談協議＋seedAssetPlan/seedStyleAsset/getDirectorPrompt＋ScriptDesk/StyleCardOption/DirectorPromptDoc＋arting/screening 幕；四份重複的卡別中文對映收斂成 `ASSET_KIND_ZH`
+- **CaseRoom 重寫**：左邊跟導演聊、右邊看產出；六幕進度脊椎可倒退
+- **67 pinning tests 全綠**（新增 4 條標記剝除，改寫 8 條承重牆為 V4 語義）
+- **活體驗證兩階段**（真 bridge＋真 Firestore，不生圖不燒 Veo）：
+  第一階段——導演自己判斷「這支片沒有人」只開道具/場景/色調三張卡、攝影師署名落庫、標記零洩漏；
+  第二階段——導演排出 6 鏡含 cut/postfx/continuous 三種接法、攝影師逐鏡翻英文、驗證器 errors=0、幀計畫 11 幀（延續共用幀成立）
+- **e2e 撞出兩個協議缺口並當場修掉**：片長「約 26 秒」自我合理化 → 收緊成「必須剛好」；休止符律太抽象被違反 3 次 → 改成對錯配對範例＋講 WHY。重跑驗證：片長 26→24 剛好、違規 3→1
+- FOUNDATION 重算＋五個 commit（v0.5.0.001-005），已 push GitHub
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| shared/roles.ts | 新建：人設種子＋三份協議＋parseMarks 標記剝除 |
+| shared/collections.ts | roles collection、V4 狀態、ChatTurn、AssetKind 加 prop、ASSET_KIND_ZH 收斂點 |
+| shared/guards.ts | V4 轉移表、三道閘守衛、NAV_ORDER 換幕次 |
+| shared/db.ts | deleteCase/findOrphanCaseIds、角色 CRUD、appendChat、upsertAssetFromMark、三個 approve |
+| shared/storage.ts | deletePrefix（擋誤刪整桶）、listCaseIdsInStorage |
+| lib/chat-run.ts | 新建：導演一輪、攝影師翻譯、分鏡組裝 |
+| app/api/cases/[id]/{chat,advance,upscale,master,stitch,grid}/ | V4 對話與三閘 |
+| app/api/{roles,admin/orphans}/ | 角色 CRUD、孤兒巡檢 |
+| app/cases/[id]/CaseRoom.tsx | 整個重寫（對話為主體） |
+| app/admin/roles/ | 新建：角色房 |
+| FOUNDATION.md | V4 重算：D2/角色人設灌注、D12 到期、D19/D20 新增、承重牆記帳 |
+
+### ⚠️ 尚未解決
+- **部署卡在 gcloud CLI refresh token 過期**（ADC 仍有效，所以 Firestore/GCS 都能跑；`builds submit` 用另一組 token）。Adam 醒來跑 `gcloud auth login` 後 `bash deploy.sh all` 即可。**線上還是 V3（99795e9），V4 只在本機與 git**
+- D12（RAI 改寫提案）已轉到期，下個真客戶案前要灌
+- **休止符驗證器誤報**：正則掃英文譯文的 motion words，「第一滴水觸碰壺底」（描述靜止瞬間）被 `falling` 誤判。偵測單位對不上錯誤的真實形狀——要修得先收壞例好例找結構特徵（skill_filter_unit_matches_error_shape），不硬修
+- 母片→單圖→縫合三閘的 worker 路徑沿用 V3 既有實作，V4 狀態機下沒實跑過（要生圖燒錢，留給 Adam 醒來一起看）
+
+### 待執行 / 下一步
+`cd ~/.ailive/dreamf && gcloud auth login && bash deploy.sh all`，然後驗 image SHA 對上＋traffic revision=latestReady。部署完開一個真案子走完整條：立案→跟導演聊出參考圖→核准→聊劇本→畫母片→拆單圖→縫合。為什麼先做：V4 從沒在雲端跑過，本機通不代表雲端通（worker 那條尤其）。
