@@ -10623,3 +10623,46 @@ threads-radar：從查密碼起，中段爆出生產資料事故（含我親手�
 
 ### 待執行 / 下一步
 修 deleteClientAction 設計地雷（保留捐入帳號不級聯刪）＝這次事故的根治，優先。為什麼先做：不修，下次有人在後台刪錯成員，情報帳號 session 又一起沒，PITR 不一定每次都在 7 天窗內。改法：deleteByQuery(threads_accounts) 前先判 donatedByClientId 是否為團隊池資產→是則只解綁不刪（或搬到 orphan 池）。
+
+---
+
+## 2026-08-08（第3場）— DreamF 第一支片交付＋角色模組 v2 實戰對齊＋新 UI（8/6 夜通宵續作的完整白天場）
+
+### 背景 / WHY
+dreamf——V4 第一次全流程實戰＋Adam 深度參與（自寫三角色、每關實測回饋），平台從「能跑」走到「像一家公司」。
+
+### 完成
+- **交付第一支片**：熊片案 26.08 秒五鏡全過（Veo 零 RAI 押回）、全案 $7.60、Adam 授權「由你安排」後由我全程總指揮（導演定動態→阿律轉指令→錢閘→拍攝→拼接→送片）
+- 部署 V4 上雲並實戰修雷十餘發（v0.5.0.006–v0.7.0.003，全部署至 `a722d7f`）：worker 落後 V4 欄位、chat lag 193s（翻譯拆出 chat 走 /translate）、攝影師靜默失敗（log+重試）、prop 卡模板漏接、重吐標記洗核准章（「標記只夾一次」＋desc 不變保狀態）、逐格翻譯各自為政（整份一次翻＋不變量鎖）、.gcloudignore 瘦身 36MB、D12 安全押回改寫、母圖畫一張存一張、母片閘逐格勾選（勾了＝同意直接拆）、V3 殭屍守衛
+- **角色模組 v2**（參照 UDN）：RoleDoc 四層全活（persona/stages/memories/試說話）＋動態攝影師「阿律」＋縫合工作台（[[MOTION]]/[[DROP]] 標記、轉影片指令、單圖起動模式）；Adam 重寫三角色（默 7k/阿光 4.6k/阿律 10k 字）後做流程對齊：阿光四卡範圍解衝突、阿律拆鏡警告權（note 欄）、SHOT deny 連戲鎖直通引擎、試說話接階段
+- 導演升 claude-sonnet-5＋鑄魂鍛「默」靈魂 v2（後被 Adam 自寫版取代——他的更完整）
+- **誠實條款**：導演宣稱「已砍已連號」實為幻覺（DB 仍 7 鏡）→ 協議加「現況即真相：沒夾標記＝沒發生」；砍鏡管道 [[DROP]]＝結構手術（重連號＋接縫修補＋幀按描述指紋重掛）
+- **新 UI 全站**：設計稿深殼 #101218＋淺工作區＋白卡 r10＋紫藍強調＋Sora＋編號幕次頁籤；設計稿只畫案子的家，其餘頁面同語言補齊
+- 修「導演對的、卡畫錯的」落差：手卡被 V2 版式模板硬鋪全身照→裁切構圖偵測讓模板讓位；場景卡被導演寫進機器人→默補「場景卡是空景」鐵律（種子＋live）
+- 參考圖一鍵排隊生成（先補翻→循序逐張、進度顯示、中斷可續）
+- 76 pinning tests 綠；FOUNDATION #16 角色模組 v2 灌、D20 已解
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| shared/roles.ts | SEED_STAGES＋機器契約分層、[[MOTION]]/[[DROP]]/deny 剝除、誠實條款、安全改寫協議 |
+| shared/collections.ts | RoleDoc v2（stages/memories）、videographer、motionZh/En、denyZh、motionNote、skip |
+| shared/db.ts | 角色補種、setFrameSkips、applySegmentMotions/MotionEn、dropSegmentsAtStitch、editSegmentText |
+| shared/prompts.ts | prop 卡模板、gridPrompt 不變量條款、veoPrompt motionEn/單圖模式、裁切讓位 CROPPED_RE |
+| shared/rai-rewrite.ts | 新：D12 安全押回改寫 |
+| lib/chat-run.ts | 四層組裝、整份翻譯、runVideographer、stitch 階段 |
+| worker/src/{grid,keyframes,scene,sheet}.ts | V4 欄位、skip-aware、單圖起動、安全改寫重試、畫一張存一張 |
+| app/cases/[id]/CaseRoom.tsx | 新 UI＋六幕重寫（勾選牆/動態工作台/點字直改/一鍵排隊） |
+| app/admin/roles/* + api/roles/* | 角色房 v2（分頁/記憶/試說話/全文回存） |
+| app/layout.tsx + globals.css + 各頁 | 設計語言全站 |
+
+### ⚠️ 尚未解決
+- 機器人案（Lva8wmeS）停設定幕：攻擊之手/白色展廳兩卡待 Adam 重畫驗證模板讓位修正
+- 「今天的桌子」狀態過濾仍是 V3 死狀態＝V4 案子不上桌（已報 Adam，等他說修）
+- 休止符驗證器誤報（等收例）；Veo 線 RAI 押回仍走 alt+押回（圖像線 D12 已灌，Veo 線未）
+- 阿律人設的「輸出只英文」與 JSON 契約有張力——下次真轉指令時盯一眼
+- 導演 sonnet-5＋7-10k 字人設＝每輪 20-40s，Adam 嫌慢再議瘦身
+
+### 待執行 / 下一步
+Adam 的機器人案繼續走：重畫兩卡驗模板修正 → 一鍵排隊生成試新按鈕 → 全流程第二支片。
+系統面優先「今天的桌子」V4 狀態修（`app/page.tsx` NEEDS_ME 表換 V4 狀態＋文案）——一行表的事，V4 案子才會回到桌上。
