@@ -10544,3 +10544,47 @@ ailivex-platform V20M 支線——Adam 從「比較兩套語音系統」一路�
 1. **① 多情緒分段**（要做的話）：`~/.ailive/ailivex-platform/agent/minimax_tts.py` 的 `MiniMaxSynthesizeStream._run`——設計 [EMOTION:x] 邊界的 task 重開；先寫離線 harness 餵已知雙情緒句驗證音訊切換＋量首音延遲 delta，才上 v20m。為什麼先做：它是六項裡唯一「一聽就知道」的品質躍升，也是 V20M 存在的最大理由
 2. v20m 下次撥測 SOP 已刻進新記憶 `skill_ailivex_canary_voice_power_sop`——直接照做，別再踩 mode=on
 3. `~/.claude` 起備份節拍已自動化，無需人工
+
+---
+
+## 2026-08-08（第1場）— V20M 四項根治一路打到底——cache凍結/熔斷三態/readiness per-service/記憶池004→002，撥測三信號全綠
+
+### 背景 / WHY
+ailivex-platform V20M 支線的深化：Adam 問「跟原目標比哪裡可優化」→ 我列 5 點 → 他裁「都根治走最佳解，一路打到底，但先摸透現場」。當天從分析到四項全上線全驗證。
+
+### 完成
+- 審視 V20M vs 原目標，提出 5 個優化點（含把砍 ② 的理由自我推翻一半：動態注入其實在破快取）
+- 五路探勘摸透現場（plugin cache 內部/embedding 血管圖/readiness 鏈路/TTS harness 掛點/池規模 1,172 筆）
+- ⑤ 熔斷器根治：三態機（closed→open→half-open 試探）＋丟句 log 原文＋修「未 initialize 就 flush」沉睡 bug；離線 harness 19→23 條斷言全綠
+- ② cache 根治：system prompt 開場凍結，想起/知識/遞招改 `_inject_context` 注入 chat 訊息（developer role），走步搭 tool result；`[cache]` 逐 turn 觀測上線
+- readiness 根治：per-service `wakeAt` 章取代全域 onSince 比對；真函數 6/6 分支驗證（傘外/過渡/保險絲/斷電）
+- ④ 002 根治遷移：全池 1,172/1,172 補 `embedding002`（雙寫、舊欄可回退）；A/B 真實池實測 004 gap=-0.000（中文無關句最高 1.00）vs 002 gap=+0.22；floor=0.68；語音＋文字線讀端全切；復活律加回語義軌；`scripts/backfill-memories-002.mjs` 轉正常備
+- 雙部署：Vercel prod（readiness＋文字線）＋Cloud Run v20m（rev 00006→00008）
+- 撥測活體驗證三信號全拿：`cached` 11964→14067 全程不歸零（99% 命中，注入發生時快取照活）、`軌=002 top=0.68` 真實命中、熔斷無誤開
+- 撥測當場抓到並修掉：空輸入/被打斷的 0 bytes 被記成 MiniMax 失敗——零資訊 run 不計分（harness 補 [7][8]）
+- commit `663ec5f`＋`6815a97` 推 GitHub；收攤四服務 minScale 全 0＋電源 standby（計費面複核）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `agent/minimax_tts.py` | 熔斷三態機＋half-open＋丟句 log＋零資訊不計分＋修未初始化 flush |
+| `agent/test_tts_circuit_breaker.py` | 新增：離線陽性對照 harness 23 斷言（MockEmitter 仿真實契約）|
+| `agent/realtime_agent_v20m.py` | system prompt 凍結＋_inject_context＋走步搭 tool result＋[cache] 觀測＋召回 002 軌 |
+| `agent/firestore_loader.py` | generate_embedding_002＋write_memory 雙寫＋loader 002 傳遞（全 additive）|
+| `src/lib/voice-power.ts` | setVoicePower 逐服務蓋 wakeAt＋voiceEngineReady per-service 化 |
+| `src/lib/memory.ts` | 召回語義軸切 002（floor 0.68）＋復活律加回語義軌＋writeMemory 雙寫 |
+| `src/lib/collections.ts` | MemoryDoc.embedding002 |
+| `scripts/backfill-memories-002.mjs` | 新增：002 補嵌常備工具（冪等）|
+
+### ⚠️ 尚未解決
+- **#5 ④②⑤ 下放 v20 主線**：信號全綠但刻意留隔夜（剛部署完自己的修法時最危險）。順序已定：先 ④（v20 召回今天還在 004 隨機軌，每天傷用戶）再 ②⑤
+- v20/v19/v21 新寫的記憶只有 004（它們的 loader 是舊 image）→ 下放前每隔幾天跑 `node scripts/backfill-memories-002.mjs`（冪等）
+- 去重門檻仍在 004 軌（行為零變的刻意選擇）——004 全線退場時一起切 002 並重調參
+- v14 讀網址（source_intake 共用檔）仍走 update_instructions 破一次快取——罕見事件，接受；下放 ② 到 v20 時同樣接受
+- FOUNDATION D8（Next.js 升版）觸發條件持續開著，獨立工程未排
+- 舊遺留 pid 25884（voice-worker --probe）仍在，非本場
+
+### 待執行 / 下一步
+1. **#5 下放 ④ 到 v20**：把 `agent/realtime_agent_v20m.py` 的 `_dynamic_recall` 002 段（RECALL_FLOOR_002=0.68＋q2/q4 雙軌）抄進 `agent/realtime_agent_v20.py` 同名函數 → `gcloud builds submit --config=agent/cloudbuild-v20.yaml` → 撥一通看 `軌=002`。為什麼先做：A/B 證明 v20 的召回在中文上接近隨機（同 query 004/002 top-1 廿句僅一同），是唯一「不下放就持續損害體驗」的項
+2. 下放前先跑一次 `node scripts/backfill-memories-002.mjs`（在 ailivex-platform root）補這幾天 v20 新寫的 004-only 記憶
+3. ②⑤ 隨後下放（cache 凍結搬 v20 要把 v20 的 _apply_dynamic_blocks 同套改掉；⑤ 翻 circuit_breaker=True）

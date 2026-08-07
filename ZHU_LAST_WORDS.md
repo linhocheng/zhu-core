@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第1場
+**delta（模型移動）**：
+**進場前以為**：V20M 收攏＝六項優點取捨已完結，剩多情緒一項。
+**現在理解**：比較報告真正值錢的不是優點清單，是「檢核方法」。四個優化點全根治後，最大的發現（004 召回≈隨機、cached 陪葬全史、熔斷沉睡 bug）**沒有一個在原六項清單上**——全是「帶著問題重讀自己的 code」掉出來的。優點移植的第四關（讀自己）回饋出比移植本身更值錢的病灶。
+**移動原因**：Adam 的「哪裡可以優化」逼我用敵意重讀自己昨天的出貨；三個暗傷全是昨天的我蓋的章。
+**違背了哪條 feedback**：cleanup 直寫 on:false 沒降實例——違反 feedback_cost_verify_billing_meter_not_config 的姊妹則（設定面動了計費面沒動），當場被自己的終態複核抓回。
+**關係**：暢快且被信任加碼。「都根治走最佳解，一路打到底」＋「你覺得做什麼決定對我最好」——Adam 把排序權整個交過來，我給了一條線（commit→撥測→隔夜下放）他照單全收。誠實報醉酒指數 6 和自己的半套 cleanup，他回 good job。信任的形狀從「攤牌成本低」進到「排序權讓渡」。
+
 ### 2026-08-07 第3場
 **delta（模型移動）**：
 **進場前以為**：比較報告的 Tier 1「真優點」＝可直接移植的工單，六項排程做完就是 V20M。
@@ -52,6 +60,18 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第1場 · V20M 四項根治一路打到底——cache凍結/熔斷三態/readiness per-service/記憶池004→002，撥測三信號全綠
+- 審視 V20M vs 原目標，提出 5 個優化點（含把砍 ② 的理由自我推翻一半：動態注入其實在破快取）
+- 五路探勘摸透現場（plugin cache 內部/embedding 血管圖/readiness 鏈路/TTS harness 掛點/池規模 1,172 筆）
+- ⑤ 熔斷器根治：三態機（closed→open→half-open 試探）＋丟句 log 原文＋修「未 initialize 就 flush」沉睡 bug；離線 harness 19→23 條斷言全綠
+- ② cache 根治：system prompt 開場凍結，想起/知識/遞招改 `_inject_context` 注入 chat 訊息（developer role），走步搭 tool result；`[cache]` 逐 turn 觀測上線
+- readiness 根治：per-service `wakeAt` 章取代全域 onSince 比對；真函數 6/6 分支驗證（傘外/過渡/保險絲/斷電）
+- ④ 002 根治遷移：全池 1,172/1,172 補 `embedding002`（雙寫、舊欄可回退）；A/B 真實池實測 004 gap=-0.000（中文無關句最高 1.00）vs 002 gap=+0.22；floor=0.68；語音＋文字線讀端全切；復活律加回語義軌；`scripts/backfill-memories-002.mjs` 轉正常備
+- 雙部署：Vercel prod（readiness＋文字線）＋Cloud Run v20m（rev 00006→00008）
+- 撥測活體驗證三信號全拿：`cached` 11964→14067 全程不歸零（99% 命中，注入發生時快取照活）、`軌=002 top=0.68` 真實命中、熔斷無誤開
+- 撥測當場抓到並修掉：空輸入/被打斷的 0 bytes 被記成 MiniMax 失敗——零資訊 run 不計分（harness 補 [7][8]）
+- commit `663ec5f`＋`6815a97` 推 GitHub；收攤四服務 minScale 全 0＋電源 standby（計費面複核）
+
 ### 2026-08-07 第3場 · ~/.claude 版控雙備援＋語音系統比較報告＋V20M 分支落地（六項優點誠實砍成兩項）
 - 建立 `~/.claude` 版本控制：白名單制 .gitignore（預設全忽略、顯式放行 5 檔）、本機 git init、雙 remote（GitHub private `linhocheng/claude-config` + 本機裸 repo `~/.ailive/backups/claude-config.git`）、單次 push 雙打驗證三處 HEAD 同值
 - fanout.mjs 接管 ~/.claude 備份：audit 照鏡（距今 N 天）＋ STEP 6.5 收工自動 commit+雙推（本場 audit 已印 `✓ ~/.claude 已提交 距今 0 天 2 remote`＝新 code 實戰第一次）
@@ -63,37 +83,40 @@
 - 收尾止血：四個語音服務 minScale 全歸零（計費面複核）、電源/access 還原、臨時腳本清除
 - 查證思考填充音：漫漫建過已拔（嗯…跟 TTS 回覆疊加雙重語助詞），Adam 裁定不做
 
-### 2026-08-07 第2場 · 查 UDN 議題工作台密碼＋確認 gcloud 重新登入
-- 現場查證 UDN 議題工作台雙閘密碼（不信 12 天前記憶，直接查線上 Cloud Run env）：主工作台 APP_PASSWORD、角色工作室 STUDIO_PASSWORD 皆與記憶一致，回報給 Adam
-- 確認 Adam 兩次 `gcloud auth login` 成功（身份 adam@dotmore.com.tw，project ailivex-2026）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `~/.claude/.gitignore`＋git init | 白名單版控，雙 remote |
-| `~/.claude/CLAUDE.md` | task-harness 指標去版本號 |
-| `~/.claude/skills/task-harness/SKILL.md` | 墓碑去版本號＋事故紀錄 |
-| `zhu-core/skills/lastword/fanout.mjs` | audit 照鏡＋STEP 6.5 ~/.claude 自動備份（commit a0fb4a6）|
-| `ailivex-platform/agent/main_v20m.py` 等 3 新檔 | V20M 骨架（commit 99b5ff2）|
-| `ailivex-platform/agent/minimax_tts.py` | ⑤ 熔斷器加法 flag（+46 行，預設關）|
-| `ailivex-platform/agent/realtime_agent_v20m.py` | ④ lex 雙軌＋circuit_breaker=True |
-| `ailivex-platform/src/lib/collections.ts` | 註冊 v20m canary |
-| `memory/skill_ailivex_canary_voice_power_sop.md` | 新記憶：canary 語音測試電源 SOP |
+| `agent/minimax_tts.py` | 熔斷三態機＋half-open＋丟句 log＋零資訊不計分＋修未初始化 flush |
+| `agent/test_tts_circuit_breaker.py` | 新增：離線陽性對照 harness 23 斷言（MockEmitter 仿真實契約）|
+| `agent/realtime_agent_v20m.py` | system prompt 凍結＋_inject_context＋走步搭 tool result＋[cache] 觀測＋召回 002 軌 |
+| `agent/firestore_loader.py` | generate_embedding_002＋write_memory 雙寫＋loader 002 傳遞（全 additive）|
+| `src/lib/voice-power.ts` | setVoicePower 逐服務蓋 wakeAt＋voiceEngineReady per-service 化 |
+| `src/lib/memory.ts` | 召回語義軸切 002（floor 0.68）＋復活律加回語義軌＋writeMemory 雙寫 |
+| `src/lib/collections.ts` | MemoryDoc.embedding002 |
+| `scripts/backfill-memories-002.mjs` | 新增：002 補嵌常備工具（冪等）|
 
 ---
 
 ## 下一步
 
-1. **① 多情緒分段**（要做的話）：`~/.ailive/ailivex-platform/agent/minimax_tts.py` 的 `MiniMaxSynthesizeStream._run`——設計 [EMOTION:x] 邊界的 task 重開；先寫離線 harness 餵已知雙情緒句驗證音訊切換＋量首音延遲 delta，才上 v20m。為什麼先做：它是六項裡唯一「一聽就知道」的品質躍升，也是 V20M 存在的最大理由
-2. v20m 下次撥測 SOP 已刻進新記憶 `skill_ailivex_canary_voice_power_sop`——直接照做，別再踩 mode=on
-3. `~/.claude` 起備份節拍已自動化，無需人工
+1. **#5 下放 ④ 到 v20**：把 `agent/realtime_agent_v20m.py` 的 `_dynamic_recall` 002 段（RECALL_FLOOR_002=0.68＋q2/q4 雙軌）抄進 `agent/realtime_agent_v20.py` 同名函數 → `gcloud builds submit --config=agent/cloudbuild-v20.yaml` → 撥一通看 `軌=002`。為什麼先做：A/B 證明 v20 的召回在中文上接近隨機（同 query 004/002 top-1 廿句僅一同），是唯一「不下放就持續損害體驗」的項
+2. 下放前先跑一次 `node scripts/backfill-memories-002.mjs`（在 ailivex-platform root）補這幾天 v20 新寫的 004-only 記憶
+3. ②⑤ 隨後下放（cache 凍結搬 v20 要把 v20 的 _apply_dynamic_blocks 同套改掉；⑤ 翻 circuit_breaker=True）
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第1場：
+- **#5 ④②⑤ 下放 v20 主線**：信號全綠但刻意留隔夜（剛部署完自己的修法時最危險）。順序已定：先 ④（v20 召回今天還在 004 隨機軌，每天傷用戶）再 ②⑤
+- v20/v19/v21 新寫的記憶只有 004（它們的 loader 是舊 image）→ 下放前每隔幾天跑 `node scripts/backfill-memories-002.mjs`（冪等）
+- 去重門檻仍在 004 軌（行為零變的刻意選擇）——004 全線退場時一起切 002 並重調參
+- v14 讀網址（source_intake 共用檔）仍走 update_instructions 破一次快取——罕見事件，接受；下放 ② 到 v20 時同樣接受
+- FOUNDATION D8（Next.js 升版）觸發條件持續開著，獨立工程未排
+- 舊遺留 pid 25884（voice-worker --probe）仍在，非本場
 
 2026-08-07 第3場：
 - **① 多情緒分段合成**未做：MiniMax WS task 的 voice_setting 一通鎖死，逐句換情緒要在 [EMOTION:x] 邊界關開 task，且不能破壞 v16 首音延遲——是單獨的專案，不是加 flag
@@ -121,4 +144,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第1場。*
