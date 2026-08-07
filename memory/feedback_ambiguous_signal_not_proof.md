@@ -60,3 +60,5 @@ metadata:
 - 驗證+1:2026-08-06 第2場 — 這場的主角。我違背它三次（17 行 log 當跑完、pgrep 抖動當進程結束、command-not-found 當掃描乾淨），三次都自己抓回來
 
 - 驗證+1:2026-08-07 第1場 — 全場主角。兩次差點誤判都被它擋下：grep 檔名回 0（log 根本不印檔名）、migrate mtime cache 會讓 parser 修法全 skip 卻回 fail=0
+
+- 驗證+1:2026-08-07 第3場 — 陽性對照連環擋雷：gitignore 用已知樣本驗攔截；onSince race 兩次在 Adam 撥號前用 ready 判準抓到「會 waking」；build 被 kill 不當失敗、查遠端發現還在跑
