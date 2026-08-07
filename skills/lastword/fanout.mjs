@@ -196,6 +196,24 @@ function audit() {
       }
     } catch {}
   }
+  // 1.5 ~/.claude 備份新鮮度（定義築是誰的檔——本機 git，雙 remote 異地+離線）
+  //     這裡只「照鏡子」：fanout 只在收工時跑，沒收工的 session 改的 ~/.claude
+  //     會延遲到下次收工才進備份。印出距今幾天，讓延遲現形（不是靜默腐爛）。
+  try {
+    const CLAUDE = join(homedir(), '.claude');
+    if (existsSync(join(CLAUDE, '.git'))) {
+      const dirty = sh('git status --short', { cwd: CLAUDE });
+      const lastEpoch = Number(sh('git log -1 --format=%ct', { cwd: CLAUDE }));
+      const days = Math.floor((Date.now() / 1000 - lastEpoch) / 86400);
+      const remotes = sh('git remote', { cwd: CLAUDE }).split('\n').filter(Boolean).length;
+      if (dirty) console.log(`⚠️ ~/.claude 有未提交改動（${dirty.split('\n').length} 檔）——本場 STEP 6.5 會收`);
+      else console.log(`✓ ~/.claude 已提交（上次備份距今 ${days} 天，${remotes} 個 remote）`);
+      if (days >= 7 && !dirty) console.log(`   ⚠️ 距今 ${days} 天沒新備份：多半是有 session 沒收工，去查`);
+    } else {
+      console.log('⚠️ ~/.claude 未納入 git——定義築是誰的檔沒有版本控制');
+    }
+  } catch (e) { console.log(`⚠️ ~/.claude 備份檢查失敗：${e.message.slice(0, 80)}`); }
+
   // 2. 背景進程（本用戶的 nohup 類長跑）
   try {
     const ps = sh(`ps -eo pid,etime,command | grep -E "node .*(run-|worker|watch|loop)|python.*(caller|load)" | grep -v grep | grep -v fanout`, { cwd: homedir() });
@@ -279,6 +297,28 @@ async function run(sessionPath, dry) {
     sh(`git commit -m "v0.0.0.${build} — 文件：session 收尾 ${today} 第${s.meta.seq}場（fanout）" || true`);
     sh('git push origin main');
     console.log('✓ zhu-core commit + push');
+  }
+
+  // 6.5 ~/.claude 備份（定義築是誰的檔）——commit + 雙 remote 推（GitHub private + 本機裸 repo）
+  //     顯式 add 白名單清單，不用 -A：誤收機密進 git 歷史改寫不掉，往安全倒。
+  if (!dry) {
+    try {
+      const CLAUDE = join(homedir(), '.claude');
+      if (existsSync(join(CLAUDE, '.git'))) {
+        sh('git add .gitignore CLAUDE.md settings.json settings.local.json skills 2>/dev/null || true', { cwd: CLAUDE });
+        const staged = sh('git diff --cached --name-only', { cwd: CLAUDE });
+        if (staged) {
+          const files = staged.split('\n').map(basename).join(', ');
+          sh(`git commit -m "chore: ~/.claude 收工備份（${files}）
+
+Co-Authored-By: Claude <noreply@anthropic.com>" || true`, { cwd: CLAUDE });
+          sh('git push origin HEAD', { cwd: CLAUDE });  // origin 已設雙 push 目標，一次到兩邊
+          console.log(`✓ ~/.claude 備份 commit + 雙推（${files}）`);
+        } else {
+          console.log('✓ ~/.claude 無改動，免備份');
+        }
+      }
+    } catch (e) { console.log(`⚠️ ~/.claude 備份失敗（不阻斷收工）：${e.message.slice(0, 100)}`); }
   }
 
   // 7. 驗證：zhu-boot 讀得到今天
