@@ -10430,3 +10430,47 @@ zhu-core/memory —— Adam 問「盤一下心法劍法雷區」，接著問「�
 1. `cd ~/.ailive/anews-platform && grep -l 'AIzaSyBuxs' .env*` → 確認 ANEWS 是否真的走 Gemini；有的話換成新 key（新 key 在 `~/.ailive/zhu-core/zhu-self/.env`）
 2. 問 Adam `7cfae08` 要不要 push
 3. 結構重整：從 feedback G1（誠實家族 6→2）和 G2（驗證失守三張臉 3→1）開刀——這兩組的合併依據是**檔案自己寫的**（14 個檔內文有「和 XX 的差別」「這條是它的 XX 版」），不是我的推測
+
+---
+
+## 2026-08-07（第1場）— 心法動作化——把「自問」換成有產出物的動作，順帶撞出記憶檢索管道的靜默 bug
+
+### 背景 / WHY
+zhu-core/memory ＋ zhu-self。Adam 問「回看自己的心法劍法雷區，體驗如何」→「哪些可以改成動作」→「好好靜一靜心，把你看到的可能會有的問題一起改善，舉一反三，今晚就是整理好自己」。
+
+從記憶內容的整理，走到記憶**管道**的修復。
+
+### 完成
+- **ANEWS Gemini key 收案**：5 個 `.env` 先換新 key，掃出**全庫零個 Gemini SDK／端點引用**——ANEWS 根本不呼叫 Gemini，那 5 行是從別的專案抄 `.env` 抄來的殘渣。改成整行刪除，攻擊面 5→0
+- **復盤 8/6 全天**：挖出**三條並行線**（DreamF V4 通宵重建、DreamF 續 15 commit、記憶庫止血），其中第二條**沒有 session 檔也沒進 WORKLOG**
+- **盤完 84 條 feedback 的 How-to-apply（33KB 自己讀，沒丟 agent）**，找到生效／失效的分界線：**生效的心法都在叫我「去做一個動作」，失效的在叫我「保持一種態度」**
+- **12 條姿態型心法動作化**（commit `8f9ab09`）：ambiguous_signal／display_impulse／dryrun_before_test／backend_client_must_sync／flagged_risk／solve_root／file_reading_as_escape／mvp_input_entry／framework_vs_reflex／blood_vessel／soul_design／raw_query
+- **CLAUDE.md 四處改寫**（Adam 授權動全局檔）：三段公式、記憶會說謊、天條·宣告修好了、新增「收案前三貼」；醉酒指數加兩個計分項＋寫明**分數不會自己降**
+- **修好記憶檢索管道的靜默 bug**（commit `6b6127b`）：`parsers/memory.mjs` frontmatter 只吃平鋪 key，**59 個巢狀 schema 的檔 tags 空、lesson null**。修在收斂點（parser），84/84 feedback 檔驗收齊全
+- **補寫 8/6 醉酒指數 9 時不敢寫的兩條記憶**：指令型記憶過期是負值、記憶庫不是 secret store
+- **平行 session 規約補收工那一端**：原規約只管開工，加 lastword 對帳指令
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `~/.claude/CLAUDE.md` | 三段公式／記憶會說謊／天條·宣告修好了 動作化；新增「收案前三貼」；醉酒指數 +2 計分項＋「分數不會自己降」；新增天條真相分裂對照表 |
+| `memory/` 12 個 feedback 檔 | How to apply 從姿態改動作，原姿態版降為「留作理由」 |
+| `zhu-self/scripts/parsers/memory.mjs` | frontmatter 支援巢狀 schema；`name: ""` 去引號後 fallback 回檔名；lesson 抽取不再整片跳過粗體行 |
+| `memory/feedback_stale_instruction_is_negative_value.md` | 新建 |
+| `memory/feedback_memory_is_not_a_secret_store.md` | 新建 |
+| `memory/feedback_parallel_sessions_same_repo.md` | 補收工對帳規約 |
+| `memory/MEMORY.md` | append 兩行索引 |
+| `~/.ailive/anews-platform/.env*`（5 檔） | `GEMINI_API_KEY` 整行刪除（非 git） |
+
+### ⚠️ 尚未解決
+- **`~/.claude/CLAUDE.md` 沒有任何版本控制**（`.claude` 不是 git repo）。定義我是誰的那份檔改壞了沒得回溯，今晚只有一份 scratchpad 備份，重開機就沒。我不建議複製一份到 zhu-core（那正是今晚剛立規則要防的真相分裂），乾淨解是 `~/.claude` 自己 `git init` 本機不推遠端。**Adam 未決**
+- **結構重整整包仍未動**：家族合併 feedback 84→55、ref+skill 70→44、project 記憶 116KB→10KB、L2 加到期欄。Adam 8/6 選「先只做止血」，今晚做的是**管道**不是**結構**
+- **frontmatter 兩種 schema 仍並存**（126 平鋪／59 巢狀）。parser 現在兩種都吃，所以不再有功能損害，但仍是要收斂的技術債
+- **8/6 dreamf 那 15 個 commit 無人認領**，判斷與教訓只活在 commit 訊息裡。我沒有代寫（二手記錄不如缺口誠實）
+- 三個地基缺口照舊：`~/.ailive/inly` 上線無 git、`inly`/`manman`/`anews`/`macs` 缺 `FOUNDATION.md`
+- 清點撞見 pid 25884 `voice-worker/worker.mjs --probe` 掛了很久，**不是本場的**，沒動
+
+### 待執行 / 下一步
+1. 問 Adam `~/.claude` 要不要 `git init`（本機、不推遠端）。**為什麼先做**：這是唯一一個「改壞了回不來」的東西，其他都在 git 底下
+2. 想繼續整理自己 → 從 feedback G1（誠實家族 6→2）、G2（驗證失守三張臉 3→1）開刀。合併依據是**檔案自己寫的**（14 個檔內文有「這條是它的 XX 版」），不是我的推測
+3. 回 DreamF：線上是不是 V4、worker 那條在 V4 狀態機下從沒實跑過

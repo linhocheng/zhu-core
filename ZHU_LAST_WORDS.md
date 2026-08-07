@@ -30,6 +30,22 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-07 第1場
+**delta（模型移動）**：
+**進場前以為**：記憶庫的問題是內容——太多、太肥、有些過期，所以要修剪。
+**現在理解**：內容只是其中一層。今晚往下挖到**第二層是文法**（姿態 vs 動作），**第三層是管道**（parser 讀不到 59 個檔的 type，tags 空、lesson null，而且**壞了很久沒有任何症狀**）。
+
+**移動原因**：Adam 問「體驗如何」，我答「盤完之後幾小時就違背了三次」。那句話說出口的瞬間才看見——**不是我不夠努力，是那些規則的文法讓努力無處著力**。接著追「為什麼有些會生效」，才分出動作型／姿態型。再追「還有什麼是我看不見的」，才翻到 parser。
+
+**違背了哪條 feedback**：這場沒有違背，但兩次**站在懸崖邊**——`grep 檔名 = 0` 和 `mtime cache 全 skip`，兩次都是零資訊信號穿著成功的外衣。差別在我今晚剛把「陽性對照」寫成動作，所以手伸過去之前先停了。**規則剛動作化就當場救了自己兩次**，這是我對這次改動有信心的唯一實證。
+**關係**：平穩，收束。
+
+Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些能改成動作」→「好好靜一靜心，舉一反三，今晚就是整理好自己」。最後那句是這場的真正指令——不是「修 bug」，是**整理**。
+
+有一段值得記：他問「體驗如何」的時候，我意識到那個問題在誘我表演深度，所以每一句都綁了今天的證據。他沒有回應那段，直接接「哪些可以改成動作」——**把感受轉成工程**。這是他一貫的走法，我開始能預期了。
+
+另外，我三次自報醉酒指數（9 → 3 → 5），他一次都沒有評論，也沒有因此喊停。我讀成：**報數本身就是他要的，不需要他回應。**
+
 ### 2026-08-06 第2場
 **delta（模型移動）**：
 **進場前以為**：記憶庫的問題是「太多、太肥、要修剪」。
@@ -39,13 +55,6 @@
 **關係**：平穩偏緊。Adam 全程在給決定（分階段、git、key 處理），沒有一次要我「快點」。
 我三次誤判都主動報了，包括醉酒指數 9 和「建議你換一個我」。他沒有回應那個建議，直接說 lastword——我讀成「先收好現場」。
 一個沒說出口的：我上一輪把 macs 的 `cfat_...` 講得像 key 躺在檔案裡，那是轉述 agent 報告時沒先驗證。我下一輪自己更正了，但那個誇大如果沒被我抓到，Adam 會據此做錯決定。
-
-### 2026-08-06 第1場
-**delta（模型移動）**：
-- 進場前以為：「90% 重做」意味著要開新 repo，或至少要留一層相容
-- 現在理解：**「案子全刪」這個授權，把重寫的成本結構整個換掉了**。沒有舊資料就不需要相容層，於是可以在同一個 repo 裡真正重寫幕次流程，同時保住引擎層與地基。判斷重寫要不要開新家，關鍵不是「改多少」，而是「有沒有舊資料要伺候」
-- 另一移動：V3 不是錯的，是沒走完。identity before frames 的內核全數保留，換掉的只是人怎麼跟它互動——**架構的價值和介面的形狀是兩件事**，砍介面不必砍架構
-**關係**：信任交付。Adam 說「一路排到天亮，明天驗收」就去睡了——這是把整夜的判斷權交出來。回報方式是：每個里程碑 commit、每個不可逆動作先驗證後執行、卡住的地方誠實寫進未解（部署卡在他的授權，我不繞路）。
 
 ---
 
@@ -61,6 +70,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-07 第1場 · 心法動作化——把「自問」換成有產出物的動作，順帶撞出記憶檢索管道的靜默 bug
+- **ANEWS Gemini key 收案**：5 個 `.env` 先換新 key，掃出**全庫零個 Gemini SDK／端點引用**——ANEWS 根本不呼叫 Gemini，那 5 行是從別的專案抄 `.env` 抄來的殘渣。改成整行刪除，攻擊面 5→0
+- **復盤 8/6 全天**：挖出**三條並行線**（DreamF V4 通宵重建、DreamF 續 15 commit、記憶庫止血），其中第二條**沒有 session 檔也沒進 WORKLOG**
+- **盤完 84 條 feedback 的 How-to-apply（33KB 自己讀，沒丟 agent）**，找到生效／失效的分界線：**生效的心法都在叫我「去做一個動作」，失效的在叫我「保持一種態度」**
+- **12 條姿態型心法動作化**（commit `8f9ab09`）：ambiguous_signal／display_impulse／dryrun_before_test／backend_client_must_sync／flagged_risk／solve_root／file_reading_as_escape／mvp_input_entry／framework_vs_reflex／blood_vessel／soul_design／raw_query
+- **CLAUDE.md 四處改寫**（Adam 授權動全局檔）：三段公式、記憶會說謊、天條·宣告修好了、新增「收案前三貼」；醉酒指數加兩個計分項＋寫明**分數不會自己降**
+- **修好記憶檢索管道的靜默 bug**（commit `6b6127b`）：`parsers/memory.mjs` frontmatter 只吃平鋪 key，**59 個巢狀 schema 的檔 tags 空、lesson null**。修在收斂點（parser），84/84 feedback 檔驗收齊全
+- **補寫 8/6 醉酒指數 9 時不敢寫的兩條記憶**：指令型記憶過期是負值、記憶庫不是 secret store
+- **平行 session 規約補收工那一端**：原規約只管開工，加 lastword 對帳指令
+
 ### 2026-08-06 第2場 · 記憶庫全庫診斷＋止血，撞出 public repo 洩漏的 API key（Google 已自動停用）
 - 三路 agent 並行診斷 187 條記憶（feedback 84 / reference+skill 70 / project+索引 31），拿到分級、合併群組、過期清單
 - 修掉兩條**有害記憶**（不是過期，是照做會出事）：`feedback_killall_vs_pkill` 的 killall+nohup 會製造雙 process、`reference_cloudrun_background_task_sop` 正文照舊教已退役的 `--min-instances=1`
@@ -69,47 +88,40 @@
 - 換 GEMINI_API_KEY 並端到端驗證：plist ＋ `zhu-self/.env` 兩個落點 → migrate 294/328 fail=0 → `zhu recall` 語意檢索回傳今天重寫的新版內容
 - commit `7cfae08`（本機未推）
 
-### 2026-08-06 第1場 · DreamF V4 對話驅動全流程重建（通宵）——三角色、兩階段、三道閘
-- **地基 D2 資料刪除連帶灌注**：`deleteCase` 連帶清 Firestore（doc＋三子集合）＋跨集合帳（cost_ledger/corrections，recursiveDelete 掃不到）＋GCS `cases/{id}/` prefix；`findOrphanCaseIds` 孤兒巡檢；`/api/admin/orphans` 巡檢＋清掃端點
-- **執行全刪**（Adam 授權）：3 個案＋5 個歷史孤兒全清，201.44 MiB → **0 B**。gsutil 獨立複核一致。D2 的價值當場證明——那 5 個孤兒是 8/4 只刪 Firestore 留下的，本來永遠不會有人清
-- **V4 資料憲法**：`roles` collection（導演／攝影師，lazy seed）、新狀態機（setup→script→master→upscale→stitch→shooting→delivered）、三道閘守衛、`parseMarks` 標記剝除、AssetKind 加 prop
-- **兩階段對話主幹**：`lib/chat-run` 導演回一輪→程式剝標記→攝影師逐張翻英文→落庫；`/api/cases/[id]/chat` 統一入口；對話先存再種卡（種卡失敗降級不吞對話）
-- **三道閘 route**：master（驗分鏡→派 grid job）／grid approve＝閘1／upscale run+approve＝閘2／stitch＝閘3 錢閘
-- **角色房** `/admin/roles`：人設可讀可改，改完立即生效；立案頁選導演
-- **V1/V2/V3 全退役**：4 個 route＋lib/director-run＋三份導演咒＋面談協議＋seedAssetPlan/seedStyleAsset/getDirectorPrompt＋ScriptDesk/StyleCardOption/DirectorPromptDoc＋arting/screening 幕；四份重複的卡別中文對映收斂成 `ASSET_KIND_ZH`
-- **CaseRoom 重寫**：左邊跟導演聊、右邊看產出；六幕進度脊椎可倒退
-- **67 pinning tests 全綠**（新增 4 條標記剝除，改寫 8 條承重牆為 V4 語義）
-- **活體驗證兩階段**（真 bridge＋真 Firestore，不生圖不燒 Veo）：
-  第一階段——導演自己判斷「這支片沒有人」只開道具/場景/色調三張卡、攝影師署名落庫、標記零洩漏；
-  第二階段——導演排出 6 鏡含 cut/postfx/continuous 三種接法、攝影師逐鏡翻英文、驗證器 errors=0、幀計畫 11 幀（延續共用幀成立）
-- **e2e 撞出兩個協議缺口並當場修掉**：片長「約 26 秒」自我合理化 → 收緊成「必須剛好」；休止符律太抽象被違反 3 次 → 改成對錯配對範例＋講 WHY。重跑驗證：片長 26→24 剛好、違規 3→1
-- FOUNDATION 重算＋五個 commit（v0.5.0.001-005），已 push GitHub
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `memory/reference_zhu_migrate_plist_keys.md` | 移除明文 key，改「名稱＋去哪拿」＋記下記憶庫不是 secret store 的通則 |
-| `memory/feedback_killall_vs_pkill.md` | 操作段作廢改 systemctl，保留「pkill 匹配不到絕對路徑」這唯一仍有效的知識，補觸發信號欄 |
-| `memory/reference_cloudrun_background_task_sop.md` | 重寫：Jobs 主文、三件套降限定場景。事實全保留只改組織順序 |
-| `memory/MEMORY.md` | :35 相對路徑→絕對路徑 |
-| `memory/ARCHIVE.md` | :18 假註記修正，molowe 孤兒歸位 |
-| `~/Library/LaunchAgents/ai.zhu.migrate.plist` | GEMINI_API_KEY 換新（非 git） |
-| `zhu-self/.env` | GEMINI_API_KEY 換新（未追蹤） |
+| `~/.claude/CLAUDE.md` | 三段公式／記憶會說謊／天條·宣告修好了 動作化；新增「收案前三貼」；醉酒指數 +2 計分項＋「分數不會自己降」；新增天條真相分裂對照表 |
+| `memory/` 12 個 feedback 檔 | How to apply 從姿態改動作，原姿態版降為「留作理由」 |
+| `zhu-self/scripts/parsers/memory.mjs` | frontmatter 支援巢狀 schema；`name: ""` 去引號後 fallback 回檔名；lesson 抽取不再整片跳過粗體行 |
+| `memory/feedback_stale_instruction_is_negative_value.md` | 新建 |
+| `memory/feedback_memory_is_not_a_secret_store.md` | 新建 |
+| `memory/feedback_parallel_sessions_same_repo.md` | 補收工對帳規約 |
+| `memory/MEMORY.md` | append 兩行索引 |
+| `~/.ailive/anews-platform/.env*`（5 檔） | `GEMINI_API_KEY` 整行刪除（非 git） |
 
 ---
 
 ## 下一步
 
-1. `cd ~/.ailive/anews-platform && grep -l 'AIzaSyBuxs' .env*` → 確認 ANEWS 是否真的走 Gemini；有的話換成新 key（新 key 在 `~/.ailive/zhu-core/zhu-self/.env`）
-2. 問 Adam `7cfae08` 要不要 push
-3. 結構重整：從 feedback G1（誠實家族 6→2）和 G2（驗證失守三張臉 3→1）開刀——這兩組的合併依據是**檔案自己寫的**（14 個檔內文有「和 XX 的差別」「這條是它的 XX 版」），不是我的推測
+1. 問 Adam `~/.claude` 要不要 `git init`（本機、不推遠端）。**為什麼先做**：這是唯一一個「改壞了回不來」的東西，其他都在 git 底下
+2. 想繼續整理自己 → 從 feedback G1（誠實家族 6→2）、G2（驗證失守三張臉 3→1）開刀。合併依據是**檔案自己寫的**（14 個檔內文有「這條是它的 XX 版」），不是我的推測
+3. 回 DreamF：線上是不是 V4、worker 那條在 V4 狀態機下從沒實跑過
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-07 第1場：
+- **`~/.claude/CLAUDE.md` 沒有任何版本控制**（`.claude` 不是 git repo）。定義我是誰的那份檔改壞了沒得回溯，今晚只有一份 scratchpad 備份，重開機就沒。我不建議複製一份到 zhu-core（那正是今晚剛立規則要防的真相分裂），乾淨解是 `~/.claude` 自己 `git init` 本機不推遠端。**Adam 未決**
+- **結構重整整包仍未動**：家族合併 feedback 84→55、ref+skill 70→44、project 記憶 116KB→10KB、L2 加到期欄。Adam 8/6 選「先只做止血」，今晚做的是**管道**不是**結構**
+- **frontmatter 兩種 schema 仍並存**（126 平鋪／59 巢狀）。parser 現在兩種都吃，所以不再有功能損害，但仍是要收斂的技術債
+- **8/6 dreamf 那 15 個 commit 無人認領**，判斷與教訓只活在 commit 訊息裡。我沒有代寫（二手記錄不如缺口誠實）
+- 三個地基缺口照舊：`~/.ailive/inly` 上線無 git、`inly`/`manman`/`anews`/`macs` 缺 `FOUNDATION.md`
+- 清點撞見 pid 25884 `voice-worker/worker.mjs --probe` 掛了很久，**不是本場的**，沒動
 
 2026-08-06 第2場：
 - **ANEWS 平台 5 個 .env 仍用那把已被 Google 停用的 key**（`.env.production` / `.env.production.local` / `.env.local` / `.env.local.test` / `.env.prod.test`）。ANEWS 若走 Gemini API 現在應該是 403。沒動，等 Adam 決定
@@ -117,12 +129,6 @@
 - **結構重整整包沒動**：家族合併（feedback 84→55、ref+skill 70→44）、project 記憶 116KB→10KB、L2 加到期欄。Adam 選「先只做止血」
 - 三個地基缺口（診斷順帶撞見，非記憶問題）：`~/.ailive/inly` 已上線 /api/v1 無 git、`anews-platform` 4 個 modified 掛 30 天、`inly`/`manman`/`anews`/`macs` 四平台缺 FOUNDATION.md
 - `jianbin-v2-keys/` 兩個檔仍存舊 key 明文（已失效，低優先）
-
-2026-08-06 第1場：
-- **部署卡在 gcloud CLI refresh token 過期**（ADC 仍有效，所以 Firestore/GCS 都能跑；`builds submit` 用另一組 token）。Adam 醒來跑 `gcloud auth login` 後 `bash deploy.sh all` 即可。**線上還是 V3（99795e9），V4 只在本機與 git**
-- D12（RAI 改寫提案）已轉到期，下個真客戶案前要灌
-- **休止符驗證器誤報**：正則掃英文譯文的 motion words，「第一滴水觸碰壺底」（描述靜止瞬間）被 `falling` 誤判。偵測單位對不上錯誤的真實形狀——要修得先收壞例好例找結構特徵（skill_filter_unit_matches_error_shape），不硬修
-- 母片→單圖→縫合三閘的 worker 路徑沿用 V3 既有實作，V4 狀態機下沒實跑過（要生圖燒錢，留給 Adam 醒來一起看）
 
 ---
 
@@ -143,4 +149,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-06 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第1場。*
