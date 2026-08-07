@@ -29,3 +29,5 @@ metadata:
 - 驗證+1:2026-08-02 第7場 — 收工盤錶掃實例面（minScale/SQL activationPolicy/全 region service list），不只讀部署腳本
 
 - 驗證+1:2026-08-05 第6場 — 分鐘抖動成本用真數據（Vercel 已含額度/Firestore 免費額度）算增量非估
+
+- 驗證+1:2026-08-07 第3場 — mode=on 誤拉 v19/v20/v21 min=1，旗標還原後不信設定面、查 minScale annotation 才抓到實例沒降，手動歸零
