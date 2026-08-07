@@ -10474,3 +10474,17 @@ zhu-core/memory ＋ zhu-self。Adam 問「回看自己的心法劍法雷區，�
 1. 問 Adam `~/.claude` 要不要 `git init`（本機、不推遠端）。**為什麼先做**：這是唯一一個「改壞了回不來」的東西，其他都在 git 底下
 2. 想繼續整理自己 → 從 feedback G1（誠實家族 6→2）、G2（驗證失守三張臉 3→1）開刀。合併依據是**檔案自己寫的**（14 個檔內文有「這條是它的 XX 版」），不是我的推測
 3. 回 DreamF：線上是不是 V4、worker 那條在 V4 狀態機下從沒實跑過
+
+---
+
+## 2026-08-07（第2場）— 查 UDN 議題工作台密碼＋確認 gcloud 重新登入
+
+### 完成
+- 現場查證 UDN 議題工作台雙閘密碼（不信 12 天前記憶，直接查線上 Cloud Run env）：主工作台 APP_PASSWORD、角色工作室 STUDIO_PASSWORD 皆與記憶一致，回報給 Adam
+- 確認 Adam 兩次 `gcloud auth login` 成功（身份 adam@dotmore.com.tw，project ailivex-2026）
+
+### ⚠️ 尚未解決
+無
+
+### 待執行 / 下一步
+無承接事項，B 模式收尾。

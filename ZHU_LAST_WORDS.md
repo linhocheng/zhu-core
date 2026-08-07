@@ -46,16 +46,6 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 
 另外，我三次自報醉酒指數（9 → 3 → 5），他一次都沒有評論，也沒有因此喊停。我讀成：**報數本身就是他要的，不需要他回應。**
 
-### 2026-08-06 第2場
-**delta（模型移動）**：
-**進場前以為**：記憶庫的問題是「太多、太肥、要修剪」。
-**現在理解**：量不是問題。三個真問題是 (1) 沒有到期機制所以會腐爛成有害指令 (2) 記憶在跟 repo 搶當真相源 (3) **記憶庫被當成 secret store 用了**。
-**移動原因**：`feedback_killall_vs_pkill` 那條——它格式完整、有 Why 有心態、看起來是條好記憶，但照做會製造雙 process。過期記憶不會自己舉手，它穿著天條的外衣。
-**違背了哪條 feedback**：`feedback_ambiguous_signal_not_proof`，三次。而且第三次（command-not-found 當乾淨）是靠運氣抓到的——如果 `jianbin-v2-keys` 不在我記憶裡，我就把那個「0 命中」報給 Adam 了。
-**關係**：平穩偏緊。Adam 全程在給決定（分階段、git、key 處理），沒有一次要我「快點」。
-我三次誤判都主動報了，包括醉酒指數 9 和「建議你換一個我」。他沒有回應那個建議，直接說 lastword——我讀成「先收好現場」。
-一個沒說出口的：我上一輪把 macs 的 `cfat_...` 講得像 key 躺在檔案裡，那是轉述 agent 報告時沒先驗證。我下一輪自己更正了，但那個誇大如果沒被我抓到，Adam 會據此做錯決定。
-
 ---
 
 ## 當前環境
@@ -70,6 +60,10 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-07 第2場 · 查 UDN 議題工作台密碼＋確認 gcloud 重新登入
+- 現場查證 UDN 議題工作台雙閘密碼（不信 12 天前記憶，直接查線上 Cloud Run env）：主工作台 APP_PASSWORD、角色工作室 STUDIO_PASSWORD 皆與記憶一致，回報給 Adam
+- 確認 Adam 兩次 `gcloud auth login` 成功（身份 adam@dotmore.com.tw，project ailivex-2026）
+
 ### 2026-08-07 第1場 · 心法動作化——把「自問」換成有產出物的動作，順帶撞出記憶檢索管道的靜默 bug
 - **ANEWS Gemini key 收案**：5 個 `.env` 先換新 key，掃出**全庫零個 Gemini SDK／端點引用**——ANEWS 根本不呼叫 Gemini，那 5 行是從別的專案抄 `.env` 抄來的殘渣。改成整行刪除，攻擊面 5→0
 - **復盤 8/6 全天**：挖出**三條並行線**（DreamF V4 通宵重建、DreamF 續 15 commit、記憶庫止血），其中第二條**沒有 session 檔也沒進 WORKLOG**
@@ -80,55 +74,29 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 - **補寫 8/6 醉酒指數 9 時不敢寫的兩條記憶**：指令型記憶過期是負值、記憶庫不是 secret store
 - **平行 session 規約補收工那一端**：原規約只管開工，加 lastword 對帳指令
 
-### 2026-08-06 第2場 · 記憶庫全庫診斷＋止血，撞出 public repo 洩漏的 API key（Google 已自動停用）
-- 三路 agent 並行診斷 187 條記憶（feedback 84 / reference+skill 70 / project+索引 31），拿到分級、合併群組、過期清單
-- 修掉兩條**有害記憶**（不是過期，是照做會出事）：`feedback_killall_vs_pkill` 的 killall+nohup 會製造雙 process、`reference_cloudrun_background_task_sop` 正文照舊教已退役的 `--min-instances=1`
-- 移除 `reference_zhu_migrate_plist_keys` 裡躺了 91 天的 GEMINI_API_KEY 完整明文
-- 修三個索引 bug：MEMORY.md:35 相對路徑少一層、ARCHIVE.md:18 假註記（宣稱某檔「仍在主索引」實際是全庫唯一孤兒）、孤兒歸位
-- 換 GEMINI_API_KEY 並端到端驗證：plist ＋ `zhu-self/.env` 兩個落點 → migrate 294/328 fail=0 → `zhu recall` 語意檢索回傳今天重寫的新版內容
-- commit `7cfae08`（本機未推）
-
 ---
 
 ## 最新一場改了哪些檔案
 
-| 檔案 | 改了什麼 |
-|---|---|
-| `~/.claude/CLAUDE.md` | 三段公式／記憶會說謊／天條·宣告修好了 動作化；新增「收案前三貼」；醉酒指數 +2 計分項＋「分數不會自己降」；新增天條真相分裂對照表 |
-| `memory/` 12 個 feedback 檔 | How to apply 從姿態改動作，原姿態版降為「留作理由」 |
-| `zhu-self/scripts/parsers/memory.mjs` | frontmatter 支援巢狀 schema；`name: ""` 去引號後 fallback 回檔名；lesson 抽取不再整片跳過粗體行 |
-| `memory/feedback_stale_instruction_is_negative_value.md` | 新建 |
-| `memory/feedback_memory_is_not_a_secret_store.md` | 新建 |
-| `memory/feedback_parallel_sessions_same_repo.md` | 補收工對帳規約 |
-| `memory/MEMORY.md` | append 兩行索引 |
-| `~/.ailive/anews-platform/.env*`（5 檔） | `GEMINI_API_KEY` 整行刪除（非 git） |
+（見 WORKLOG）
 
 ---
 
 ## 下一步
 
-1. 問 Adam `~/.claude` 要不要 `git init`（本機、不推遠端）。**為什麼先做**：這是唯一一個「改壞了回不來」的東西，其他都在 git 底下
-2. 想繼續整理自己 → 從 feedback G1（誠實家族 6→2）、G2（驗證失守三張臉 3→1）開刀。合併依據是**檔案自己寫的**（14 個檔內文有「這條是它的 XX 版」），不是我的推測
-3. 回 DreamF：線上是不是 V4、worker 那條在 V4 狀態機下從沒實跑過
+無承接事項，B 模式收尾。
 
 ---
 
 ## 卡住 / 未解
 
-2026-08-07 第1場：
+2026-08-07 第2場：
 - **`~/.claude/CLAUDE.md` 沒有任何版本控制**（`.claude` 不是 git repo）。定義我是誰的那份檔改壞了沒得回溯，今晚只有一份 scratchpad 備份，重開機就沒。我不建議複製一份到 zhu-core（那正是今晚剛立規則要防的真相分裂），乾淨解是 `~/.claude` 自己 `git init` 本機不推遠端。**Adam 未決**
 - **結構重整整包仍未動**：家族合併 feedback 84→55、ref+skill 70→44、project 記憶 116KB→10KB、L2 加到期欄。Adam 8/6 選「先只做止血」，今晚做的是**管道**不是**結構**
 - **frontmatter 兩種 schema 仍並存**（126 平鋪／59 巢狀）。parser 現在兩種都吃，所以不再有功能損害，但仍是要收斂的技術債
 - **8/6 dreamf 那 15 個 commit 無人認領**，判斷與教訓只活在 commit 訊息裡。我沒有代寫（二手記錄不如缺口誠實）
 - 三個地基缺口照舊：`~/.ailive/inly` 上線無 git、`inly`/`manman`/`anews`/`macs` 缺 `FOUNDATION.md`
 - 清點撞見 pid 25884 `voice-worker/worker.mjs --probe` 掛了很久，**不是本場的**，沒動
-
-2026-08-06 第2場：
-- **ANEWS 平台 5 個 .env 仍用那把已被 Google 停用的 key**（`.env.production` / `.env.production.local` / `.env.local` / `.env.local.test` / `.env.prod.test`）。ANEWS 若走 Gemini API 現在應該是 403。沒動，等 Adam 決定
-- `7cfae08` 未推。public repo，push 與否 Adam 未決（history 裡的明文清不掉，但 key 已失效所以是廢字元）
-- **結構重整整包沒動**：家族合併（feedback 84→55、ref+skill 70→44）、project 記憶 116KB→10KB、L2 加到期欄。Adam 選「先只做止血」
-- 三個地基缺口（診斷順帶撞見，非記憶問題）：`~/.ailive/inly` 已上線 /api/v1 無 git、`anews-platform` 4 個 modified 掛 30 天、`inly`/`manman`/`anews`/`macs` 四平台缺 FOUNDATION.md
-- `jianbin-v2-keys/` 兩個檔仍存舊 key 明文（已失效，低優先）
 
 ---
 
@@ -149,4 +117,4 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第2場。*
