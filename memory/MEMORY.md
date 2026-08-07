@@ -103,7 +103,7 @@
 - [debug 直撈 DB 不能當 UI 行為回報](feedback_raw_query_not_ui_truth.md) — 走 UI 同一條讀路徑才是產品真相
 - [Vertex Veo 3.1 影片生成實戰參考](reference_vertex_veo_video_generation.md) — 走 Vertex 不走 Gemini key;-001/輪詢/首尾幀 8 秒
 - [混合檢索融合兩個坑](skill_rrf_hybrid_retrieval_pitfalls.md) — 窄域坍縮用 rank-based RRF;未命中不給名次貢獻
-- [Vertex 004 對純中文全盲](reference_vertex_004_cjk_blind.md) — 同標點結構回同一顆向量;ailivex memories 池 cosine=安慰劑,靠 lex 在扛;中文語料一律 multilingual-002
+- [Vertex 004 對純中文全盲](reference_vertex_004_cjk_blind.md) — bit-identical 向量;ailivex 池 8/8 已遷 002 治癒(gap-0.000→+0.22,floor0.68,A/B 驗法在檔內);ailive 平台的 004 腿尚未治
 - [Cloud Run 版本退役紀律](skill_cloudrun_version_retirement.md) — LiveKit agent 降 0=聾不是慢;退役前先查真實引用零引用才退(feedback_verify_references_before_retiring)
 - [「登入只擋頁面不擋 /api」反範式與修法](skill_public_page_open_api_hardening.md) — 按呼叫者分類上鎖;curl body 才算驗
 - [文言語料檢索用白話索引原文呈現](skill_cross_register_retrieval_gist_index.md) — 語域不同 embedding 對不上;gist 三雷
@@ -116,4 +116,5 @@
 - [召喚術——人格大神附體 ritual](skill_summon_persona_ritual.md) — 名冊在 zhu-core/skills/summon/;沒首戰不算鑄成
 - [BeSelf 訪談活動站](project_beself_platform.md) — beself-two.vercel.app;v1.1.0 真刪除/商品庫/換裝收案;Nina 上場三步待 Adam
 - [漫漫商用平台(manman)](project_manman_platform.md) — 多租戶 LINE 陪伴 SaaS;測試環境通車多模態全開;llmBaseUrl 只屬 bridge;打電話/抽取器/worker/地基帳本待蓋
-- [ailiveX 傘外 canary 語音測試 SOP](skill_ailivex_canary_voice_power_sop.md) — 不碰全域 mode(拉整傘)/onSince race 釘 boot 前/收尾逐服務驗 minScale
+- [ailiveX 傘外 canary 語音測試 SOP](skill_ailivex_canary_voice_power_sop.md) — 8/8 readiness 已 per-service 化免釘 onSince;測前抄現狀/旗標先於用戶開頁/收攤三件一組
+- [Anthropic prompt cache 注入規律](reference_anthropic_prompt_cache_injection.md) — 順序 tools→system→messages,動 system=全史陪葬;素材進 messages(developer role)/走步搭 tool result;role=system 會被抬升照樣破

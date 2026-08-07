@@ -47,3 +47,5 @@ grep -c "$(date +%Y-%m-%d)" ~/.ailive/zhu-core/docs/WORKLOG.md   # 帳本今天�
 - 驗證+1:2026-08-05 第1場 — zhu-core 稽核到別的 session 的 SESSION_2026-08-04_3/4.md 未提交，沒有碰，只認自己的檔案
 
 - 驗證+1:2026-08-07 第3場 — audit 認清別場髒樹不碰；ailivex commit 顯式 add 自己 5 檔；commit 前 fetch 確認 0/0
+
+- 驗證+1:2026-08-08 第1場 — audit 認清五個別場髒樹不碰；commit 顯式 add 自己 8 檔

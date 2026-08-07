@@ -238,3 +238,10 @@ ailiveX walking skeleton Phase 0-7 全通（2026-06-06 夜）。
 - 漫漫六項「優點」四項刻意不做（理由在 commit）：①多情緒=MiniMax WS task 一通鎖死 emotion、要在 [EMOTION:x] 邊界重開 task＝單獨專案；②prompt cache=已解（prompt 整通建一次天然命中）；③人格規則=個性歸靈魂不 globalize；⑥打斷AND=會弄壞 clear_buffer 內容即停的正常插話
 - 漫漫程式碼三處明寫「借鏡 ailivex」——技術單向流動，我們是上游；完整比較=63 檢核項報告（本場 scratchpad，關鍵結論已進 commit 訊息）
 - canary 測試電源雷→[[skill_ailivex_canary_voice_power_sop]]
+
+**2026-08-08：V20M 四項根治一路打到底（commit 663ec5f+6815a97，撥測三信號全綠）。**
+- ⑤熔斷升三態機（half-open 試探）＋修沉睡 bug（未 initialize 就 flush 必炸）＋零資訊 run 不計分（空跑/被打斷 0 bytes≠MiniMax 壞）；harness `agent/test_tts_circuit_breaker.py` 23 斷言
+- ②cache 根治：v20m system prompt 凍結、動態注入進 messages（詳[[reference_anthropic_prompt_cache_injection]]）；撥測 cached 11964→14067 不歸零 99% 命中
+- readiness per-service 化：`wakeAt` 章取代全域 onSince（voice-power.ts），傘外 canary 免釘 onSince
+- ④004→002 全池遷移：1,172 筆 embedding002、floor 0.68、語音+文字線讀端切、004+002 雙寫、A/B 證明 004 召回≈隨機（詳[[reference_vertex_004_cjk_blind]]治癒紀錄）；`scripts/backfill-memories-002.mjs` 常備
+- **待辦 #5**：④②⑤ 下放 v20 主線（先④——v20 召回還在 004 隨機軌；下放前跑 backfill 補 004-only 新記憶）；去重仍 004 軌，004 退場時一起切

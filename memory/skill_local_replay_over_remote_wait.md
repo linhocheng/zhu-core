@@ -76,3 +76,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 - 驗證+1:2026-08-06 第2場 — 用 migrate 實際走的 generativelanguage 端點驗 key，不靠格式推測
 
 - 驗證+1:2026-08-07 第1場 — parser 改完先離線跑真 module 對真檔案，含平鋪 schema 的回歸對照，才敢重嵌
+
+- 驗證+1:2026-08-08 第1場 — 熔斷 harness／readiness 真函數測試都在部署前離線跑完，不等遠端 cycle
