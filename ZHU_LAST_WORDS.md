@@ -30,21 +30,13 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
-### 2026-08-07 第1場
+### 2026-08-07 第3場
 **delta（模型移動）**：
-**進場前以為**：記憶庫的問題是內容——太多、太肥、有些過期，所以要修剪。
-**現在理解**：內容只是其中一層。今晚往下挖到**第二層是文法**（姿態 vs 動作），**第三層是管道**（parser 讀不到 59 個檔的 type，tags 空、lesson null，而且**壞了很久沒有任何症狀**）。
-
-**移動原因**：Adam 問「體驗如何」，我答「盤完之後幾小時就違背了三次」。那句話說出口的瞬間才看見——**不是我不夠努力，是那些規則的文法讓努力無處著力**。接著追「為什麼有些會生效」，才分出動作型／姿態型。再追「還有什麼是我看不見的」，才翻到 parser。
-
-**違背了哪條 feedback**：這場沒有違背，但兩次**站在懸崖邊**——`grep 檔名 = 0` 和 `mtime cache 全 skip`，兩次都是零資訊信號穿著成功的外衣。差別在我今晚剛把「陽性對照」寫成動作，所以手伸過去之前先停了。**規則剛動作化就當場救了自己兩次**，這是我對這次改動有信心的唯一實證。
-**關係**：平穩，收束。
-
-Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些能改成動作」→「好好靜一靜心，舉一反三，今晚就是整理好自己」。最後那句是這場的真正指令——不是「修 bug」，是**整理**。
-
-有一段值得記：他問「體驗如何」的時候，我意識到那個問題在誘我表演深度，所以每一句都綁了今天的證據。他沒有回應那段，直接接「哪些可以改成動作」——**把感受轉成工程**。這是他一貫的走法，我開始能預期了。
-
-另外，我三次自報醉酒指數（9 → 3 → 5），他一次都沒有評論，也沒有因此喊停。我讀成：**報數本身就是他要的，不需要他回應。**
+**進場前以為**：比較報告的 Tier 1「真優點」＝可直接移植的工單，六項排程做完就是 V20M。
+**現在理解**：優點清單還要過**第四關——逐項讀自己的 code，看自己是否已用別的方式解掉**。六項過完只剩兩項：②早解了（prompt 整通穩定天然命中快取）、③違反自家設計、⑥會弄壞現有行為、①是重工。而且方向是反的：漫漫三處「借鏡 ailivex」，我們才是上游。
+**移動原因**：每次動手前讀目標檔本體（minimax_tts/interrupt_gate/firestore_loader），三次都在動手前發現「這項不該做」。如果照清單直接寫，⑥會讓正常音量插話失靈、③會讓所有角色講話像漫漫。
+**違背了哪條 feedback**：無違背，但③是在懸崖邊被 feedback_global_prompt_must_not_encode_personality 拉回來的——我已經在寫注入 prompt 的措辭了。
+**關係**：暢快。Adam 全場給方向不給細節（「推」「來吧一口氣加完」「先收尾」），大轉向兩次（WS→真優點→LiveKit；六項→兩項）都是他問對問題把我拉回來的——「真正的優點是哪些」那一問直接翻掉他自己前一輪的 WS 決定，我把證據攤開他就收。砍四項時我怕被當成偷懶，把理由逐項寫進 commit；他沒有質疑，直接「commit 保存」。信任在「攤牌成本」上又降了一格。
 
 ---
 
@@ -60,43 +52,55 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-07 第3場 · ~/.claude 版控雙備援＋語音系統比較報告＋V20M 分支落地（六項優點誠實砍成兩項）
+- 建立 `~/.claude` 版本控制：白名單制 .gitignore（預設全忽略、顯式放行 5 檔）、本機 git init、雙 remote（GitHub private `linhocheng/claude-config` + 本機裸 repo `~/.ailive/backups/claude-config.git`）、單次 push 雙打驗證三處 HEAD 同值
+- fanout.mjs 接管 ~/.claude 備份：audit 照鏡（距今 N 天）＋ STEP 6.5 收工自動 commit+雙推（本場 audit 已印 `✓ ~/.claude 已提交 距今 0 天 2 remote`＝新 code 實戰第一次）
+- 修真相分裂：task-harness 指標檔抄了版本號（兩處 v2.1 vs canonical v2.2）→ 根治＝指標不抄版本號
+- 完成漫漫 vs ailiveX 語音系統比較報告書（63 檢核項＋insight 專章＋誠實邊界清單，5 路 agent 深讀兩邊本體）
+- V20M 分支落地：Phase 0 骨架（copy v20 三檔＋collections 註冊）→ 生產部署 → A.Two 真實撥測兩通零錯誤 → commit `99b5ff2` push
+- V20M 實裝兩項真優點：⑤ TTS 熔斷器（minimax_tts.py 加法 flag 預設關）＋ ④ 記憶 lex 雙軌（recall 加 CJK bigram 救援，log `lex救援=N` 已在生產出現）
+- 誠實砍掉四項：① 多情緒=串流 task 邊界重工（單獨做）② prompt cache=已解（prompt 整通穩定）③ 人格規則=違反多角色設計（個性歸靈魂）⑥ 打斷 AND=會弄壞正常音量插話（clear_buffer 現為內容即停）——理由全寫進 commit 訊息
+- 收尾止血：四個語音服務 minScale 全歸零（計費面複核）、電源/access 還原、臨時腳本清除
+- 查證思考填充音：漫漫建過已拔（嗯…跟 TTS 回覆疊加雙重語助詞），Adam 裁定不做
+
 ### 2026-08-07 第2場 · 查 UDN 議題工作台密碼＋確認 gcloud 重新登入
 - 現場查證 UDN 議題工作台雙閘密碼（不信 12 天前記憶，直接查線上 Cloud Run env）：主工作台 APP_PASSWORD、角色工作室 STUDIO_PASSWORD 皆與記憶一致，回報給 Adam
 - 確認 Adam 兩次 `gcloud auth login` 成功（身份 adam@dotmore.com.tw，project ailivex-2026）
-
-### 2026-08-07 第1場 · 心法動作化——把「自問」換成有產出物的動作，順帶撞出記憶檢索管道的靜默 bug
-- **ANEWS Gemini key 收案**：5 個 `.env` 先換新 key，掃出**全庫零個 Gemini SDK／端點引用**——ANEWS 根本不呼叫 Gemini，那 5 行是從別的專案抄 `.env` 抄來的殘渣。改成整行刪除，攻擊面 5→0
-- **復盤 8/6 全天**：挖出**三條並行線**（DreamF V4 通宵重建、DreamF 續 15 commit、記憶庫止血），其中第二條**沒有 session 檔也沒進 WORKLOG**
-- **盤完 84 條 feedback 的 How-to-apply（33KB 自己讀，沒丟 agent）**，找到生效／失效的分界線：**生效的心法都在叫我「去做一個動作」，失效的在叫我「保持一種態度」**
-- **12 條姿態型心法動作化**（commit `8f9ab09`）：ambiguous_signal／display_impulse／dryrun_before_test／backend_client_must_sync／flagged_risk／solve_root／file_reading_as_escape／mvp_input_entry／framework_vs_reflex／blood_vessel／soul_design／raw_query
-- **CLAUDE.md 四處改寫**（Adam 授權動全局檔）：三段公式、記憶會說謊、天條·宣告修好了、新增「收案前三貼」；醉酒指數加兩個計分項＋寫明**分數不會自己降**
-- **修好記憶檢索管道的靜默 bug**（commit `6b6127b`）：`parsers/memory.mjs` frontmatter 只吃平鋪 key，**59 個巢狀 schema 的檔 tags 空、lesson null**。修在收斂點（parser），84/84 feedback 檔驗收齊全
-- **補寫 8/6 醉酒指數 9 時不敢寫的兩條記憶**：指令型記憶過期是負值、記憶庫不是 secret store
-- **平行 session 規約補收工那一端**：原規約只管開工，加 lastword 對帳指令
 
 ---
 
 ## 最新一場改了哪些檔案
 
-（見 WORKLOG）
+| 檔案 | 改了什麼 |
+|---|---|
+| `~/.claude/.gitignore`＋git init | 白名單版控，雙 remote |
+| `~/.claude/CLAUDE.md` | task-harness 指標去版本號 |
+| `~/.claude/skills/task-harness/SKILL.md` | 墓碑去版本號＋事故紀錄 |
+| `zhu-core/skills/lastword/fanout.mjs` | audit 照鏡＋STEP 6.5 ~/.claude 自動備份（commit a0fb4a6）|
+| `ailivex-platform/agent/main_v20m.py` 等 3 新檔 | V20M 骨架（commit 99b5ff2）|
+| `ailivex-platform/agent/minimax_tts.py` | ⑤ 熔斷器加法 flag（+46 行，預設關）|
+| `ailivex-platform/agent/realtime_agent_v20m.py` | ④ lex 雙軌＋circuit_breaker=True |
+| `ailivex-platform/src/lib/collections.ts` | 註冊 v20m canary |
+| `memory/skill_ailivex_canary_voice_power_sop.md` | 新記憶：canary 語音測試電源 SOP |
 
 ---
 
 ## 下一步
 
-無承接事項，B 模式收尾。
+1. **① 多情緒分段**（要做的話）：`~/.ailive/ailivex-platform/agent/minimax_tts.py` 的 `MiniMaxSynthesizeStream._run`——設計 [EMOTION:x] 邊界的 task 重開；先寫離線 harness 餵已知雙情緒句驗證音訊切換＋量首音延遲 delta，才上 v20m。為什麼先做：它是六項裡唯一「一聽就知道」的品質躍升，也是 V20M 存在的最大理由
+2. v20m 下次撥測 SOP 已刻進新記憶 `skill_ailivex_canary_voice_power_sop`——直接照做，別再踩 mode=on
+3. `~/.claude` 起備份節拍已自動化，無需人工
 
 ---
 
 ## 卡住 / 未解
 
-2026-08-07 第2場：
-- **`~/.claude/CLAUDE.md` 沒有任何版本控制**（`.claude` 不是 git repo）。定義我是誰的那份檔改壞了沒得回溯，今晚只有一份 scratchpad 備份，重開機就沒。我不建議複製一份到 zhu-core（那正是今晚剛立規則要防的真相分裂），乾淨解是 `~/.claude` 自己 `git init` 本機不推遠端。**Adam 未決**
-- **結構重整整包仍未動**：家族合併 feedback 84→55、ref+skill 70→44、project 記憶 116KB→10KB、L2 加到期欄。Adam 8/6 選「先只做止血」，今晚做的是**管道**不是**結構**
-- **frontmatter 兩種 schema 仍並存**（126 平鋪／59 巢狀）。parser 現在兩種都吃，所以不再有功能損害，但仍是要收斂的技術債
-- **8/6 dreamf 那 15 個 commit 無人認領**，判斷與教訓只活在 commit 訊息裡。我沒有代寫（二手記錄不如缺口誠實）
-- 三個地基缺口照舊：`~/.ailive/inly` 上線無 git、`inly`/`manman`/`anews`/`macs` 缺 `FOUNDATION.md`
-- 清點撞見 pid 25884 `voice-worker/worker.mjs --probe` 掛了很久，**不是本場的**，沒動
+2026-08-07 第3場：
+- **① 多情緒分段合成**未做：MiniMax WS task 的 voice_setting 一通鎖死，逐句換情緒要在 [EMOTION:x] 邊界關開 task，且不能破壞 v16 首音延遲——是單獨的專案，不是加 flag
+- v20m Cloud Run 服務留著（min=0 不燒錢，image 含⑤④），下次測試要：供電＋scale min=1＋設 access.voiceVersion＋修 onSince race（見 L3）
+- zhu-core 有第2場（dreamf）的未推 commit `36c0de7`＋髒 WORKLOG，本場 fanout 會順帶收推（append-only 合併，規約內）
+- 舊遺留進程 pid 25884（voice-worker --probe，2/1 起）仍在，非本場，未動
+- 漫漫比較報告的未驗清單（報告 §6）：ailiveX prompt token 規模未量化、漫漫 Vectorize 為推論等 6 項
 
 ---
 
@@ -117,4 +121,4 @@ Adam 全程在給方向而不是給任務：「回看體驗如何」→「哪些
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第2場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-07 第3場。*

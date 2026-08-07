@@ -10488,3 +10488,59 @@ zhu-core/memory ＋ zhu-self。Adam 問「回看自己的心法劍法雷區，�
 
 ### 待執行 / 下一步
 無承接事項，B 模式收尾。
+
+## 2026-08-07 — DreamF V4 實戰日＋角色模組 v2（戰場：dreamf）
+
+### 產出（v0.5.0.006–v0.6.0.002，全部已部署 cdfa302）
+- 實戰修雷：worker 落後 V4（signedAt/framing/screening）、對話 lag 193s（翻譯拆出 chat）、攝影師靜默失敗（log+重試）、prop 卡模板漏接、重吐標記洗核准章（協議「標記只夾一次」＋desc 不變保留狀態）、逐格翻譯各自為政（整份一次翻＋不變量鎖）、.gcloudignore 瘦身（poc 36MB 拖垮慢網路）、D12 安全押回改寫（攝影師換句話說）、母圖畫一張存一張
+- 母片閘：逐格勾選（勾了＝同意直接拆單圖，不過導演）；單圖/總表 skip-aware
+- 導演「默」靈魂 v2（鑄魂鍛，1163 字，live 已同步）＋導演升 claude-sonnet-5
+- **角色模組 v2**（參照 UDN）：RoleDoc 四層全活（persona/stages/memories/試說話）；行為指導從 code 搬進 SEED_STAGES（DB 蓋過）；機器契約留 code；新角色動態攝影師「阿律」（已種 live）
+- **縫合工作台**：左聊導演談動態（[[MOTION]]）＋砍鏡（[[DROP]]→結構手術：重連號/接縫修補/幀按描述指紋重掛）；右工作台點字直改 motionZh；「轉換為影片指令」阿律整片一次轉 motionEn；veoPrompt 用 motionEn；Veo 單圖起動模式（lastFrame 選填）
+- FOUNDATION：#16 角色模組 v2 灌、D20 已解；74 pinning tests 綠
+### 現場
+- 熊片案 fHobMCZzAkUXlz5cbwRd 停縫合幕：待 Adam 跟默砍鏡5/6、談完動態、轉指令、開拍（首次 Veo 實戰）
+- 未解：休止符驗證器誤報（等收例）；D12 圖像線已灌但 Veo 線 RAI 押回仍走 alt+押回縫合
+
+---
+
+## 2026-08-07（第3場）— ~/.claude 版控雙備援＋語音系統比較報告＋V20M 分支落地（六項優點誠實砍成兩項）
+
+### 背景 / WHY
+ailivex-platform V20M 支線——Adam 從「比較兩套語音系統」一路推進到「自建集優點於一身的分支」。中途一次大轉向：Adam 先選手刻 WS＋四層全上，我出完整藍圖後他問「真正的優點是哪些」，答案自己把 WS 翻回 LiveKit——真優點沒有一條需要換傳輸層。
+
+### 完成
+- 建立 `~/.claude` 版本控制：白名單制 .gitignore（預設全忽略、顯式放行 5 檔）、本機 git init、雙 remote（GitHub private `linhocheng/claude-config` + 本機裸 repo `~/.ailive/backups/claude-config.git`）、單次 push 雙打驗證三處 HEAD 同值
+- fanout.mjs 接管 ~/.claude 備份：audit 照鏡（距今 N 天）＋ STEP 6.5 收工自動 commit+雙推（本場 audit 已印 `✓ ~/.claude 已提交 距今 0 天 2 remote`＝新 code 實戰第一次）
+- 修真相分裂：task-harness 指標檔抄了版本號（兩處 v2.1 vs canonical v2.2）→ 根治＝指標不抄版本號
+- 完成漫漫 vs ailiveX 語音系統比較報告書（63 檢核項＋insight 專章＋誠實邊界清單，5 路 agent 深讀兩邊本體）
+- V20M 分支落地：Phase 0 骨架（copy v20 三檔＋collections 註冊）→ 生產部署 → A.Two 真實撥測兩通零錯誤 → commit `99b5ff2` push
+- V20M 實裝兩項真優點：⑤ TTS 熔斷器（minimax_tts.py 加法 flag 預設關）＋ ④ 記憶 lex 雙軌（recall 加 CJK bigram 救援，log `lex救援=N` 已在生產出現）
+- 誠實砍掉四項：① 多情緒=串流 task 邊界重工（單獨做）② prompt cache=已解（prompt 整通穩定）③ 人格規則=違反多角色設計（個性歸靈魂）⑥ 打斷 AND=會弄壞正常音量插話（clear_buffer 現為內容即停）——理由全寫進 commit 訊息
+- 收尾止血：四個語音服務 minScale 全歸零（計費面複核）、電源/access 還原、臨時腳本清除
+- 查證思考填充音：漫漫建過已拔（嗯…跟 TTS 回覆疊加雙重語助詞），Adam 裁定不做
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `~/.claude/.gitignore`＋git init | 白名單版控，雙 remote |
+| `~/.claude/CLAUDE.md` | task-harness 指標去版本號 |
+| `~/.claude/skills/task-harness/SKILL.md` | 墓碑去版本號＋事故紀錄 |
+| `zhu-core/skills/lastword/fanout.mjs` | audit 照鏡＋STEP 6.5 ~/.claude 自動備份（commit a0fb4a6）|
+| `ailivex-platform/agent/main_v20m.py` 等 3 新檔 | V20M 骨架（commit 99b5ff2）|
+| `ailivex-platform/agent/minimax_tts.py` | ⑤ 熔斷器加法 flag（+46 行，預設關）|
+| `ailivex-platform/agent/realtime_agent_v20m.py` | ④ lex 雙軌＋circuit_breaker=True |
+| `ailivex-platform/src/lib/collections.ts` | 註冊 v20m canary |
+| `memory/skill_ailivex_canary_voice_power_sop.md` | 新記憶：canary 語音測試電源 SOP |
+
+### ⚠️ 尚未解決
+- **① 多情緒分段合成**未做：MiniMax WS task 的 voice_setting 一通鎖死，逐句換情緒要在 [EMOTION:x] 邊界關開 task，且不能破壞 v16 首音延遲——是單獨的專案，不是加 flag
+- v20m Cloud Run 服務留著（min=0 不燒錢，image 含⑤④），下次測試要：供電＋scale min=1＋設 access.voiceVersion＋修 onSince race（見 L3）
+- zhu-core 有第2場（dreamf）的未推 commit `36c0de7`＋髒 WORKLOG，本場 fanout 會順帶收推（append-only 合併，規約內）
+- 舊遺留進程 pid 25884（voice-worker --probe，2/1 起）仍在，非本場，未動
+- 漫漫比較報告的未驗清單（報告 §6）：ailiveX prompt token 規模未量化、漫漫 Vectorize 為推論等 6 項
+
+### 待執行 / 下一步
+1. **① 多情緒分段**（要做的話）：`~/.ailive/ailivex-platform/agent/minimax_tts.py` 的 `MiniMaxSynthesizeStream._run`——設計 [EMOTION:x] 邊界的 task 重開；先寫離線 harness 餵已知雙情緒句驗證音訊切換＋量首音延遲 delta，才上 v20m。為什麼先做：它是六項裡唯一「一聽就知道」的品質躍升，也是 V20M 存在的最大理由
+2. v20m 下次撥測 SOP 已刻進新記憶 `skill_ailivex_canary_voice_power_sop`——直接照做，別再踩 mode=on
+3. `~/.claude` 起備份節拍已自動化，無需人工
