@@ -64,3 +64,5 @@ metadata:
 - 驗證+1:2026-08-07 第3場 — 陽性對照連環擋雷：gitignore 用已知樣本驗攔截；onSince race 兩次在 Adam 撥號前用 ready 判準抓到「會 waking」；build 被 kill 不當失敗、查遠端發現還在跑
 
 - 驗證+1:2026-08-08 第1場 — 五連擋：MockEmitter 仿真實契約揪出沉睡 flush bug；同文重嵌 cosine=1.0000 驗遷移軌＝生產軌；[cache] 逐 turn 觀測取代「應該有命中」；空跑 0 bytes 判為零資訊不計分；收攤計費面複核
+
+- 驗證+1:2026-08-08 第2場 — 每個修法前寫死鑑別信號（ingestState done/analysisState done vs 500/failed）
