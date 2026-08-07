@@ -26,3 +26,5 @@ metadata:
 - 驗證+1:2026-08-02 第6場 — Cloud SQL create 背景跑 `| tail` 吃掉失敗，宣告「建好了」後被現場打臉，重跑改看完整輸出＋exit code
 
 - 驗證+1:2026-08-04 第1場 — 同上，正面踩中家族雷，當場改裸 exit code 驗證
+
+- 驗證+1:2026-08-08 第3場 — deploy | tail 吃掉 worker build 失敗，當場重踩當場改

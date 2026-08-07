@@ -24,3 +24,5 @@ metadata:
 **觸發信號**：想寫「等 X 完成再做 Y」的本機 while 迴圈；run_in_background 的任務莫名 killed；接力腳本假設自己一定活到終點。
 
 關聯：[[feedback-silent-failure-absent-log]]、[[skill-async-worker-checklist]]
+
+- 驗證+1:2026-08-08 第3場 — 部署被 harness 砍兩次後切 nohup+Monitor 正姿

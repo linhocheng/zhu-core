@@ -21,3 +21,5 @@ originSessionId: 416ce85e-c458-4bb5-811a-b38dc130d139
 - 驗證+1:2026-08-05 第2場 — schema 改 durationSec/transitionIn 後，驗證器/幀計畫/UI/導演協議四處同步
 
 - 驗證+1:2026-08-06 第1場 — 改 CaseStatus 後型別檢查抓出所有讀寫端，逐一跟上
+
+- 驗證+1:2026-08-08 第3場 — CaseStatus/RoleDoc 改版用 tsc 探照燈掃全讀寫端

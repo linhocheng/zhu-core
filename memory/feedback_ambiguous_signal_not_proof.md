@@ -66,3 +66,5 @@ metadata:
 - 驗證+1:2026-08-08 第1場 — 五連擋：MockEmitter 仿真實契約揪出沉睡 flush bug；同文重嵌 cosine=1.0000 驗遷移軌＝生產軌；[cache] 逐 turn 觀測取代「應該有命中」；空跑 0 bytes 判為零資訊不計分；收攤計費面複核
 
 - 驗證+1:2026-08-08 第2場 — 每個修法前寫死鑑別信號（ingestState done/analysisState done vs 500/failed）
+
+- 驗證+1:2026-08-08 第3場 — 部署驗 SHA 不驗 200；「監看被砍」與「build 失敗」分開查（兩次雲端其實是成功的）

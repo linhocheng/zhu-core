@@ -29,3 +29,5 @@ originSessionId: 0f6f6064-d9af-449e-b35e-4001b3d23932
 - 驗證+1:2026-08-07 第1場 — parser bug 修在解析咽喉，不逐個改 59 個檔的 frontmatter
 
 - 驗證+1:2026-08-08 第2場 — 9 處中文 redirect 用 redirectErr 一個 helper 收斂
+
+- 驗證+1:2026-08-08 第3場 — 版式讓位釘在 sheetPrompt 唯一咽喉
