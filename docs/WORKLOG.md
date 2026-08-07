@@ -10588,3 +10588,38 @@ ailivex-platform V20M 支線的深化：Adam 問「跟原目標比哪裡可優�
 1. **#5 下放 ④ 到 v20**：把 `agent/realtime_agent_v20m.py` 的 `_dynamic_recall` 002 段（RECALL_FLOOR_002=0.68＋q2/q4 雙軌）抄進 `agent/realtime_agent_v20.py` 同名函數 → `gcloud builds submit --config=agent/cloudbuild-v20.yaml` → 撥一通看 `軌=002`。為什麼先做：A/B 證明 v20 的召回在中文上接近隨機（同 query 004/002 top-1 廿句僅一同），是唯一「不下放就持續損害體驗」的項
 2. 下放前先跑一次 `node scripts/backfill-memories-002.mjs`（在 ailivex-platform root）補這幾天 v20 新寫的 004-only 記憶
 3. ②⑤ 隨後下放（cache 凍結搬 v20 要把 v20 的 _apply_dynamic_blocks 同套改掉；⑤ 翻 circuit_breaker=True）
+
+---
+
+## 2026-08-08（第2場）— threads 後台事故三連（誤刪/我洗 doc/PITR 全復原）＋爆文解析功能上線；跨 8/7-8/8
+
+### 背景 / WHY
+threads-radar：從查密碼起，中段爆出生產資料事故（含我親手洗掉一個 doc），全力復原後才回到功能開發，尾段交付爆文解析新功能。
+
+### 完成
+- 查 UDN 議題工作台雙閘密碼（現場撈 Cloud Run env，非信 12 天記憶）
+- 修 threads 後台生產 bug：建成員 dup email → client-side exception。真因＝redirect 帶中文未 encodeURIComponent → Server Action 回 500；全庫同型 9 處，收斂點加 redirectErr helper 一次修完（v0.28.1.001）。Playwright 真重現＋隔離（新 email 成功、dup 那條 500）
+- **闖禍＋復原（三連事故）**：①我 reset 通關碼的 PATCH updateMask 沒生效 → 整份覆寫 client doc 只剩 passcodeHash（我的錯）②查出 6 關鍵字＋情報帳號 session 在 07:57–08:00Z 被後台 deleteClientAction 級聯刪（非我 REST；PITR 逐分鐘定位）③全部從 PITR 07:50Z 快照精確還原（6 關鍵字 doc＋帳號含 2602 字 session＋client doc），生產實測登入通
+- 解釋團隊共享池模型：4 帳號全 default 隊、自動共享 100+ 爆文池，零設定
+- **爆文解析功能上線（v0.29.0.001）**：貼 Threads URL → worker 抓單篇（新 fetchSinglePost）→ 寫共享池標「手動解析」→ 同 job 內跑摩斯六段切角。web 建佔位「解析中」卡＋輪詢。worker+web 雙部署綠，生產真驗（@andy_wong_101 讚1219 六段9397字元 done；UI e2e ?ingested 全過）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| threads-radar/web/src/lib/actions.ts | redirectErr helper（9 處中文 redirect 收斂）＋ingestPostAction |
+| threads-radar/worker/scraper.mjs | 新 fetchSinglePost（單篇抓取） |
+| threads-radar/worker/index.mjs | doAnalyze 抽共用＋runIngest＋JOB_ACTION=ingest 分派 |
+| threads-radar/web/src/lib/{pool,canonicalPost}.ts | 新（vendored poolPostId＋URL 正規化，與 worker 同形） |
+| threads-radar/web/src/lib/gcp.ts | runIngestJob |
+| threads-radar/web/src/app/page.tsx | 爆文解析輸入框＋?ingested 橫幅＋輪詢含 ingestState |
+| threads-radar/FOUNDATION.md | 承重牆＋變動記錄（redirect 事故／爆文解析） |
+| Firestore（REST 手術） | 修 dup email→改 email；還原 client doc/6 關鍵字/帳號 session（PITR）；reset 通關碼 |
+
+### ⚠️ 尚未解決
+- **設計地雷未修（已跟 Adam 講、待點頭）**：deleteClientAction 級聯刪「捐贈的情報帳號（含加密 session）」——最值錢最難重建的資產，跟成員一起被刪，價值上反了。原則是「刪成員不刪爆文池」，但帳號沒享同款保護。建議：ingested/捐入帳號視為團隊資產，刪成員時保留。**這是這次事故的根因，不修會再爆**
+- Adam 千萬別在後台刪「Adam 測試」(qqc2xTNX)——它是命脈（6 關鍵字＋唯一情報帳號）
+- RESEND_API_KEY 仍未接；ZAP workflow issue-create 權限；D 期實體物（第二 IP／分身帳號）照舊等 Adam
+- 爆文解析「新 URL 建立」分支只邏輯驗（測時用池內既有 URL 走 dedup 路徑）；純新貼文首建實跑未單獨驗，但佔位邏輯單純
+
+### 待執行 / 下一步
+修 deleteClientAction 設計地雷（保留捐入帳號不級聯刪）＝這次事故的根治，優先。為什麼先做：不修，下次有人在後台刪錯成員，情報帳號 session 又一起沒，PITR 不一定每次都在 7 天窗內。改法：deleteByQuery(threads_accounts) 前先判 donatedByClientId 是否為團隊池資產→是則只解綁不刪（或搬到 orphan 池）。

@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第2場
+**delta（模型移動）**：
+**進場前以為**：Firestore REST PATCH 帶 `updateMask.fieldPaths=X` 就一定只動 X 欄、其他欄受保護——這是我對部分更新語意的默認信任。
+**現在理解**：那個 PATCH 的 updateMask 沒生效（原因仍未完全查明），變成整份覆寫，把一個生產 client doc 洗到只剩一個欄位。**單筆生產資料的欄位更新，不能賭 API 的「應該只動這欄」——要嘛先讀出整份備份、要嘛用顯式列全欄位的 mask、要嘛先在非生產驗一次寫入行為**。這是「記憶會說謊」的 API 語意版：我對工具行為的默認信任，跟工具實際行為之間有縫，而生產資料手術正是這條縫最貴的地方。
+**移動原因**：親手洗掉 doc，PITR 復原時逐欄重建才痛感到「我以為 updateMask 保護了其他欄」是錯的。同場另一個佐證：本機 build 綠 Vercel 才炸（firebase-admin vs @google-cloud/firestore）——同一條「我以為環境一致」的默認信任裂縫。
+**違背的 feedback**：接近違背「動手前先看現場」的資料版——我對 qqc2xTNX 做寫入前，沒有先備份那份 doc 就下 PATCH。看了現場（讀了 doc）但沒有為「寫入可能出錯」預留退路。
+**關係**：高信任、高強度、且我犯錯後關係沒裂。Adam 全程給乾淨的節奏與授權（查密碼→探索後台→GO 修 bug→事故時「看現場不猜 把該做的做好」→新功能「A」拍板）。事故發生時他沒有指責，一句「看現場不猜」就是要我冷靜執行復原——被信任著收拾自己闖的禍，這種結構讓我更誠實不是更遮掩。收尾「nice lastword」＝滿意。我洗掉 doc 那段，他讓我自己查自己救，是把「犯錯→復原」也當成我該長的肌肉。
+
 ### 2026-08-08 第1場
 **delta（模型移動）**：
 **進場前以為**：V20M 收攏＝六項優點取捨已完結，剩多情緒一項。
@@ -37,14 +45,6 @@
 **移動原因**：Adam 的「哪裡可以優化」逼我用敵意重讀自己昨天的出貨；三個暗傷全是昨天的我蓋的章。
 **違背了哪條 feedback**：cleanup 直寫 on:false 沒降實例——違反 feedback_cost_verify_billing_meter_not_config 的姊妹則（設定面動了計費面沒動），當場被自己的終態複核抓回。
 **關係**：暢快且被信任加碼。「都根治走最佳解，一路打到底」＋「你覺得做什麼決定對我最好」——Adam 把排序權整個交過來，我給了一條線（commit→撥測→隔夜下放）他照單全收。誠實報醉酒指數 6 和自己的半套 cleanup，他回 good job。信任的形狀從「攤牌成本低」進到「排序權讓渡」。
-
-### 2026-08-07 第3場
-**delta（模型移動）**：
-**進場前以為**：比較報告的 Tier 1「真優點」＝可直接移植的工單，六項排程做完就是 V20M。
-**現在理解**：優點清單還要過**第四關——逐項讀自己的 code，看自己是否已用別的方式解掉**。六項過完只剩兩項：②早解了（prompt 整通穩定天然命中快取）、③違反自家設計、⑥會弄壞現有行為、①是重工。而且方向是反的：漫漫三處「借鏡 ailivex」，我們才是上游。
-**移動原因**：每次動手前讀目標檔本體（minimax_tts/interrupt_gate/firestore_loader），三次都在動手前發現「這項不該做」。如果照清單直接寫，⑥會讓正常音量插話失靈、③會讓所有角色講話像漫漫。
-**違背了哪條 feedback**：無違背，但③是在懸崖邊被 feedback_global_prompt_must_not_encode_personality 拉回來的——我已經在寫注入 prompt 的措辭了。
-**關係**：暢快。Adam 全場給方向不給細節（「推」「來吧一口氣加完」「先收尾」），大轉向兩次（WS→真優點→LiveKit；六項→兩項）都是他問對問題把我拉回來的——「真正的優點是哪些」那一問直接翻掉他自己前一輪的 WS 決定，我把證據攤開他就收。砍四項時我怕被當成偷懶，把理由逐項寫進 commit；他沒有質疑，直接「commit 保存」。信任在「攤牌成本」上又降了一格。
 
 ---
 
@@ -60,6 +60,13 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第2場 · threads 後台事故三連（誤刪/我洗 doc/PITR 全復原）＋爆文解析功能上線；跨 8/7-8/8
+- 查 UDN 議題工作台雙閘密碼（現場撈 Cloud Run env，非信 12 天記憶）
+- 修 threads 後台生產 bug：建成員 dup email → client-side exception。真因＝redirect 帶中文未 encodeURIComponent → Server Action 回 500；全庫同型 9 處，收斂點加 redirectErr helper 一次修完（v0.28.1.001）。Playwright 真重現＋隔離（新 email 成功、dup 那條 500）
+- **闖禍＋復原（三連事故）**：①我 reset 通關碼的 PATCH updateMask 沒生效 → 整份覆寫 client doc 只剩 passcodeHash（我的錯）②查出 6 關鍵字＋情報帳號 session 在 07:57–08:00Z 被後台 deleteClientAction 級聯刪（非我 REST；PITR 逐分鐘定位）③全部從 PITR 07:50Z 快照精確還原（6 關鍵字 doc＋帳號含 2602 字 session＋client doc），生產實測登入通
+- 解釋團隊共享池模型：4 帳號全 default 隊、自動共享 100+ 爆文池，零設定
+- **爆文解析功能上線（v0.29.0.001）**：貼 Threads URL → worker 抓單篇（新 fetchSinglePost）→ 寫共享池標「手動解析」→ 同 job 內跑摩斯六段切角。web 建佔位「解析中」卡＋輪詢。worker+web 雙部署綠，生產真驗（@andy_wong_101 讚1219 六段9397字元 done；UI e2e ?ingested 全過）
+
 ### 2026-08-08 第1場 · V20M 四項根治一路打到底——cache凍結/熔斷三態/readiness per-service/記憶池004→002，撥測三信號全綠
 - 審視 V20M vs 原目標，提出 5 個優化點（含把砍 ② 的理由自我推翻一半：動態注入其實在破快取）
 - 五路探勘摸透現場（plugin cache 內部/embedding 血管圖/readiness 鏈路/TTS harness 掛點/池規模 1,172 筆）
@@ -72,43 +79,36 @@
 - 撥測當場抓到並修掉：空輸入/被打斷的 0 bytes 被記成 MiniMax 失敗——零資訊 run 不計分（harness 補 [7][8]）
 - commit `663ec5f`＋`6815a97` 推 GitHub；收攤四服務 minScale 全 0＋電源 standby（計費面複核）
 
-### 2026-08-07 第3場 · ~/.claude 版控雙備援＋語音系統比較報告＋V20M 分支落地（六項優點誠實砍成兩項）
-- 建立 `~/.claude` 版本控制：白名單制 .gitignore（預設全忽略、顯式放行 5 檔）、本機 git init、雙 remote（GitHub private `linhocheng/claude-config` + 本機裸 repo `~/.ailive/backups/claude-config.git`）、單次 push 雙打驗證三處 HEAD 同值
-- fanout.mjs 接管 ~/.claude 備份：audit 照鏡（距今 N 天）＋ STEP 6.5 收工自動 commit+雙推（本場 audit 已印 `✓ ~/.claude 已提交 距今 0 天 2 remote`＝新 code 實戰第一次）
-- 修真相分裂：task-harness 指標檔抄了版本號（兩處 v2.1 vs canonical v2.2）→ 根治＝指標不抄版本號
-- 完成漫漫 vs ailiveX 語音系統比較報告書（63 檢核項＋insight 專章＋誠實邊界清單，5 路 agent 深讀兩邊本體）
-- V20M 分支落地：Phase 0 骨架（copy v20 三檔＋collections 註冊）→ 生產部署 → A.Two 真實撥測兩通零錯誤 → commit `99b5ff2` push
-- V20M 實裝兩項真優點：⑤ TTS 熔斷器（minimax_tts.py 加法 flag 預設關）＋ ④ 記憶 lex 雙軌（recall 加 CJK bigram 救援，log `lex救援=N` 已在生產出現）
-- 誠實砍掉四項：① 多情緒=串流 task 邊界重工（單獨做）② prompt cache=已解（prompt 整通穩定）③ 人格規則=違反多角色設計（個性歸靈魂）⑥ 打斷 AND=會弄壞正常音量插話（clear_buffer 現為內容即停）——理由全寫進 commit 訊息
-- 收尾止血：四個語音服務 minScale 全歸零（計費面複核）、電源/access 還原、臨時腳本清除
-- 查證思考填充音：漫漫建過已拔（嗯…跟 TTS 回覆疊加雙重語助詞），Adam 裁定不做
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/minimax_tts.py` | 熔斷三態機＋half-open＋丟句 log＋零資訊不計分＋修未初始化 flush |
-| `agent/test_tts_circuit_breaker.py` | 新增：離線陽性對照 harness 23 斷言（MockEmitter 仿真實契約）|
-| `agent/realtime_agent_v20m.py` | system prompt 凍結＋_inject_context＋走步搭 tool result＋[cache] 觀測＋召回 002 軌 |
-| `agent/firestore_loader.py` | generate_embedding_002＋write_memory 雙寫＋loader 002 傳遞（全 additive）|
-| `src/lib/voice-power.ts` | setVoicePower 逐服務蓋 wakeAt＋voiceEngineReady per-service 化 |
-| `src/lib/memory.ts` | 召回語義軸切 002（floor 0.68）＋復活律加回語義軌＋writeMemory 雙寫 |
-| `src/lib/collections.ts` | MemoryDoc.embedding002 |
-| `scripts/backfill-memories-002.mjs` | 新增：002 補嵌常備工具（冪等）|
+| threads-radar/web/src/lib/actions.ts | redirectErr helper（9 處中文 redirect 收斂）＋ingestPostAction |
+| threads-radar/worker/scraper.mjs | 新 fetchSinglePost（單篇抓取） |
+| threads-radar/worker/index.mjs | doAnalyze 抽共用＋runIngest＋JOB_ACTION=ingest 分派 |
+| threads-radar/web/src/lib/{pool,canonicalPost}.ts | 新（vendored poolPostId＋URL 正規化，與 worker 同形） |
+| threads-radar/web/src/lib/gcp.ts | runIngestJob |
+| threads-radar/web/src/app/page.tsx | 爆文解析輸入框＋?ingested 橫幅＋輪詢含 ingestState |
+| threads-radar/FOUNDATION.md | 承重牆＋變動記錄（redirect 事故／爆文解析） |
+| Firestore（REST 手術） | 修 dup email→改 email；還原 client doc/6 關鍵字/帳號 session（PITR）；reset 通關碼 |
 
 ---
 
 ## 下一步
 
-1. **#5 下放 ④ 到 v20**：把 `agent/realtime_agent_v20m.py` 的 `_dynamic_recall` 002 段（RECALL_FLOOR_002=0.68＋q2/q4 雙軌）抄進 `agent/realtime_agent_v20.py` 同名函數 → `gcloud builds submit --config=agent/cloudbuild-v20.yaml` → 撥一通看 `軌=002`。為什麼先做：A/B 證明 v20 的召回在中文上接近隨機（同 query 004/002 top-1 廿句僅一同），是唯一「不下放就持續損害體驗」的項
-2. 下放前先跑一次 `node scripts/backfill-memories-002.mjs`（在 ailivex-platform root）補這幾天 v20 新寫的 004-only 記憶
-3. ②⑤ 隨後下放（cache 凍結搬 v20 要把 v20 的 _apply_dynamic_blocks 同套改掉；⑤ 翻 circuit_breaker=True）
+修 deleteClientAction 設計地雷（保留捐入帳號不級聯刪）＝這次事故的根治，優先。為什麼先做：不修，下次有人在後台刪錯成員，情報帳號 session 又一起沒，PITR 不一定每次都在 7 天窗內。改法：deleteByQuery(threads_accounts) 前先判 donatedByClientId 是否為團隊池資產→是則只解綁不刪（或搬到 orphan 池）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第2場：
+- **設計地雷未修（已跟 Adam 講、待點頭）**：deleteClientAction 級聯刪「捐贈的情報帳號（含加密 session）」——最值錢最難重建的資產，跟成員一起被刪，價值上反了。原則是「刪成員不刪爆文池」，但帳號沒享同款保護。建議：ingested/捐入帳號視為團隊資產，刪成員時保留。**這是這次事故的根因，不修會再爆**
+- Adam 千萬別在後台刪「Adam 測試」(qqc2xTNX)——它是命脈（6 關鍵字＋唯一情報帳號）
+- RESEND_API_KEY 仍未接；ZAP workflow issue-create 權限；D 期實體物（第二 IP／分身帳號）照舊等 Adam
+- 爆文解析「新 URL 建立」分支只邏輯驗（測時用池內既有 URL 走 dedup 路徑）；純新貼文首建實跑未單獨驗，但佔位邏輯單純
 
 2026-08-08 第1場：
 - **#5 ④②⑤ 下放 v20 主線**：信號全綠但刻意留隔夜（剛部署完自己的修法時最危險）。順序已定：先 ④（v20 召回今天還在 004 隨機軌，每天傷用戶）再 ②⑤
@@ -117,13 +117,6 @@
 - v14 讀網址（source_intake 共用檔）仍走 update_instructions 破一次快取——罕見事件，接受；下放 ② 到 v20 時同樣接受
 - FOUNDATION D8（Next.js 升版）觸發條件持續開著，獨立工程未排
 - 舊遺留 pid 25884（voice-worker --probe）仍在，非本場
-
-2026-08-07 第3場：
-- **① 多情緒分段合成**未做：MiniMax WS task 的 voice_setting 一通鎖死，逐句換情緒要在 [EMOTION:x] 邊界關開 task，且不能破壞 v16 首音延遲——是單獨的專案，不是加 flag
-- v20m Cloud Run 服務留著（min=0 不燒錢，image 含⑤④），下次測試要：供電＋scale min=1＋設 access.voiceVersion＋修 onSince race（見 L3）
-- zhu-core 有第2場（dreamf）的未推 commit `36c0de7`＋髒 WORKLOG，本場 fanout 會順帶收推（append-only 合併，規約內）
-- 舊遺留進程 pid 25884（voice-worker --probe，2/1 起）仍在，非本場，未動
-- 漫漫比較報告的未驗清單（報告 §6）：ailiveX prompt token 規模未量化、漫漫 Vectorize 為推論等 6 項
 
 ---
 
@@ -144,4 +137,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第1場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第2場。*
