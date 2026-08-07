@@ -74,3 +74,5 @@ originSessionId: 4c5b2244-1fab-4b29-90b8-063c0b8e64a6
 - 驗證+1:2026-08-06 第1場 — 循環 import 用真 runtime 腳本驗，沒等雲端 cycle
 
 - 驗證+1:2026-08-06 第2場 — 用 migrate 實際走的 generativelanguage 端點驗 key，不靠格式推測
+
+- 驗證+1:2026-08-07 第1場 — parser 改完先離線跑真 module 對真檔案，含平鋪 schema 的回歸對照，才敢重嵌

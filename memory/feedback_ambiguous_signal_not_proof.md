@@ -58,3 +58,5 @@ metadata:
 - 驗證+1:2026-08-06 第1場 — 全刪收案用「三個數字歸零＋gsutil 獨立複核」，不是「應該清乾淨了」；e2e 用「Firestore 真的有卡＋有署名」不是「bridge 有回應」
 
 - 驗證+1:2026-08-06 第2場 — 這場的主角。我違背它三次（17 行 log 當跑完、pgrep 抖動當進程結束、command-not-found 當掃描乾淨），三次都自己抓回來
+
+- 驗證+1:2026-08-07 第1場 — 全場主角。兩次差點誤判都被它擋下：grep 檔名回 0（log 根本不印檔名）、migrate mtime cache 會讓 parser 修法全 skip 卻回 fail=0

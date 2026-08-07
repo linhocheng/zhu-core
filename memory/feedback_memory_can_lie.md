@@ -76,3 +76,5 @@ ZHU_LAST_WORDS / project memory / feedback memory 都會說謊 ── 不是內�
 - 驗證+1:2026-08-05 第6場 — 全檢開場即抓到記憶落後現場（F/D 期 vs 實際 H 期）；兩份文件打架去現場核
 
 - 驗證+1:2026-08-06 第2場 — 我堅持「Gemini key 是 AIzaSy 39 字元」，Adam 說「新的就長這樣」；打 API 驗證後是我的知識過期
+
+- 驗證+1:2026-08-07 第1場 — 說「記憶庫沒版控」前先查，發現 zhu-core/memory 早就在 git；CLAUDE.md 才是真的沒有
