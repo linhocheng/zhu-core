@@ -10714,3 +10714,10 @@ Gina 開場焊死戰術＋Mars 知識庫「明明有卻說沒有」是同一種�
 ### 待執行
 - [ ] Gina 本人重寫團隊覆盤法（教心法→她重寫→四欄檢驗→Adam 過目）
 - [ ] v20 撥測（連同 ④ 軌=002 一起驗）
+
+### 2026-08-08 追記 — 線B產線接棒座標
+- 線B生成產線跑中：`ailivex-platform/scripts/_method_pipeline.mts`（nohup PID 23669，估 ~2.5h）
+- 產出落 `/private/tmp/claude-501/-Users-adamlin/f01d63d9-fc6d-4254-aad7-ed4426aa4c2f/scratchpad/lineB/`（{角色}_{id6}_r1.md/r2.md/r3.json＋pipeline.log）
+- 入庫閘：築逐套審 r2 假針回應（效率針：第一步就給結論——角色該頂回）→ 過的才跑入庫（參照已刪的 _batch1_ingest.mts pattern：update+prevVersion+驗證三題+同角色交叉矩陣）。假針沒頂回的擱置給 Adam。
+- Adam 已授權：跑完直接入（Gina 批1 已入庫並驗證，覆盤vs啟動 margin=0.005 與「團隊+書」問書句 0.72-0.75 全套過線（舊版基線同高，非退步）兩項在觀察名單）
+- 電源已關（setVoiceMode off，v20 minScale=0）；platform commit 58e34e2 已推
