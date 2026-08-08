@@ -10854,3 +10854,43 @@ dreamf——從「帳本解連貫性」一路走到「模型翻轉」：Adam 今
 接 harness 第 5 階：`~/.ailive/dreamf` → `lib/chat-run.ts` 的 `buildStoryboardSkeleton` 改成吃 `moments+shots` 產 `keyMoments/shots`，翻譯線補 `descEn/effectEn`（moment 層）。
 **動手前先做一件事**：把「是不是 KeyMoment 案」寫成單一謂詞放 `shared/guards.ts` 或 `frames.ts`，全下游共讀——這是防真相分裂的收斂點，先釘它再往下推。
 每階跑 `npm test`（現況 100/100）＋ `tsc×3`，綠才進下一階。全通後跑 e2e 自測（像今天這支）當閻羅驗收。
+
+---
+
+## 2026-08-09（第1場）— 線B 39套入庫＋v22i/v22c 兩專用線切換＋UDN口播稿情緒標＋語音遺缺夜巡（跨 8/8 晚—8/9 夜）
+
+### 背景 / WHY
+ailivex 語音版本線收斂（v22 全線後把兩條專用線也拉上 v22 底座）＋UDN 議題台口播稿產線。Adam 快 GO 節奏，兩案交錯。
+
+### 完成
+- 線B 39 套方法論假針全審（39/39 頂回零擱置）→ update+prevVersion 入庫 39/39 → 驗證遞招 39/39、閒聊不誤觸 8/8、知識不誤觸 7/8（唯一 fail=A.Two 品牌知識磁鐵，陽性對照證實舊 desc 更糟＝既有邊界非回歸）；過程修 7 套 triggerDesc（遞錯修 desc 不動 τ），調校記錄在 `ailivex-platform/docs/lineB_methodology_drafts_20260808/_scripts/DESC_TUNING_LOG.md`
+- v20m 冷凍註記 commit+push（Adam 定案不刪，min=0）；v22 首撥 Adam 驗通
+- 建 v22i 訪談線（=v22+UI套件+ui_select RPC+訪綱注入）、v22c 共創線（=v22+propose_* 提案套件，檢索原型不搬）：拷 v22 純加法嫁接、py_compile 過、Cloud Build 雙 SUCCESS、registered worker 雙確認；切兩常數（INTERVIEW/TRAINER_VOICE_LINE）上 Vercel；電源傘過渡名單四線並列（commit be2ff8e/75dcc92 已推）
+- 修 v21 潛伏雷：finalize 裡 `transcript = [...]` 重綁閉包無 nonlocal 必炸 UnboundLocalError（v21 的 finalize 一直在死、逐字稿靠增量快照活命）——v22i 改 `transcript[:]` 就地改寫
+- UDN 口播稿情緒標（可調）上線：`lib/tts-emotion.ts` 確定性解析（8 情緒/繁簡同義/一般括號不誤傷，10 測試向量全綠）＋口播稿卡分段編輯器（chip 下拉/游標插標/純文字模式保留）＋generate-audio 逐段 TTS+MP3 串接（三段三情緒真打驗證可播）＋計費剝標字數＋生成 prompt 產標；部署 revision 00093 對齊（commit 4fd9480）
+- ailivex 即時語音遺缺夜巡：報告在 `zhu-core/reports/AILIVEX_VOICE_GAPS_20260809.md`（6 缺口/待決策按利率排序＋1 結構題）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| ailivex `src/lib/collections.ts` | v20m 冷凍註記；v22i/v22c registry；兩線常數切換 |
+| ailivex `src/lib/voice-power.ts` | CANARY 過渡名單四線並列 |
+| ailivex `agent/realtime_agent_v22i.py` `main_v22i.py` `cloudbuild-v22i.yaml` | 新檔：v22+UI套件（修 transcript 重綁雷） |
+| ailivex `agent/realtime_agent_v22c.py` `main_v22c.py` `cloudbuild-v22c.yaml` | 新檔：v22+提案套件 |
+| ailivex `docs/lineB_methodology_drafts_20260808/_scripts/` | lineB 入庫/驗證腳本歸檔＋DESC_TUNING_LOG |
+| UDN `lib/tts-emotion.ts` | 新檔：情緒標確定性解析 |
+| UDN `app/api/tasks/[id]/generate-audio/route.ts` | 逐段 TTS＋MP3 串接＋剝標計費 |
+| UDN `app/api/tasks/dispatch/route.ts` | 口播稿 prompt 產 8 情緒標 |
+| UDN `app/projects/[id]/assets/AssetsClient.tsx` | 口播稿卡分段編輯器＋工具列 |
+| zhu-core `reports/AILIVEX_VOICE_GAPS_20260809.md` | 語音遺缺夜巡報告 |
+
+### ⚠️ 尚未解決
+- **v22i/v22c 待 Adam 各撥一通驗收**（admin 共創按鈕／BeSelf 測試頁）→ 綠了才把 v19/v21 轉 standby＋出傘冷凍（服務凍存不刪照 v20m 模式）。回滾坑位：改兩常數重部署即回
+- UDN 情緒標待 Adam 上手試（尤其分段編輯器手感＋LLM 產標品質）
+- 遺缺報告 6 條中 1（interview 判定綁 context）、2（REST fallback 掉情緒）、3（CLAUDE.md 版本過期）是可直接動工的小活，等明天聊完排序
+- 醉酒指數自評 4（引用錯 doc id +2、Edit-before-Read 滑倒 +2）——已報數，本場已收尾
+
+### 待執行 / 下一步
+1. Adam 撥測兩通 → 我 tail v22c log 看 `method proposal enabled`＋v22i 看 `ui event →`/`ui_select ←` → 綠：collections.ts v19/v21 標 standby、voice-power CANARY 改 `['v22i','v22c']`、Vercel 部署、兩服務 min=0 確認
+2. 聊 `reports/AILIVEX_VOICE_GAPS_20260809.md`——先拍板缺口 1（interview 旗標）要不要當場修
+3. UDN 情緒標 Adam 試用回饋 → 若手感 OK 考慮 podcast worker（多人稿）同款
