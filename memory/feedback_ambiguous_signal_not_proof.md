@@ -76,3 +76,5 @@ metadata:
 - 驗證+1:2026-08-08 第6場 — 陽性對照抓真崩潰 bug（A.Two 測不到、Gina 標了才觸發）；backfill/驗收都先餵已知樣本才信 0
 
 - 驗證+1:2026-08-08 第7場 — 部署驗 image digest 對回 tag 不驗 /login 200；「母片過了」不當「帳本有效」，等到親眼看圖才宣告
+
+- 驗證+1:2026-08-09 第1場 — 三次陽性對照：A.Two 知識磁鐵拿舊 desc 對照證明非回歸；textPayload 撈不到 registered worker 時拿健康的 v22 log 對照抓出 jsonPayload 盲區；lineB 驗證先餵已知命中句

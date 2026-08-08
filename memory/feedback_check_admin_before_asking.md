@@ -30,3 +30,5 @@ originSessionId: 91f0333f-eb14-44ac-9c73-2121ed2df590
 - 驗證+1:2026-08-05 第5場 — 「A.two」名字進來直接跑 characters 查詢腳本認人，沒 grep 沒問 Adam（上場違規、本場照升級後 SOP 走對）
 
 - 驗證+1:2026-08-08 第4場 — Gina 查詢照 SOP（scripts/_ 前綴、env raw 解析、查不猜、用完即刪）；4 套裡不猜「帶領團隊」是哪套，給菜單請 Adam 確認（Mars 案 no-guess）
+
+- 驗證+1:2026-08-09 第1場 — Gina prevVersion 慣例直接查 Firestore 對齊，不猜不問

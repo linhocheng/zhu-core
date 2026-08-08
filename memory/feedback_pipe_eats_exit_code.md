@@ -30,3 +30,5 @@ metadata:
 - 驗證+1:2026-08-08 第3場 — deploy | tail 吃掉 worker build 失敗，當場重踩當場改
 
 - 驗證+1:2026-08-08 第5場 — `npx tsc --noEmit | tail` 後的 `$?` 是 tail 的 exit code，重跑導向檔案才拿到真 0
+
+- 驗證+1:2026-08-09 第1場 — `| tail; echo EXIT=$?` 讀到 tail 的 0，當場識破改用 pipestatus

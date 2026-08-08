@@ -36,3 +36,5 @@ metadata:
 - 驗證+1:2026-08-08 第6場 — 手動改 minScale 同時改傘註解保持真相同步
 
 - 驗證+1:2026-08-08 第7場 — 手動補 worker bridge env 後同日改 cloudbuild.yaml
+
+- 驗證+1:2026-08-09 第1場 — 確認 v22i/c cloudbuild 特意不寫 min，傘管不衝突

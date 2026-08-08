@@ -21,3 +21,5 @@ metadata:
 **觸發信號**：任何 LLM pipeline 在會話中 update instructions / rebuild system prompt；TTFT 隨對話變長而變慢；cache_read 忽高忽低。
 
 **家族**：[[deterministic-work-belongs-in-code]]（觀測是程式不是感覺）、ailivex commit `663ec5f`（完整實作）。
+
+- 驗證+1:2026-08-09 第1場 — v22i 訪綱走開場定稿進 base prompt，不破②前綴快取
