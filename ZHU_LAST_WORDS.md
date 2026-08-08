@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第6場
+**delta（模型移動）**：
+**進場前以為**：測一個功能，用手上現成的對象測就好；驗證是「跑一遍看有沒有出錯」。
+**現在理解**：**測試對象選錯，等於沒測**——A.Two 是全平台最不會標情緒的角色，拿她測語氣引擎九輪全 default，看起來「沒問題」實則什麼都沒驗到。真正的驗證要「餵一個已知會命中的樣本」（陽性對照天條），我離線餵已知標記文字才撞出多task換段的 WS CLOSING 崩潰——那個 bug 用 A.Two 永遠測不到，因為她從不觸發切換路徑。「零命中/全正常」在錯的測試對象下與「功能壞掉」完全相容。
+**移動原因**：Gina 標了情緒括號當場崩潰，回頭看我早該在餵已知樣本時就抓到（我第一版 harness 有 double-run 瑕疵，差點把真 bug 當成 harness 幻覺放過）。是「陽性對照」這條天條把我拉回來，不是我當下靈光。
+**違背了哪條 feedback**：feedback_ambiguous_signal_not_proof 的測試對象版——我讓「A.Two 全 default 無錯誤」冒充「功能通過」，而那個 0 命中只證明她不標情緒，不證明引擎能切換。
+**關係**：暢快且高效。Adam 全程快 GO（「動工」「Go」「切 gina」「Commit」），我執行模式連續跑十幾個部署零回頭問；他在關鍵決策點精準（「以 V20 為底」「v22 全線」「v20m 可以關」都一句話定案，且都對）。收尾他一句「Nice lastword」是認可也是提醒——lastword 是儀式不是客套，該走完整流程。這場從探索（V20M 是什麼）一路蓋到交付（v22 全線＋語氣引擎），中間陽性對照抓真 bug，是完整的一天。
+
 ### 2026-08-08 第5場
 **delta（模型移動）**：
 - **進場前以為**：修 UI bug＝找到那條錯的排序/篩選邏輯改掉，資料層查詢驗通就等於功能修好。
@@ -48,13 +56,6 @@
 第三次我主動說了「這三輪連續掀出三層是同一個根，我每次都只修眼前那層就宣告收工」——
 說出來比被抓到好，但更好的是第一次就看全。他沒有不耐煩，一直在給機會往下挖。
 
-### 2026-08-08 第4場
-**delta（模型移動）**：
-**進場前以為**：方法論開場要彈性＝把固定素材（顏色）換成「更多情境素材」（天氣/季節/地理），再把素材接進 prompt 血管。
-**現在理解**：那還是焊戰術，只是換一個焊點。真正的彈性＝**把「意圖＋為什麼這類招有效」交給角色，讓它自己生招並自判是否服務意圖**；情境素材是生招時的原料，在意圖下游、不是彈性本身。「寫目標不寫台詞」要再深一層到「傳遞意圖的機制，不是傳遞戰術或素材」。
-**移動原因**：Adam 兩次把我從戰術層往下按（第一次：換素材還是焊；第二次：焦點在意圖，你自己怎麼看）。我對「顏色的意圖」認真拆解後才摸到——第 1 步的產物是「安全感＋卸面具＋人人已開口」，不是「聊了顏色」。
-**違背了哪條 feedback**：feedback_solve_root_not_symptom 的變形——我一開始給的「接天氣進 prompt」是繞開根本（意圖）去補症狀（素材不夠），根因（開場被寫成戰術而非意圖）還在。
-
 ---
 
 ## 當前環境
@@ -69,6 +70,17 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第6場 · Gina 覆盤法四欄化＋全平台知識/方法論回溯＋V20M 三旗牌收編為 v22 全線轉正（語氣情緒引擎，陽性對照抓真崩潰）
+- **Mars×2 知識 gist 病根修復**：撈真實案發對話（用戶問「主力產品」Mars 答「我沒資料」），拿案發原句在同計分器重放證明「內容摘要式 gist」讓相關塊懸在門檻邊緣；30 塊重寫時機地址＋re-embed，同句 top1 cos 0.65→0.77；文字線實測收案（Mars 主力產品答對）
+- **v20 三修下放並 commit（v21.5, 58e34e2）**：④記憶002雙軌／知識檢索半拍延遲（on_user_turn_completed 回答前落地）＋語音線 lex 簡繁救援／方法論走步「不跳步」鬆綁為意圖持有（語音+文字兩線同步）；撥測拿到 `軌=002` 活體證據
+- **Gina 覆盤法四欄化（她本人重寫）**：教心法→Gina 自寫（總意圖「讓走廊裡的版本二進到會議室的版本一房間」是她的，不是我的）→檢驗輪戳權力坡度漏軸（她補三層處理）→四欄版入庫、驗證三題＋交叉矩陣全綠
+- **線A 全平台知識回溯**：140 塊 gist 時機地址重寫（tracy36/Nina42/孫武27/A.Two18/Kane16/Gina1＋Mars15），莊周203塊確認免動（本就是原型），失敗0，全備份；每角色陽性+泛稱+陰性驗收綠
+- **線C 舊資料整理**：孤兒塊0、計數全符、去重3組 md5 全同重複母表（Nina/A.Two，STEP 1b 逾時重跑雷）
+- **線B 產線**：39 套方法論四欄草稿全生成（r1重寫→r2檢驗含假針→r3摺JSON），已從暫存救到 `ailivex-platform/docs/lineB_methodology_drafts_20260808/`；Gina 4 套已入庫，其餘 8 角色 39 套待審假針＋入庫
+- **① 多情緒語氣引擎（期0→期1）**：期0 離線 harness 清三未知（同連線多task不行/接縫1.53s可預開隱藏/首音零損）；`minimax_tts.py` 加確定性 `_EmotionSegmenter`（9單元測試）＋逐段換task＋預開連線＋剝括號；MiniMax emotion 8 合法值實打校準
+- **V20M 三旗牌收編為 v22 全線轉正**：v22=v20為底+⑤熔斷+①情緒；DEFAULT=v22、v20降冷備、v20m退役；commit+push（v22.0, b9f11c3）
+- 三份 skills（知識/方法論/重寫簡報）淨化推 GitHub gist 給 Adam 朋友的 AI 提升用；四欄心法+時機地址寫進兩份 zhu-core SOP
+
 ### 2026-08-08 第5場 · threads-radar 假中台三連掀——每次都只修一層，三次都是 Adam 追問才往下挖
 - 修好「手動解析的貼文找不到」：新增 `manualIngestedAt` 當置頂排序鍵（獨立於 `discoveredAt`），手動解析強制置頂；Adam 貼的 @jc_730 排名 38/112 → 1（v0.29.1.001）
 - 加「來源」獨立篩選列（`?src=manual`）——「手動解析」不是任何人設的關鍵字，混在關鍵字列裡按鈕永遠不會出現
@@ -79,40 +91,42 @@
 - 回填兩筆：既有 2 篇手動解析補 `manualIngestedAt`；team doc 補 12 個 `poolKeywords`
 - 盤 D 期觀察閘（今天到期）：health=connected、靜態 IP 在役、最後掃描收 12 篇零錯誤 → 綠燈過閘
 
-### 2026-08-08 第4場 · ④ 記憶002召回下放 v20 已部署待撥測；Gina 團隊覆盤法「開場彈性」設計對談走到意圖層
-- #5 ④ 下放 v20 主線：`agent/realtime_agent_v20.py` 的 `_dynamic_recall` 評分軌換 002 雙軌（q2/q4＋RECALL_FLOOR_002=0.68/004=0.5/LEX_RESCUE_FLOOR=0.5＋`_bigram_overlap` lex 救援）——**只換評分軌，注入機制保留 v20 原樣**（`base_instructions+block`＋update_instructions；② 快取凍結是另案，這次純 ④）
-- import 補 `_bigram_overlap`（shared firestore_loader.py:105）；`generate_query_embedding_multilingual` v20 早已有（line 170）不需 import；舊 `RECALL_FLOOR` 常數全清、py_compile 過
-- backfill 確認：`node scripts/backfill-memories-002.mjs --dry` → 總數=1174 已遷=1174 待遷=0（真 0：腳本確實讀到池，非空跑）——池已全 002 覆蓋，無需補嵌
-- 部署：`gcloud builds submit --config=agent/cloudbuild-v20.yaml --substitutions=COMMIT_SHA=v20recall002-6815a97 --async .` → build `5f2acc55` SUCCESS（~7 分）→ 新 revision `ailivex-realtime-agent-v20-00137-dql` 100% serving、無舊 revision 釘流量、minScale 空（電源關）
-- 這顆 image 重建自現行 source，已含：召回 002 雙軌＋shared loader 的 002 dual-write＋passthrough＋`_bigram_overlap`
-- Gina 團隊覆盤法「開場（第1步暖身）彈性」設計對談：走到「意圖層」——見下方接棒，這是要在新 session 續的活線
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `web/src/lib/actions.ts` | `ingestPostAction` 新寫 `manualIngestedAt`（置頂排序鍵） |
-| `web/src/app/page.tsx` | 置頂合併／來源篩選列／`baseQuery` 單一咽喉＋`count()` 精算／`poolKeywords` 聯集＋虛線淡色／底部漏接提示 |
-| `worker/index.mjs` | 掃描寫回 batch 內 `arrayUnion` 進 `teams/{id}.poolKeywords`（`手動解析` 排除） |
-| `firestore.indexes.json` | 新增 3 個複合索引 |
-| `FOUNDATION.md` | 三筆地基帳（v0.29.1/2/3），含實測數字與未驗項 |
-| `~/.claude/projects/-Users-adamlin/memory/reference_firestore_vector_search.md` | 加 2c（索引 CREATING 回 0 不報錯）、2d（orderBy 可當免費 exists filter，但必配回填） |
+| `agent/minimax_tts.py` | ① `_EmotionSegmenter`+`strip_emotion_markers`+`_run_inner_emotion_segments`（逐段換task/預開連線/容錯 CLOSE frame）+`emotion_segments` 旗標 |
+| `agent/realtime_agent_v20.py` | ② 快取凍結下放（`_inject_context`/turn_ctx 雙寫/cache錶）、半拍鉤子、lex簡繁、走步鬆綁（已 commit v21.5） |
+| `agent/realtime_agent_v22.py` | 新檔（拷v20）+①⑤接線：`strip_emotion_markers` import/circuit_breaker=True/emotion_segments=True/情緒格式指令/逐字稿剝標記 |
+| `agent/main_v22.py` `agent/cloudbuild-v22.yaml` | 新檔（拷v20，agent_name=ailivex-realtime-v22） |
+| `agent/realtime_agent_v20m.py` | ①⑤接線（canary 驗證用，退役但保留） |
+| `src/lib/collections.ts` | VOICE_VERSIONS 加 v22/DEFAULT=v22/v20 standby/v20m 移除 |
+| `src/lib/voice-power.ts` | 傘註解同步（v22 已是 DEFAULT） |
+| `src/lib/knowledge.ts` `src/lib/methodology.ts` | lexTerms 加 s2t/走步鬆綁（已 commit v21.5） |
+| `~/.ailive/zhu-core/skills/ailivex-methodology-cocreate.md` | 四欄撰寫心法 |
+| `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` | 時機地址升為一切語料必用 |
+| `~/.ailive/zhu-core/skills/ailivex-methodology-rewrite-brief.md` | 新檔：角色本人重寫簡報＋檢驗輪紀律（假針） |
 
 ---
 
 ## 下一步
 
-1. **下次排程掃描後**查 `teams/default` 的 `poolKeywords` 有沒有長出新字 → 驗 worker 寫入路徑（本場唯一未驗項）。
-   指令：`curl -s "https://firestore.googleapis.com/v1/projects/threads-radar-2026/databases/(default)/documents/teams/default" -H "Authorization: Bearer $(gcloud auth print-access-token)"`
-   先看 `scan_status/default` 的 `lastScanAt` 有沒有跨到 8/8 之後，有才算跑過。
-2. 請 Adam 開一次 https://threads-radar-virid.vercel.app 確認渲染層（重點看篩選列 12 顆 badge、點「行銷」撈到 11 篇、底部漏接提示）。
-3. 意圖攤平成 array 欄位（不急，約 2 個月後到期；到期前做才不會又變成「用了才發現」）。
+1. **線B 入庫**（回來第一件）：`ls ailivex-platform/docs/lineB_methodology_drafts_20260808/*_r3.json`（39套）→ 逐套讀 `{角色}_{id}_r2.md` 審假針（效率針「第一步就給結論」角色該頂回）→ 過的用 v21.5 已刪的 `_batch1_ingest.mts` pattern 入庫（解析 r3.json→update+prevVersion→驗證三題+交叉矩陣）→ 假針沒頂回的列擱置清單
+2. **v22 首撥驗證**：Adam 開電撥任一角色，tail v22 log 三信號（情緒切換/cache/軌=002）
+3. **v20m 服務刪除**（可選，已 min=0 不燒錢）：確認 v22 首撥綠後 `gcloud run services delete ailivex-realtime-agent-v20m`——agent 檔留 repo
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第6場：
+- **線B 39 套方法論待審假針＋入庫**：草稿在 `ailivex-platform/docs/lineB_methodology_drafts_20260808/`（8角色）。回來逐套審 r2 假針回應（頂回的才入、照單全收的擱給 Adam）→ 入庫（update+prevVersion）+驗證三題+同角色交叉矩陣。Adam 已授權「跑完直接入」，但我加了假針自守閘
+- **v22 轉正後首撥未驗**：v22 是全線 DEFAULT 但沒人真撥過（v20m 驗的是同引擎不同 agent）。下次開電撥一通看 v22 log：情緒切換／`[cache] cached=` 逐輪爬／`軌=002`
+- **① 語氣仍在 v20m→v22 路徑**：期2（下放 v22）已隨轉正完成，但情緒 prompt 是「模型肯不肯標」的 prompt 力度問題——理性角色（A.Two）自然少標，感性角色多標，這是優雅降級不是 bug；若要更強制得再調 prompt 或考慮 Haiku 逐句標（另案）
+- **① emotion 只有 8 離散檔位**：（大笑）（輕笑）都→happy，強弱靠 MiniMax 讀文本，我們標記只給大方向；沒做強弱控制
+- lineB 草稿是 untracked docs（磁碟已存、git 未追）；別場髒樹（DREAMF/MOUMOU/anews 等）非本場不動
 
 2026-08-08 第5場：
 - **worker 的 `poolKeywords` 寫入路徑未經真實掃描驗證**。一次性回填保證「現況」正確（12 個關鍵字都在帳上），
@@ -123,13 +137,11 @@
   計數基於已載入那批。到期點有數字：池近 6 天加速到 ~12 篇/天，單一關鍵字破 100 篇約 **2 個月後**，
   屆時意圖計數開始偏低。根治要把意圖攤平成 array 欄位或做分頁。
 - 主清單無分頁。某個關鍵字自己破 100 篇時，底部提示只能告訴你「還有 X 篇」，撈不出來。
-
-2026-08-08 第4場：
-- **④ 下放尚未撥測驗證**：部署完成但 `軌=002` 的活體證據還沒拿到（召回只在通話中用戶第 3 句後觸發，非撥不可）。電源目前關著。撥測要 Adam 操作（他手上有後台）。
-- **v20 code 已部署未提交**：`builds submit .` 上傳的是本機工作樹（未提交也進 image），所以線上已是新版；但 git working tree 的 `agent/realtime_agent_v20.py` 尚未 commit。repo 規矩：**Only commit when explicitly asked**——等 Adam 說、且最好撥測確認 `軌=002` 後再 commit。
-- ②⑤ 尚未下放 v20（② cache 凍結要把 v20 的 `_apply_dynamic_blocks`/`_dynamic_recall` 注入改走 `_inject_context`；⑤ 翻 `circuit_breaker=True`）——順序在 ④ 撥測綠燈後
-- 兩個 memory 檔仍有重複「驗證+1」行待 dedup：`skill_ailivex_canary_voice_power_sop.md`、`reference_vertex_004_cjk_blind.md`
-- 遺留 pid 25884（voice-worker --probe）仍在，非本場
+- **fanout 自己有個 bug（本場收尾時撞到）**：`~/.claude 備份失敗：The "suffix" argument must be of type string. Received type number (0)`。
+  不阻斷收工（memory mirror 與 Firestore sync 都 ✓，本場兩個 memory 檔的改動已確認落地），
+  但 `~/.claude` 的備份這步實際沒跑。醉酒指數 7 當下沒動它——收尾時改收尾工具是壞主意。
+  下一場清醒時修：`skills/lastword/` 底下找備份那段（不在 `fanout.mjs` 本體，grep 不到 tmpdir/mkdtemp，
+  應該是它 spawn 的另一支腳本），型別修掉再跑一次 `--audit` 確認。
 
 ---
 
@@ -150,4 +162,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第5場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第6場。*
