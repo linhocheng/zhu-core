@@ -308,7 +308,8 @@ async function run(sessionPath, dry) {
         sh('git add .gitignore CLAUDE.md settings.json settings.local.json skills 2>/dev/null || true', { cwd: CLAUDE });
         const staged = sh('git diff --cached --name-only', { cwd: CLAUDE });
         if (staged) {
-          const files = staged.split('\n').map(basename).join(', ');
+          // map(basename) 會把 index 當 suffix 傳（basename(p, 0) → TypeError）——必須包一層
+          const files = staged.split('\n').map((f) => basename(f)).join(', ');
           sh(`git commit -m "chore: ~/.claude 收工備份（${files}）
 
 Co-Authored-By: Claude <noreply@anthropic.com>" || true`, { cwd: CLAUDE });
