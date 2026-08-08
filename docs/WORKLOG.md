@@ -10666,3 +10666,35 @@ dreamf——V4 第一次全流程實戰＋Adam 深度參與（自寫三角色、
 ### 待執行 / 下一步
 Adam 的機器人案繼續走：重畫兩卡驗模板修正 → 一鍵排隊生成試新按鈕 → 全流程第二支片。
 系統面優先「今天的桌子」V4 狀態修（`app/page.tsx` NEEDS_ME 表換 V4 狀態＋文案）——一行表的事，V4 案子才會回到桌上。
+
+---
+
+## 2026-08-08（第4場）— ④ 記憶002召回下放 v20 已部署待撥測；Gina 團隊覆盤法「開場彈性」設計對談走到意圖層
+
+### 背景 / WHY
+ailivex-platform。上半場執行 #5（④ 下放，昨天刻意隔夜的那項）；下半場 Adam 轉監造，聊 Gina 方法論的開場提問怎麼從「焊死戰術」變「角色自主控制」。Adam 主動要開全新乾淨 session 續 Gina 這條，所以這場收乾淨。
+
+### 完成
+- #5 ④ 下放 v20 主線：`agent/realtime_agent_v20.py` 的 `_dynamic_recall` 評分軌換 002 雙軌（q2/q4＋RECALL_FLOOR_002=0.68/004=0.5/LEX_RESCUE_FLOOR=0.5＋`_bigram_overlap` lex 救援）——**只換評分軌，注入機制保留 v20 原樣**（`base_instructions+block`＋update_instructions；② 快取凍結是另案，這次純 ④）
+- import 補 `_bigram_overlap`（shared firestore_loader.py:105）；`generate_query_embedding_multilingual` v20 早已有（line 170）不需 import；舊 `RECALL_FLOOR` 常數全清、py_compile 過
+- backfill 確認：`node scripts/backfill-memories-002.mjs --dry` → 總數=1174 已遷=1174 待遷=0（真 0：腳本確實讀到池，非空跑）——池已全 002 覆蓋，無需補嵌
+- 部署：`gcloud builds submit --config=agent/cloudbuild-v20.yaml --substitutions=COMMIT_SHA=v20recall002-6815a97 --async .` → build `5f2acc55` SUCCESS（~7 分）→ 新 revision `ailivex-realtime-agent-v20-00137-dql` 100% serving、無舊 revision 釘流量、minScale 空（電源關）
+- 這顆 image 重建自現行 source，已含：召回 002 雙軌＋shared loader 的 002 dual-write＋passthrough＋`_bigram_overlap`
+- Gina 團隊覆盤法「開場（第1步暖身）彈性」設計對談：走到「意圖層」——見下方接棒，這是要在新 session 續的活線
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `agent/realtime_agent_v20.py` | ④ 下放：import 補 `_bigram_overlap`；floor 換三軌（002=0.68/004=0.5/lex=0.5）；`_dynamic_recall` 評分軌換 q2/q4 雙軌＋lex 救援＋`軌=` log；注入機制保留 v20 原樣（未提交，已部署進 image）|
+
+### ⚠️ 尚未解決
+- **④ 下放尚未撥測驗證**：部署完成但 `軌=002` 的活體證據還沒拿到（召回只在通話中用戶第 3 句後觸發，非撥不可）。電源目前關著。撥測要 Adam 操作（他手上有後台）。
+- **v20 code 已部署未提交**：`builds submit .` 上傳的是本機工作樹（未提交也進 image），所以線上已是新版；但 git working tree 的 `agent/realtime_agent_v20.py` 尚未 commit。repo 規矩：**Only commit when explicitly asked**——等 Adam 說、且最好撥測確認 `軌=002` 後再 commit。
+- ②⑤ 尚未下放 v20（② cache 凍結要把 v20 的 `_apply_dynamic_blocks`/`_dynamic_recall` 注入改走 `_inject_context`；⑤ 翻 `circuit_breaker=True`）——順序在 ④ 撥測綠燈後
+- 兩個 memory 檔仍有重複「驗證+1」行待 dedup：`skill_ailivex_canary_voice_power_sop.md`、`reference_vertex_004_cjk_blind.md`
+- 遺留 pid 25884（voice-worker --probe）仍在，非本場
+
+### 待執行 / 下一步
+1. **（新 session 的主線）續 Gina 團隊覆盤法開場彈性設計**——從「意圖層」接著往下走，見接棒。Adam 明說要開乾淨窗續這條。
+2. **④ 撥測驗證**：Adam 後台開「即時語音」ON（拉傘＋蓋 boot 章）→ 等 ~1 分鐘 boot → 撥一通聊 3 句以上有話題的 → tail v20 log 抓 `[v15 recall] 想起 N 條 (軌=002 top=0.xx ...)`。看到 `軌=002`＝下放成功；`軌=004`＝002 query 嵌入掛了要查。撥完切 OFF。
+3. 撥測綠燈後：commit `agent/realtime_agent_v20.py`（版號前綴繁中、無 co-author footer）→ 接著排 ②⑤ 下放。

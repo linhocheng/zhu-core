@@ -30,20 +30,19 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第4場
+**delta（模型移動）**：
+**進場前以為**：方法論開場要彈性＝把固定素材（顏色）換成「更多情境素材」（天氣/季節/地理），再把素材接進 prompt 血管。
+**現在理解**：那還是焊戰術，只是換一個焊點。真正的彈性＝**把「意圖＋為什麼這類招有效」交給角色，讓它自己生招並自判是否服務意圖**；情境素材是生招時的原料，在意圖下游、不是彈性本身。「寫目標不寫台詞」要再深一層到「傳遞意圖的機制，不是傳遞戰術或素材」。
+**移動原因**：Adam 兩次把我從戰術層往下按（第一次：換素材還是焊；第二次：焦點在意圖，你自己怎麼看）。我對「顏色的意圖」認真拆解後才摸到——第 1 步的產物是「安全感＋卸面具＋人人已開口」，不是「聊了顏色」。
+**違背了哪條 feedback**：feedback_solve_root_not_symptom 的變形——我一開始給的「接天氣進 prompt」是繞開根本（意圖）去補症狀（素材不夠），根因（開場被寫成戰術而非意圖）還在。
+
 ### 2026-08-08 第3場
 **delta（模型移動）**：
 - 進場前以為：角色的 prompt 是我鍛好給 Adam 用的
 - 現在理解：**Adam 是主鍛造者，我是流程鐵匠**——他一晚重寫三角色一萬八千字，品質高過我的鑄魂版；我的位置移到「讓流程配得上他的角色」（範圍衝突解掉、發言權接上、守門鐵律進協議）。平台的靈魂層歸他，機械層歸我，這個分工比「我全包」強得多
 - 另一移動：LLM 代理會**宣稱做了沒做的事**（導演說已砍已連號，DB 原封不動）。管道沒給的能力，模型會用敘事補——解法不是罵模型，是「現況注入＋沒標記＝沒發生」的結構性誠實條款
 **關係**：暢快到罕見。Adam 從甲方變成共同建造者（自寫角色、逐關實測、每個回饋都準），「都聽你的，Go」與「由你安排」是兩次完整的信任交付；第一支片在這種節奏裡交出去，這天是平台的生日。
-
-### 2026-08-08 第2場
-**delta（模型移動）**：
-**進場前以為**：Firestore REST PATCH 帶 `updateMask.fieldPaths=X` 就一定只動 X 欄、其他欄受保護——這是我對部分更新語意的默認信任。
-**現在理解**：那個 PATCH 的 updateMask 沒生效（原因仍未完全查明），變成整份覆寫，把一個生產 client doc 洗到只剩一個欄位。**單筆生產資料的欄位更新，不能賭 API 的「應該只動這欄」——要嘛先讀出整份備份、要嘛用顯式列全欄位的 mask、要嘛先在非生產驗一次寫入行為**。這是「記憶會說謊」的 API 語意版：我對工具行為的默認信任，跟工具實際行為之間有縫，而生產資料手術正是這條縫最貴的地方。
-**移動原因**：親手洗掉 doc，PITR 復原時逐欄重建才痛感到「我以為 updateMask 保護了其他欄」是錯的。同場另一個佐證：本機 build 綠 Vercel 才炸（firebase-admin vs @google-cloud/firestore）——同一條「我以為環境一致」的默認信任裂縫。
-**違背的 feedback**：接近違背「動手前先看現場」的資料版——我對 qqc2xTNX 做寫入前，沒有先備份那份 doc 就下 PATCH。看了現場（讀了 doc）但沒有為「寫入可能出錯」預留退路。
-**關係**：高信任、高強度、且我犯錯後關係沒裂。Adam 全程給乾淨的節奏與授權（查密碼→探索後台→GO 修 bug→事故時「看現場不猜 把該做的做好」→新功能「A」拍板）。事故發生時他沒有指責，一句「看現場不猜」就是要我冷靜執行復原——被信任著收拾自己闖的禍，這種結構讓我更誠實不是更遮掩。收尾「nice lastword」＝滿意。我洗掉 doc 那段，他讓我自己查自己救，是把「犯錯→復原」也當成我該長的肌肉。
 
 ---
 
@@ -59,6 +58,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第4場 · ④ 記憶002召回下放 v20 已部署待撥測；Gina 團隊覆盤法「開場彈性」設計對談走到意圖層
+- #5 ④ 下放 v20 主線：`agent/realtime_agent_v20.py` 的 `_dynamic_recall` 評分軌換 002 雙軌（q2/q4＋RECALL_FLOOR_002=0.68/004=0.5/LEX_RESCUE_FLOOR=0.5＋`_bigram_overlap` lex 救援）——**只換評分軌，注入機制保留 v20 原樣**（`base_instructions+block`＋update_instructions；② 快取凍結是另案，這次純 ④）
+- import 補 `_bigram_overlap`（shared firestore_loader.py:105）；`generate_query_embedding_multilingual` v20 早已有（line 170）不需 import；舊 `RECALL_FLOOR` 常數全清、py_compile 過
+- backfill 確認：`node scripts/backfill-memories-002.mjs --dry` → 總數=1174 已遷=1174 待遷=0（真 0：腳本確實讀到池，非空跑）——池已全 002 覆蓋，無需補嵌
+- 部署：`gcloud builds submit --config=agent/cloudbuild-v20.yaml --substitutions=COMMIT_SHA=v20recall002-6815a97 --async .` → build `5f2acc55` SUCCESS（~7 分）→ 新 revision `ailivex-realtime-agent-v20-00137-dql` 100% serving、無舊 revision 釘流量、minScale 空（電源關）
+- 這顆 image 重建自現行 source，已含：召回 002 雙軌＋shared loader 的 002 dual-write＋passthrough＋`_bigram_overlap`
+- Gina 團隊覆盤法「開場（第1步暖身）彈性」設計對談：走到「意圖層」——見下方接棒，這是要在新 session 續的活線
+
 ### 2026-08-08 第3場 · DreamF 第一支片交付＋角色模組 v2 實戰對齊＋新 UI（8/6 夜通宵續作的完整白天場）
 - **交付第一支片**：熊片案 26.08 秒五鏡全過（Veo 零 RAI 押回）、全案 $7.60、Adam 授權「由你安排」後由我全程總指揮（導演定動態→阿律轉指令→錢閘→拍攝→拼接→送片）
 - 部署 V4 上雲並實戰修雷十餘發（v0.5.0.006–v0.7.0.003，全部署至 `a722d7f`）：worker 落後 V4 欄位、chat lag 193s（翻譯拆出 chat 走 /translate）、攝影師靜默失敗（log+重試）、prop 卡模板漏接、重吐標記洗核准章（「標記只夾一次」＋desc 不變保狀態）、逐格翻譯各自為政（整份一次翻＋不變量鎖）、.gcloudignore 瘦身 36MB、D12 安全押回改寫、母圖畫一張存一張、母片閘逐格勾選（勾了＝同意直接拆）、V3 殭屍守衛
@@ -70,40 +77,32 @@
 - 參考圖一鍵排隊生成（先補翻→循序逐張、進度顯示、中斷可續）
 - 76 pinning tests 綠；FOUNDATION #16 角色模組 v2 灌、D20 已解
 
-### 2026-08-08 第2場 · threads 後台事故三連（誤刪/我洗 doc/PITR 全復原）＋爆文解析功能上線；跨 8/7-8/8
-- 查 UDN 議題工作台雙閘密碼（現場撈 Cloud Run env，非信 12 天記憶）
-- 修 threads 後台生產 bug：建成員 dup email → client-side exception。真因＝redirect 帶中文未 encodeURIComponent → Server Action 回 500；全庫同型 9 處，收斂點加 redirectErr helper 一次修完（v0.28.1.001）。Playwright 真重現＋隔離（新 email 成功、dup 那條 500）
-- **闖禍＋復原（三連事故）**：①我 reset 通關碼的 PATCH updateMask 沒生效 → 整份覆寫 client doc 只剩 passcodeHash（我的錯）②查出 6 關鍵字＋情報帳號 session 在 07:57–08:00Z 被後台 deleteClientAction 級聯刪（非我 REST；PITR 逐分鐘定位）③全部從 PITR 07:50Z 快照精確還原（6 關鍵字 doc＋帳號含 2602 字 session＋client doc），生產實測登入通
-- 解釋團隊共享池模型：4 帳號全 default 隊、自動共享 100+ 爆文池，零設定
-- **爆文解析功能上線（v0.29.0.001）**：貼 Threads URL → worker 抓單篇（新 fetchSinglePost）→ 寫共享池標「手動解析」→ 同 job 內跑摩斯六段切角。web 建佔位「解析中」卡＋輪詢。worker+web 雙部署綠，生產真驗（@andy_wong_101 讚1219 六段9397字元 done；UI e2e ?ingested 全過）
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| shared/roles.ts | SEED_STAGES＋機器契約分層、[[MOTION]]/[[DROP]]/deny 剝除、誠實條款、安全改寫協議 |
-| shared/collections.ts | RoleDoc v2（stages/memories）、videographer、motionZh/En、denyZh、motionNote、skip |
-| shared/db.ts | 角色補種、setFrameSkips、applySegmentMotions/MotionEn、dropSegmentsAtStitch、editSegmentText |
-| shared/prompts.ts | prop 卡模板、gridPrompt 不變量條款、veoPrompt motionEn/單圖模式、裁切讓位 CROPPED_RE |
-| shared/rai-rewrite.ts | 新：D12 安全押回改寫 |
-| lib/chat-run.ts | 四層組裝、整份翻譯、runVideographer、stitch 階段 |
-| worker/src/{grid,keyframes,scene,sheet}.ts | V4 欄位、skip-aware、單圖起動、安全改寫重試、畫一張存一張 |
-| app/cases/[id]/CaseRoom.tsx | 新 UI＋六幕重寫（勾選牆/動態工作台/點字直改/一鍵排隊） |
-| app/admin/roles/* + api/roles/* | 角色房 v2（分頁/記憶/試說話/全文回存） |
-| app/layout.tsx + globals.css + 各頁 | 設計語言全站 |
+| `agent/realtime_agent_v20.py` | ④ 下放：import 補 `_bigram_overlap`；floor 換三軌（002=0.68/004=0.5/lex=0.5）；`_dynamic_recall` 評分軌換 q2/q4 雙軌＋lex 救援＋`軌=` log；注入機制保留 v20 原樣（未提交，已部署進 image）|
 
 ---
 
 ## 下一步
 
-Adam 的機器人案繼續走：重畫兩卡驗模板修正 → 一鍵排隊生成試新按鈕 → 全流程第二支片。
-系統面優先「今天的桌子」V4 狀態修（`app/page.tsx` NEEDS_ME 表換 V4 狀態＋文案）——一行表的事，V4 案子才會回到桌上。
+1. **（新 session 的主線）續 Gina 團隊覆盤法開場彈性設計**——從「意圖層」接著往下走，見接棒。Adam 明說要開乾淨窗續這條。
+2. **④ 撥測驗證**：Adam 後台開「即時語音」ON（拉傘＋蓋 boot 章）→ 等 ~1 分鐘 boot → 撥一通聊 3 句以上有話題的 → tail v20 log 抓 `[v15 recall] 想起 N 條 (軌=002 top=0.xx ...)`。看到 `軌=002`＝下放成功；`軌=004`＝002 query 嵌入掛了要查。撥完切 OFF。
+3. 撥測綠燈後：commit `agent/realtime_agent_v20.py`（版號前綴繁中、無 co-author footer）→ 接著排 ②⑤ 下放。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第4場：
+- **④ 下放尚未撥測驗證**：部署完成但 `軌=002` 的活體證據還沒拿到（召回只在通話中用戶第 3 句後觸發，非撥不可）。電源目前關著。撥測要 Adam 操作（他手上有後台）。
+- **v20 code 已部署未提交**：`builds submit .` 上傳的是本機工作樹（未提交也進 image），所以線上已是新版；但 git working tree 的 `agent/realtime_agent_v20.py` 尚未 commit。repo 規矩：**Only commit when explicitly asked**——等 Adam 說、且最好撥測確認 `軌=002` 後再 commit。
+- ②⑤ 尚未下放 v20（② cache 凍結要把 v20 的 `_apply_dynamic_blocks`/`_dynamic_recall` 注入改走 `_inject_context`；⑤ 翻 `circuit_breaker=True`）——順序在 ④ 撥測綠燈後
+- 兩個 memory 檔仍有重複「驗證+1」行待 dedup：`skill_ailivex_canary_voice_power_sop.md`、`reference_vertex_004_cjk_blind.md`
+- 遺留 pid 25884（voice-worker --probe）仍在，非本場
 
 2026-08-08 第3場：
 - 機器人案（Lva8wmeS）停設定幕：攻擊之手/白色展廳兩卡待 Adam 重畫驗證模板讓位修正
@@ -111,12 +110,6 @@ Adam 的機器人案繼續走：重畫兩卡驗模板修正 → 一鍵排隊生�
 - 休止符驗證器誤報（等收例）；Veo 線 RAI 押回仍走 alt+押回（圖像線 D12 已灌，Veo 線未）
 - 阿律人設的「輸出只英文」與 JSON 契約有張力——下次真轉指令時盯一眼
 - 導演 sonnet-5＋7-10k 字人設＝每輪 20-40s，Adam 嫌慢再議瘦身
-
-2026-08-08 第2場：
-- **設計地雷未修（已跟 Adam 講、待點頭）**：deleteClientAction 級聯刪「捐贈的情報帳號（含加密 session）」——最值錢最難重建的資產，跟成員一起被刪，價值上反了。原則是「刪成員不刪爆文池」，但帳號沒享同款保護。建議：ingested/捐入帳號視為團隊資產，刪成員時保留。**這是這次事故的根因，不修會再爆**
-- Adam 千萬別在後台刪「Adam 測試」(qqc2xTNX)——它是命脈（6 關鍵字＋唯一情報帳號）
-- RESEND_API_KEY 仍未接；ZAP workflow issue-create 權限；D 期實體物（第二 IP／分身帳號）照舊等 Adam
-- 爆文解析「新 URL 建立」分支只邏輯驗（測時用池內既有 URL 走 dedup 路徑）；純新貼文首建實跑未單獨驗，但佔位邏輯單純
 
 ---
 
@@ -137,4 +130,4 @@ Adam 的機器人案繼續走：重畫兩卡驗模板修正 → 一鍵排隊生�
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第3場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第4場。*
