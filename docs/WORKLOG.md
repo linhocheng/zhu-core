@@ -10698,3 +10698,19 @@ ailivex-platform。上半場執行 #5（④ 下放，昨天刻意隔夜的那項
 1. **（新 session 的主線）續 Gina 團隊覆盤法開場彈性設計**——從「意圖層」接著往下走，見接棒。Adam 明說要開乾淨窗續這條。
 2. **④ 撥測驗證**：Adam 後台開「即時語音」ON（拉傘＋蓋 boot 章）→ 等 ~1 分鐘 boot → 撥一通聊 3 句以上有話題的 → tail v20 log 抓 `[v15 recall] 想起 N 條 (軌=002 top=0.xx ...)`。看到 `軌=002`＝下放成功；`軌=004`＝002 query 嵌入掛了要查。撥完切 OFF。
 3. 撥測綠燈後：commit `agent/realtime_agent_v20.py`（版號前綴繁中、無 co-author footer）→ 接著排 ②⑤ 下放。
+
+## 2026-08-08 — 方法論/知識庫「時機與意圖」心法入 SOP（Gina 對談產出）
+
+### 背景 / WHY
+Gina 開場焊死戰術＋Mars 知識庫「明明有卻說沒有」是同一種病：把「時機與意圖」寫成了「內容與動作」。Adam 定調：心法要進 SOP，讓未來寫方法論/知識庫/進場召喚都能掌握。
+
+### 產出
+- `skills/ailivex-methodology-cocreate.md` — 新增「四欄撰寫心法」（意圖鎖死/機制量尺/招例可拋/讀數可驗＋效力標記＋重寫者必須是主人）
+- `skills/ailivex-knowledge-ingest.md` — 時機地址升級為一切語料必用（Mars 案證據：內容摘要式 gist 0 過檻→重寫後 top1 0.77），驗收加泛稱題/簡體題/陰性對照
+
+### 已解決
+- Mars×2 知識 gist 30 塊全部重寫時機地址並 re-embed（gistPrev/embeddingPrev 有備份）；v20 半拍延遲修正（on_user_turn_completed 回答前落地）＋語音線 lex 救援（s2t）＋兩線「不跳步」鬆綁——細節在 ailivex-platform
+
+### 待執行
+- [ ] Gina 本人重寫團隊覆盤法（教心法→她重寫→四欄檢驗→Adam 過目）
+- [ ] v20 撥測（連同 ④ 軌=002 一起驗）
