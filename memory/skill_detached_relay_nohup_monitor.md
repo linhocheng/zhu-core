@@ -26,3 +26,5 @@ metadata:
 關聯：[[feedback-silent-failure-absent-log]]、[[skill-async-worker-checklist]]
 
 - 驗證+1:2026-08-08 第3場 — 部署被 harness 砍兩次後切 nohup+Monitor 正姿
+
+- 驗證+1:2026-08-08 第6場 — 背景任務兩度被砍，改 nohup 脫鉤+冪等續跑
