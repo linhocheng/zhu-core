@@ -82,3 +82,5 @@ ZHU_LAST_WORDS / project memory / feedback memory 都會說謊 ── 不是內�
 - 驗證+1:2026-08-08 第2場 — 查密碼、判斷資料狀態全去現場/PITR，不信 12 天記憶
 
 - 驗證+1:2026-08-08 第4場 — skill 正文/v20 code 現況/Gina 資料庫全部開來看不憑記憶
+
+- 驗證+1:2026-08-08 第7場 — 查母片是否寫死時直接開 `shared/grid.ts` 讀 code，不憑印象答 Adam

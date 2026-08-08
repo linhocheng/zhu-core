@@ -34,3 +34,5 @@ metadata:
 - 驗證+1:2026-08-08 第1場 — 部署前查 cloudbuild-v20m.yaml 的 min 旗標（D9 教訓已釘：yaml 刻意不寫 min，部署不洗手動值）
 
 - 驗證+1:2026-08-08 第6場 — 手動改 minScale 同時改傘註解保持真相同步
+
+- 驗證+1:2026-08-08 第7場 — 手動補 worker bridge env 後同日改 cloudbuild.yaml
