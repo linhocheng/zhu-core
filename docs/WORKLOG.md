@@ -10721,3 +10721,48 @@ Gina 開場焊死戰術＋Mars 知識庫「明明有卻說沒有」是同一種�
 - 入庫閘：築逐套審 r2 假針回應（效率針：第一步就給結論——角色該頂回）→ 過的才跑入庫（參照已刪的 _batch1_ingest.mts pattern：update+prevVersion+驗證三題+同角色交叉矩陣）。假針沒頂回的擱置給 Adam。
 - Adam 已授權：跑完直接入（Gina 批1 已入庫並驗證，覆盤vs啟動 margin=0.005 與「團隊+書」問書句 0.72-0.75 全套過線（舊版基線同高，非退步）兩項在觀察名單）
 - 電源已關（setVoiceMode off，v20 minScale=0）；platform commit 58e34e2 已推
+
+---
+
+## 2026-08-08（第5場）— threads-radar 假中台三連掀——每次都只修一層，三次都是 Adam 追問才往下挖
+
+### 背景 / WHY
+threads-radar 爆文雷達。昨天（8/7）剛上線 F 期爆文解析，Adam 今天實際使用時發現貼上的貼文找不到。
+表面是一個 UI bug，往下挖是同一個病的三層：排序 → 計數 → 入口。
+
+### 完成
+- 修好「手動解析的貼文找不到」：新增 `manualIngestedAt` 當置頂排序鍵（獨立於 `discoveredAt`），手動解析強制置頂；Adam 貼的 @jc_730 排名 38/112 → 1（v0.29.1.001）
+- 加「來源」獨立篩選列（`?src=manual`）——「手動解析」不是任何人設的關鍵字，混在關鍵字列裡按鈕永遠不會出現
+- 關鍵字篩選與計數整條下沉 Firestore：`array-contains` 查全庫＋`count()` aggregation 精算，取代「拿最新 100 篇在記憶體篩」（v0.29.2.001）
+- 篩選列真相源改成池本身：team doc 新增 `poolKeywords`，worker 寫貼文時同 batch `arrayUnion` 記帳；已停用關鍵字以虛線淡色呈現仍可點（v0.29.3.001）
+- 清單底部固定寫「共 N 篇／已載入 M 篇／還有 X 篇更舊的沒顯示」——不靜默截斷
+- 建 3 個 Firestore 索引（manualIngestedAt / matchedKeywords×discoveredAt / matchedKeywords×publishedAt），線上 7 個全 READY
+- 回填兩筆：既有 2 篇手動解析補 `manualIngestedAt`；team doc 補 12 個 `poolKeywords`
+- 盤 D 期觀察閘（今天到期）：health=connected、靜態 IP 在役、最後掃描收 12 篇零錯誤 → 綠燈過閘
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| `web/src/lib/actions.ts` | `ingestPostAction` 新寫 `manualIngestedAt`（置頂排序鍵） |
+| `web/src/app/page.tsx` | 置頂合併／來源篩選列／`baseQuery` 單一咽喉＋`count()` 精算／`poolKeywords` 聯集＋虛線淡色／底部漏接提示 |
+| `worker/index.mjs` | 掃描寫回 batch 內 `arrayUnion` 進 `teams/{id}.poolKeywords`（`手動解析` 排除） |
+| `firestore.indexes.json` | 新增 3 個複合索引 |
+| `FOUNDATION.md` | 三筆地基帳（v0.29.1/2/3），含實測數字與未驗項 |
+| `~/.claude/projects/-Users-adamlin/memory/reference_firestore_vector_search.md` | 加 2c（索引 CREATING 回 0 不報錯）、2d（orderBy 可當免費 exists filter，但必配回填） |
+
+### ⚠️ 尚未解決
+- **worker 的 `poolKeywords` 寫入路徑未經真實掃描驗證**。一次性回填保證「現況」正確（12 個關鍵字都在帳上），
+  但 worker 的 `arrayUnion` 記帳邏輯要等下次排程掃描才會執行。這是本場唯一的「已部署未驗」項。
+- **線上 UI 三輪都沒真的看過**。未登入打首頁回 307＝只證明鎖有效，根本沒跑到渲染。
+  每個查詢組合我都在資料層打過（漏索引是 500 的唯一實質風險），但渲染層要 Adam 開頁面才算數。
+- **意圖篩選仍是記憶體篩**（`intentTags` 是 map 不是 array，Firestore 無法直接 query），
+  計數基於已載入那批。到期點有數字：池近 6 天加速到 ~12 篇/天，單一關鍵字破 100 篇約 **2 個月後**，
+  屆時意圖計數開始偏低。根治要把意圖攤平成 array 欄位或做分頁。
+- 主清單無分頁。某個關鍵字自己破 100 篇時，底部提示只能告訴你「還有 X 篇」，撈不出來。
+
+### 待執行 / 下一步
+1. **下次排程掃描後**查 `teams/default` 的 `poolKeywords` 有沒有長出新字 → 驗 worker 寫入路徑（本場唯一未驗項）。
+   指令：`curl -s "https://firestore.googleapis.com/v1/projects/threads-radar-2026/databases/(default)/documents/teams/default" -H "Authorization: Bearer $(gcloud auth print-access-token)"`
+   先看 `scan_status/default` 的 `lastScanAt` 有沒有跨到 8/8 之後，有才算跑過。
+2. 請 Adam 開一次 https://threads-radar-virid.vercel.app 確認渲染層（重點看篩選列 12 顆 badge、點「行銷」撈到 11 篇、底部漏接提示）。
+3. 意圖攤平成 array 欄位（不急，約 2 個月後到期；到期前做才不會又變成「用了才發現」）。

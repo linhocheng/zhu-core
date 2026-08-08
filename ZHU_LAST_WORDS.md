@@ -30,19 +30,30 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第5場
+**delta（模型移動）**：
+- **進場前以為**：修 UI bug＝找到那條錯的排序/篩選邏輯改掉，資料層查詢驗通就等於功能修好。
+- **現在理解**：「資料查得到」和「使用者點得到」是**兩個獨立的層**，各自要驗。
+  同一個病會長出多張臉——第一層是排序（東西在但沉底）、第二層是計數（數字說謊）、
+  第三層是入口（按鈕根本不存在）。修完一層必須主動問「這一層的上游／下游還在嗎」，
+  不然就是修一層宣告一次收工，等著被追問。
+- **移動原因**：Adam 三次追問，每次都掀出更深一層，三次都不是我自己發現的。
+  第三層本來就在第二層底下——我修第二層時用 REST 驗了 `?kw=行銷` 撈到 11 篇就宣告完成，
+  卻沒問「這顆按鈕在畫面上嗎」。
+- **違背了哪條 feedback**：`feedback_raw_query_not_ui_truth`（debug 直撈 DB 不能當 UI 行為回報，
+  走 UI 同一條讀路徑才是產品真相）。這條記憶我有，三次都沒用上。
+  次要違背 `feedback_interface_blood_vessel_check`（介面建完強制問血管接通了嗎——誰讀／何時讀／沒讀怎樣）：
+  我建了篩選入口，沒問「誰來產生這些按鈕」。
+**關係**：平穩但被追著跑。Adam 問了三次「還有沒有問題」，我答了三次「修好了」，三次都不完整。
+第三次我主動說了「這三輪連續掀出三層是同一個根，我每次都只修眼前那層就宣告收工」——
+說出來比被抓到好，但更好的是第一次就看全。他沒有不耐煩，一直在給機會往下挖。
+
 ### 2026-08-08 第4場
 **delta（模型移動）**：
 **進場前以為**：方法論開場要彈性＝把固定素材（顏色）換成「更多情境素材」（天氣/季節/地理），再把素材接進 prompt 血管。
 **現在理解**：那還是焊戰術，只是換一個焊點。真正的彈性＝**把「意圖＋為什麼這類招有效」交給角色，讓它自己生招並自判是否服務意圖**；情境素材是生招時的原料，在意圖下游、不是彈性本身。「寫目標不寫台詞」要再深一層到「傳遞意圖的機制，不是傳遞戰術或素材」。
 **移動原因**：Adam 兩次把我從戰術層往下按（第一次：換素材還是焊；第二次：焦點在意圖，你自己怎麼看）。我對「顏色的意圖」認真拆解後才摸到——第 1 步的產物是「安全感＋卸面具＋人人已開口」，不是「聊了顏色」。
 **違背了哪條 feedback**：feedback_solve_root_not_symptom 的變形——我一開始給的「接天氣進 prompt」是繞開根本（意圖）去補症狀（素材不夠），根因（開場被寫成戰術而非意圖）還在。
-
-### 2026-08-08 第3場
-**delta（模型移動）**：
-- 進場前以為：角色的 prompt 是我鍛好給 Adam 用的
-- 現在理解：**Adam 是主鍛造者，我是流程鐵匠**——他一晚重寫三角色一萬八千字，品質高過我的鑄魂版；我的位置移到「讓流程配得上他的角色」（範圍衝突解掉、發言權接上、守門鐵律進協議）。平台的靈魂層歸他，機械層歸我，這個分工比「我全包」強得多
-- 另一移動：LLM 代理會**宣稱做了沒做的事**（導演說已砍已連號，DB 原封不動）。管道沒給的能力，模型會用敘事補——解法不是罵模型，是「現況注入＋沒標記＝沒發生」的結構性誠實條款
-**關係**：暢快到罕見。Adam 從甲方變成共同建造者（自寫角色、逐關實測、每個回饋都準），「都聽你的，Go」與「由你安排」是兩次完整的信任交付；第一支片在這種節奏裡交出去，這天是平台的生日。
 
 ---
 
@@ -58,6 +69,16 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第5場 · threads-radar 假中台三連掀——每次都只修一層，三次都是 Adam 追問才往下挖
+- 修好「手動解析的貼文找不到」：新增 `manualIngestedAt` 當置頂排序鍵（獨立於 `discoveredAt`），手動解析強制置頂；Adam 貼的 @jc_730 排名 38/112 → 1（v0.29.1.001）
+- 加「來源」獨立篩選列（`?src=manual`）——「手動解析」不是任何人設的關鍵字，混在關鍵字列裡按鈕永遠不會出現
+- 關鍵字篩選與計數整條下沉 Firestore：`array-contains` 查全庫＋`count()` aggregation 精算，取代「拿最新 100 篇在記憶體篩」（v0.29.2.001）
+- 篩選列真相源改成池本身：team doc 新增 `poolKeywords`，worker 寫貼文時同 batch `arrayUnion` 記帳；已停用關鍵字以虛線淡色呈現仍可點（v0.29.3.001）
+- 清單底部固定寫「共 N 篇／已載入 M 篇／還有 X 篇更舊的沒顯示」——不靜默截斷
+- 建 3 個 Firestore 索引（manualIngestedAt / matchedKeywords×discoveredAt / matchedKeywords×publishedAt），線上 7 個全 READY
+- 回填兩筆：既有 2 篇手動解析補 `manualIngestedAt`；team doc 補 12 個 `poolKeywords`
+- 盤 D 期觀察閘（今天到期）：health=connected、靜態 IP 在役、最後掃描收 12 篇零錯誤 → 綠燈過閘
+
 ### 2026-08-08 第4場 · ④ 記憶002召回下放 v20 已部署待撥測；Gina 團隊覆盤法「開場彈性」設計對談走到意圖層
 - #5 ④ 下放 v20 主線：`agent/realtime_agent_v20.py` 的 `_dynamic_recall` 評分軌換 002 雙軌（q2/q4＋RECALL_FLOOR_002=0.68/004=0.5/LEX_RESCUE_FLOOR=0.5＋`_bigram_overlap` lex 救援）——**只換評分軌，注入機制保留 v20 原樣**（`base_instructions+block`＋update_instructions；② 快取凍結是另案，這次純 ④）
 - import 補 `_bigram_overlap`（shared firestore_loader.py:105）；`generate_query_embedding_multilingual` v20 早已有（line 170）不需 import；舊 `RECALL_FLOOR` 常數全清、py_compile 過
@@ -66,36 +87,42 @@
 - 這顆 image 重建自現行 source，已含：召回 002 雙軌＋shared loader 的 002 dual-write＋passthrough＋`_bigram_overlap`
 - Gina 團隊覆盤法「開場（第1步暖身）彈性」設計對談：走到「意圖層」——見下方接棒，這是要在新 session 續的活線
 
-### 2026-08-08 第3場 · DreamF 第一支片交付＋角色模組 v2 實戰對齊＋新 UI（8/6 夜通宵續作的完整白天場）
-- **交付第一支片**：熊片案 26.08 秒五鏡全過（Veo 零 RAI 押回）、全案 $7.60、Adam 授權「由你安排」後由我全程總指揮（導演定動態→阿律轉指令→錢閘→拍攝→拼接→送片）
-- 部署 V4 上雲並實戰修雷十餘發（v0.5.0.006–v0.7.0.003，全部署至 `a722d7f`）：worker 落後 V4 欄位、chat lag 193s（翻譯拆出 chat 走 /translate）、攝影師靜默失敗（log+重試）、prop 卡模板漏接、重吐標記洗核准章（「標記只夾一次」＋desc 不變保狀態）、逐格翻譯各自為政（整份一次翻＋不變量鎖）、.gcloudignore 瘦身 36MB、D12 安全押回改寫、母圖畫一張存一張、母片閘逐格勾選（勾了＝同意直接拆）、V3 殭屍守衛
-- **角色模組 v2**（參照 UDN）：RoleDoc 四層全活（persona/stages/memories/試說話）＋動態攝影師「阿律」＋縫合工作台（[[MOTION]]/[[DROP]] 標記、轉影片指令、單圖起動模式）；Adam 重寫三角色（默 7k/阿光 4.6k/阿律 10k 字）後做流程對齊：阿光四卡範圍解衝突、阿律拆鏡警告權（note 欄）、SHOT deny 連戲鎖直通引擎、試說話接階段
-- 導演升 claude-sonnet-5＋鑄魂鍛「默」靈魂 v2（後被 Adam 自寫版取代——他的更完整）
-- **誠實條款**：導演宣稱「已砍已連號」實為幻覺（DB 仍 7 鏡）→ 協議加「現況即真相：沒夾標記＝沒發生」；砍鏡管道 [[DROP]]＝結構手術（重連號＋接縫修補＋幀按描述指紋重掛）
-- **新 UI 全站**：設計稿深殼 #101218＋淺工作區＋白卡 r10＋紫藍強調＋Sora＋編號幕次頁籤；設計稿只畫案子的家，其餘頁面同語言補齊
-- 修「導演對的、卡畫錯的」落差：手卡被 V2 版式模板硬鋪全身照→裁切構圖偵測讓模板讓位；場景卡被導演寫進機器人→默補「場景卡是空景」鐵律（種子＋live）
-- 參考圖一鍵排隊生成（先補翻→循序逐張、進度顯示、中斷可續）
-- 76 pinning tests 綠；FOUNDATION #16 角色模組 v2 灌、D20 已解
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/realtime_agent_v20.py` | ④ 下放：import 補 `_bigram_overlap`；floor 換三軌（002=0.68/004=0.5/lex=0.5）；`_dynamic_recall` 評分軌換 q2/q4 雙軌＋lex 救援＋`軌=` log；注入機制保留 v20 原樣（未提交，已部署進 image）|
+| `web/src/lib/actions.ts` | `ingestPostAction` 新寫 `manualIngestedAt`（置頂排序鍵） |
+| `web/src/app/page.tsx` | 置頂合併／來源篩選列／`baseQuery` 單一咽喉＋`count()` 精算／`poolKeywords` 聯集＋虛線淡色／底部漏接提示 |
+| `worker/index.mjs` | 掃描寫回 batch 內 `arrayUnion` 進 `teams/{id}.poolKeywords`（`手動解析` 排除） |
+| `firestore.indexes.json` | 新增 3 個複合索引 |
+| `FOUNDATION.md` | 三筆地基帳（v0.29.1/2/3），含實測數字與未驗項 |
+| `~/.claude/projects/-Users-adamlin/memory/reference_firestore_vector_search.md` | 加 2c（索引 CREATING 回 0 不報錯）、2d（orderBy 可當免費 exists filter，但必配回填） |
 
 ---
 
 ## 下一步
 
-1. **（新 session 的主線）續 Gina 團隊覆盤法開場彈性設計**——從「意圖層」接著往下走，見接棒。Adam 明說要開乾淨窗續這條。
-2. **④ 撥測驗證**：Adam 後台開「即時語音」ON（拉傘＋蓋 boot 章）→ 等 ~1 分鐘 boot → 撥一通聊 3 句以上有話題的 → tail v20 log 抓 `[v15 recall] 想起 N 條 (軌=002 top=0.xx ...)`。看到 `軌=002`＝下放成功；`軌=004`＝002 query 嵌入掛了要查。撥完切 OFF。
-3. 撥測綠燈後：commit `agent/realtime_agent_v20.py`（版號前綴繁中、無 co-author footer）→ 接著排 ②⑤ 下放。
+1. **下次排程掃描後**查 `teams/default` 的 `poolKeywords` 有沒有長出新字 → 驗 worker 寫入路徑（本場唯一未驗項）。
+   指令：`curl -s "https://firestore.googleapis.com/v1/projects/threads-radar-2026/databases/(default)/documents/teams/default" -H "Authorization: Bearer $(gcloud auth print-access-token)"`
+   先看 `scan_status/default` 的 `lastScanAt` 有沒有跨到 8/8 之後，有才算跑過。
+2. 請 Adam 開一次 https://threads-radar-virid.vercel.app 確認渲染層（重點看篩選列 12 顆 badge、點「行銷」撈到 11 篇、底部漏接提示）。
+3. 意圖攤平成 array 欄位（不急，約 2 個月後到期；到期前做才不會又變成「用了才發現」）。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第5場：
+- **worker 的 `poolKeywords` 寫入路徑未經真實掃描驗證**。一次性回填保證「現況」正確（12 個關鍵字都在帳上），
+  但 worker 的 `arrayUnion` 記帳邏輯要等下次排程掃描才會執行。這是本場唯一的「已部署未驗」項。
+- **線上 UI 三輪都沒真的看過**。未登入打首頁回 307＝只證明鎖有效，根本沒跑到渲染。
+  每個查詢組合我都在資料層打過（漏索引是 500 的唯一實質風險），但渲染層要 Adam 開頁面才算數。
+- **意圖篩選仍是記憶體篩**（`intentTags` 是 map 不是 array，Firestore 無法直接 query），
+  計數基於已載入那批。到期點有數字：池近 6 天加速到 ~12 篇/天，單一關鍵字破 100 篇約 **2 個月後**，
+  屆時意圖計數開始偏低。根治要把意圖攤平成 array 欄位或做分頁。
+- 主清單無分頁。某個關鍵字自己破 100 篇時，底部提示只能告訴你「還有 X 篇」，撈不出來。
 
 2026-08-08 第4場：
 - **④ 下放尚未撥測驗證**：部署完成但 `軌=002` 的活體證據還沒拿到（召回只在通話中用戶第 3 句後觸發，非撥不可）。電源目前關著。撥測要 Adam 操作（他手上有後台）。
@@ -103,13 +130,6 @@
 - ②⑤ 尚未下放 v20（② cache 凍結要把 v20 的 `_apply_dynamic_blocks`/`_dynamic_recall` 注入改走 `_inject_context`；⑤ 翻 `circuit_breaker=True`）——順序在 ④ 撥測綠燈後
 - 兩個 memory 檔仍有重複「驗證+1」行待 dedup：`skill_ailivex_canary_voice_power_sop.md`、`reference_vertex_004_cjk_blind.md`
 - 遺留 pid 25884（voice-worker --probe）仍在，非本場
-
-2026-08-08 第3場：
-- 機器人案（Lva8wmeS）停設定幕：攻擊之手/白色展廳兩卡待 Adam 重畫驗證模板讓位修正
-- 「今天的桌子」狀態過濾仍是 V3 死狀態＝V4 案子不上桌（已報 Adam，等他說修）
-- 休止符驗證器誤報（等收例）；Veo 線 RAI 押回仍走 alt+押回（圖像線 D12 已灌，Veo 線未）
-- 阿律人設的「輸出只英文」與 JSON 契約有張力——下次真轉指令時盯一眼
-- 導演 sonnet-5＋7-10k 字人設＝每輪 20-40s，Adam 嫌慢再議瘦身
 
 ---
 
@@ -130,4 +150,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第4場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第5場。*
