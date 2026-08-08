@@ -28,3 +28,5 @@ metadata:
 - 驗證+1:2026-08-04 第1場 — 同上，正面踩中家族雷，當場改裸 exit code 驗證
 
 - 驗證+1:2026-08-08 第3場 — deploy | tail 吃掉 worker build 失敗，當場重踩當場改
+
+- 驗證+1:2026-08-08 第5場 — `npx tsc --noEmit | tail` 後的 `$?` 是 tail 的 exit code，重跑導向檔案才拿到真 0

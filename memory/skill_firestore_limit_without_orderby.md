@@ -18,3 +18,5 @@ metadata:
 **觸發信號**：看到 `.limit(` 前面沒有 `.orderBy(`；「存了但列表看不到」「AI 說有但後台沒有」類 bug；歷史資料多的 collection 讀取永遠回舊資料。
 
 相關：[[feedback-solve-root-not-symptom]]（省 index 的繞法＝繞開根本）、[[feedback-deterministic-work-belongs-in-code]]
+
+- 驗證+1:2026-08-08 第5場 — 撈手動解析時避開「不帶 orderBy 的 limit」，改用 orderBy 天然過濾

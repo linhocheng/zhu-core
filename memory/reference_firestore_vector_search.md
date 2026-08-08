@@ -29,6 +29,16 @@ originSessionId: 34482a57-dd4f-454a-b441-d8c9c2f565b9
 - 第一次 query fail 時 Firestore 會回完整 gcloud 指令，直接複製貼上即可
 - 用 try/catch 包 query route 才看得到這個提示，不然 Vercel 噴 500 空 body
 
+**2c. 索引 CREATING 期間，查詢「回傳 0 筆」而不是報錯（2026-08-08 threads-radar 踩）**
+- 剛 `gcloud firestore indexes composite create` 之後立刻查 → 空陣列，**沒有 FAILED_PRECONDITION、沒有任何錯誤訊息**。
+- 這個 0 和「資料真的沒寫進去」在輸出上長得一模一樣 → 差點誤判剛做的回填失敗、重做一次。
+- 動作：**先 GET 單篇確認欄位在（陽性對照），再 poll `indexes composite describe <id> --format='value(state)'` 到 READY 才查**。索引 ~3 分鐘（112 doc 的小集合）。
+- 同族：[[feedback_ambiguous_signal_not_proof]]（零命中要先餵已知樣本）。
+
+**2d. `orderBy(欄位)` 天然只選中「有這個欄位」的文件——可當免費的 exists filter**
+- 想撈「只有手動加工過的文件」時，不必加 `where('flag','==',true)`：直接 `orderBy('flagAt','desc')`，沒這欄的文件不進索引＝自動排除，且少一個 equality filter＝索引更省。
+- 反面：這也是「該出現的文件神秘消失」的常見根因——舊資料沒回填那個欄位就會被靜默排除，加 orderBy 新欄位時**必配回填**。
+
 **3. `vercel env pull` 預設拉 development，不是 production**
 - 直接 `vercel env pull .env.local` → 只有 `VERCEL_OIDC_TOKEN`，其他 secret 全空
 - 要 `--environment=production` 才拉得到 GEMINI_API_KEY / FIREBASE_SERVICE_ACCOUNT_JSON 等
