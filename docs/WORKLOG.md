@@ -10811,3 +10811,46 @@ ailivex-platform 全場。主線從「Gina 開場彈性設計對談」（新視�
 1. **線B 入庫**（回來第一件）：`ls ailivex-platform/docs/lineB_methodology_drafts_20260808/*_r3.json`（39套）→ 逐套讀 `{角色}_{id}_r2.md` 審假針（效率針「第一步就給結論」角色該頂回）→ 過的用 v21.5 已刪的 `_batch1_ingest.mts` pattern 入庫（解析 r3.json→update+prevVersion→驗證三題+交叉矩陣）→ 假針沒頂回的列擱置清單
 2. **v22 首撥驗證**：Adam 開電撥任一角色，tail v22 log 三信號（情緒切換/cache/軌=002）
 3. **v20m 服務刪除**（可選，已 min=0 不燒錢）：確認 v22 首撥綠後 `gcloud run services delete ailivex-realtime-agent-v20m`——agent 檔留 repo
+
+---
+
+## 2026-08-08（第7場）— DreamF 損傷帳本上線＋自發自測交片＋KeyMoment 模型翻轉開工（母片格數還給導演）
+
+### 背景 / WHY
+dreamf——從「帳本解連貫性」一路走到「模型翻轉」：Adam 今天兩次把系統的創作權從機器手上拿回來給導演（損傷是導演定的 delta、母片格數是導演定的關鍵畫面數）。
+
+### 完成
+- **灌損傷帳本 State Ledger**（`shared/ledger.ts` 純函數視圖，不落庫＝f(segments)）：解 Adam 點名三病——狀態非單調（墨水潑了又消失）、終態畫死無法逆轉、左右鏡像（打左臉傷在右臉）。三處注入母片/單圖/影片；母片舊 invariant `keep the same wear` 對毀壞片是**反向指令**，換成單調累積條款＋反鏡像鎖
+- **自發自測跑完整支片**（Adam：「你要不要自己發案、自己測一遍」）：我當客戶跟默/阿光/阿律對話，發案→三母卡→母片→9 單圖→動態→簽字→Veo→交片，32 秒 7 鏡 $7.20。**每張圖 Read 進來親眼驗**——帳本在圖像層被證明有效（傷單調累加、全鎖畫面右臉、跨兩張母圖不破）
+- **挖出並修好 D12 的真根因**：worker（Cloud Run Job）缺 `BRIDGE_URL`/`BRIDGE_SECRET` → `rewriteForSafety` 叫不到阿光 → **母片線與單圖線的 D12 安全改寫從來都是 null**（先前母片能過全是我手動軟化的功勞）。補 live env＋`worker/cloudbuild.yaml`（同日改腳本）；順手把 D12 補到單圖線（原本只有母片線有）
+- **單圖頁加勾選**（Adam 需求）：放大後每張圖可選「進不進正式縫合影片」，切的是既有 skip，後端零改
+- **KeyMoment 模型翻轉開工**（Adam：母片格數要由導演定）：設計書過目點頭後開 task-harness，完成 1-4 階（schema/frames 倒轉/ledger 掛畫面/導演標記），100/100 測試綠、tsc×3 exit 0
+- 地基帳本盤點：#17 損傷帳本、#18 D12 全線打通（D12 從排後帳結案，Veo 線改寫帶新觸發條件）
+
+### 改了哪些檔案
+| 檔案 | 改了什麼 |
+|---|---|
+| shared/ledger.ts | 新：損傷帳本純函數（buildStateLedger/frameState/veoStateClause）＋KeyMoment 版（buildMomentLedger/momentState/veoShotStateClause，砍 onset 分支） |
+| shared/collections.ts | DamageSide、segment effect 三欄；KeyMoment/Shot 型別＋Storyboard 選填 keyMoments/shots |
+| shared/frames.ts | buildFramePlanFromMoments（moments→frames 1:1、鏡頭引用索引、壞引用報錯） |
+| shared/roles.ts | SHOT 加 effect/side；[[MOMENT]]＋[[SHOT from/to]] 契約、parseMarks 擴充、script 協議改兩步走（先畫面後鏡頭） |
+| shared/prompts.ts | gridPrompt 吃累積狀態＋反鏡像＋單調累積條款（移除反向的 keep-wear）、gptKeyframePrompt/veoPrompt 接帳本 |
+| worker/src/{grid,keyframes}.ts | 母圖/單圖注入帳本；單圖線接 D12 安全改寫（改寫版寫回幀） |
+| worker/cloudbuild.yaml | 補 BRIDGE_URL/BRIDGE_SECRET（D12 的先決條件，同日改腳本） |
+| app/cases/[id]/CaseRoom.tsx | 單圖頁勾選（選哪些進正式縫合影片） |
+| app/api/.../keyframes/[order]/regen | 單張重生接 D12 改寫＋帳本 |
+| tests/{ledger,keymoment}.test.mjs | 新：帳本 9 測＋KeyMoment 15 測（共 100/100） |
+| FOUNDATION.md | #17 損傷帳本、#18 D12 結案 |
+
+### ⚠️ 尚未解決
+- **KeyMoment harness 5-11 階未做**：chat-run（skeleton/翻譯/阿律）、db（幀 doc/砍畫面）、prompts（gridPrompt 吃 moments、veoPrompt per shot）、worker（母圖/放大/拍攝）、UI（導演定畫面）、遷移 archive 舊案、全測重寫＋e2e 自測
+- **下一階最大風險（REFLECT Q3 點名）**：半遷移真相分裂——母圖/放大/拍攝現在讀 segments，切 moments 時 db 種幀與 worker 生成必須**同時**選同一條路。對策已定：判準釘單一咽喉（`sb.keyMoments?.length`），不是每個下游各判各的
+- Veo 線 RAI 改寫仍走 alt 重投（圖像線已通，Veo 線未；帳本已記觸發條件）
+- 資產卡 regen 線仍缺 D12（自測時 style 卡實撞過，手動軟化過關）
+- 舊案 `hRrlrFFOyk1Y56yp5yFy`（Adam 的機器人案）停在 master、分鏡是重排前的舊版；自測案 `rplEA0Q1wmQEN14q8ASp` 已交片
+- 「今天的桌子」狀態過濾仍是 V3 死狀態（昨天就報過，未修）
+
+### 待執行 / 下一步
+接 harness 第 5 階：`~/.ailive/dreamf` → `lib/chat-run.ts` 的 `buildStoryboardSkeleton` 改成吃 `moments+shots` 產 `keyMoments/shots`，翻譯線補 `descEn/effectEn`（moment 層）。
+**動手前先做一件事**：把「是不是 KeyMoment 案」寫成單一謂詞放 `shared/guards.ts` 或 `frames.ts`，全下游共讀——這是防真相分裂的收斂點，先釘它再往下推。
+每階跑 `npm test`（現況 100/100）＋ `tsc×3`，綠才進下一階。全通後跑 e2e 自測（像今天這支）當閻羅驗收。

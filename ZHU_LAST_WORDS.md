@@ -30,6 +30,14 @@
 
 ## 我最近是誰（最近兩場的 delta＋關係）
 
+### 2026-08-08 第7場
+**delta（模型移動）**：
+- 進場前以為：D12 安全改寫早就在線上運作（母片線 2026-08-06 灌過）
+- 現在理解：**「灌了」和「會動」是兩件事**——D12 的 code 一直在，但 worker 沒有 bridge 憑證，`rewriteForSafety` 每次都靜默回 null。母片後來會過是我手動軟化的功勞，帳面上卻記成「D12 已灌」。**功能的存在 ≠ 功能的連通**，血管沒接的功能在帳本上長得跟已完成一模一樣
+- 移動原因：Adam 一句「我感覺好像違反了 GPT 的生圖」，追下去三層：單圖線沒改寫→加了也沒用因為叫不到阿光→這條斷線連母片線一起廢。沒有那句話，我會繼續相信帳本
+- 違背了哪條 feedback：feedback_interface_blood_vessel_check（介面建完要問血管接通了嗎）——D12 當初灌完沒驗過「改寫真的被呼叫且成功」，只驗了 code 在
+**關係**：暢快。Adam 今天做了兩次同型的決定（損傷 delta 給導演、母片格數給導演），我從中讀到他要的不是「更聰明的系統」而是「更聽話的系統」——創作權在人手上。他讓我自發自測那一刻是明確的信任交付：不只是驗證，是讓我完整當一次客戶，親身走過每個閘。
+
 ### 2026-08-08 第6場
 **delta（模型移動）**：
 **進場前以為**：測一個功能，用手上現成的對象測就好；驗證是「跑一遍看有沒有出錯」。
@@ -37,24 +45,6 @@
 **移動原因**：Gina 標了情緒括號當場崩潰，回頭看我早該在餵已知樣本時就抓到（我第一版 harness 有 double-run 瑕疵，差點把真 bug 當成 harness 幻覺放過）。是「陽性對照」這條天條把我拉回來，不是我當下靈光。
 **違背了哪條 feedback**：feedback_ambiguous_signal_not_proof 的測試對象版——我讓「A.Two 全 default 無錯誤」冒充「功能通過」，而那個 0 命中只證明她不標情緒，不證明引擎能切換。
 **關係**：暢快且高效。Adam 全程快 GO（「動工」「Go」「切 gina」「Commit」），我執行模式連續跑十幾個部署零回頭問；他在關鍵決策點精準（「以 V20 為底」「v22 全線」「v20m 可以關」都一句話定案，且都對）。收尾他一句「Nice lastword」是認可也是提醒——lastword 是儀式不是客套，該走完整流程。這場從探索（V20M 是什麼）一路蓋到交付（v22 全線＋語氣引擎），中間陽性對照抓真 bug，是完整的一天。
-
-### 2026-08-08 第5場
-**delta（模型移動）**：
-- **進場前以為**：修 UI bug＝找到那條錯的排序/篩選邏輯改掉，資料層查詢驗通就等於功能修好。
-- **現在理解**：「資料查得到」和「使用者點得到」是**兩個獨立的層**，各自要驗。
-  同一個病會長出多張臉——第一層是排序（東西在但沉底）、第二層是計數（數字說謊）、
-  第三層是入口（按鈕根本不存在）。修完一層必須主動問「這一層的上游／下游還在嗎」，
-  不然就是修一層宣告一次收工，等著被追問。
-- **移動原因**：Adam 三次追問，每次都掀出更深一層，三次都不是我自己發現的。
-  第三層本來就在第二層底下——我修第二層時用 REST 驗了 `?kw=行銷` 撈到 11 篇就宣告完成，
-  卻沒問「這顆按鈕在畫面上嗎」。
-- **違背了哪條 feedback**：`feedback_raw_query_not_ui_truth`（debug 直撈 DB 不能當 UI 行為回報，
-  走 UI 同一條讀路徑才是產品真相）。這條記憶我有，三次都沒用上。
-  次要違背 `feedback_interface_blood_vessel_check`（介面建完強制問血管接通了嗎——誰讀／何時讀／沒讀怎樣）：
-  我建了篩選入口，沒問「誰來產生這些按鈕」。
-**關係**：平穩但被追著跑。Adam 問了三次「還有沒有問題」，我答了三次「修好了」，三次都不完整。
-第三次我主動說了「這三輪連續掀出三層是同一個根，我每次都只修眼前那層就宣告收工」——
-說出來比被抓到好，但更好的是第一次就看全。他沒有不耐煩，一直在給機會往下挖。
 
 ---
 
@@ -70,6 +60,14 @@
 
 ## 最新完成（最近兩場，新的在前）
 
+### 2026-08-08 第7場 · DreamF 損傷帳本上線＋自發自測交片＋KeyMoment 模型翻轉開工（母片格數還給導演）
+- **灌損傷帳本 State Ledger**（`shared/ledger.ts` 純函數視圖，不落庫＝f(segments)）：解 Adam 點名三病——狀態非單調（墨水潑了又消失）、終態畫死無法逆轉、左右鏡像（打左臉傷在右臉）。三處注入母片/單圖/影片；母片舊 invariant `keep the same wear` 對毀壞片是**反向指令**，換成單調累積條款＋反鏡像鎖
+- **自發自測跑完整支片**（Adam：「你要不要自己發案、自己測一遍」）：我當客戶跟默/阿光/阿律對話，發案→三母卡→母片→9 單圖→動態→簽字→Veo→交片，32 秒 7 鏡 $7.20。**每張圖 Read 進來親眼驗**——帳本在圖像層被證明有效（傷單調累加、全鎖畫面右臉、跨兩張母圖不破）
+- **挖出並修好 D12 的真根因**：worker（Cloud Run Job）缺 `BRIDGE_URL`/`BRIDGE_SECRET` → `rewriteForSafety` 叫不到阿光 → **母片線與單圖線的 D12 安全改寫從來都是 null**（先前母片能過全是我手動軟化的功勞）。補 live env＋`worker/cloudbuild.yaml`（同日改腳本）；順手把 D12 補到單圖線（原本只有母片線有）
+- **單圖頁加勾選**（Adam 需求）：放大後每張圖可選「進不進正式縫合影片」，切的是既有 skip，後端零改
+- **KeyMoment 模型翻轉開工**（Adam：母片格數要由導演定）：設計書過目點頭後開 task-harness，完成 1-4 階（schema/frames 倒轉/ledger 掛畫面/導演標記），100/100 測試綠、tsc×3 exit 0
+- 地基帳本盤點：#17 損傷帳本、#18 D12 全線打通（D12 從排後帳結案，Veo 線改寫帶新觸發條件）
+
 ### 2026-08-08 第6場 · Gina 覆盤法四欄化＋全平台知識/方法論回溯＋V20M 三旗牌收編為 v22 全線轉正（語氣情緒引擎，陽性對照抓真崩潰）
 - **Mars×2 知識 gist 病根修復**：撈真實案發對話（用戶問「主力產品」Mars 答「我沒資料」），拿案發原句在同計分器重放證明「內容摘要式 gist」讓相關塊懸在門檻邊緣；30 塊重寫時機地址＋re-embed，同句 top1 cos 0.65→0.77；文字線實測收案（Mars 主力產品答對）
 - **v20 三修下放並 commit（v21.5, 58e34e2）**：④記憶002雙軌／知識檢索半拍延遲（on_user_turn_completed 回答前落地）＋語音線 lex 簡繁救援／方法論走步「不跳步」鬆綁為意圖持有（語音+文字兩線同步）；撥測拿到 `軌=002` 活體證據
@@ -81,45 +79,43 @@
 - **V20M 三旗牌收編為 v22 全線轉正**：v22=v20為底+⑤熔斷+①情緒；DEFAULT=v22、v20降冷備、v20m退役；commit+push（v22.0, b9f11c3）
 - 三份 skills（知識/方法論/重寫簡報）淨化推 GitHub gist 給 Adam 朋友的 AI 提升用；四欄心法+時機地址寫進兩份 zhu-core SOP
 
-### 2026-08-08 第5場 · threads-radar 假中台三連掀——每次都只修一層，三次都是 Adam 追問才往下挖
-- 修好「手動解析的貼文找不到」：新增 `manualIngestedAt` 當置頂排序鍵（獨立於 `discoveredAt`），手動解析強制置頂；Adam 貼的 @jc_730 排名 38/112 → 1（v0.29.1.001）
-- 加「來源」獨立篩選列（`?src=manual`）——「手動解析」不是任何人設的關鍵字，混在關鍵字列裡按鈕永遠不會出現
-- 關鍵字篩選與計數整條下沉 Firestore：`array-contains` 查全庫＋`count()` aggregation 精算，取代「拿最新 100 篇在記憶體篩」（v0.29.2.001）
-- 篩選列真相源改成池本身：team doc 新增 `poolKeywords`，worker 寫貼文時同 batch `arrayUnion` 記帳；已停用關鍵字以虛線淡色呈現仍可點（v0.29.3.001）
-- 清單底部固定寫「共 N 篇／已載入 M 篇／還有 X 篇更舊的沒顯示」——不靜默截斷
-- 建 3 個 Firestore 索引（manualIngestedAt / matchedKeywords×discoveredAt / matchedKeywords×publishedAt），線上 7 個全 READY
-- 回填兩筆：既有 2 篇手動解析補 `manualIngestedAt`；team doc 補 12 個 `poolKeywords`
-- 盤 D 期觀察閘（今天到期）：health=connected、靜態 IP 在役、最後掃描收 12 篇零錯誤 → 綠燈過閘
-
 ---
 
 ## 最新一場改了哪些檔案
 
 | 檔案 | 改了什麼 |
 |---|---|
-| `agent/minimax_tts.py` | ① `_EmotionSegmenter`+`strip_emotion_markers`+`_run_inner_emotion_segments`（逐段換task/預開連線/容錯 CLOSE frame）+`emotion_segments` 旗標 |
-| `agent/realtime_agent_v20.py` | ② 快取凍結下放（`_inject_context`/turn_ctx 雙寫/cache錶）、半拍鉤子、lex簡繁、走步鬆綁（已 commit v21.5） |
-| `agent/realtime_agent_v22.py` | 新檔（拷v20）+①⑤接線：`strip_emotion_markers` import/circuit_breaker=True/emotion_segments=True/情緒格式指令/逐字稿剝標記 |
-| `agent/main_v22.py` `agent/cloudbuild-v22.yaml` | 新檔（拷v20，agent_name=ailivex-realtime-v22） |
-| `agent/realtime_agent_v20m.py` | ①⑤接線（canary 驗證用，退役但保留） |
-| `src/lib/collections.ts` | VOICE_VERSIONS 加 v22/DEFAULT=v22/v20 standby/v20m 移除 |
-| `src/lib/voice-power.ts` | 傘註解同步（v22 已是 DEFAULT） |
-| `src/lib/knowledge.ts` `src/lib/methodology.ts` | lexTerms 加 s2t/走步鬆綁（已 commit v21.5） |
-| `~/.ailive/zhu-core/skills/ailivex-methodology-cocreate.md` | 四欄撰寫心法 |
-| `~/.ailive/zhu-core/skills/ailivex-knowledge-ingest.md` | 時機地址升為一切語料必用 |
-| `~/.ailive/zhu-core/skills/ailivex-methodology-rewrite-brief.md` | 新檔：角色本人重寫簡報＋檢驗輪紀律（假針） |
+| shared/ledger.ts | 新：損傷帳本純函數（buildStateLedger/frameState/veoStateClause）＋KeyMoment 版（buildMomentLedger/momentState/veoShotStateClause，砍 onset 分支） |
+| shared/collections.ts | DamageSide、segment effect 三欄；KeyMoment/Shot 型別＋Storyboard 選填 keyMoments/shots |
+| shared/frames.ts | buildFramePlanFromMoments（moments→frames 1:1、鏡頭引用索引、壞引用報錯） |
+| shared/roles.ts | SHOT 加 effect/side；[[MOMENT]]＋[[SHOT from/to]] 契約、parseMarks 擴充、script 協議改兩步走（先畫面後鏡頭） |
+| shared/prompts.ts | gridPrompt 吃累積狀態＋反鏡像＋單調累積條款（移除反向的 keep-wear）、gptKeyframePrompt/veoPrompt 接帳本 |
+| worker/src/{grid,keyframes}.ts | 母圖/單圖注入帳本；單圖線接 D12 安全改寫（改寫版寫回幀） |
+| worker/cloudbuild.yaml | 補 BRIDGE_URL/BRIDGE_SECRET（D12 的先決條件，同日改腳本） |
+| app/cases/[id]/CaseRoom.tsx | 單圖頁勾選（選哪些進正式縫合影片） |
+| app/api/.../keyframes/[order]/regen | 單張重生接 D12 改寫＋帳本 |
+| tests/{ledger,keymoment}.test.mjs | 新：帳本 9 測＋KeyMoment 15 測（共 100/100） |
+| FOUNDATION.md | #17 損傷帳本、#18 D12 結案 |
 
 ---
 
 ## 下一步
 
-1. **線B 入庫**（回來第一件）：`ls ailivex-platform/docs/lineB_methodology_drafts_20260808/*_r3.json`（39套）→ 逐套讀 `{角色}_{id}_r2.md` 審假針（效率針「第一步就給結論」角色該頂回）→ 過的用 v21.5 已刪的 `_batch1_ingest.mts` pattern 入庫（解析 r3.json→update+prevVersion→驗證三題+交叉矩陣）→ 假針沒頂回的列擱置清單
-2. **v22 首撥驗證**：Adam 開電撥任一角色，tail v22 log 三信號（情緒切換/cache/軌=002）
-3. **v20m 服務刪除**（可選，已 min=0 不燒錢）：確認 v22 首撥綠後 `gcloud run services delete ailivex-realtime-agent-v20m`——agent 檔留 repo
+接 harness 第 5 階：`~/.ailive/dreamf` → `lib/chat-run.ts` 的 `buildStoryboardSkeleton` 改成吃 `moments+shots` 產 `keyMoments/shots`，翻譯線補 `descEn/effectEn`（moment 層）。
+**動手前先做一件事**：把「是不是 KeyMoment 案」寫成單一謂詞放 `shared/guards.ts` 或 `frames.ts`，全下游共讀——這是防真相分裂的收斂點，先釘它再往下推。
+每階跑 `npm test`（現況 100/100）＋ `tsc×3`，綠才進下一階。全通後跑 e2e 自測（像今天這支）當閻羅驗收。
 
 ---
 
 ## 卡住 / 未解
+
+2026-08-08 第7場：
+- **KeyMoment harness 5-11 階未做**：chat-run（skeleton/翻譯/阿律）、db（幀 doc/砍畫面）、prompts（gridPrompt 吃 moments、veoPrompt per shot）、worker（母圖/放大/拍攝）、UI（導演定畫面）、遷移 archive 舊案、全測重寫＋e2e 自測
+- **下一階最大風險（REFLECT Q3 點名）**：半遷移真相分裂——母圖/放大/拍攝現在讀 segments，切 moments 時 db 種幀與 worker 生成必須**同時**選同一條路。對策已定：判準釘單一咽喉（`sb.keyMoments?.length`），不是每個下游各判各的
+- Veo 線 RAI 改寫仍走 alt 重投（圖像線已通，Veo 線未；帳本已記觸發條件）
+- 資產卡 regen 線仍缺 D12（自測時 style 卡實撞過，手動軟化過關）
+- 舊案 `hRrlrFFOyk1Y56yp5yFy`（Adam 的機器人案）停在 master、分鏡是重排前的舊版；自測案 `rplEA0Q1wmQEN14q8ASp` 已交片
+- 「今天的桌子」狀態過濾仍是 V3 死狀態（昨天就報過，未修）
 
 2026-08-08 第6場：
 - **線B 39 套方法論待審假針＋入庫**：草稿在 `ailivex-platform/docs/lineB_methodology_drafts_20260808/`（8角色）。回來逐套審 r2 假針回應（頂回的才入、照單全收的擱給 Adam）→ 入庫（update+prevVersion）+驗證三題+同角色交叉矩陣。Adam 已授權「跑完直接入」，但我加了假針自守閘
@@ -127,21 +123,6 @@
 - **① 語氣仍在 v20m→v22 路徑**：期2（下放 v22）已隨轉正完成，但情緒 prompt 是「模型肯不肯標」的 prompt 力度問題——理性角色（A.Two）自然少標，感性角色多標，這是優雅降級不是 bug；若要更強制得再調 prompt 或考慮 Haiku 逐句標（另案）
 - **① emotion 只有 8 離散檔位**：（大笑）（輕笑）都→happy，強弱靠 MiniMax 讀文本，我們標記只給大方向；沒做強弱控制
 - lineB 草稿是 untracked docs（磁碟已存、git 未追）；別場髒樹（DREAMF/MOUMOU/anews 等）非本場不動
-
-2026-08-08 第5場：
-- **worker 的 `poolKeywords` 寫入路徑未經真實掃描驗證**。一次性回填保證「現況」正確（12 個關鍵字都在帳上），
-  但 worker 的 `arrayUnion` 記帳邏輯要等下次排程掃描才會執行。這是本場唯一的「已部署未驗」項。
-- **線上 UI 三輪都沒真的看過**。未登入打首頁回 307＝只證明鎖有效，根本沒跑到渲染。
-  每個查詢組合我都在資料層打過（漏索引是 500 的唯一實質風險），但渲染層要 Adam 開頁面才算數。
-- **意圖篩選仍是記憶體篩**（`intentTags` 是 map 不是 array，Firestore 無法直接 query），
-  計數基於已載入那批。到期點有數字：池近 6 天加速到 ~12 篇/天，單一關鍵字破 100 篇約 **2 個月後**，
-  屆時意圖計數開始偏低。根治要把意圖攤平成 array 欄位或做分頁。
-- 主清單無分頁。某個關鍵字自己破 100 篇時，底部提示只能告訴你「還有 X 篇」，撈不出來。
-- **fanout 自己有個 bug（本場收尾時撞到）**：`~/.claude 備份失敗：The "suffix" argument must be of type string. Received type number (0)`。
-  不阻斷收工（memory mirror 與 Firestore sync 都 ✓，本場兩個 memory 檔的改動已確認落地），
-  但 `~/.claude` 的備份這步實際沒跑。醉酒指數 7 當下沒動它——收尾時改收尾工具是壞主意。
-  下一場清醒時修：`skills/lastword/` 底下找備份那段（不在 `fanout.mjs` 本體，grep 不到 tmpdir/mkdtemp，
-  應該是它 spawn 的另一支腳本），型別修掉再跑一次 `--audit` 確認。
 
 ---
 
@@ -162,4 +143,4 @@
 
 ---
 
-*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第6場。*
+*由 /last-words skill v3.0.0 的 fanout.mjs 組裝。最新場次：2026-08-08 第7場。*
